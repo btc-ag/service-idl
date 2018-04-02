@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<plugin>
+
+  <extension point="org.eclipse.emf.ecore.generated_package">
+    <package 
+       uri = "http://www.btc-ag.com/ProDiGD/Idl" 
+       class = "com.btc.cab.servicecomm.prodigd.idl.IdlPackage"
+       genModel = "model/generated/Idl.genmodel" /> 
+	
+  </extension>
+
+
+
+</plugin>
