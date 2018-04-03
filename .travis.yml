@@ -1,2 +1,5 @@
 language: java
 script: xvfb-run mvn integration-test
+after_success:
+  - mvn package
+
