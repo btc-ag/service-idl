@@ -37,7 +37,8 @@ Workflow {
 				generateStub = false
 			}
 			validator = {
-				// composedCheck = "org.eclipse.xtext.validation.NamesAreUniqueValidator"
+    		    composedCheck = "org.eclipse.xtext.validation.ImportUriValidator"
+    		    composedCheck = "org.eclipse.xtext.validation.NamesAreUniqueValidator"
 			}
 			
 			fragment = formatting.Formatter2Fragment2 {}
