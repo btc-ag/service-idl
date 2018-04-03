@@ -21,7 +21,7 @@ class IdlParsingTest {
 	@Test
 	def void loadModel() {
 		val result = parseHelper.parse('''
-			Hello Xtext!
+			module Test {}
 		''')
 		Assert.assertNotNull(result)
 		val errors = result.eResource.errors
