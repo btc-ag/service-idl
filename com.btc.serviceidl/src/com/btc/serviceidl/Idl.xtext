@@ -1,0 +1,9 @@
+grammar com.btc.serviceidl.Idl with org.eclipse.xtext.common.Terminals
+
+generate idl "http://www.btc.com/serviceidl/Idl"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' name=ID '!';
