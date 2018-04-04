@@ -19,6 +19,15 @@ import com.btc.serviceidl.util.Constants
 import java.util.regex.Pattern
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
+import org.eclipse.emf.ecore.EObject
+import java.util.HashSet
+import com.btc.serviceidl.idl.InterfaceDeclaration
+import org.eclipse.xtext.naming.IQualifiedNameProvider
+import com.btc.serviceidl.util.Util
+import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.idl.AliasDeclaration
+import com.btc.serviceidl.idl.StructDeclaration
 
 class GeneratorUtil {
    def public static String transform(ParameterBundle param_bundle)
@@ -70,4 +79,71 @@ class GeneratorUtil {
       name.replaceAll(Pattern.quote(source.separator), target.separator)
    }
 	
+   def static Iterable<EObject> getFailableTypes(EObject container)
+   {
+      var objects = new HashSet<EObject>
+
+      // interfaces: special handling due to inheritance
+      if (container instanceof InterfaceDeclaration)
+      {
+         // function parameters
+         val parameter_types = container
+            .functions
+            .map[parameters]
+            .flatten
+            .filter[isFailable(paramType)]
+            .toSet
+
+         // function return types
+         val return_types = container
+            .functions
+            .map[returnedType]
+            .filter[isFailable]
+            .toSet
+
+         objects.addAll(parameter_types)
+         objects.addAll(return_types)
+      }
+
+      val contents = container.eAllContents.toList
+      
+      // typedefs
+      objects.addAll
+      (
+         contents
+            .filter(AliasDeclaration)
+            .filter[isFailable(type)]
+            .map[type]
+      )
+      
+      // structs
+      objects.addAll
+      (
+         contents
+            .filter(StructDeclaration)
+            .map[members]
+            .flatten
+            .filter[isFailable(type)]
+            .map[type]
+      )
+
+      // filter out duplicates (especially primitive types) before delivering the result!
+      return objects.map[getUltimateType].map[UniqueWrapper.from(it)].toSet.map[type].sortBy[e | Names.plain(e)]
+   }
+   
+   def static String asFailable(EObject element, EObject container, IQualifiedNameProvider name_provider)
+   {
+      val type = Util.getUltimateType(element)
+      var String type_name
+      if (type.isPrimitive)
+      {
+         type_name = Names.plain(type)
+      }
+      else
+      {
+         type_name = name_provider.getFullyQualifiedName(type).segments.join("_")
+      }
+      val container_fqn = name_provider.getFullyQualifiedName(container)
+      return '''Failable_«container_fqn.segments.join("_")»_«type_name.toFirstUpper»'''
+   }
 }

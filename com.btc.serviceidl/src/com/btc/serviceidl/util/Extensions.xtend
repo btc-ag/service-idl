@@ -16,48 +16,26 @@
 
 package com.btc.serviceidl.util
 
-import com.btc.serviceidl.idl.InterfaceDeclaration
-import java.util.Deque
-import com.btc.serviceidl.idl.ModuleDeclaration
-import org.eclipse.emf.ecore.EObject
-import com.btc.serviceidl.idl.ParameterElement
-import com.btc.serviceidl.idl.ParameterDirection
-import com.btc.serviceidl.idl.FunctionDeclaration
-import java.util.HashSet
-import com.btc.serviceidl.idl.EventDeclaration
-import com.btc.serviceidl.idl.StructDeclaration
-import com.btc.serviceidl.idl.AliasDeclaration
-import com.btc.serviceidl.idl.ExceptionDeclaration
-import java.util.Collection
 import com.btc.serviceidl.idl.AbstractException
-import com.btc.serviceidl.idl.MemberElement
-import java.util.ArrayList
+import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
+import com.btc.serviceidl.idl.EventDeclaration
+import com.btc.serviceidl.idl.ExceptionDeclaration
+import com.btc.serviceidl.idl.FunctionDeclaration
+import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.idl.MemberElement
+import com.btc.serviceidl.idl.ModuleDeclaration
+import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.idl.StructDeclaration
+import java.util.ArrayList
+import java.util.Collection
+import java.util.HashSet
+import org.eclipse.emf.ecore.EObject
 
 class Extensions
 {
-// TODO MODULE move this somewhere else   
-//   def static ProjectType getProjectType(Builder param)
-//   {
-//      param.read.project_type.get
-//   }
-//   
-//   def static TransformType getTransformType(Builder param)
-//   {
-//      param.read.transform_type
-//   }
-//   
-//   def static Deque<ModuleDeclaration> getModuleStack(Builder param)
-//   {
-//      param.read.module_stack
-//   }
-//   
-//   def static ArtifactNature getArtifactNature(Builder param)
-//   {
-//      param.read.artifact_nature
-//   }
-
    def static boolean isByte(PrimitiveType primitive_type)
    {
       (primitive_type !== null && primitive_type.integerType !== null && primitive_type.integerType.equals("byte"))
