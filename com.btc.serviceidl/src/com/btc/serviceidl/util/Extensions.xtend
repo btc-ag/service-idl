@@ -96,19 +96,6 @@ class Extensions
    {
       module.moduleComponents.exists[o | o instanceof InterfaceDeclaration]
    }
-
-// TODO MODULE move this somewhere else   
-//   def static ProjectType getMainProjectType(EObject item)
-//   {
-//      val scope_determinant = Util.getScopeDeterminant(item)
-//      if (scope_determinant instanceof InterfaceDeclaration)
-//         return ProjectType.SERVICE_API
-//      
-//      if (scope_determinant instanceof ModuleDeclaration)
-//         return ProjectType.COMMON
-//      
-//      throw new IllegalArgumentException("Cannot determine main project type for " + item.toString)
-//   }
    
    /**
     * For a given object, check in the container hierarchy whether it belongs

@@ -52,6 +52,8 @@ import org.eclipse.xtext.scoping.IScopeProvider
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import com.btc.serviceidl.generator.java.MavenResolver
+import java.util.Optional
 
 class ProtobufGenerator
 {
@@ -269,13 +271,10 @@ class ProtobufGenerator
    
    def private String generatePackageName(ArtifactNature artifact_nature, EObject container)
    {
-	   	if (artifact_nature == ArtifactNature.JAVA)
-	   	  throw new UnsupportedOperationException("TODO migrate me");
       '''
       syntax = "proto2";
       «IF artifact_nature == ArtifactNature.JAVA»
-«««      TODO MIGRATE
-«««         package «MavenResolver.resolvePackage(container, Optional.of(ProjectType.PROTOBUF))»;         
+         package «MavenResolver.resolvePackage(container, Optional.of(ProjectType.PROTOBUF))»;         
       «ELSE»
          package «GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).build)»;
       «ENDIF»
@@ -538,10 +537,8 @@ class ProtobufGenerator
          }
          else
          {
-         	// TODO MIGRATE me
-         	throw new UnsupportedOperationException("Migrate me");
-//            referenced_project = MavenResolver.resolvePackage(object_root, Optional.of(ProjectType.PROTOBUF))
-//            current_project = MavenResolver.resolvePackage(context_root, Optional.of(ProjectType.PROTOBUF))
+            referenced_project = MavenResolver.resolvePackage(object_root, Optional.of(ProjectType.PROTOBUF))
+            current_project = MavenResolver.resolvePackage(context_root, Optional.of(ProjectType.PROTOBUF))
          }
          
          val result = referenced_project + TransformType.PACKAGE.separator + plain_name

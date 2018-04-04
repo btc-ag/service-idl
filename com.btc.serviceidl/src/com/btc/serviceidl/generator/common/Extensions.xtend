@@ -13,6 +13,9 @@ package com.btc.serviceidl.generator.common
 import com.btc.serviceidl.generator.common.ParameterBundle.Builder
 import com.btc.serviceidl.idl.ModuleDeclaration
 import java.util.Deque
+import org.eclipse.emf.ecore.EObject
+import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.util.Util
 
 class Extensions {
    def static ProjectType getProjectType(Builder param)
@@ -33,6 +36,18 @@ class Extensions {
    def static ArtifactNature getArtifactNature(Builder param)
    {
       param.read.artifact_nature
+   }
+
+   def static ProjectType getMainProjectType(EObject item)
+   {
+      val scope_determinant = Util.getScopeDeterminant(item)
+      if (scope_determinant instanceof InterfaceDeclaration)
+         return ProjectType.SERVICE_API
+      
+      if (scope_determinant instanceof ModuleDeclaration)
+         return ProjectType.COMMON
+      
+      throw new IllegalArgumentException("Cannot determine main project type for " + item.toString)
    }
 	
 }

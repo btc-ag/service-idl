@@ -484,74 +484,8 @@ class Util
          .replaceAll(Pattern.quote("#>"), "")
          .replaceFirst("^" + Pattern.quote("#"), "")
          .trim
-   }
-   
-//   def public static String getClassName(ParameterBundle param_bundle, String basic_name)
-//   {
-//      return getClassName(param_bundle, param_bundle.project_type.get, basic_name)
-//   }
-//   
-//   def static String getClassName(ParameterBundle param_bundle, ProjectType project_type, String basic_name)
-//   {
-//      return project_type.getClassName(param_bundle.artifact_nature, basic_name)
-//   }
-//   
-//   def static boolean useCodec(EObject element, ArtifactNature artifact_nature)
-//   {
-//      if (element instanceof PrimitiveType)
-//      {
-//         return element.isByte || element.isInt16 || element.isChar || element.isUUID
-//         // all other primitive types map directly to built-in types!
-//      }
-//      else if (element instanceof ParameterElement)
-//      {
-//         return useCodec(element.paramType, artifact_nature)
-//      }
-//      else if (element instanceof AliasDeclaration)
-//      {
-//         return useCodec(element.type, artifact_nature)
-//      }
-//      else if (element instanceof SequenceDeclaration)
-//      {
-//         if (artifact_nature == ArtifactNature.DOTNET || artifact_nature == ArtifactNature.JAVA)
-//            return useCodec(element.type, artifact_nature) // check type of containing elements
-//         else
-//            return true
-//      }
-//      else if (element instanceof AbstractType)
-//      {
-//         if (element.primitiveType !== null)
-//            return useCodec(element.primitiveType, artifact_nature)
-//         else if (element.collectionType !== null)
-//            return useCodec(element.collectionType, artifact_nature)
-//         else if (element.referenceType !== null)
-//            return useCodec(element.referenceType, artifact_nature)
-//      }
-//      return true;
-//   }
-   
-//   def static String getCodecName(EObject object)
-//   {
-//      '''«getPbFileName(object)»«Constants.FILE_NAME_CODEC»'''
-//   }
-   
-//   def static String getPbFileName(EObject object)
-//   {
-//      if (object instanceof ModuleDeclaration) Constants.FILE_NAME_TYPES
-//         else if (object instanceof InterfaceDeclaration) Names.plain(object)
-//         else getPbFileName(Util.getScopeDeterminant(object))
-//   }
-   
-   
-//   def static Collection<EObject> getEncodableTypes(EObject owner)
-//   {
-//      val nested_types = new HashSet<EObject>
-//      nested_types.addAll(owner.eContents.filter(StructDeclaration))
-//      nested_types.addAll(owner.eContents.filter(ExceptionDeclaration))
-//      nested_types.addAll(owner.eContents.filter(EnumDeclaration))
-//      return nested_types.sortBy[e | Names.plain(e)]
-//   }
-   
+   }   
+      
    /**
     * This method generates a consistent name for exceptions used on all sides
     * of the ServiceComm framework in order to correctly resolve the type.

@@ -28,6 +28,13 @@ import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
+import java.util.Collection
+import com.btc.serviceidl.idl.ExceptionDeclaration
+import com.btc.serviceidl.idl.EnumDeclaration
+import com.btc.serviceidl.idl.SequenceDeclaration
+import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.idl.ParameterElement
 
 class GeneratorUtil {
    def public static String transform(ParameterBundle param_bundle)
@@ -145,5 +152,70 @@ class GeneratorUtil {
       }
       val container_fqn = name_provider.getFullyQualifiedName(container)
       return '''Failable_«container_fqn.segments.join("_")»_«type_name.toFirstUpper»'''
+   }
+
+   def static Collection<EObject> getEncodableTypes(EObject owner)
+   {
+      val nested_types = new HashSet<EObject>
+      nested_types.addAll(owner.eContents.filter(StructDeclaration))
+      nested_types.addAll(owner.eContents.filter(ExceptionDeclaration))
+      nested_types.addAll(owner.eContents.filter(EnumDeclaration))
+      return nested_types.sortBy[e | Names.plain(e)]
+   }
+
+   def public static String getClassName(ParameterBundle param_bundle, String basic_name)
+   {
+      return getClassName(param_bundle, param_bundle.project_type.get, basic_name)
+   }
+   
+   def static String getClassName(ParameterBundle param_bundle, ProjectType project_type, String basic_name)
+   {
+      return project_type.getClassName(param_bundle.artifact_nature, basic_name)
+   }
+   
+   def static boolean useCodec(EObject element, ArtifactNature artifact_nature)
+   {
+      if (element instanceof PrimitiveType)
+      {
+         return element.isByte || element.isInt16 || element.isChar || element.isUUID
+         // all other primitive types map directly to built-in types!
+      }
+      else if (element instanceof ParameterElement)
+      {
+         return useCodec(element.paramType, artifact_nature)
+      }
+      else if (element instanceof AliasDeclaration)
+      {
+         return useCodec(element.type, artifact_nature)
+      }
+      else if (element instanceof SequenceDeclaration)
+      {
+         if (artifact_nature == ArtifactNature.DOTNET || artifact_nature == ArtifactNature.JAVA)
+            return useCodec(element.type, artifact_nature) // check type of containing elements
+         else
+            return true
+      }
+      else if (element instanceof AbstractType)
+      {
+         if (element.primitiveType !== null)
+            return useCodec(element.primitiveType, artifact_nature)
+         else if (element.collectionType !== null)
+            return useCodec(element.collectionType, artifact_nature)
+         else if (element.referenceType !== null)
+            return useCodec(element.referenceType, artifact_nature)
+      }
+      return true;
+   }
+   
+   def static String getCodecName(EObject object)
+   {
+      '''«getPbFileName(object)»«Constants.FILE_NAME_CODEC»'''
+   }
+   
+   def static String getPbFileName(EObject object)
+   {
+      if (object instanceof ModuleDeclaration) Constants.FILE_NAME_TYPES
+         else if (object instanceof InterfaceDeclaration) Names.plain(object)
+         else getPbFileName(Util.getScopeDeterminant(object))
    }
 }
