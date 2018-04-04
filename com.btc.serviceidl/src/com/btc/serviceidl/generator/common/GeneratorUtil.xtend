@@ -218,4 +218,22 @@ class GeneratorUtil {
          else if (object instanceof InterfaceDeclaration) Names.plain(object)
          else getPbFileName(Util.getScopeDeterminant(object))
    }
+
+   /**
+    * Given a module stack, this method will calculate relative paths up to the
+    * solution root directory in form of ../../
+    * 
+    * \details If at least one relative parent path is there, the string ALWAYS
+    * ends with the path separator!
+    */
+   def public static String getRelativePathsUpwards(ParameterBundle param_bundle)
+   {
+      var paths = ""
+      for (module : param_bundle.module_stack)
+      {
+         if (!module.virtual) // = non-virtual
+            paths += ".." + TransformType.FILE_SYSTEM.separator
+      }
+      return paths
+   }
 }
