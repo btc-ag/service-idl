@@ -125,28 +125,6 @@ class Util
       return name + "_" + Constants.PROTOBUF_RESPONSE
    }
    
-//   def public static String openNamespaces(ParameterBundle param_bundle)
-//   {
-//      '''
-//      «FOR module : param_bundle.module_stack»
-//      namespace «module.name»
-//      {
-//      «ENDFOR»
-//      «IF param_bundle.project_type.present»
-//      namespace «param_bundle.project_type.get.getName»
-//      {
-//      «ENDIF»
-//      '''
-//   }
-   
-//   def public static String closeNamespaces(ParameterBundle param_bundle)
-//   {
-//      '''
-//      «FOR module : param_bundle.module_stack»}«ENDFOR»«IF param_bundle.project_type.present»}«ENDIF»
-//      
-//      '''
-//   }
-
    def public static Deque<ModuleDeclaration> getModuleStack(EObject element)
    {
       var module_stack = new ArrayDeque<ModuleDeclaration>
@@ -193,17 +171,7 @@ class Util
       
       return EcoreUtil.getRootContainer(element)
    }
-   
-//   def public static String switchPackageSeperator(String name, TransformType transform_type)
-//   {
-//      return name.replaceAll(Pattern.quote(Constants.SEPARATOR_PACKAGE), transform_type.getSeparator)
-//   }
-//   
-//   def static String switchSeparator(String name, TransformType source, TransformType target)
-//   {
-//      name.replaceAll(Pattern.quote(source.separator), target.separator)
-//   }
-   
+      
    def public static EventDeclaration getRelatedEvent(StructDeclaration object, IDLSpecification idl)
    {
       return idl.eAllContents.filter(EventDeclaration).findFirst[data === object]
