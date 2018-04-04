@@ -4,7 +4,6 @@
 package com.btc.serviceidl.generator
 
 import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.xtext.generator.IFileSystemAccess
 import com.google.inject.Inject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
@@ -19,6 +18,10 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import org.eclipse.xtext.generator.IGenerator2
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import com.btc.serviceidl.generator.protobuf.ProtobufGenerator
+import com.btc.serviceidl.generator.cpp.CppGenerator
+import com.btc.serviceidl.generator.java.JavaGenerator
+import com.btc.serviceidl.generator.dotnet.DotNetGenerator
 
 /**
  * Generates code from your model files on save.
@@ -64,20 +67,19 @@ class IdlGenerator implements IGenerator2
          resource.save(Collections.EMPTY_MAP)
       }
 
-// TODO MIGRATE reenable this
 // TODO REFACTOR invert these dependencies      
-//      val protobuf_generator = new ProtobufGenerator
-//      protobuf_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider)
-//      val Map<EObject, String> protobuf_artifacts = protobuf_generator.generatedArtifacts
-//      
-//      val cpp_generator = new CppGenerator
-//      cpp_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, protobuf_generator.getProjectReferences(ArtifactNature.CPP))
-//      
-//      val java_generator = new JavaGenerator
-//      java_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, protobuf_artifacts)
-//      
-//      val dotnet_generator = new DotNetGenerator
-//      dotnet_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, protobuf_generator.getProjectReferences(ArtifactNature.DOTNET))
+      val protobuf_generator = new ProtobufGenerator
+      protobuf_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider)
+      val Map<EObject, String> protobuf_artifacts = protobuf_generator.generatedArtifacts
+      
+      val cpp_generator = new CppGenerator
+      cpp_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, protobuf_generator.getProjectReferences(ArtifactNature.CPP))
+      
+      val java_generator = new JavaGenerator
+      java_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, protobuf_artifacts)
+      
+      val dotnet_generator = new DotNetGenerator
+      dotnet_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, protobuf_generator.getProjectReferences(ArtifactNature.DOTNET))
    }
 			
 			override afterGenerate(Resource input, IFileSystemAccess2 fsa, IGeneratorContext context) {
