@@ -1,0 +1,243 @@
+/*********************************************************************
+* \author see AUTHORS file
+* \copyright 2015-2018 BTC Business Technology Consulting AG and others
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+/**
+ * \file       Idl.xtext
+ * 
+ * \brief      Xtext grammar for the Interface Description Language (IDL)
+ */
+
+grammar com.btc.serviceidl.Idl with org.eclipse.xtext.common.Terminals
+
+generate idl "http://www.btc-ag.com/ProDiGD/Idl"
+
+/* general document structure (root) */
+IDLSpecification:
+   ( importedEntities += ImportDeclaration )*
+   ( modules += ModuleDeclaration )*
+;
+
+/* include packages/namespaces/types */
+ImportDeclaration:
+   'import' importedNamespace = QualifiedNameWithWildcard
+;
+
+/* regular module */
+ModuleDeclaration:
+   (virtual ?= 'virtual')? (main ?= 'main')? 'module' name = ID '{' (moduleComponents += AbstractModuleComponent)* (nestedModules += ModuleDeclaration)* '}'
+;
+
+/* nested components which may occur within a regular module */
+AbstractModuleComponent:
+   EnumDeclaration ';'
+   | StructDeclaration ';'
+   | AbstractException ';'
+   | InterfaceDeclaration ';'
+   | AliasDeclaration ';'
+;
+
+/* generic exception */
+AbstractException: ( ExceptionReferenceDeclaration | ExceptionDeclaration );
+
+/* exception reference = explicitly provide its origin as file path */
+ExceptionReferenceDeclaration:
+   'exception' name = ID 'ref' location = STRING
+;
+
+/* exception */
+ExceptionDeclaration:
+   'exception' name = ID (':' (supertype = [AbstractException|QualifiedName]) )?
+   '{' ( members += MemberElement ';' )* '}'
+;
+
+/* generic declaration of new types */
+AbstractTypeDeclaration:
+   AliasDeclaration
+   | EnumDeclaration
+   | StructDeclaration
+   | AbstractException
+;
+
+/* previously declared types which can be used in a cross-reference */
+AbstractCrossReference:
+   AliasDeclaration
+   | EnumDeclaration
+   | StructDeclaration
+   | AbstractCollection
+   | AbstractException
+;
+
+/* meta type for any usable type */
+AbstractType:
+   primitiveType = PrimitiveType 
+   | referenceType = [AbstractCrossReference|QualifiedName]
+   | collectionType = AbstractCollection
+;
+
+AliasDeclaration: 'typedef' type = AbstractType name = ID;
+
+/* enumeration */
+EnumDeclaration:
+   'enum' name = ID '{' containedIdentifiers += ID (',' containedIdentifiers += ID)* '}'
+   ( declarator = ID )?
+;
+
+/* meta type for element containers */
+AbstractCollection: ( SequenceDeclaration | TupleDeclaration );
+
+/* sequence */
+SequenceDeclaration:
+   'sequence' '<'
+   (
+      (type = AbstractType) // plain case
+      |
+      (failable ?= 'failable' type = AbstractType ('raises' raisedExceptions += [AbstractException|QualifiedName] (',' raisedExceptions += [AbstractException|QualifiedName] )* )? ) // failable case
+   )
+   '>'
+   ( '[' sequenceHints += AbstractSequenceHint (',' sequenceHints += AbstractSequenceHint)* ']' )?
+;
+
+/* meta type for sequence hint */
+AbstractSequenceHint: ( TypicalLengthHint | TypicalSizeHint );
+
+/* typical sequence length hint */
+TypicalLengthHint:
+   'typical' 'sequence' 'length' '=' length = INT
+;
+
+/* typical element size hint */
+TypicalSizeHint:
+   'typical' 'element' 'size' '=' size = INT
+;
+
+/* tuple */
+TupleDeclaration:
+   'tuple' '<' (types += AbstractType)
+   (',' types += AbstractType)* '>'
+;
+
+/* struct */
+StructDeclaration:
+   'struct' name = ID (':' (supertype = [StructDeclaration|QualifiedName]) )?
+   '{' (( members += MemberElement | typeDecls += AbstractTypeDeclaration) ';' )* '}'
+   ( declarator = ID )?
+;
+
+/* class member */
+MemberElement: (optional ?= 'optional')?
+   type = AbstractType name = ID
+;
+
+/* key for event subscription */
+KeyElement: type = AbstractType keyName = ID;
+
+/* interface */
+InterfaceDeclaration:
+   ( docComments += DocCommentElement )*
+   ( abstract ?= 'abstract' )?
+   'interface' name = ID ('[' (('version' '=' version = VERSION )? & ('guid' '=' guid = UUID_LITERAL)? ) ']' )?
+   ( ':' derivesFrom += [InterfaceDeclaration|QualifiedName]
+   ( ',' derivesFrom += [InterfaceDeclaration|QualifiedName] )* )? '{' (contains += AbstractInterfaceComponent)* '}'
+;
+
+/* components which may occur within an interface */
+AbstractInterfaceComponent:
+   AbstractTypeDeclaration ';'
+   | FunctionDeclaration ';'
+   | EventDeclaration ';'
+;
+
+/* function */ 
+FunctionDeclaration:
+   ( docComments += DocCommentElement )*
+   ( sync ?= 'sync' )? ( query ?= 'query' )?
+   name = ID '(' ( parameters += ParameterElement (',' parameters += ParameterElement)* )? ')'
+   (
+      ('returns' ( injected ?= 'injectable' )? returnedType = ReturnTypeElement )
+      ('raises' raisedExceptions += [AbstractException|QualifiedName] (',' raisedExceptions += [AbstractException|QualifiedName] )* )?
+   )
+;
+
+/* event */
+EventDeclaration:
+   'event' (name = ID)? ('[' ('guid' '=' guid = UUID_LITERAL) ']' )? '(' data = [StructDeclaration|QualifiedName] ')'
+   (
+      ('subscribe' 'with' '(' ( keys += KeyElement (',' keys += KeyElement)* )? ')')?
+      ('raises' raisedExceptions += [AbstractException|QualifiedName] (',' raisedExceptions += [AbstractException|QualifiedName] )* )?
+   )
+;
+
+/* returned result of a function */
+ReturnTypeElement: ( AbstractType | void ?= 'void');
+
+/* parameter for a function */
+ParameterElement:
+   direction = ParameterDirection paramType = AbstractType
+   paramName = ID 
+;
+
+/* documentation comment */
+DocCommentElement:
+   text = ( SL_DOC_COMMENT | ML_DOC_COMMENT )
+;
+
+/*
+--------------------------------------------------------------------------------
+Primitive data types and other essentials
+--------------------------------------------------------------------------------
+*/
+
+QualifiedName: ID ('.' ID)*;
+QualifiedNameWithWildcard: QualifiedName '.*'?;
+
+enum ParameterDirection:
+   PARAM_IN = 'in'
+   | PARAM_OUT = 'out'
+;
+
+PrimitiveType:
+   integerType = IntegerType
+   | stringType = STRINGTYPE
+   | charType = CHAR
+   | floatingPointType = FloatingPointType
+   | uuidType = UUID
+   | booleanType = BOOLEAN
+;
+
+IntegerType:
+   BYTE
+   | INT16
+   | INT32
+   | INT64
+;
+
+FloatingPointType:
+   FLOAT | DOUBLE
+;
+
+terminal BYTE: 'byte';
+terminal INT16: 'int16';
+terminal INT32: 'int32';
+terminal INT64: 'int64' ;
+terminal CHAR: 'char';
+terminal STRINGTYPE: 'string';
+terminal FLOAT: 'float';
+terminal DOUBLE: 'double';
+terminal BOOLEAN: 'boolean';
+terminal UUID: 'uuid';
+
+terminal VERSION : INT '.' INT '.' INT ;
+terminal UUID_LITERAL :  HEX HEX HEX HEX HEX HEX HEX HEX  '-' HEX HEX HEX HEX  '-' HEX HEX HEX HEX '-' HEX HEX HEX HEX  '-' HEX HEX HEX HEX HEX HEX HEX HEX HEX HEX HEX HEX ;
+// 9BD4270D-343C-497a-BB89-665D677EBCAF
+
+terminal ML_DOC_COMMENT: '<#' -> '#>';
+terminal SL_DOC_COMMENT: '#' !('\n'|'\r')* ('\r'? '\n')?;
+
+terminal HEX : ('0'..'9'|'a'..'f'|'A'..'F') ;

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+	<feature id="com.btc.serviceidl.feature" version="0.0.0">
+		<category name="main"/>
+	</feature>
+	<feature id="com.btc.serviceidl.feature.source" version="0.0.0">
+		<category name="main.source"/>
+	</feature>
+	<category-def name="main" label="Idl"/>
+	<category-def name="main.source" label="Idl (Sources)"/>
+</site>
