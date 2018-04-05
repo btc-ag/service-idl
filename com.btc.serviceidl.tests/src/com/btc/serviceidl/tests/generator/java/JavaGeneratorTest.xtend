@@ -10,51 +10,32 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator.java
 
-import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
-import com.btc.serviceidl.generator.IGenerationSettingsProvider
-import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.tests.IdlInjectorProvider
+import com.btc.serviceidl.tests.generator.AbstractGeneratorTest
 import com.btc.serviceidl.tests.testdata.TestData
-import com.google.inject.Inject
+import com.google.common.collect.ImmutableMap
 import java.util.Arrays
 import java.util.HashSet
-import org.eclipse.xtext.generator.GeneratorContext
 import org.eclipse.xtext.generator.IFileSystemAccess
-import org.eclipse.xtext.generator.IGenerator2
-import org.eclipse.xtext.generator.InMemoryFileSystemAccess
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
-import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.Test
 import org.junit.runner.RunWith
-
-import static com.btc.serviceidl.tests.TestExtensions.*
-import static org.junit.Assert.*
+import java.util.Map
+import java.util.Set
+import com.btc.serviceidl.generator.common.ArtifactNature
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
-class JavaGeneratorTest {
-	@Inject extension ParseHelper<IDLSpecification>
-	@Inject IGenerator2 underTest
-	@Inject IGenerationSettingsProvider generationSettingsProvider
-
+class JavaGeneratorTest extends AbstractGeneratorTest {
 	@Test
 	def void testBasicServiceApi() {
-		val spec = TestData.basic.parse
-
-		val fsa = new InMemoryFileSystemAccess
-		val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
-		defaultGenerationSettingsProvider.projectTypes = new HashSet<ProjectType>(
-			Arrays.asList(ProjectType.SERVICE_API))
-		defaultGenerationSettingsProvider.languages = new HashSet<ArtifactNature>(Arrays.asList(ArtifactNature.JAVA))
-		underTest.doGenerate(spec.eResource, fsa, new GeneratorContext)
-		println(fsa.textFiles.keySet)
-		assertEquals(3, fsa.textFiles.size) // TODO this includes the KeyValueStoreServiceFaultHandlerFactory, which should be generated to a different project, and not with these settings
+		val fileCount = 3 // TODO this includes the KeyValueStoreServiceFaultHandlerFactory, which should be generated to a different project, and not with these settings
+		val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
 		val directory = IFileSystemAccess::DEFAULT_OUTPUT +
 			"java/btc.prins.infrastructure.servicehost.demo.api.keyvaluestore/src/main/java/com/btc/prins/infrastructure/servicehost/demo/api/keyvaluestore/serviceapi/"
-		checkFile(fsa, directory + "KeyValueStore.java", '''
+		val contents = ImmutableMap.of(directory + "KeyValueStore.java", '''
 			package com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.serviceapi;
 			
 			import java.util.UUID;
@@ -64,6 +45,12 @@ class JavaGeneratorTest {
 			}
 		''')
 
+		checkGenerators(TestData.basic, projectTypes, fileCount, contents)
 	}
 
+	def void checkGenerators(CharSequence input, Set<ProjectType> projectTypes, int fileCount,
+		Map<String, String> contents) {
+		checkGenerators(input, new HashSet<ArtifactNature>(Arrays.asList(ArtifactNature.JAVA)), projectTypes, fileCount,
+			contents)
+	}
 }

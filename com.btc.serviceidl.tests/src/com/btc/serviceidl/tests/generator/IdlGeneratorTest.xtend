@@ -24,17 +24,22 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import static org.junit.Assert.*
+import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
+import com.btc.serviceidl.generator.IGenerationSettingsProvider
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
 class IdlGeneratorTest {
 	@Inject extension ParseHelper<IDLSpecification>
 	@Inject IGenerator2 underTest
+	@Inject IGenerationSettingsProvider generationSettingsProvider
 
 	@Test
 	def void testBasic() {
+		val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
+		defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases		
+		
 		val spec = TestData.basic.parse
-
 		val fsa = new InMemoryFileSystemAccess()
 		val generatorContext = new GeneratorContext()
 		underTest.doGenerate(spec.eResource, fsa, generatorContext)

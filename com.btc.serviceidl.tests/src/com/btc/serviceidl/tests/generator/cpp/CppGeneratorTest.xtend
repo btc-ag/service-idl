@@ -10,51 +10,32 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator.cpp
 
-import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
-import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.tests.IdlInjectorProvider
+import com.btc.serviceidl.tests.generator.AbstractGeneratorTest
 import com.btc.serviceidl.tests.testdata.TestData
-import com.google.inject.Inject
+import com.google.common.collect.ImmutableMap
 import java.util.Arrays
 import java.util.HashSet
-import org.eclipse.xtext.generator.GeneratorContext
+import java.util.Map
+import java.util.Set
 import org.eclipse.xtext.generator.IFileSystemAccess
-import org.eclipse.xtext.generator.IGenerator2
-import org.eclipse.xtext.generator.InMemoryFileSystemAccess
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
-import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.Test
 import org.junit.runner.RunWith
 
-import static com.btc.serviceidl.tests.TestExtensions.*
-import static org.junit.Assert.*
-
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
-class CppGeneratorTest {
-	@Inject extension ParseHelper<IDLSpecification>
-	@Inject IGenerator2 underTest
-	@Inject IGenerationSettingsProvider generationSettingsProvider
-
+class CppGeneratorTest extends AbstractGeneratorTest {
 	@Test
 	def void testBasicServiceApi() {
-		val spec = TestData.basic.parse
-
-		val fsa = new InMemoryFileSystemAccess
-		val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
-		defaultGenerationSettingsProvider.projectTypes = new HashSet<ProjectType>(
-			Arrays.asList(ProjectType.SERVICE_API))
-		defaultGenerationSettingsProvider.languages = new HashSet<ArtifactNature>(Arrays.asList(ArtifactNature.CPP))
-		underTest.doGenerate(spec.eResource, fsa, new GeneratorContext)
-		println(fsa.textFiles.keySet)
-		assertEquals(30, fsa.textFiles.size) // TODO 30 is too much, check this
+		val fileCount = 30 // TODO 30 is too much, check this
+		val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
 		val directory = IFileSystemAccess::DEFAULT_OUTPUT +
-			"cpp/Infrastructure/ServiceHost/Demo/API/ServiceAPI/" // TODO double / should be removed
-		checkFile(fsa, directory + "include//IKeyValueStore.h", '''
+			"cpp/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
+		val contents = ImmutableMap.of(directory + "include//IKeyValueStore.h", '''
 			#pragma once
 			#include "modules/Commons/include/BeginPrinsModulesInclude.h"
 			
@@ -86,8 +67,7 @@ class CppGeneratorTest {
 			}}}}}}}
 			
 			#include "modules/Commons/include/EndPrinsModulesInclude.h"
-		''')
-		checkFile(fsa, directory + "source/IKeyValueStore.cpp", '''
+		''', directory + "source/IKeyValueStore.cpp", '''
 			#include "modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/include/IKeyValueStore.h"
 			
 			#include "modules/Commons/include/BeginCabInclude.h"     // CAB -->
@@ -128,6 +108,12 @@ class CppGeneratorTest {
 			}}}}}}}
 		''')
 
+		checkGenerators(TestData.basic, projectTypes, fileCount, contents)
 	}
 
+	def void checkGenerators(CharSequence input, Set<ProjectType> projectTypes, int fileCount,
+		Map<String, String> contents) {
+		checkGenerators(input, new HashSet<ArtifactNature>(Arrays.asList(ArtifactNature.CPP)), projectTypes, fileCount,
+			contents)
+	}
 }

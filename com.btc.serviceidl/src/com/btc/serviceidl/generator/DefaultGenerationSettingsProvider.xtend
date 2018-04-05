@@ -14,15 +14,16 @@ import java.util.HashSet
 import com.btc.serviceidl.generator.common.ArtifactNature
 import java.util.Arrays
 import com.btc.serviceidl.generator.common.ProjectType
+import java.util.Set
 
 class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider {
 
-	public var languages = new HashSet<ArtifactNature>(
-		Arrays.asList(ArtifactNature.CPP, ArtifactNature.JAVA, ArtifactNature.DOTNET));
-	public var projectTypes = new HashSet<ProjectType>(
-		Arrays.asList(ProjectType.SERVICE_API, ProjectType.PROXY, ProjectType.DISPATCHER, ProjectType.IMPL,
-			ProjectType.PROTOBUF, ProjectType.COMMON, ProjectType.TEST, ProjectType.SERVER_RUNNER,
-			ProjectType.CLIENT_CONSOLE, ProjectType.EXTERNAL_DB_IMPL));
+	public Set<ArtifactNature> languages;
+	public Set<ProjectType> projectTypes;
+
+	def DefaultGenerationSettingsProvider() {
+		reset();
+	}
 
 	override getLanguages() {
 		return languages;
@@ -30,6 +31,15 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider {
 
 	override getProjectTypes() {
 		return projectTypes;
+	}
+
+	def reset() {
+		languages = new HashSet<ArtifactNature>(
+			Arrays.asList(ArtifactNature.CPP, ArtifactNature.JAVA, ArtifactNature.DOTNET));
+		projectTypes = new HashSet<ProjectType>(
+			Arrays.asList(ProjectType.SERVICE_API, ProjectType.PROXY, ProjectType.DISPATCHER, ProjectType.IMPL,
+				ProjectType.PROTOBUF, ProjectType.COMMON, ProjectType.TEST, ProjectType.SERVER_RUNNER,
+				ProjectType.CLIENT_CONSOLE, ProjectType.EXTERNAL_DB_IMPL));
 	}
 
 }
