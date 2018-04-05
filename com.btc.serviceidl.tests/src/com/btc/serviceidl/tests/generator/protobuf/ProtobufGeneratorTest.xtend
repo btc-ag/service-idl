@@ -10,9 +10,15 @@
 **********************************************************************/
 package com.btc.serviceidl.tests.generator.protobuf
 
+import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
+import com.btc.serviceidl.generator.IGenerationSettingsProvider
+import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.google.inject.Inject
+import java.util.Arrays
+import java.util.HashSet
+import org.eclipse.xtext.generator.GeneratorContext
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator2
 import org.eclipse.xtext.generator.InMemoryFileSystemAccess
@@ -22,43 +28,32 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.Test
 import org.junit.runner.RunWith
 
+import static com.btc.serviceidl.tests.TestExtensions.*
 import static org.junit.Assert.*
-import static extension com.btc.serviceidl.tests.TestExtensions.*
-import org.eclipse.xtext.generator.GeneratorContext
+import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.tests.testdata.TestData
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
 class ProtobufGeneratorTest {
 	@Inject extension ParseHelper<IDLSpecification>
 	@Inject IGenerator2 underTest
+	@Inject IGenerationSettingsProvider generationSettingsProvider
 
 	@Test
 	def void testBasic() {
-		val spec = '''
-			virtual module BTC {
-			virtual module PRINS { 
-			module Infrastructure {
-			module ServiceHost {
-			module Demo { 
-			module API {
-			
-			interface KeyValueStore[version=1.0.0] { 
-			};
-			}
-			}
-			}
-			}
-			}
-			}
-		'''.parse
+		val spec = TestData.basic.parse
 
 		val fsa = new InMemoryFileSystemAccess()
 		val generatorContext = new GeneratorContext()
+		val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider 
+		defaultGenerationSettingsProvider.projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.PROTOBUF))
+		defaultGenerationSettingsProvider.languages = new HashSet<ArtifactNature>()
 		underTest.doGenerate(spec.eResource, fsa, generatorContext)
 		println(fsa.textFiles.keySet)
-		assertEquals(103, fsa.textFiles.size) // TODO change to only generate protobuf
+		assertEquals(3, fsa.textFiles.size) 
 		val protobufLocation = IFileSystemAccess::DEFAULT_OUTPUT +
-			"cpp/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/KeyValueStore.proto" // TODO why is this in the cpp directory?
+			"cpp/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/KeyValueStore.proto" // TODO why is this generated multiple times for each language?
 		assertTrue(fsa.textFiles.containsKey(protobufLocation))
 
 		println(fsa.textFiles.get(protobufLocation))

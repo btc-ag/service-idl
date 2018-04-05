@@ -69,6 +69,9 @@ import com.btc.serviceidl.util.MemberElementWrapper
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.FeatureProfile
+import java.util.Set
+import com.google.common.collect.Sets
+import java.util.Arrays
 
 class DotNetGenerator
 {
@@ -94,7 +97,7 @@ class DotNetGenerator
    private val protobuf_files = new HashSet<String>
    private var protobuf_project_references = new HashMap<String, HashMap<String, String>>
    
-   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, HashMap<String, HashMap<String, String>> pr)
+   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Set<ProjectType> projectTypes, HashMap<String, HashMap<String, String>> pr)
    {
       resource = res
       file_system_access = fsa
@@ -108,11 +111,11 @@ class DotNetGenerator
       // iterate module by module and generate included content
       for (module : idl.modules)
       {
-         processModule(module)
+         processModule(module, projectTypes)
       }
    }
    
-   def private void processModule(ModuleDeclaration module)
+   def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
       param_bundle = ParameterBundle.createBuilder(Util.getModuleStack(module))
       param_bundle.reset(ArtifactNature.DOTNET)
@@ -121,33 +124,36 @@ class DotNetGenerator
       {
          // generate common data types and exceptions, if available
          if ( module.containsTypes )
-            generateCommon(module)
+            if (projectTypes.contains(ProjectType.COMMON)) generateCommon(module)
 
          // generate Protobuf project, if necessary
          if ( module.containsTypes || module.containsInterfaces )
-            generateProtobuf(module)
+            if (projectTypes.contains(ProjectType.PROTOBUF)) generateProtobuf(module)
 
          // generate proxy/dispatcher projects for all contained interfaces
          if (module.containsInterfaces)
          {
-            generateInterfaceProjects(module)
-            generateServerRunner(module)
-            generateClientConsole(module)
+            generateInterfaceProjects(module, projectTypes)
+            if (projectTypes.contains(ProjectType.SERVER_RUNNER)) generateServerRunner(module)
+            if (projectTypes.contains(ProjectType.CLIENT_CONSOLE)) generateClientConsole(module)
          }
       }
       
       // process nested modules
       for (nested_module : module.nestedModules)
-         processModule(nested_module)
+         processModule(nested_module, projectTypes)
    }
    
-   def private void generateInterfaceProjects(ModuleDeclaration module)
+   def private void generateInterfaceProjects(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
-      generateProjectStructure(ProjectType.SERVICE_API, module)
-      generateProjectStructure(ProjectType.IMPL, module)
-      generateProjectStructure(ProjectType.PROXY, module)
-      generateProjectStructure(ProjectType.DISPATCHER, module)
-      generateProjectStructure(ProjectType.TEST, module)
+     val activeProjectTypes = Sets.intersection(projectTypes, 
+		new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API, ProjectType.IMPL, ProjectType.PROXY,
+			ProjectType.DISPATCHER, ProjectType.TEST  
+		)))
+	 for (projectType : activeProjectTypes)
+	 {
+	   generateProjectStructure(projectType, module)
+	 }
    }
    
    def private void generateProjectStructure(ProjectType project_type, ModuleDeclaration module)
