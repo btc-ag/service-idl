@@ -23,6 +23,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import static org.junit.Assert.*
+import static extension com.btc.serviceidl.tests.TestExtensions.*
 import org.eclipse.xtext.generator.GeneratorContext
 
 @RunWith(XtextRunner)
@@ -62,27 +63,17 @@ class ProtobufGeneratorTest {
 
 		println(fsa.textFiles.get(protobufLocation))
 
-		assertEquals(
+		assertEqualsNormalized(
 			'''
 			syntax = "proto2";
 			package BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf;
-			
-			
-			
-			
-			message KeyValueStore_Request
-			{
-			
+			message KeyValueStore_Request {
 			}
-			
-			message KeyValueStore_Response
-			{
-			
+			message KeyValueStore_Response {
 			}
 			'''.toString,
 			fsa.textFiles.get(protobufLocation).toString
 		)
-		// TODO The test should be made more robust by stripping all redundant whitespace 
 
 	}
 }
