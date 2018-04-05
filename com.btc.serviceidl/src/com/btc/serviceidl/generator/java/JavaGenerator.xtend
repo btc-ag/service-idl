@@ -312,7 +312,7 @@ class JavaGenerator
                                  <arg value="--java_out=${protobuf.outputDirectory}" />
                                  <arg value="-I=${basedir}\.." />
                                  <arg value="--proto_path=${protobuf.sourceDirectory}" />
-                                 «IF protobuf_artifacts.containsKey(container)»
+                                 «IF protobuf_artifacts !== null && protobuf_artifacts.containsKey(container)»
                                     <arg value="${protobuf.sourceDirectory}/«protobuf_artifacts.get(container)».proto" />
                                  «ENDIF»
                               </exec> 
