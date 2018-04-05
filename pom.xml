@@ -122,7 +122,7 @@
 					</execution>
 				</executions>
 			</plugin>            
-		</plugins>
+        </plugins>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -140,8 +140,10 @@
 						</execution>
 					</executions>
 					<configuration>
+                        <xtendAsPrimaryDebugSource>true</xtendAsPrimaryDebugSource>
 						<outputDirectory>${basedir}/xtend-gen</outputDirectory>
 						<testOutputDirectory>${basedir}/xtend-gen</testOutputDirectory>
+                        <writeTraceFiles>true</writeTraceFiles>
 					</configuration>
 				</plugin>
 				<plugin>
