@@ -111,7 +111,7 @@ class CppGenerator
       qualified_name_provider = qnp
       scope_provider = sp
       param_bundle.reset(ArtifactNature.CPP)
-      protobuf_project_references = new HashMap<String, HashMap<String, String>>(pr)
+      protobuf_project_references = if (pr !== null) new HashMap<String, HashMap<String, String>>(pr) else null
       
       idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
       if (idl === null)

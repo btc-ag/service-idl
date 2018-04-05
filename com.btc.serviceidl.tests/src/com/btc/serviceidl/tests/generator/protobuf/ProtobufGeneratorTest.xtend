@@ -1,13 +1,13 @@
 /*********************************************************************
-* \author see AUTHORS file
-* \copyright 2015-2018 BTC Business Technology Consulting AG and others
-*
-* This program and the accompanying materials are made
-* available under the terms of the Eclipse Public License 2.0
-* which is available at https://www.eclipse.org/legal/epl-2.0/
-*
-* SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+ * \author see AUTHORS file
+ * \copyright 2015-2018 BTC Business Technology Consulting AG and others
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
+ **********************************************************************/
 package com.btc.serviceidl.tests.generator.protobuf
 
 import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
@@ -44,30 +44,30 @@ class ProtobufGeneratorTest {
 	def void testBasic() {
 		val spec = TestData.basic.parse
 
-		val fsa = new InMemoryFileSystemAccess()
-		val generatorContext = new GeneratorContext()
-		val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider 
+		val fsa = new InMemoryFileSystemAccess
+		val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
 		defaultGenerationSettingsProvider.projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.PROTOBUF))
-		defaultGenerationSettingsProvider.languages = new HashSet<ArtifactNature>()
-		underTest.doGenerate(spec.eResource, fsa, generatorContext)
+		defaultGenerationSettingsProvider.languages = new HashSet<ArtifactNature>
+		underTest.doGenerate(spec.eResource, fsa, new GeneratorContext)
 		println(fsa.textFiles.keySet)
-		assertEquals(3, fsa.textFiles.size) 
+		assertEquals(3, fsa.textFiles.size)
 		val protobufLocation = IFileSystemAccess::DEFAULT_OUTPUT +
 			"cpp/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/KeyValueStore.proto" // TODO why is this generated multiple times for each language?
 		assertTrue(fsa.textFiles.containsKey(protobufLocation))
 
 		println(fsa.textFiles.get(protobufLocation))
 
-		assertEqualsNormalized(
+		checkFile(
+			fsa,
+			protobufLocation,
 			'''
-			syntax = "proto2";
-			package BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf;
-			message KeyValueStore_Request {
-			}
-			message KeyValueStore_Response {
-			}
-			'''.toString,
-			fsa.textFiles.get(protobufLocation).toString
+				syntax = "proto2";
+				package BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf;
+				message KeyValueStore_Request {
+				}
+				message KeyValueStore_Response {
+				}
+			'''
 		)
 
 	}
