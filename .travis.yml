@@ -6,5 +6,7 @@ cache:
 script: xvfb-run mvn integration-test
 after_success:
   - mvn package
-  - find #DEBUG
+  - find -name '*.zip' #DEBUG
+  - bash <(curl -s https://codecov.io/bash)
+
 
