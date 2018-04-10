@@ -12,13 +12,18 @@ package com.btc.serviceidl.tests
 
 import static org.junit.Assert.*
 import org.eclipse.xtext.generator.InMemoryFileSystemAccess
+import com.google.common.collect.ImmutableSet
 
 class TestExtensions
 {
+    def static <T> setOf(T... elements)  
+    { ImmutableSet.copyOf(elements) }
+
+    def static <T> asSet(Iterable<T> iterable)  
+    { ImmutableSet.copyOf(iterable) }
+
     def static normalize(String arg)
-    {
-        arg.replaceAll("\\s+", " ").trim
-    }
+    { arg.replaceAll("\\s+", " ").trim }
 
     def static assertEqualsNormalized(String expected, String actual)
     {
