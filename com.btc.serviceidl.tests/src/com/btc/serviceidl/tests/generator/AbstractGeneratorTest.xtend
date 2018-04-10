@@ -27,24 +27,27 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import static com.btc.serviceidl.tests.TestExtensions.*
 import static org.junit.Assert.*
 
-class AbstractGeneratorTest {
-	@Inject extension ParseHelper<IDLSpecification>
-	@Inject IGenerator2 underTest
-	@Inject IGenerationSettingsProvider generationSettingsProvider
+class AbstractGeneratorTest
+{
+    @Inject extension ParseHelper<IDLSpecification>
+    @Inject IGenerator2 underTest
+    @Inject IGenerationSettingsProvider generationSettingsProvider
 
-	def void checkGenerators(CharSequence input, Set<ArtifactNature> artifactNatures, Set<ProjectType> projectTypes, int fileCount,
-		Map<String, String> contents) {
-		val spec = input.parse
-		val fsa = new InMemoryFileSystemAccess
-		val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
-		defaultGenerationSettingsProvider.projectTypes = new HashSet<ProjectType>(projectTypes)
-		defaultGenerationSettingsProvider.languages = new HashSet<ArtifactNature>(artifactNatures)
-		underTest.doGenerate(spec.eResource, fsa, new GeneratorContext)
-		println(fsa.textFiles.keySet)
-		assertEquals(fileCount, fsa.textFiles.size)
-		for (entry : contents.entrySet) {
-			checkFile(fsa, entry.key, entry.value)
-		}
-	}
+    def void checkGenerators(CharSequence input, Set<ArtifactNature> artifactNatures, Set<ProjectType> projectTypes,
+        int fileCount, Map<String, String> contents)
+    {
+        val spec = input.parse
+        val fsa = new InMemoryFileSystemAccess
+        val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
+        defaultGenerationSettingsProvider.projectTypes = new HashSet<ProjectType>(projectTypes)
+        defaultGenerationSettingsProvider.languages = new HashSet<ArtifactNature>(artifactNatures)
+        underTest.doGenerate(spec.eResource, fsa, new GeneratorContext)
+        println(fsa.textFiles.keySet)
+        assertEquals(fileCount, fsa.textFiles.size)
+        for (entry : contents.entrySet)
+        {
+            checkFile(fsa, entry.key, entry.value)
+        }
+    }
 
 }

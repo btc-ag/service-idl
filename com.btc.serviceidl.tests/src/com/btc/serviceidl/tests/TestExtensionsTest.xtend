@@ -15,30 +15,35 @@ import org.junit.Test
 import static extension com.btc.serviceidl.tests.TestExtensions.*
 import static org.junit.Assert.*
 
-class TestExtensionsTest {
-	@Test
-	def void testNormalizeWithNewlines() {
-		val normalized = '''
-		a
-		b'''.toString.normalize
-		assertEquals("a b", normalized)
-	}
+class TestExtensionsTest
+{
+    @Test
+    def void testNormalizeWithNewlines()
+    {
+        val normalized = '''
+        a
+        b'''.toString.normalize
+        assertEquals("a b", normalized)
+    }
 
-	@Test
-	def void testNormalizeLeading() {
-		val normalized = "  a".normalize
-		assertEquals("a", normalized)
-	}
+    @Test
+    def void testNormalizeLeading()
+    {
+        val normalized = "  a".normalize
+        assertEquals("a", normalized)
+    }
 
-	@Test
-	def void testNormalizeTrailing() {
-		val normalized = "a   ".normalize
-		assertEquals("a", normalized)
-	}
+    @Test
+    def void testNormalizeTrailing()
+    {
+        val normalized = "a   ".normalize
+        assertEquals("a", normalized)
+    }
 
-	@Test
-	def void testNormalizeMultiple() {
-		val normalized = "a   b".normalize
-		assertEquals("a b", normalized)
-	}
+    @Test
+    def void testNormalizeMultiple()
+    {
+        val normalized = "a   b".normalize
+        assertEquals("a b", normalized)
+    }
 }

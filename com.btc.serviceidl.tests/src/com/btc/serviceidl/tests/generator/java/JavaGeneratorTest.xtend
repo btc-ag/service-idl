@@ -28,29 +28,32 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
-class JavaGeneratorTest extends AbstractGeneratorTest {
-	@Test
-	def void testBasicServiceApi() {
-		val fileCount = 3 // TODO this includes the KeyValueStoreServiceFaultHandlerFactory, which should be generated to a different project, and not with these settings
-		val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
-		val directory = IFileSystemAccess::DEFAULT_OUTPUT +
-			"java/btc.prins.infrastructure.servicehost.demo.api.keyvaluestore/src/main/java/com/btc/prins/infrastructure/servicehost/demo/api/keyvaluestore/serviceapi/"
-		val contents = ImmutableMap.of(directory + "KeyValueStore.java", '''
-			package com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.serviceapi;
-			
-			import java.util.UUID;
-			
-			public interface KeyValueStore {
-			   UUID TypeGuid = UUID.fromString("384E277A-C343-4F37-B910-C2CE6B37FC8E");
-			}
-		''')
+class JavaGeneratorTest extends AbstractGeneratorTest
+{
+    @Test
+    def void testBasicServiceApi()
+    {
+        val fileCount = 3 // TODO this includes the KeyValueStoreServiceFaultHandlerFactory, which should be generated to a different project, and not with these settings
+        val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
+        val directory = IFileSystemAccess::DEFAULT_OUTPUT +
+            "java/btc.prins.infrastructure.servicehost.demo.api.keyvaluestore/src/main/java/com/btc/prins/infrastructure/servicehost/demo/api/keyvaluestore/serviceapi/"
+        val contents = ImmutableMap.of(directory + "KeyValueStore.java", '''
+            package com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.serviceapi;
+            
+            import java.util.UUID;
+            
+            public interface KeyValueStore {
+                UUID TypeGuid = UUID.fromString("384E277A-C343-4F37-B910-C2CE6B37FC8E");
+            }
+        ''')
 
-		checkGenerators(TestData.basic, projectTypes, fileCount, contents)
-	}
+        checkGenerators(TestData.basic, projectTypes, fileCount, contents)
+    }
 
-	def void checkGenerators(CharSequence input, Set<ProjectType> projectTypes, int fileCount,
-		Map<String, String> contents) {
-		checkGenerators(input, new HashSet<ArtifactNature>(Arrays.asList(ArtifactNature.JAVA)), projectTypes, fileCount,
-			contents)
-	}
+    def void checkGenerators(CharSequence input, Set<ProjectType> projectTypes, int fileCount,
+        Map<String, String> contents)
+    {
+        checkGenerators(input, new HashSet<ArtifactNature>(Arrays.asList(ArtifactNature.JAVA)), projectTypes, fileCount,
+            contents)
+    }
 }

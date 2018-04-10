@@ -10,26 +10,28 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.testdata
 
-class TestData {
-	static def CharSequence getBasic() {
-		return '''
-			virtual module BTC {
-			virtual module PRINS { 
-			module Infrastructure {
-			module ServiceHost {
-			module Demo { 
-			module API {
-			
-			interface KeyValueStore[version=1.0.0 guid=384E277A-C343-4F37-B910-C2CE6B37FC8E] { 
-			};
-			}
-			}
-			}
-			}
-			}
-			}
-		'''
+class TestData
+{
+    static def CharSequence getBasic()
+    {
+        return '''
+            virtual module BTC {
+            virtual module PRINS { 
+            module Infrastructure {
+            module ServiceHost {
+            module Demo { 
+            module API {
+            
+            interface KeyValueStore[version=1.0.0 guid=384E277A-C343-4F37-B910-C2CE6B37FC8E] { 
+            };
+            }
+            }
+            }
+            }
+            }
+            }
+        '''
 
-	}
+    }
 
 }

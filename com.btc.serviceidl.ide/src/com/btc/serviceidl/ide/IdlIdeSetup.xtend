@@ -11,10 +11,12 @@ import org.eclipse.xtext.util.Modules2
 /**
  * Initialization support for running Xtext languages as language servers.
  */
-class IdlIdeSetup extends IdlStandaloneSetup {
+class IdlIdeSetup extends IdlStandaloneSetup
+{
 
-	override createInjector() {
-		Guice.createInjector(Modules2.mixin(new IdlRuntimeModule, new IdlIdeModule))
-	}
-	
+    override createInjector()
+    {
+        Guice.createInjector(Modules2.mixin(new IdlRuntimeModule, new IdlIdeModule))
+    }
+
 }

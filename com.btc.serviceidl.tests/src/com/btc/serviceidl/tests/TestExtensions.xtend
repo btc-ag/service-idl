@@ -13,28 +13,33 @@ package com.btc.serviceidl.tests
 import static org.junit.Assert.*
 import org.eclipse.xtext.generator.InMemoryFileSystemAccess
 
-class TestExtensions {
-	def static normalize(String arg) {
-		arg.replaceAll("\\s+", " ").trim
-	}
+class TestExtensions
+{
+    def static normalize(String arg)
+    {
+        arg.replaceAll("\\s+", " ").trim
+    }
 
-	def static assertEqualsNormalized(String expected, String actual) {
-		assertEquals(expected.normalize, actual.normalize)
-	}
+    def static assertEqualsNormalized(String expected, String actual)
+    {
+        assertEquals(expected.normalize, actual.normalize)
+    }
 
-	def static assertEqualsNormalized(CharSequence expected, CharSequence actual) {
-		assertEquals(expected.toString.normalize, actual.toString.normalize)
-	}
+    def static assertEqualsNormalized(CharSequence expected, CharSequence actual)
+    {
+        assertEquals(expected.toString.normalize, actual.toString.normalize)
+    }
 
-	def static void checkFile(InMemoryFileSystemAccess fsa, String headerLocation, String content) {
-		assertTrue(headerLocation, fsa.textFiles.containsKey(headerLocation))
+    def static void checkFile(InMemoryFileSystemAccess fsa, String headerLocation, String content)
+    {
+        assertTrue(headerLocation, fsa.textFiles.containsKey(headerLocation))
 
-		println(fsa.textFiles.get(headerLocation))
+        println(fsa.textFiles.get(headerLocation))
 
-		assertEqualsNormalized(
-			content,
-			fsa.textFiles.get(headerLocation)
-		)
-	}
+        assertEqualsNormalized(
+            content,
+            fsa.textFiles.get(headerLocation)
+        )
+    }
 
 }
