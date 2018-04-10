@@ -10,7 +10,7 @@
 **********************************************************************/
 /**
  * \file       MavenArtifactType.java
- * 
+ *
  * \brief      Artifact type for common Maven directory layout;
  *             \see https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html
  *             for more details.
@@ -18,28 +18,24 @@
 
 package com.btc.serviceidl.generator.java;
 
-public enum MavenArtifactType
-{
-    MAIN_JAVA
-   , MAIN_RESOURCES
-   , TEST_JAVA
-   , TEST_RESOURCES
-   ;
-   
-   public final String getDirectoryLayout()
-   {
-       switch (this)
-       {
-      case MAIN_JAVA:
-         return "src/main/java";
-      case MAIN_RESOURCES:
-         return "src/main/resources";
-      case TEST_JAVA:
-         return "src/test/java";
-      case TEST_RESOURCES:
-         return "src/test/resources";
-      default:
-         throw new AssertionError("Unsupported enumeration type: " + this);
-       }
-   }
+public enum MavenArtifactType {
+    MAIN_JAVA,
+    MAIN_RESOURCES,
+    TEST_JAVA,
+    TEST_RESOURCES;
+
+    public final String getDirectoryLayout() {
+        switch (this) {
+        case MAIN_JAVA:
+            return "src/main/java";
+        case MAIN_RESOURCES:
+            return "src/main/resources";
+        case TEST_JAVA:
+            return "src/test/java";
+        case TEST_RESOURCES:
+            return "src/test/resources";
+        default:
+            throw new AssertionError("Unsupported enumeration type: " + this);
+        }
+    }
 }
