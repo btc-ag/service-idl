@@ -44,10 +44,7 @@ class AbstractGeneratorTest
         underTest.doGenerate(spec.eResource, fsa, new GeneratorContext)
         println(fsa.textFiles.keySet)
         assertEquals(fileCount, fsa.textFiles.size)
-        for (entry : contents.entrySet)
-        {
-            checkFile(fsa, entry.key, entry.value)
-        }
+        contents.forEach([k, v|checkFile(fsa, k, v)])
     }
 
 }
