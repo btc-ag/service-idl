@@ -69,6 +69,7 @@ import java.util.List
 import com.btc.serviceidl.generator.common.TypeWrapper
 import java.util.Map
 import com.btc.serviceidl.generator.common.GeneratorUtil
+import java.util.Set
 
 class CppGenerator
 {
@@ -103,14 +104,14 @@ class CppGenerator
    private val cab_libs = new HashSet<String>
    private val project_references = new HashMap<String, String>
    
-   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, HashMap<String, HashMap<String, String>> pr)
+   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Set<ProjectType> projectTypes, Map<String, HashMap<String, String>> pr)
    {
       resource = res
       file_system_access = fsa
       qualified_name_provider = qnp
       scope_provider = sp
       param_bundle.reset(ArtifactNature.CPP)
-      protobuf_project_references = pr
+      protobuf_project_references = if (pr !== null) new HashMap<String, HashMap<String, String>>(pr) else null
       
       idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
       if (idl === null)
@@ -119,12 +120,12 @@ class CppGenerator
       // iterate module by module and generate included content
       for (module : idl.modules)
       {
-         processModule(module)
+         processModule(module, projectTypes)
       }
 
    }
    
-   def private void processModule(ModuleDeclaration module)
+   def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
       param_bundle = ParameterBundle.createBuilder(Util.getModuleStack(module))
       param_bundle.reset(ArtifactNature.CPP)
@@ -132,21 +133,22 @@ class CppGenerator
       if (!module.virtual)
       {
          // generate common data types and exceptions, if available
-         if ( module.containsTypes )
+         if (projectTypes.contains(ProjectType.COMMON) && module.containsTypes)
             generateCommon(module)
          
          // generate proxy/dispatcher projects for all contained interfaces
          if (module.containsInterfaces)
          {
-            generateInterfaceProjects(module)
-            generateServerRunner(module)
+            if (projectTypes.contains(ProjectType.SERVICE_API)) generateInterfaceProjects(module)
+            if (projectTypes.contains(ProjectType.SERVER_RUNNER)) generateServerRunner(module)
          }
          
          // generate Protobuf project, if necessary
-         if ( module.containsTypes || module.containsInterfaces )
+         // TODO what does this mean?
+         if (projectTypes.contains(ProjectType.PROTOBUF) && (module.containsTypes || module.containsInterfaces))
             generateProtobuf(module)
          
-         if ( module.containsTypes && module.containsInterfaces )
+         if (projectTypes.contains(ProjectType.EXTERNAL_DB_IMPL) && module.containsTypes && module.containsInterfaces)
          {
             generateODB(module)
          }
@@ -154,7 +156,7 @@ class CppGenerator
       
       // process nested modules
       for (nested_module : module.nestedModules)
-         processModule(nested_module)
+         processModule(nested_module, projectTypes)
    }
    
    def private void reinitializeFile()

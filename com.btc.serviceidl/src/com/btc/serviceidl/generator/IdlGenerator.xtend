@@ -22,6 +22,7 @@ import com.btc.serviceidl.generator.protobuf.ProtobufGenerator
 import com.btc.serviceidl.generator.cpp.CppGenerator
 import com.btc.serviceidl.generator.java.JavaGenerator
 import com.btc.serviceidl.generator.dotnet.DotNetGenerator
+import com.btc.serviceidl.generator.common.ProjectType
 
 /**
  * Generates code from your model files on save.
@@ -33,6 +34,7 @@ class IdlGenerator implements IGenerator2
 
    @Inject extension IQualifiedNameProvider qualified_name_provider
    @Inject extension IScopeProvider scope_provider
+   @Inject IGenerationSettingsProvider generation_settings_provider 
 
    override doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext gc)
    {
@@ -66,20 +68,37 @@ class IdlGenerator implements IGenerator2
       {
          resource.save(Collections.EMPTY_MAP)
       }
+      
+      val projectTypes = generation_settings_provider.projectTypes
+      val languages = generation_settings_provider.languages
 
-// TODO REFACTOR invert these dependencies      
-      val protobuf_generator = new ProtobufGenerator
-      protobuf_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider)
-      val Map<EObject, String> protobuf_artifacts = protobuf_generator.generatedArtifacts
+// TODO REFACTOR invert these dependencies
+      var ProtobufGenerator protobuf_generator
+      var Map<EObject, String> protobuf_artifacts
+	  if (projectTypes.contains(ProjectType.PROTOBUF))
+      {
+      	protobuf_generator = new ProtobufGenerator
+      	protobuf_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider)
+      	protobuf_artifacts = protobuf_generator.generatedArtifacts
+      }
       
-      val cpp_generator = new CppGenerator
-      cpp_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, protobuf_generator.getProjectReferences(ArtifactNature.CPP))
+      if (languages.contains(ArtifactNature.CPP))
+      {
+        val cpp_generator = new CppGenerator
+        cpp_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, projectTypes, if (protobuf_generator !== null) protobuf_generator.getProjectReferences(ArtifactNature.CPP) else null)
+      }
       
-      val java_generator = new JavaGenerator
-      java_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, protobuf_artifacts)
+      if (languages.contains(ArtifactNature.JAVA))
+      {
+        val java_generator = new JavaGenerator
+	    java_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, projectTypes, protobuf_artifacts)
+      }
       
-      val dotnet_generator = new DotNetGenerator
-      dotnet_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, protobuf_generator.getProjectReferences(ArtifactNature.DOTNET))
+      if (languages.contains(ArtifactNature.DOTNET))
+      {
+        val dotnet_generator = new DotNetGenerator
+        dotnet_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, projectTypes, if (protobuf_generator !== null) protobuf_generator.getProjectReferences(ArtifactNature.DOTNET) else null)
+      }
    }
 			
 			override afterGenerate(Resource input, IFileSystemAccess2 fsa, IGeneratorContext context) {

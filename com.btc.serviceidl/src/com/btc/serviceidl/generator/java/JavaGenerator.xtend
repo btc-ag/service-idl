@@ -62,6 +62,9 @@ import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.AbstractException
 import com.btc.serviceidl.util.Util
 import com.btc.serviceidl.generator.common.GeneratorUtil
+import java.util.Set
+import com.google.common.collect.Sets
+import java.util.Arrays
 
 class JavaGenerator
 {
@@ -85,7 +88,7 @@ class JavaGenerator
    
    private var param_bundle = new ParameterBundle.Builder()
    
-   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Map<EObject, String> pa)
+   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Set<ProjectType> projectTypes, Map<EObject, String> pa)
    {
       resource = res
       file_system_access = fsa
@@ -98,11 +101,11 @@ class JavaGenerator
       // iterate module by module and generate included content
       for (module : idl.modules)
       {
-         processModule(module)
+         processModule(module, projectTypes)
       }
    }
 
-   def private void processModule(ModuleDeclaration module)
+   def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
       param_bundle = ParameterBundle.createBuilder(Util.getModuleStack(module))
       param_bundle.reset(ArtifactNature.JAVA)
@@ -110,47 +113,51 @@ class JavaGenerator
       if (!module.virtual)
       {
          // generate common data types and exceptions, if available
-         if ( module.containsTypes )
-            generateModuleContents(module)
+         if (module.containsTypes )
+            generateModuleContents(module, projectTypes)
 
          // generate proxy/dispatcher projects for all contained interfaces
          if (module.containsInterfaces)
-            generateInterfaceProjects(module)
+            generateInterfaceProjects(module, projectTypes)
       }
       
       // process nested modules
       for (nested_module : module.nestedModules)
-         processModule(nested_module)
+         processModule(nested_module, projectTypes)
    }
 
-   def private void generateModuleContents(ModuleDeclaration module)
+   def private void generateModuleContents(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
       reinitializeAll
       param_bundle.reset(Util.getModuleStack(module))
       
-      generateCommon(makeProjectSourcePath(module, ProjectType.COMMON, MavenArtifactType.MAIN_JAVA, PathType.FULL), module)
-      generateProtobuf(makeProjectSourcePath(module, ProjectType.PROTOBUF, MavenArtifactType.MAIN_JAVA, PathType.FULL), module)
+      if (projectTypes.contains(ProjectType.COMMON))
+        generateCommon(makeProjectSourcePath(module, ProjectType.COMMON, MavenArtifactType.MAIN_JAVA, PathType.FULL), module)
+        
+      if (projectTypes.contains(ProjectType.PROTOBUF))
+        generateProtobuf(makeProjectSourcePath(module, ProjectType.PROTOBUF, MavenArtifactType.MAIN_JAVA, PathType.FULL), module)
       
       generatePOM(module)
    }
 
-   def private void generateInterfaceProjects(ModuleDeclaration module)
+   def private void generateInterfaceProjects(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
       for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
       {
          reinitializeAll
          param_bundle.reset(Util.getModuleStack(interface_declaration))
 
-         generateProject(ProjectType.SERVICE_API, interface_declaration)
-         generateProject(ProjectType.IMPL, interface_declaration)
-         generateProject(ProjectType.PROTOBUF, interface_declaration)
-         generateProject(ProjectType.PROXY, interface_declaration)
-         generateProject(ProjectType.DISPATCHER, interface_declaration)
-         generateProject(ProjectType.TEST, interface_declaration)
-         generateProject(ProjectType.SERVER_RUNNER, interface_declaration)
-         generateProject(ProjectType.CLIENT_CONSOLE, interface_declaration)
-         
-         generatePOM(interface_declaration)
+         val activeProjectTypes = Sets.intersection(projectTypes, 
+			new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API, ProjectType.IMPL, ProjectType.PROTOBUF, ProjectType.PROXY,
+				ProjectType.DISPATCHER, ProjectType.TEST, ProjectType.SERVER_RUNNER, ProjectType.CLIENT_CONSOLE  
+			)))
+		 for (projectType : activeProjectTypes)
+		 {
+		   generateProject(projectType, interface_declaration)
+		 }
+
+         if (!activeProjectTypes.empty)
+           generatePOM(interface_declaration)
       }
    }
 
@@ -305,7 +312,7 @@ class JavaGenerator
                                  <arg value="--java_out=${protobuf.outputDirectory}" />
                                  <arg value="-I=${basedir}\.." />
                                  <arg value="--proto_path=${protobuf.sourceDirectory}" />
-                                 «IF protobuf_artifacts.containsKey(container)»
+                                 «IF protobuf_artifacts !== null && protobuf_artifacts.containsKey(container)»
                                     <arg value="${protobuf.sourceDirectory}/«protobuf_artifacts.get(container)».proto" />
                                  «ENDIF»
                               </exec> 
