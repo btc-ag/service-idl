@@ -141,25 +141,30 @@ class JavaGenerator
    }
 
    def private void generateInterfaceProjects(ModuleDeclaration module, Set<ProjectType> projectTypes)
-   {
-      for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
-      {
-         reinitializeAll
-         param_bundle.reset(Util.getModuleStack(interface_declaration))
+    {
+        for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
+        {
+            reinitializeAll
+            param_bundle.reset(Util.getModuleStack(interface_declaration))
 
-         val activeProjectTypes = Sets.intersection(projectTypes, 
-			new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API, ProjectType.IMPL, ProjectType.PROTOBUF, ProjectType.PROXY,
-				ProjectType.DISPATCHER, ProjectType.TEST, ProjectType.SERVER_RUNNER, ProjectType.CLIENT_CONSOLE  
-			)))
-		 for (projectType : activeProjectTypes)
-		 {
-		   generateProject(projectType, interface_declaration)
-		 }
+            val activeProjectTypes = Sets.intersection(projectTypes, new HashSet<ProjectType>(Arrays.asList(
+                ProjectType.SERVICE_API,
+                ProjectType.IMPL,
+                ProjectType.PROTOBUF,
+                ProjectType.PROXY,
+                ProjectType.DISPATCHER,
+                ProjectType.TEST,
+                ProjectType.SERVER_RUNNER,
+                ProjectType.CLIENT_CONSOLE
+            )))
 
-         if (!activeProjectTypes.empty)
-           generatePOM(interface_declaration)
-      }
-   }
+            if (!activeProjectTypes.empty)
+            {
+                activeProjectTypes.forEach[generateProject(it, interface_declaration)]
+                generatePOM(interface_declaration)
+            }
+        }
+    }
 
    def private void generatePOM(EObject container)
    {

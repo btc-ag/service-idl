@@ -145,15 +145,14 @@ class DotNetGenerator
    }
    
    def private void generateInterfaceProjects(ModuleDeclaration module, Set<ProjectType> projectTypes)
-   {
-     val activeProjectTypes = Sets.intersection(projectTypes, 
-		new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API, ProjectType.IMPL, ProjectType.PROXY,
-			ProjectType.DISPATCHER, ProjectType.TEST  
-		)))
-	 for (projectType : activeProjectTypes)
-	 {
-	   generateProjectStructure(projectType, module)
-	 }
+    {
+        Sets.intersection(projectTypes, new HashSet<ProjectType>(Arrays.asList(
+            ProjectType.SERVICE_API,
+            ProjectType.IMPL,
+            ProjectType.PROXY,
+            ProjectType.DISPATCHER,
+            ProjectType.TEST
+        ))).forEach[generateProjectStructure(it, module)]
    }
    
    def private void generateProjectStructure(ProjectType project_type, ModuleDeclaration module)
