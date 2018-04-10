@@ -174,6 +174,7 @@ class JavaGenerator
 
    def private String makeProjectRootPath(EObject container)
    {
+      // TODO change return type to Path or something similar
       param_bundle.artifactNature.label
          + Constants.SEPARATOR_FILE
          + qualified_name_provider.getFullyQualifiedName(container).toLowerCase
@@ -463,6 +464,7 @@ class JavaGenerator
       '''))
       
       // common service fault handler factory
+      // TODO the service fault handler factory is ServiceComm-specific and should therefore not be generated to the service API package
       reinitializeFile
       val service_fault_handler_factory_name = interface_declaration.asServiceFaultHandlerFactory
       file_system_access.generateFile(src_root_path + param_bundle.projectType.getClassName(param_bundle.artifactNature, service_fault_handler_factory_name).java,
@@ -482,6 +484,12 @@ class JavaGenerator
       val exceptions = new HashSet<AbstractException>
       exceptions.addAll(raised_exceptions)
       exceptions.addAll(failable_exceptions)
+      
+      // TODO except for the static initializer, this can be extracted into a reusable class, which can be provided 
+      // from com.btc.cab.servicecomm
+      
+      // TODO InvalidArgumentException and UnsupportedOperationException should not be added to the error map, only 
+      // service-specific subtypes 
       
       '''
       public class «class_name»
@@ -595,6 +603,9 @@ class JavaGenerator
    
    def private String generateFileTest(String class_name, String src_root_path, InterfaceDeclaration interface_declaration)
    {
+       // TODO is this really useful? it only generates a stub, what should be done when regenerating?
+       // TODO _assertExceptionType should be moved to com.btc.cab.commons or the like
+       
       val api_class = resolve(interface_declaration)
       val junit_assert = resolve("org.junit.Assert")
       
@@ -664,6 +675,8 @@ class JavaGenerator
       val resources_location = MavenArtifactType.TEST_RESOURCES.directoryLayout
       val junit_assert = resolve("org.junit.Assert")
       val server_runner_name = resolve(interface_declaration, ProjectType.SERVER_RUNNER)
+      
+      // TODO this is definitely outdated, as log4j is no longer used
       
       '''
       public class «class_name» extends «super_class» {
@@ -804,6 +817,7 @@ class JavaGenerator
       val collectors = resolve("java.util.stream.Collectors")
       
       val codec_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, if (container instanceof InterfaceDeclaration) container.name else Constants.FILE_NAME_TYPES) + "Codec"
+      // TODO most of the generated file is reusable, and should be moved to com.btc.cab.commons (UUID utilities) or something similar 
       file_system_access.generateFile(src_root_path + codec_name.java, generateSourceFile(container,
          '''
          public class «codec_name» {
@@ -2257,6 +2271,7 @@ class JavaGenerator
       switch (name)
       {
          case "BTC.Commons.Core.InvalidArgumentException":
+            // TODO shouldn't this use resolve("java.util.IllegalArgumentException")?
             return Optional.of("IllegalArgumentException")
          default:
             return Optional.empty
