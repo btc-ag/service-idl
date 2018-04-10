@@ -17,11 +17,15 @@
 package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.common.ArtifactNature
-import com.btc.serviceidl.util.Constants
+import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.generator.common.Names
+import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.common.ProtobufType
+import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractException
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
@@ -32,16 +36,25 @@ import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.MemberElement
+import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.util.Constants
+import com.btc.serviceidl.util.MemberElementWrapper
+import com.btc.serviceidl.util.Util
+import com.google.common.collect.Sets
 import java.util.ArrayList
+import java.util.Arrays
+import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
+import java.util.Optional
+import java.util.Set
 import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
@@ -49,22 +62,10 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.scoping.IScopeProvider
+
 import static extension com.btc.serviceidl.generator.common.Extensions.*
-import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
-import com.btc.serviceidl.generator.common.ParameterBundle
-import com.btc.serviceidl.generator.common.ResolvedName
-import com.btc.serviceidl.generator.common.ProtobufType
-import java.util.Optional
-import com.btc.serviceidl.util.MemberElementWrapper
-import java.util.Collection
-import com.btc.serviceidl.idl.ModuleDeclaration
-import com.btc.serviceidl.idl.AbstractException
-import com.btc.serviceidl.util.Util
-import com.btc.serviceidl.generator.common.GeneratorUtil
-import java.util.Set
-import com.google.common.collect.Sets
-import java.util.Arrays
+import static extension com.btc.serviceidl.util.Extensions.*
 
 class JavaGenerator
 {
