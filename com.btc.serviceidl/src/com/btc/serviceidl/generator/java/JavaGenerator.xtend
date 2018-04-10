@@ -1920,7 +1920,7 @@ class JavaGenerator
       '''
    }
    
-   def private String makeGetter(String type_name, String var_name)
+   def private static String makeGetter(String type_name, String var_name)
    {
       '''
       public «type_name» get«var_name.toFirstUpper»() {
@@ -2131,7 +2131,7 @@ class JavaGenerator
       dependencies.clear
    }
    
-   def private String makeDefaultMethodStub()
+   def private static String makeDefaultMethodStub()
    {
       '''
       // TODO Auto-generated method stub
@@ -2180,7 +2180,7 @@ class JavaGenerator
       MavenResolver.resolvePackage(ultimate_type, Optional.of(ProjectType.PROTOBUF)) + TransformType.PACKAGE.separator + codec_name
    }
    
-   def private String getObservableName(EventDeclaration event)
+   def private static String getObservableName(EventDeclaration event)
    {
       if (event.name === null)
          throw new IllegalArgumentException("No named observable for anonymous events!")
@@ -2188,7 +2188,7 @@ class JavaGenerator
       event.name.toFirstUpper + "Observable"
    }
    
-   def private String newLine()
+   def private static String newLine()
    {
       '''
       
@@ -2265,7 +2265,7 @@ class JavaGenerator
       return '''0'''
    }
    
-   def private Optional<String> resolveException(String name)
+   def private static Optional<String> resolveException(String name)
    {
       // temporarily some special handling for exceptions, because not all
       // C++ CAB exceptions are supported by the Java CAB
