@@ -158,6 +158,7 @@ class Extensions
      * Allows to print the given text for any object: useful, when we need
      * to resolve a type, but do not want/may not print the resulting string.
      */
+    @Deprecated
     def static String alias(Object object, String text)
     {
         text

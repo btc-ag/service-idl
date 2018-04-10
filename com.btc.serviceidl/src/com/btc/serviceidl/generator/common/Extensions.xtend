@@ -51,4 +51,13 @@ class Extensions
         throw new IllegalArgumentException("Cannot determine main project type for " + item.toString)
     }
 
+    /**
+     * Allows to print the given text for any object: useful, when we need
+     * to resolve a type, but do not want/may not print the resulting string.
+     */
+    def static String alias(ResolvedName object, String text)
+    {
+        text
+    }
+
 }
