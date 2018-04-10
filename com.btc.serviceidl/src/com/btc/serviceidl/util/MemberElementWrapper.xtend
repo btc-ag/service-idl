@@ -1,13 +1,13 @@
 /*********************************************************************
-* \author see AUTHORS file
-* \copyright 2015-2018 BTC Business Technology Consulting AG and others
-*
-* This program and the accompanying materials are made
-* available under the terms of the Eclipse Public License 2.0
-* which is available at https://www.eclipse.org/legal/epl-2.0/
-*
-* SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+ * \author see AUTHORS file
+ * \copyright 2015-2018 BTC Business Technology Consulting AG and others
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
+ **********************************************************************/
 /**
  * \file       MemberElementWrapper.xtend
  * 
@@ -25,7 +25,6 @@
  * \attention  Be aware, that this is NOT a regular struct member, in particular,
  *             it is NOT part of the abstract syntax tree model of the IDL.
  */
-
 package com.btc.serviceidl.util
 
 import org.eclipse.emf.ecore.EObject
@@ -34,33 +33,33 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.MemberElement
 
-@Accessors(PUBLIC_GETTER) class MemberElementWrapper
+@Accessors(PUBLIC_GETTER)
+class MemberElementWrapper
 {
-   private EObject type
-   private String name
-   private boolean optional
-   private EObject container
-   
-   new (MemberElement member)
-   {
-      type = member.type
-      name = member.name
-      optional = member.optional
-      container = member.eContainer
-   }
-   
-   new (StructDeclaration struct)
-   {
-      type = struct
-      name = struct.declarator
-      container = struct.eContainer
-   }
-   
-   new (EnumDeclaration enum_declaration)
-   {
-      type = enum_declaration
-      name = enum_declaration.declarator
-      container = enum_declaration.eContainer
-   }
-}
+    private EObject type
+    private String name
+    private boolean optional
+    private EObject container
 
+    new(MemberElement member)
+    {
+        type = member.type
+        name = member.name
+        optional = member.optional
+        container = member.eContainer
+    }
+
+    new(StructDeclaration struct)
+    {
+        type = struct
+        name = struct.declarator
+        container = struct.eContainer
+    }
+
+    new(EnumDeclaration enum_declaration)
+    {
+        type = enum_declaration
+        name = enum_declaration.declarator
+        container = enum_declaration.eContainer
+    }
+}

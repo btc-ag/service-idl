@@ -10,89 +10,78 @@
 **********************************************************************/
 /**
  * \file       ProjectType.java
- * 
+ *
  * \brief      Type of generated project (API, Proxy, Dispatcher, etc.)
  */
 
 package com.btc.serviceidl.generator.common;
 
-import com.btc.serviceidl.generator.common.ArtifactNature;
 import com.btc.serviceidl.util.Constants;
 
-public enum ProjectType
-{
-   SERVICE_API(Constants.PROJECT_NAME_SERVICE_API)
-   , PROXY(Constants.PROJECT_NAME_PROXY)
-   , DISPATCHER(Constants.PROJECT_NAME_DISPATCHER)
-   , IMPL(Constants.PROJECT_NAME_IMPL)
-   , PROTOBUF(Constants.PROJECT_NAME_PROTOBUF)
-   , COMMON(Constants.PROJECT_NAME_COMMON)
-   , TEST(Constants.PROJECT_NAME_TEST)
-   , SERVER_RUNNER(Constants.PROJECT_NAME_SERVER_RUNNER)
-   , CLIENT_CONSOLE(Constants.PROJECT_NAME_CLIENT_CONSOLE)
-   , EXTERNAL_DB_IMPL(Constants.PROJECT_NAME_EXTERNAL_DB_IMPL)
-   ;
-   
-   private final String name;
-   
-   ProjectType(String name)
-   {
-       this.name = name;
-   }
-   
-   public final String getName() { return name; }
-   
-   private final String getFilePrefix(ArtifactNature artifact_nature)
-   {
-      if (name.equals(Constants.PROJECT_NAME_SERVICE_API))
-      {
-         if (artifact_nature == ArtifactNature.CPP
-               || artifact_nature == ArtifactNature.DOTNET)
-            return "I";
-         else
-            return "";
-      }
-      else if (name.equals(Constants.PROJECT_NAME_PROTOBUF)
-            || name.equals(Constants.PROJECT_NAME_COMMON)
-            || name.equals(Constants.PROJECT_NAME_TEST)
-            || name.equals(Constants.PROJECT_NAME_SERVER_RUNNER)
-            || name.equals(Constants.PROJECT_NAME_CLIENT_CONSOLE))
-         return "";
-      else
-      {
-         if (artifact_nature == ArtifactNature.CPP)
-            return "C";
-         else
-            return "";
-      }
-   }
-   
-   private final String getFileSuffix()
-   {
-      if (name.equals(Constants.PROJECT_NAME_SERVICE_API) 
-            || name.equals(Constants.PROJECT_NAME_PROTOBUF)
-            || name.equals(Constants.PROJECT_NAME_COMMON)
-            || name.equals(Constants.PROJECT_NAME_CLIENT_CONSOLE))
-         return "";
-      else if (name.equals(Constants.PROJECT_NAME_EXTERNAL_DB_IMPL))
-         return Constants.PROJECT_NAME_IMPL; // special case: same as Impl
-      else
-         return name;
-   }
-   
-   public final String getClassName(ArtifactNature artifact_nature, String basic_name)
-   {
-      return getFilePrefix(artifact_nature) + basic_name + getFileSuffix();
-   }
-   
-   public final static ProjectType from(String name)
-   {
-      for (ProjectType p : ProjectType.values())
-      {
-         if (p.name.equalsIgnoreCase(name))
-            return p;
-      }
+public enum ProjectType {
+    SERVICE_API(Constants.PROJECT_NAME_SERVICE_API),
+    PROXY(Constants.PROJECT_NAME_PROXY),
+    DISPATCHER(Constants.PROJECT_NAME_DISPATCHER),
+    IMPL(Constants.PROJECT_NAME_IMPL),
+    PROTOBUF(Constants.PROJECT_NAME_PROTOBUF),
+    COMMON(Constants.PROJECT_NAME_COMMON),
+    TEST(Constants.PROJECT_NAME_TEST),
+    SERVER_RUNNER(Constants.PROJECT_NAME_SERVER_RUNNER),
+    CLIENT_CONSOLE(Constants.PROJECT_NAME_CLIENT_CONSOLE),
+    EXTERNAL_DB_IMPL(Constants.PROJECT_NAME_EXTERNAL_DB_IMPL);
 
-      throw new IllegalArgumentException("Enum value is unknown: " + name);
-   }
+    public final static ProjectType from(final String name) {
+        for (final ProjectType p : ProjectType.values()) {
+            if (p.name.equalsIgnoreCase(name)) {
+                return p;
+            }
+        }
+
+        throw new IllegalArgumentException("Enum value is unknown: " + name);
+    }
+
+    private final String name;
+
+    ProjectType(final String name) {
+        this.name = name;
+    }
+
+    public final String getClassName(final ArtifactNature artifact_nature, final String basic_name) {
+        return getFilePrefix(artifact_nature) + basic_name + getFileSuffix();
+    }
+
+    private final String getFilePrefix(final ArtifactNature artifact_nature) {
+        if (name.equals(Constants.PROJECT_NAME_SERVICE_API)) {
+            if (artifact_nature == ArtifactNature.CPP || artifact_nature == ArtifactNature.DOTNET) {
+                return "I";
+            } else {
+                return "";
+            }
+        } else if (name.equals(Constants.PROJECT_NAME_PROTOBUF) || name.equals(Constants.PROJECT_NAME_COMMON)
+                || name.equals(Constants.PROJECT_NAME_TEST) || name.equals(Constants.PROJECT_NAME_SERVER_RUNNER)
+                || name.equals(Constants.PROJECT_NAME_CLIENT_CONSOLE)) {
+            return "";
+        } else {
+            if (artifact_nature == ArtifactNature.CPP) {
+                return "C";
+            } else {
+                return "";
+            }
+        }
+    }
+
+    private final String getFileSuffix() {
+        if (name.equals(Constants.PROJECT_NAME_SERVICE_API) || name.equals(Constants.PROJECT_NAME_PROTOBUF)
+                || name.equals(Constants.PROJECT_NAME_COMMON) || name.equals(Constants.PROJECT_NAME_CLIENT_CONSOLE)) {
+            return "";
+        } else if (name.equals(Constants.PROJECT_NAME_EXTERNAL_DB_IMPL)) {
+            return Constants.PROJECT_NAME_IMPL; // special case: same as Impl
+        } else {
+            return name;
+        }
+    }
+
+    public final String getName() {
+        return name;
+    }
 }

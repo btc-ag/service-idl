@@ -10,23 +10,21 @@
 **********************************************************************/
 /**
  * \file       ProtobufType.java
- * 
+ *
  * \brief      Type of Protobuf messages (request/response)
  */
 
 package com.btc.serviceidl.generator.common;
 
-public enum ProtobufType
-{
-   REQUEST
-   , RESPONSE
-   ;
-   
-   public String getName()
-   {
-      if (this == REQUEST)
-         return "Request";
-      else
-         return "Response";
-   }
+public enum ProtobufType {
+    REQUEST,
+    RESPONSE;
+
+    public String getName() {
+        if (this == REQUEST) {
+            return "Request";
+        } else {
+            return "Response";
+        }
+    }
 }

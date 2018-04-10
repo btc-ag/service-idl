@@ -16,30 +16,35 @@ import java.util.Arrays
 import com.btc.serviceidl.generator.common.ProjectType
 import java.util.Set
 
-class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider {
+class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
+{
 
-	public Set<ArtifactNature> languages;
-	public Set<ProjectType> projectTypes;
+    public Set<ArtifactNature> languages;
+    public Set<ProjectType> projectTypes;
 
-	def DefaultGenerationSettingsProvider() {
-		reset();
-	}
+    def DefaultGenerationSettingsProvider()
+    {
+        reset();
+    }
 
-	override getLanguages() {
-		return languages;
-	}
+    override getLanguages()
+    {
+        return languages;
+    }
 
-	override getProjectTypes() {
-		return projectTypes;
-	}
+    override getProjectTypes()
+    {
+        return projectTypes;
+    }
 
-	def reset() {
-		languages = new HashSet<ArtifactNature>(
-			Arrays.asList(ArtifactNature.CPP, ArtifactNature.JAVA, ArtifactNature.DOTNET));
-		projectTypes = new HashSet<ProjectType>(
-			Arrays.asList(ProjectType.SERVICE_API, ProjectType.PROXY, ProjectType.DISPATCHER, ProjectType.IMPL,
-				ProjectType.PROTOBUF, ProjectType.COMMON, ProjectType.TEST, ProjectType.SERVER_RUNNER,
-				ProjectType.CLIENT_CONSOLE, ProjectType.EXTERNAL_DB_IMPL));
-	}
+    def reset()
+    {
+        languages = new HashSet<ArtifactNature>(
+            Arrays.asList(ArtifactNature.CPP, ArtifactNature.JAVA, ArtifactNature.DOTNET));
+        projectTypes = new HashSet<ProjectType>(
+            Arrays.asList(ProjectType.SERVICE_API, ProjectType.PROXY, ProjectType.DISPATCHER, ProjectType.IMPL,
+                ProjectType.PROTOBUF, ProjectType.COMMON, ProjectType.TEST, ProjectType.SERVER_RUNNER,
+                ProjectType.CLIENT_CONSOLE, ProjectType.EXTERNAL_DB_IMPL));
+    }
 
 }

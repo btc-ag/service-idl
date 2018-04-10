@@ -27,25 +27,28 @@ import org.junit.runner.RunWith
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
-class ProtobufGeneratorTest extends AbstractGeneratorTest {
-	@Test
-	def void testBasic() {
-		val fileCount = 3 // TODO why is the proto file generated for each language? 
-		val contents = ImmutableMap.of(IFileSystemAccess::DEFAULT_OUTPUT +
-			"cpp/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/KeyValueStore.proto", '''
-			syntax = "proto2";
-			package BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf;
-			message KeyValueStore_Request {
-			}
-			message KeyValueStore_Response {
-			}
-		''')
+class ProtobufGeneratorTest extends AbstractGeneratorTest
+{
+    @Test
+    def void testBasic()
+    {
+        val fileCount = 3 // TODO why is the proto file generated for each language? 
+        val contents = ImmutableMap.of(IFileSystemAccess::DEFAULT_OUTPUT +
+            "cpp/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/KeyValueStore.proto", '''
+            syntax = "proto2";
+            package BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf;
+            message KeyValueStore_Request {
+            }
+            message KeyValueStore_Response {
+            }
+        ''')
 
-		checkGenerators(TestData.basic, fileCount, contents)
-	}
+        checkGenerators(TestData.basic, fileCount, contents)
+    }
 
-	def void checkGenerators(CharSequence input, int fileCount, Map<String, String> contents) {
-		checkGenerators(input, new HashSet<ArtifactNature>(),
-			new HashSet<ProjectType>(Arrays.asList(ProjectType.PROTOBUF)), fileCount, contents)
-	}
+    def void checkGenerators(CharSequence input, int fileCount, Map<String, String> contents)
+    {
+        checkGenerators(input, new HashSet<ArtifactNature>(),
+            new HashSet<ProjectType>(Arrays.asList(ProjectType.PROTOBUF)), fileCount, contents)
+    }
 }

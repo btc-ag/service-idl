@@ -10,10 +10,9 @@ import org.eclipse.xtext.ui.label.DefaultDescriptionLabelProvider
  * 
  * See https://www.eclipse.org/Xtext/documentation/304_ide_concepts.html#label-provider
  */
-class IdlDescriptionLabelProvider extends DefaultDescriptionLabelProvider {
-
-	// Labels and icons can be computed like this:
-	
+class IdlDescriptionLabelProvider extends DefaultDescriptionLabelProvider
+{
+    // Labels and icons can be computed like this:
 //	override text(IEObjectDescription ele) {
 //		ele.name.toString
 //	}

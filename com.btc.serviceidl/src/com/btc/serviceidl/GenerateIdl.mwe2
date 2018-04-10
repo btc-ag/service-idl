@@ -6,7 +6,7 @@ import org.eclipse.xtext.xtext.generator.model.project.*
 var rootPath = ".."
 
 Workflow {
-	
+
 	component = XtextGenerator {
 		configuration = {
 			project = StandardProjectConfig {
@@ -32,15 +32,14 @@ Workflow {
 		language = StandardLanguage {
 			name = "com.btc.serviceidl.Idl"
 			fileExtensions = "idl"
-
 			serializer = {
 				generateStub = false
 			}
 			validator = {
-    		    composedCheck = "org.eclipse.xtext.validation.ImportUriValidator"
-    		    composedCheck = "org.eclipse.xtext.validation.NamesAreUniqueValidator"
+				composedCheck = "org.eclipse.xtext.validation.ImportUriValidator"
+				composedCheck = "org.eclipse.xtext.validation.NamesAreUniqueValidator"
 			}
-			
+
 			fragment = formatting.Formatter2Fragment2 {}
 		}
 	}

@@ -10,7 +10,7 @@
 **********************************************************************/
 /**
  * \file       IdlHighlightingConfiguration.java
- * 
+ *
  * \brief      Custom highlighting configuration for the IDL
  */
 
@@ -21,35 +21,32 @@ import org.eclipse.xtext.ui.editor.syntaxcoloring.DefaultHighlightingConfigurati
 import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfigurationAcceptor;
 import org.eclipse.xtext.ui.editor.utils.TextStyle;
 
-public class IdlHighlightingConfiguration extends DefaultHighlightingConfiguration
-{
-   // provide ID strings for the highlighting calculator
-   public static final String DOCUMENTATION_COMMENT_ID = "documentation.comment";
-   public static final String PRIMITIVE_DATA_TYPE = "primitive.data.type";
-   
-   @Override
-   public void configure(IHighlightingConfigurationAcceptor acceptor)
-   {
-      // let the default implementation first do the job
-      super.configure(acceptor);
-      
-      // here our custom styles are used
-      acceptor.acceptDefaultHighlighting(DOCUMENTATION_COMMENT_ID, "Documentation comment", documentationCommentTextStyle());
-      acceptor.acceptDefaultHighlighting(PRIMITIVE_DATA_TYPE, "Primitive data type", primitiveDataTypeTextStyle());
-   }
-   
-   public TextStyle documentationCommentTextStyle()
-   {
-      TextStyle textStyle = defaultTextStyle().copy();
-      textStyle.setColor(new RGB(63, 95, 191)); // default Eclipse JavaDoc color
-      return textStyle;
-   }
-   
-   public TextStyle primitiveDataTypeTextStyle()
-   {
-      TextStyle textStyle = keywordTextStyle().copy();
-      textStyle.setColor(new RGB(0, 0, 192));
-      
-      return textStyle;
-   }
+public class IdlHighlightingConfiguration extends DefaultHighlightingConfiguration {
+    // provide ID strings for the highlighting calculator
+    public static final String DOCUMENTATION_COMMENT_ID = "documentation.comment";
+    public static final String PRIMITIVE_DATA_TYPE      = "primitive.data.type";
+
+    @Override
+    public void configure(final IHighlightingConfigurationAcceptor acceptor) {
+        // let the default implementation first do the job
+        super.configure(acceptor);
+
+        // here our custom styles are used
+        acceptor.acceptDefaultHighlighting(DOCUMENTATION_COMMENT_ID, "Documentation comment",
+                documentationCommentTextStyle());
+        acceptor.acceptDefaultHighlighting(PRIMITIVE_DATA_TYPE, "Primitive data type", primitiveDataTypeTextStyle());
+    }
+
+    public TextStyle documentationCommentTextStyle() {
+        final TextStyle textStyle = defaultTextStyle().copy();
+        textStyle.setColor(new RGB(63, 95, 191)); // default Eclipse JavaDoc color
+        return textStyle;
+    }
+
+    public TextStyle primitiveDataTypeTextStyle() {
+        final TextStyle textStyle = keywordTextStyle().copy();
+        textStyle.setColor(new RGB(0, 0, 192));
+
+        return textStyle;
+    }
 }

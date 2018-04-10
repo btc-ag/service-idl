@@ -1,13 +1,13 @@
 /*********************************************************************
-* \author see AUTHORS file
-* \copyright 2015-2018 BTC Business Technology Consulting AG and others
-*
-* This program and the accompanying materials are made
-* available under the terms of the Eclipse Public License 2.0
-* which is available at https://www.eclipse.org/legal/epl-2.0/
-*
-* SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+ * \author see AUTHORS file
+ * \copyright 2015-2018 BTC Business Technology Consulting AG and others
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
+ **********************************************************************/
 /** 
  * \file       UniqueWrapper.xtend
  * 
@@ -20,7 +20,6 @@
  *             If we wrap those objects into this wrapper before packing them
  *             into the Set, one will be recognized as duplicate.
  */
-
 package com.btc.serviceidl.generator.common
 
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -29,37 +28,36 @@ import com.btc.serviceidl.idl.PrimitiveType
 
 class UniqueWrapper
 {
-   @Accessors(PUBLIC_GETTER)
-   private EObject type
-   
-   new (EObject t)
-   {
-      type = t
-   }
-   
-   def static UniqueWrapper from(EObject e)
-   {
-      new UniqueWrapper(e)
-   }
-   
-   override boolean equals(Object e)
-   {
-      if (e instanceof UniqueWrapper)
-      {
-         if (e.type instanceof PrimitiveType)
-            return Names.plain(e.type) == Names.plain(type)
-         else
-            return type.equals(e.type)
-      }
-      
-      return false
-   }
-   
-   override int hashCode()
-   {
-      if (type instanceof PrimitiveType)
-         Names.plain(type).hashCode
-      else
-         type.hashCode
-   }
+    @Accessors(PUBLIC_GETTER) private EObject type
+
+    new(EObject t)
+    {
+        type = t
+    }
+
+    def static UniqueWrapper from(EObject e)
+    {
+        new UniqueWrapper(e)
+    }
+
+    override boolean equals(Object e)
+    {
+        if (e instanceof UniqueWrapper)
+        {
+            if (e.type instanceof PrimitiveType)
+                return Names.plain(e.type) == Names.plain(type)
+            else
+                return type.equals(e.type)
+        }
+
+        return false
+    }
+
+    override int hashCode()
+    {
+        if (type instanceof PrimitiveType)
+            Names.plain(type).hashCode
+        else
+            type.hashCode
+    }
 }

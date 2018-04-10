@@ -16,7 +16,7 @@ import com.btc.serviceidl.generator.common.ArtifactNature;
 import com.btc.serviceidl.generator.common.ProjectType;
 
 public interface IGenerationSettingsProvider {
-	Set<ProjectType> getProjectTypes();
+    Set<ArtifactNature> getLanguages();
 
-	Set<ArtifactNature> getLanguages();
+    Set<ProjectType> getProjectTypes();
 }

@@ -10,20 +10,18 @@
 **********************************************************************/
 /**
  * \file       ArtifactNature.java
- * 
+ *
  * \brief      Type of the generated artifacts (C++, Java, .NET)
  */
 
 package com.btc.serviceidl.generator.common;
 
-public enum ArtifactNature
-{
-   CPP,
-   JAVA,
-   DOTNET;
-   
-   public String getLabel()
-   {
-      return name().toLowerCase();
-   }
+public enum ArtifactNature {
+    CPP,
+    JAVA,
+    DOTNET;
+
+    public String getLabel() {
+        return name().toLowerCase();
+    }
 }

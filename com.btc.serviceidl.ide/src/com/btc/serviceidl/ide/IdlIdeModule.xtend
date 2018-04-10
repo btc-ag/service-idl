@@ -3,9 +3,9 @@
  */
 package com.btc.serviceidl.ide
 
-
 /**
  * Use this class to register ide components.
  */
-class IdlIdeModule extends AbstractIdlIdeModule {
+class IdlIdeModule extends AbstractIdlIdeModule
+{
 }

@@ -10,44 +10,41 @@
 **********************************************************************/
 /**
  * \file       IdlSemanticHighlightingCalculator.java
- * 
+ *
  * \brief      Custom semantic highlighting for the IDL
  */
 
 package com.btc.serviceidl.ui;
 
+import org.eclipse.xtext.ide.editor.syntaxcoloring.IHighlightedPositionAcceptor;
+import org.eclipse.xtext.ide.editor.syntaxcoloring.ISemanticHighlightingCalculator;
 import org.eclipse.xtext.nodemodel.ILeafNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.CancelIndicator;
-import org.eclipse.xtext.ide.editor.syntaxcoloring.IHighlightedPositionAcceptor;
-import org.eclipse.xtext.ide.editor.syntaxcoloring.ISemanticHighlightingCalculator;
 
 import com.btc.serviceidl.idl.DocCommentElement;
 import com.btc.serviceidl.idl.PrimitiveType;
 
-public class IdlSemanticHighlightingCalculator implements ISemanticHighlightingCalculator
-{
+public class IdlSemanticHighlightingCalculator implements ISemanticHighlightingCalculator {
 
-   @Override
-   public void provideHighlightingFor(XtextResource resource, IHighlightedPositionAcceptor acceptor, CancelIndicator arg2)
-   {
-      if (resource == null || resource.getParseResult() == null)
-         return;
+    @Override
+    public void provideHighlightingFor(final XtextResource resource, final IHighlightedPositionAcceptor acceptor,
+            final CancelIndicator arg2) {
+        if (resource == null || resource.getParseResult() == null) {
+            return;
+        }
 
-      INode root = resource.getParseResult().getRootNode();
-      for (ILeafNode node : root.getLeafNodes())
-      {
-         if ( node.getSemanticElement() instanceof DocCommentElement && !node.isHidden())
-         {
-            acceptor.addPosition(node.getOffset(), node.getLength(),
-                  IdlHighlightingConfiguration.DOCUMENTATION_COMMENT_ID);
-         }
-         if ( node.getSemanticElement() instanceof PrimitiveType && !node.isHidden())
-         {
-            acceptor.addPosition(node.getOffset(), node.getLength(),
-                  IdlHighlightingConfiguration.PRIMITIVE_DATA_TYPE);
-         }
-      }
-   }
+        final INode root = resource.getParseResult().getRootNode();
+        for (final ILeafNode node : root.getLeafNodes()) {
+            if (node.getSemanticElement() instanceof DocCommentElement && !node.isHidden()) {
+                acceptor.addPosition(node.getOffset(), node.getLength(),
+                        IdlHighlightingConfiguration.DOCUMENTATION_COMMENT_ID);
+            }
+            if (node.getSemanticElement() instanceof PrimitiveType && !node.isHidden()) {
+                acceptor.addPosition(node.getOffset(), node.getLength(),
+                        IdlHighlightingConfiguration.PRIMITIVE_DATA_TYPE);
+            }
+        }
+    }
 }

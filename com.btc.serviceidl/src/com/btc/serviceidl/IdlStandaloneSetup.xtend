@@ -3,13 +3,14 @@
  */
 package com.btc.serviceidl
 
-
 /**
  * Initialization support for running Xtext languages without Equinox extension registry.
  */
-class IdlStandaloneSetup extends IdlStandaloneSetupGenerated {
+class IdlStandaloneSetup extends IdlStandaloneSetupGenerated
+{
 
-	def static void doSetup() {
-		new IdlStandaloneSetup().createInjectorAndDoEMFRegistration()
-	}
+    def static void doSetup()
+    {
+        new IdlStandaloneSetup().createInjectorAndDoEMFRegistration()
+    }
 }

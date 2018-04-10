@@ -10,14 +10,13 @@
 **********************************************************************/
 /**
  * \file       DotNetFrameworkVersion.java
- * 
+ *
  * \brief      Enum to represent a specific version of the Microsoft .NET framework
  */
 
 package com.btc.serviceidl.generator.dotnet;
 
-public enum DotNetFrameworkVersion
-{
-   NET40
-   , NET45
+public enum DotNetFrameworkVersion {
+    NET40,
+    NET45
 }
