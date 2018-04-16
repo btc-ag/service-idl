@@ -35,12 +35,10 @@ import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
@@ -81,7 +79,8 @@ class JavaGenerator
    private var Map<EObject, String> protobuf_artifacts
    private var IDLSpecification idl
    
-   private var TypeResolver typeResolver 
+   private var TypeResolver typeResolver
+   private var BasicJavaSourceGenerator basicJavaSourceGenerator 
    
    private val typedef_table = new HashMap<String, ResolvedName>
    private val dependencies = new HashSet<MavenDependency>
@@ -261,7 +260,7 @@ class JavaGenerator
       for ( element : module.moduleComponents.filter(AbstractTypeDeclaration).filter[e | !(e instanceof AliasDeclaration)] )
       {
          reinitializeFile
-         file_system_access.generateFile(src_root_path + Names.plain(element).java, generateSourceFile(module, toDeclaration(element)))
+         file_system_access.generateFile(src_root_path + Names.plain(element).java, generateSourceFile(module, basicJavaSourceGenerator.toDeclaration(element)))
       }
       
       // common service fault handler factory
@@ -292,21 +291,21 @@ class JavaGenerator
       {
          val file_name = Names.plain(abstract_type)
          reinitializeFile
-         file_system_access.generateFile(src_root_path + file_name.java, generateSourceFile(interface_declaration, toDeclaration(abstract_type)))
+         file_system_access.generateFile(src_root_path + file_name.java, generateSourceFile(interface_declaration, basicJavaSourceGenerator.toDeclaration(abstract_type)))
       }
       
       // generate named events
       for (event : interface_declaration.contains.filter(EventDeclaration).filter[name !== null])
       {
          reinitializeFile
-         file_system_access.generateFile(src_root_path + toText(event).java, generateSourceFile(interface_declaration, generateEvent(event)))
+         file_system_access.generateFile(src_root_path + basicJavaSourceGenerator.toText(event).java, generateSourceFile(interface_declaration, generateEvent(event)))
       }
       
       reinitializeFile
       file_system_access.generateFile(src_root_path + param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name).java,
       generateSourceFile(interface_declaration,
       '''
-      public interface «param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)»«IF anonymous_event !== null» extends «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«toText(anonymous_event.data)»>«ENDIF» {
+      public interface «param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)»«IF anonymous_event !== null» extends «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«basicJavaSourceGenerator.toText(anonymous_event.data)»>«ENDIF» {
 
          «typeResolver.resolve(JavaClassNames.UUID)» TypeGuid = UUID.fromString("«GuidMapper.get(interface_declaration)»");
          
@@ -316,7 +315,7 @@ class JavaGenerator
          «ENDFOR»
          
          «FOR event : interface_declaration.events.filter[name !== null]»
-            «val observable_name = toText(event)»
+            «val observable_name = basicJavaSourceGenerator.toText(event)»
             «observable_name» get«observable_name»();
          «ENDFOR»
       }
@@ -497,7 +496,7 @@ class JavaGenerator
             {
                boolean _success = false;
                «FOR param : function.parameters»
-                  «toText(param.paramType)» «param.paramName.asParameter» = «makeDefaultValue(param.paramType)»;
+                  «basicJavaSourceGenerator.toText(param.paramType)» «param.paramName.asParameter» = «makeDefaultValue(param.paramType)»;
                «ENDFOR»
                try {
                   testSubject.«function.name.asMethod»(«function.parameters.map[paramName.asParameter].join(",")»)«IF !is_sync».get()«ENDIF»;
@@ -612,11 +611,11 @@ class JavaGenerator
       val is_void = function.returnedType.isVoid
       
       '''
-      «IF !is_sync»«typeResolver.resolve("java.util.concurrent.Future")»<«ENDIF»«IF !is_sync && is_void»Void«ELSE»«toText(function.returnedType)»«ENDIF»«IF !function.isSync»>«ENDIF» «function.name.toFirstLower»(
+      «IF !is_sync»«typeResolver.resolve("java.util.concurrent.Future")»<«ENDIF»«IF !is_sync && is_void»Void«ELSE»«basicJavaSourceGenerator.toText(function.returnedType)»«ENDIF»«IF !function.isSync»>«ENDIF» «function.name.toFirstLower»(
          «FOR param : function.parameters SEPARATOR ","»
-            «IF param.direction == ParameterDirection.PARAM_IN»final «ENDIF»«toText(param.paramType)» «toText(param)»
+            «IF param.direction == ParameterDirection.PARAM_IN»final «ENDIF»«basicJavaSourceGenerator.toText(param.paramType)» «basicJavaSourceGenerator.toText(param)»
          «ENDFOR»
-      ) throws«FOR exception : function.raisedExceptions SEPARATOR ',' AFTER ','» «toText(exception)»«ENDFOR» Exception'''
+      ) throws«FOR exception : function.raisedExceptions SEPARATOR ',' AFTER ','» «basicJavaSourceGenerator.toText(exception)»«ENDFOR» Exception'''
    }
    
    def private String generateEvent(EventDeclaration event)
@@ -626,11 +625,11 @@ class JavaGenerator
       val keys = new ArrayList<Pair<String, String>>
       for (key : event.keys)
       {
-         keys.add(Pair.of(key.keyName, toText(key.type)))
+         keys.add(Pair.of(key.keyName, basicJavaSourceGenerator.toText(key.type)))
       }
 
       '''
-      public abstract class «toText(event)» implements «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«toText(event.data)»> {
+      public abstract class «basicJavaSourceGenerator.toText(event)» implements «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«basicJavaSourceGenerator.toText(event.data)»> {
          
          «IF !keys.empty»
             public class KeyType {
@@ -647,11 +646,11 @@ class JavaGenerator
                }
                
                «FOR key : keys SEPARATOR System.lineSeparator»
-                  «makeGetter(key.value, key.key)»
+                  «BasicJavaSourceGenerator.makeGetter(key.value, key.key)»
                «ENDFOR»
             }
             
-            public abstract «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«toText(event.data)»> subscriber, Iterable<KeyType> keys);
+            public abstract «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«basicJavaSourceGenerator.toText(event.data)»> subscriber, Iterable<KeyType> keys);
          «ENDIF»
       }
       '''
@@ -963,7 +962,7 @@ class JavaGenerator
          «val is_char = Util.isChar(member.type)»
          «val use_codec = GeneratorUtil.useCodec(member.type, param_bundle.artifactNature)»
          «val is_optional = member.optional»
-         «val api_type = toText(member.type)»
+         «val api_type = basicJavaSourceGenerator.toText(member.type)»
          «val member_name = member.name.asParameter»
          «IF is_optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«api_type»«IF is_optional»>«ENDIF» «member_name» = «IF is_optional»(typedData.«IF is_sequence»get«ELSE»has«ENDIF»«member.name.asProtobufName»«IF is_sequence»Count«ENDIF»()«IF is_sequence» > 0«ENDIF») ? «ENDIF»«IF is_optional»Optional.of(«ENDIF»«IF use_codec»«IF !is_sequence»(«api_type») «ENDIF»«codec».decode«IF is_failable»Failable«ENDIF»(«ENDIF»«IF is_short || is_byte || is_char»(«IF is_byte»byte«ELSEIF is_char»char«ELSE»short«ENDIF») «ENDIF»typedData.get«member.name.asProtobufName»«IF is_sequence»List«ENDIF»()«IF use_codec»)«ENDIF»«IF is_optional»)«ENDIF»«IF is_optional» : Optional.empty()«ENDIF»;
       «ENDFOR»
@@ -1342,10 +1341,10 @@ class JavaGenerator
                .registerHandler(«typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.SERVICE_API)) + '''.«interface_declaration.asServiceFaultHandlerFactory»''')».createServiceFaultHandler());
          }
          
-         «FOR function : interface_declaration.functions SEPARATOR newLine»
+         «FOR function : interface_declaration.functions SEPARATOR BasicJavaSourceGenerator.newLine»
             «val is_void = function.returnedType.isVoid»
             «val is_sync = function.sync»
-            «val return_type = (if (is_void) "Void" else toText(function.returnedType) )»
+            «val return_type = (if (is_void) "Void" else basicJavaSourceGenerator.toText(function.returnedType) )»
             «val out_params = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
             /**
                @see «api_name.fullyQualifiedName»#«function.name.toFirstLower»
@@ -1385,12 +1384,12 @@ class JavaGenerator
                            «val temp_param_name = '''_«out_param.paramName.toFirstLower»'''»
                            «val param_name = out_param.paramName.asParameter»
                            «IF !Util.isSequenceType(out_param.paramType)»
-                              «val out_param_type = toText(out_param.paramType)»
+                              «val out_param_type = basicJavaSourceGenerator.toText(out_param.paramType)»
                               «out_param_type» «temp_param_name» = («out_param_type») «codec».decode( «response_name».get«out_param.paramName.asProtobufName»() );
                               «handleOutputParameter(out_param, temp_param_name, param_name)»
                            «ELSE»
                               «val is_failable = Util.isFailable(out_param.paramType)»
-                              «typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«toText(Util.getUltimateType(out_param.paramType))»«IF is_failable»>«ENDIF»> «temp_param_name» = «codec».decode«IF is_failable»Failable«ENDIF»( «response_name».get«out_param.paramName.asProtobufName»List() );
+                              «typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«basicJavaSourceGenerator.toText(Util.getUltimateType(out_param.paramType))»«IF is_failable»>«ENDIF»> «temp_param_name» = «codec».decode«IF is_failable»Failable«ENDIF»( «response_name».get«out_param.paramName.asProtobufName»List() );
                               «param_name».addAll( «temp_param_name» );
                            «ENDIF»
                            
@@ -1444,7 +1443,7 @@ class JavaGenerator
             «ENDIF»
          «ENDIF»
          «FOR event : interface_declaration.contains.filter(EventDeclaration).filter[name !== null]»
-            «val observable_name = toText(event)»
+            «val observable_name = basicJavaSourceGenerator.toText(event)»
             /**
                @see «api_name»#get«observable_name»
             */
@@ -1532,7 +1531,7 @@ class JavaGenerator
                «protobuf_request» request
                   = «protobuf_request».parseFrom(requestByte);
                
-               «FOR function : interface_declaration.functions SEPARATOR newLine»
+               «FOR function : interface_declaration.functions SEPARATOR BasicJavaSourceGenerator.newLine»
                   «val is_sync = function.isSync»
                   «val is_void = function.returnedType.isVoid»
                   «val result_type = typeResolver.resolve(function.returnedType)»
@@ -1619,7 +1618,7 @@ class JavaGenerator
          '''
          public class «impl_name» implements «api_name» {
             
-            «FOR function : interface_declaration.functions SEPARATOR newLine»
+            «FOR function : interface_declaration.functions SEPARATOR BasicJavaSourceGenerator.newLine»
                /**
                   @see «api_name.fullyQualifiedName»#«function.name.toFirstLower»
                */
@@ -1630,7 +1629,7 @@ class JavaGenerator
             «ENDFOR»
             
             «FOR event : interface_declaration.contains.filter(EventDeclaration).filter[name !== null]»
-               «val observable_name = toText(event)»
+               «val observable_name = basicJavaSourceGenerator.toText(event)»
                /**
                   @see «api_name»#get«observable_name»
                */
@@ -1645,219 +1644,11 @@ class JavaGenerator
       )
    }
    
-   def private dispatch String toText(ParameterElement element)
-   {
-      '''
-      «typeResolver.resolve(element)»
-      '''
-   }
-   
-   def private dispatch String toText(MemberElement element)
-   {
-      '''«IF element.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(element.type)»«IF element.optional»>«ENDIF»'''
-   }
-   
-   def private dispatch String toText(ReturnTypeElement element)
-   {
-      if (element.isVoid)
-         return "void"
-
-      throw new IllegalArgumentException("Unknown ReturnTypeElement: " + element.class.toString)
-   }
-   
-   def private dispatch String toText(AbstractType element)
-   {
-      if (element.primitiveType !== null)
-         return toText(element.primitiveType)
-      else if (element.referenceType !== null)
-         return toText(element.referenceType)
-      else if (element.collectionType !== null)
-         return toText(element.collectionType)
-      
-      throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
-   }
-   
-   def private dispatch String toText(PrimitiveType element)
-   {
-       return typeResolver.resolve(element).toString
-   }
-   
-   def private dispatch String toText(AliasDeclaration element)
-   {
-      var type_name = typedef_table.get(element.name)
-      val ultimate_type = Util.getUltimateType(element.type)
-      if (type_name === null)
-      {
-         type_name = typeResolver.resolve(ultimate_type)
-         typedef_table.put(element.name, type_name)
-      }
-
-      if (!Util.isPrimitive(ultimate_type))
-         typeResolver.resolve(type_name.fullyQualifiedName)
-      return type_name.toString
-   }
-   
-   def private dispatch String toText(EnumDeclaration element)
-   {
-      '''«typeResolver.resolve(element)»'''
-   }
-   
-   def private dispatch String toText(EventDeclaration element)
-   {
-      '''«typeResolver.resolve(element)»'''
-   }
-   
-   def private dispatch String toText(StructDeclaration element)
-   {
-      '''«typeResolver.resolve(element)»'''
-   }
-   
-   def private String makeGetterSetter(String type_name, String var_name)
-   {
-      '''
-      «makeGetter(type_name, var_name)»
-      
-      «makeSetter(type_name, var_name)»
-      '''
-   }
-   
-   def private static String makeGetter(String type_name, String var_name)
-   {
-      '''
-      public «type_name» get«var_name.toFirstUpper»() {
-         return «var_name»;
-      };
-      '''
-   }
-   
-   def private String makeSetter(String type_name, String var_name)
-   {
-      '''
-      public void set«var_name.toFirstUpper»(«type_name» «var_name») {
-         this.«var_name» = «var_name»;
-      };
-      '''
-   }
-   
-   def private dispatch String toDeclaration(EObject element)
-   {
-      '''
-      // TODO: implement this...
-      '''
-   }
-   
-   def private dispatch String toDeclaration(ExceptionDeclaration element)
-   {
-      val class_members = new ArrayList<Pair<String, String>>
-      for (member : element.effectiveMembers) class_members.add(Pair.of(member.name, toText(member.type)))
-
-      '''
-      public class «element.name» extends «IF element.supertype === null»Exception«ELSE»«toText(element.supertype)»«ENDIF» {
-         
-         static final long serialVersionUID = «element.name.hashCode»L;
-         «FOR class_member : class_members BEFORE newLine»
-            private «class_member.value» «class_member.key»;
-         «ENDFOR»
-         
-         public «element.name»() {
-            // this default constructor is always necessary for exception registration in ServiceComm framework
-         }
-         
-         «IF !class_members.empty»
-            public «element.name»(«FOR class_member : class_members SEPARATOR ", "»«class_member.value» «class_member.key»«ENDFOR») {
-               «FOR class_member : class_members»
-                  this.«class_member.key» = «class_member.key»;
-               «ENDFOR»
-            };
-         «ENDIF»
-         
-         «FOR class_member : class_members SEPARATOR newLine»
-            «makeGetterSetter(class_member.value, class_member.key)»
-         «ENDFOR»
-         
-         «IF !(class_members.size == 1 && class_members.head.value.equalsIgnoreCase("string"))»
-         public «element.name»(String message) {
-            // this default constructor is necessary to be able to use Exception#getMessage() method
-            super(message);
-         }
-         «ENDIF»
-      }
-      '''
-   }
-   
-   def private dispatch String toDeclaration(EnumDeclaration element)
-   {
-      '''
-      public enum «element.name» {
-         «FOR enum_value : element.containedIdentifiers SEPARATOR ","»
-            «enum_value»
-         «ENDFOR»
-      }
-      '''
-   }
-   
-   def private dispatch String toDeclaration(StructDeclaration element)
-   {
-      val class_members = new ArrayList<Pair<String, String>>
-      for (member : element.effectiveMembers) class_members.add(Pair.of(member.name, '''«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(member.type)»«IF member.optional»>«ENDIF»'''))
-      
-      val all_class_members = new ArrayList<Pair<String, String>>
-      for (member : element.allMembers) all_class_members.add(Pair.of(member.name, '''«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(member.type)»«IF member.optional»>«ENDIF»'''))
-      
-      val is_derived = ( element.supertype !== null )
-      val related_event =  Util.getRelatedEvent(element, idl)
-      
-      '''
-      public class «element.name» «IF is_derived»extends «toText(element.supertype)» «ENDIF»{
-         «IF related_event !== null»
-            
-            public static final «typeResolver.resolve(JavaClassNames.UUID)» EventTypeGuid = UUID.fromString("«GuidMapper.get(related_event)»");
-         «ENDIF»
-         «FOR class_member : class_members BEFORE newLine»
-            private «class_member.value» «class_member.key»;
-         «ENDFOR»
-         
-         «IF !class_members.empty»public «element.name»() { «IF is_derived»super(); «ENDIF»};«ENDIF»
-         
-         public «element.name»(«FOR class_member : all_class_members SEPARATOR ", "»«class_member.value» «class_member.key»«ENDFOR») {
-            «IF is_derived»super(«element.supertype.allMembers.map[name].join(", ")»);«ENDIF»
-            
-            «FOR class_member : class_members»
-               this.«class_member.key» = «class_member.key»;
-            «ENDFOR»
-         };
-         
-         «FOR class_member : class_members SEPARATOR newLine»
-            «makeGetterSetter(class_member.value, class_member.key)»
-         «ENDFOR»
-         
-         «FOR type : element.typeDecls SEPARATOR newLine AFTER newLine»
-            «toDeclaration(type)»
-         «ENDFOR»
-      }
-      '''
-   }
-   
-   def private dispatch String toText(ExceptionDeclaration element)
-   {
-      val exception_name = typeResolver.resolveException(qualified_name_provider.getFullyQualifiedName(element).toString)
-      if (exception_name.isPresent)
-         return exception_name.get()
-      else
-         '''«typeResolver.resolve(element)»'''
-   }
-   
-   def private dispatch String toText(SequenceDeclaration item)
-   {
-      val is_failable = item.failable
-      
-      '''«typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«toText(item.type)»«IF is_failable»>«ENDIF»>'''
-   }
-
    // TODO remove this function
    def private void reinitializeFile()
    {
       typeResolver = new TypeResolver(qualified_name_provider, param_bundle, dependencies)
+      basicJavaSourceGenerator = new BasicJavaSourceGenerator(qualified_name_provider, typeResolver, idl)
    }
    
    def private void reinitializeAll()
@@ -1881,7 +1672,7 @@ class JavaGenerator
       else if (Util.isAlias(object))
          return resolveProtobuf(Util.getUltimateType(object), protobuf_type)
       else if (object instanceof PrimitiveType)
-         return new ResolvedName(toText(object), TransformType.PACKAGE)
+         return new ResolvedName(basicJavaSourceGenerator.toText(object), TransformType.PACKAGE)
       else if (object instanceof AbstractType && (object as AbstractType).primitiveType !== null)
          return resolveProtobuf((object as AbstractType).primitiveType, protobuf_type)
       else if (object instanceof AbstractType && (object as AbstractType).referenceType !== null)
@@ -1914,14 +1705,7 @@ class JavaGenerator
       val codec_name = GeneratorUtil.getCodecName(ultimate_type)
       MavenResolver.resolvePackage(ultimate_type, Optional.of(ProjectType.PROTOBUF)) + TransformType.PACKAGE.separator + codec_name
    }
-   
-   def private static String newLine()
-   {
-      '''
       
-      '''
-   }
-   
    def private static String asProtobufName(String name)
    {
       name.toLowerCase.toFirstUpper
@@ -1975,7 +1759,7 @@ class JavaGenerator
       }
       else if (element instanceof SequenceDeclaration)
       {
-         val type = toText(element.type)
+         val type = basicJavaSourceGenerator.toText(element.type)
          val is_failable = element.failable
          // TODO this should better use Collections.emptyList
          return '''new «typeResolver.resolve("java.util.Vector")»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«type»«IF is_failable»>«ENDIF»>()'''
@@ -1986,7 +1770,7 @@ class JavaGenerator
       }
       else if (element instanceof EnumDeclaration)
       {
-         return '''«toText(element)».«element.containedIdentifiers.head»''';
+         return '''«basicJavaSourceGenerator.toText(element)».«element.containedIdentifiers.head»''';
       }
       
       return '''0'''
