@@ -55,12 +55,10 @@ import java.util.HashSet
 import java.util.Map
 import java.util.Optional
 import java.util.Set
-import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
-import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
@@ -83,8 +81,9 @@ class JavaGenerator
    private var Map<EObject, String> protobuf_artifacts
    private var IDLSpecification idl
    
+   private var TypeResolver typeResolver 
+   
    private val typedef_table = new HashMap<String, ResolvedName>
-   private val referenced_types = new HashSet<String>
    private val dependencies = new HashSet<MavenDependency>
    
    private var param_bundle = new ParameterBundle.Builder()
@@ -389,7 +388,7 @@ class JavaGenerator
       '''
       package «MavenResolver.resolvePackage(container, Optional.of(param_bundle.projectType))»;
       
-      «FOR reference : referenced_types.sort AFTER System.lineSeparator»
+      «FOR reference : typeResolver.referenced_types.sort AFTER System.lineSeparator»
          import «reference»;
       «ENDFOR»
       «main_content»
@@ -424,7 +423,7 @@ class JavaGenerator
          var type_name = typedef_table.get(type_alias.name)
          if (type_name === null)
          {
-            type_name = resolve(type_alias.type)
+            type_name = typeResolver.resolve(type_alias.type)
             typedef_table.put(type_alias.name, type_name)
          }
       }
@@ -448,9 +447,9 @@ class JavaGenerator
       file_system_access.generateFile(src_root_path + param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name).java,
       generateSourceFile(interface_declaration,
       '''
-      public interface «param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)»«IF anonymous_event !== null» extends «resolve(JavaClassNames.OBSERVABLE)»<«toText(anonymous_event.data)»>«ENDIF» {
+      public interface «param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)»«IF anonymous_event !== null» extends «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«toText(anonymous_event.data)»>«ENDIF» {
 
-         «resolve(JavaClassNames.UUID)» TypeGuid = UUID.fromString("«GuidMapper.get(interface_declaration)»");
+         «typeResolver.resolve(JavaClassNames.UUID)» TypeGuid = UUID.fromString("«GuidMapper.get(interface_declaration)»");
          
          «FOR function : interface_declaration.functions»
             «makeInterfaceMethodSignature(function)»;
@@ -475,9 +474,9 @@ class JavaGenerator
    
    def private String generateServiceFaultHandlerFactory(String class_name, EObject container)
    {
-      val service_fault_handler = resolve(JavaClassNames.DEFAULT_SERVICE_FAULT_HANDLER)
-      val i_error = resolve(JavaClassNames.ERROR)
-      val optional = resolve(JavaClassNames.OPTIONAL)
+      val service_fault_handler = typeResolver.resolve(JavaClassNames.DEFAULT_SERVICE_FAULT_HANDLER)
+      val i_error = typeResolver.resolve(JavaClassNames.ERROR)
+      val optional = typeResolver.resolve(JavaClassNames.OPTIONAL)
       val raised_exceptions = Util.getRaisedExceptions(container)
       val failable_exceptions = Util.getFailableExceptions(container)
       
@@ -495,12 +494,12 @@ class JavaGenerator
       '''
       public class «class_name»
       {
-         private static final «resolve("org.apache.commons.collections4.BidiMap")»<String, Exception> errorMap = new «resolve("org.apache.commons.collections4.bidimap.DualHashBidiMap")»<>();
+         private static final «typeResolver.resolve("org.apache.commons.collections4.BidiMap")»<String, Exception> errorMap = new «typeResolver.resolve("org.apache.commons.collections4.bidimap.DualHashBidiMap")»<>();
          
          static
          {
             «FOR exception : exceptions.sortBy[name]»
-               errorMap.put("«Util.getCommonExceptionName(exception, qualified_name_provider)»", new «resolve(exception)»());
+               errorMap.put("«Util.getCommonExceptionName(exception, qualified_name_provider)»", new «typeResolver.resolve(exception)»());
             «ENDFOR»
             
             // most commonly used exception types
@@ -508,7 +507,7 @@ class JavaGenerator
             errorMap.put("«Constants.UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER»", new UnsupportedOperationException());
          }
          
-         public static final «resolve(JavaClassNames.SERVICE_FAULT_HANDLER)» createServiceFaultHandler()
+         public static final «typeResolver.resolve(JavaClassNames.SERVICE_FAULT_HANDLER)» createServiceFaultHandler()
          {
             «service_fault_handler» serviceFaultHandler = new «service_fault_handler»();
             errorMap.forEach( (key, value) -> serviceFaultHandler.registerException(key, value) );
@@ -523,7 +522,7 @@ class JavaGenerator
                Exception exception = errorMap.get(errorType);
                try
                {
-                  «resolve("java.lang.reflect.Constructor")»<?> constructor = exception.getClass().getConstructor(String.class);
+                  «typeResolver.resolve("java.lang.reflect.Constructor")»<?> constructor = exception.getClass().getConstructor(String.class);
                   return (Exception) constructor.newInstance( new Object[] {message} );
                } catch (Exception ex)
                {
@@ -545,10 +544,10 @@ class JavaGenerator
                   break;
                }
             }
-            «i_error» error = new «resolve("com.btc.cab.servicecomm.faulthandling.ErrorMessage")»(
+            «i_error» error = new «typeResolver.resolve("com.btc.cab.servicecomm.faulthandling.ErrorMessage")»(
                 exception.getMessage(),
                 errorType.isPresent() ? errorType.get() : exception.getClass().getName(),
-                «resolve("org.apache.commons.lang3.exception.ExceptionUtils")».getStackTrace(exception));
+                «typeResolver.resolve("org.apache.commons.lang3.exception.ExceptionUtils")».getStackTrace(exception));
             return error;
          }
       }
@@ -593,10 +592,10 @@ class JavaGenerator
       '''
       public class «class_name» extends «super_class» {
       
-         «resolve(JavaClassNames.JUNIT_BEFORE).alias("@Before")»
+         «typeResolver.resolve(JavaClassNames.JUNIT_BEFORE).alias("@Before")»
          public void setUp() throws Exception {
             super.setUp();
-            testSubject = new «resolve(interface_declaration, ProjectType.IMPL)»();
+            testSubject = new «typeResolver.resolve(interface_declaration, ProjectType.IMPL)»();
          }
       }
       '''
@@ -607,34 +606,34 @@ class JavaGenerator
        // TODO is this really useful? it only generates a stub, what should be done when regenerating?
        // TODO _assertExceptionType should be moved to com.btc.cab.commons or the like
        
-      val api_class = resolve(interface_declaration)
-      val junit_assert = resolve(JavaClassNames.JUNIT_ASSERT)
+      val api_class = typeResolver.resolve(interface_declaration)
+      val junit_assert = typeResolver.resolve(JavaClassNames.JUNIT_ASSERT)
       
       '''
-      «resolve(JavaClassNames.JUNIT_IGNORE).alias("@Ignore")»
+      «typeResolver.resolve(JavaClassNames.JUNIT_IGNORE).alias("@Ignore")»
       public abstract class «class_name» {
       
          protected «api_class» testSubject;
       
-         «resolve(JavaClassNames.JUNIT_BEFORE_CLASS).alias("@BeforeClass")»
+         «typeResolver.resolve(JavaClassNames.JUNIT_BEFORE_CLASS).alias("@BeforeClass")»
          public static void setUpBeforeClass() throws Exception {
          }
       
-         «resolve(JavaClassNames.JUNIT_AFTER_CLASS).alias("@AfterClass")»
+         «typeResolver.resolve(JavaClassNames.JUNIT_AFTER_CLASS).alias("@AfterClass")»
          public static void tearDownAfterClass() throws Exception {
          }
       
-         «resolve(JavaClassNames.JUNIT_BEFORE).alias("@Before")»
+         «typeResolver.resolve(JavaClassNames.JUNIT_BEFORE).alias("@Before")»
          public void setUp() throws Exception {
          }
       
-         «resolve(JavaClassNames.JUNIT_AFTER).alias("@After")»
+         «typeResolver.resolve(JavaClassNames.JUNIT_AFTER).alias("@After")»
          public void tearDown() throws Exception {
          }
 
          «FOR function : interface_declaration.functions»
             «val is_sync = function.sync»
-            «resolve(JavaClassNames.JUNIT_TEST).alias("@Test")»
+            «typeResolver.resolve(JavaClassNames.JUNIT_TEST).alias("@Test")»
             public void «function.name.asMethod»Test() throws Exception
             {
                boolean _success = false;
@@ -653,7 +652,7 @@ class JavaGenerator
             }
          «ENDFOR»
          
-         public «resolve(interface_declaration)» getTestSubject() {
+         public «typeResolver.resolve(interface_declaration)» getTestSubject() {
             return testSubject;
          }
          
@@ -665,7 +664,7 @@ class JavaGenerator
             if (e instanceof UnsupportedOperationException)
                 return (e.getMessage() != null && e.getMessage().equals("Auto-generated method stub is not implemented!"));
             else
-               return _assertExceptionType(«resolve("org.apache.commons.lang3.exception.ExceptionUtils")».getRootCause(e));
+               return _assertExceptionType(«typeResolver.resolve("org.apache.commons.lang3.exception.ExceptionUtils")».getRootCause(e));
          }
       }
       '''
@@ -674,8 +673,8 @@ class JavaGenerator
    def private String generateFileZeroMQItegrationTest(String class_name, String super_class, String log4j_name, String src_root_path, InterfaceDeclaration interface_declaration)
    {
       val resources_location = MavenArtifactType.TEST_RESOURCES.directoryLayout
-      val junit_assert = resolve(JavaClassNames.JUNIT_ASSERT)
-      val server_runner_name = resolve(interface_declaration, ProjectType.SERVER_RUNNER)
+      val junit_assert = typeResolver.resolve(JavaClassNames.JUNIT_ASSERT)
+      val server_runner_name = typeResolver.resolve(interface_declaration, ProjectType.SERVER_RUNNER)
       
       // TODO this is definitely outdated, as log4j is no longer used
       
@@ -683,37 +682,37 @@ class JavaGenerator
       public class «class_name» extends «super_class» {
       
          private final static String connectionString = "tcp://127.0.0.1:«Constants.DEFAULT_PORT»";
-         private static final «resolve("org.apache.log4j.Logger")» logger = Logger.getLogger(«class_name».class);
+         private static final «typeResolver.resolve("org.apache.log4j.Logger")» logger = Logger.getLogger(«class_name».class);
          
-         private «resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
-         private «resolve(JavaClassNames.CLIENT_ENDPOINT)» _clientEndpoint;
+         private «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
+         private «typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» _clientEndpoint;
          private «server_runner_name» _serverRunner;
          
          public «class_name»() {
          }
          
-         «resolve(JavaClassNames.JUNIT_BEFORE).alias("@Before")»
+         «typeResolver.resolve(JavaClassNames.JUNIT_BEFORE).alias("@Before")»
          public void setupEndpoints() throws Exception {
             super.setUp();
       
-            «resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
+            «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
       
             // Start Server
             try {
-               «resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqServerConnectionFactory")» _serverConnectionFactory = new ZeroMqServerConnectionFactory(logger);
-               _serverEndpoint = new «resolve("com.btc.cab.servicecomm.singlequeue.core.ServerEndpointFactory")»(logger, _serverConnectionFactory).create(connectionString);
+               «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqServerConnectionFactory")» _serverConnectionFactory = new ZeroMqServerConnectionFactory(logger);
+               _serverEndpoint = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ServerEndpointFactory")»(logger, _serverConnectionFactory).create(connectionString);
                _serverRunner = new «server_runner_name»(_serverEndpoint);
                _serverRunner.registerService();
       
                logger.debug("Server started...");
                
                // start client
-               «resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» connectionFactory = new «resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqClientConnectionFactory")»(
+               «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» connectionFactory = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqClientConnectionFactory")»(
                      logger);
-               _clientEndpoint = new «resolve("com.btc.cab.servicecomm.singlequeue.core.ClientEndpointFactory")»(logger, connectionFactory).create(connectionString);
+               _clientEndpoint = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ClientEndpointFactory")»(logger, connectionFactory).create(connectionString);
       
                logger.debug("Client started...");
-               testSubject = «resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.PROXY)) + '''.«interface_declaration.name»ProxyFactory''')»
+               testSubject = «typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.PROXY)) + '''.«interface_declaration.name»ProxyFactory''')»
                      .createDirectProtobufProxy(_clientEndpoint);
       
                logger.debug("«interface_declaration.name» instantiated...");
@@ -724,7 +723,7 @@ class JavaGenerator
             }
          }
       
-         «resolve(JavaClassNames.JUNIT_AFTER).alias("@After")»
+         «typeResolver.resolve(JavaClassNames.JUNIT_AFTER).alias("@After")»
          public void tearDown() {
       
             try {
@@ -754,7 +753,7 @@ class JavaGenerator
       val is_void = function.returnedType.isVoid
       
       '''
-      «IF !is_sync»«resolve("java.util.concurrent.Future")»<«ENDIF»«IF !is_sync && is_void»Void«ELSE»«toText(function.returnedType)»«ENDIF»«IF !function.isSync»>«ENDIF» «function.name.toFirstLower»(
+      «IF !is_sync»«typeResolver.resolve("java.util.concurrent.Future")»<«ENDIF»«IF !is_sync && is_void»Void«ELSE»«toText(function.returnedType)»«ENDIF»«IF !function.isSync»>«ENDIF» «function.name.toFirstLower»(
          «FOR param : function.parameters SEPARATOR ","»
             «IF param.direction == ParameterDirection.PARAM_IN»final «ENDIF»«toText(param.paramType)» «toText(param)»
          «ENDFOR»
@@ -772,7 +771,7 @@ class JavaGenerator
       }
 
       '''
-      public abstract class «toText(event)» implements «resolve(JavaClassNames.OBSERVABLE)»<«toText(event.data)»> {
+      public abstract class «toText(event)» implements «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«toText(event.data)»> {
          
          «IF !keys.empty»
             public class KeyType {
@@ -793,7 +792,7 @@ class JavaGenerator
                «ENDFOR»
             }
             
-            public abstract «resolve(JavaClassNames.CLOSEABLE)» subscribe(«resolve(JavaClassNames.OBSERVER)»<«toText(event.data)»> subscriber, Iterable<KeyType> keys);
+            public abstract «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«toText(event.data)»> subscriber, Iterable<KeyType> keys);
          «ENDIF»
       }
       '''
@@ -807,15 +806,15 @@ class JavaGenerator
       // collect all used data types to avoid duplicates
       val data_types = GeneratorUtil.getEncodableTypes(container)
       
-      val java_uuid = resolve(JavaClassNames.UUID)
-      val byte_string = resolve("com.google.protobuf.ByteString")
-      val byte_buffer = resolve("java.nio.ByteBuffer")
-      val i_error = resolve(JavaClassNames.ERROR)
-      val service_fault_handler_factory = resolve(MavenResolver.resolvePackage(container, Optional.of(container.mainProjectType)) + "." + container.asServiceFaultHandlerFactory)
-      val completable_future = resolve(JavaClassNames.COMPLETABLE_FUTURE)
-      val method = resolve("java.lang.reflect.Method")
-      val collection = resolve(JavaClassNames.COLLECTION)
-      val collectors = resolve("java.util.stream.Collectors")
+      val java_uuid = typeResolver.resolve(JavaClassNames.UUID)
+      val byte_string = typeResolver.resolve("com.google.protobuf.ByteString")
+      val byte_buffer = typeResolver.resolve("java.nio.ByteBuffer")
+      val i_error = typeResolver.resolve(JavaClassNames.ERROR)
+      val service_fault_handler_factory = typeResolver.resolve(MavenResolver.resolvePackage(container, Optional.of(container.mainProjectType)) + "." + container.asServiceFaultHandlerFactory)
+      val completable_future = typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)
+      val method = typeResolver.resolve("java.lang.reflect.Method")
+      val collection = typeResolver.resolve(JavaClassNames.COLLECTION)
+      val collectors = typeResolver.resolve("java.util.stream.Collectors")
       
       val codec_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, if (container instanceof InterfaceDeclaration) container.name else Constants.FILE_NAME_TYPES) + "Codec"
       // TODO most of the generated file is reusable, and should be moved to com.btc.cab.commons (UUID utilities) or something similar 
@@ -825,7 +824,7 @@ class JavaGenerator
             
             private static «i_error» encodeException(Exception e)
             {
-               Exception cause = (Exception) «resolve("org.apache.commons.lang3.exception.ExceptionUtils")».getRootCause(e);
+               Exception cause = (Exception) «typeResolver.resolve("org.apache.commons.lang3.exception.ExceptionUtils")».getRootCause(e);
                return «service_fault_handler_factory».createError(cause);
             }
             
@@ -890,7 +889,7 @@ class JavaGenerator
                     failableData.get();
                  } catch (Exception e) // retrieve and encode underlying exception
                  {
-                    «resolve(JavaClassNames.ERROR)» error = encodeException(e);
+                    «typeResolver.resolve(JavaClassNames.ERROR)» error = encodeException(e);
                     «method» newBuilderMethod = targetType.getDeclaredMethod("newBuilder");
                     Object builder = newBuilderMethod.invoke(null);
                     «method» setExceptionMethod = builder.getClass().getDeclaredMethod("setException", String.class);
@@ -1019,7 +1018,7 @@ class JavaGenerator
                   return encode( («java_uuid») plainData );
 
                «FOR data_type : data_types»
-                  if (plainData instanceof «resolve(data_type)»)
+                  if (plainData instanceof «typeResolver.resolve(data_type)»)
                   {
                      «makeEncode(data_type)»
                   }
@@ -1056,7 +1055,7 @@ class JavaGenerator
    
    def private dispatch String makeDecode(EnumDeclaration element)
    {
-      val api_type_name = resolve(element)
+      val api_type_name = typeResolver.resolve(element)
       val protobuf_type_name = resolveProtobuf(element, Optional.empty)
       
       '''
@@ -1066,7 +1065,7 @@ class JavaGenerator
             return «api_type_name».«item»;
       «ENDFOR»
       else
-         throw new «resolve("java.util.NoSuchElementException")»("Unknown value " + typedData.toString() + " for enumeration «element.name»");
+         throw new «typeResolver.resolve("java.util.NoSuchElementException")»("Unknown value " + typedData.toString() + " for enumeration «element.name»");
       '''
    }
    
@@ -1082,7 +1081,7 @@ class JavaGenerator
    
    def private String makeDecodeStructOrException(EObject element, Iterable<MemberElementWrapper> members, Optional<Collection<AbstractTypeDeclaration>> type_declarations)
    {
-      val api_type_name = resolve(element)
+      val api_type_name = typeResolver.resolve(element)
       val protobuf_type_name = resolveProtobuf(element, Optional.empty)
       
       val all_types = new ArrayList<MemberElementWrapper>
@@ -1107,7 +1106,7 @@ class JavaGenerator
          «val is_optional = member.optional»
          «val api_type = toText(member.type)»
          «val member_name = member.name.asParameter»
-         «IF is_optional»«resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«api_type»«IF is_optional»>«ENDIF» «member_name» = «IF is_optional»(typedData.«IF is_sequence»get«ELSE»has«ENDIF»«member.name.asProtobufName»«IF is_sequence»Count«ENDIF»()«IF is_sequence» > 0«ENDIF») ? «ENDIF»«IF is_optional»Optional.of(«ENDIF»«IF use_codec»«IF !is_sequence»(«api_type») «ENDIF»«codec».decode«IF is_failable»Failable«ENDIF»(«ENDIF»«IF is_short || is_byte || is_char»(«IF is_byte»byte«ELSEIF is_char»char«ELSE»short«ENDIF») «ENDIF»typedData.get«member.name.asProtobufName»«IF is_sequence»List«ENDIF»()«IF use_codec»)«ENDIF»«IF is_optional»)«ENDIF»«IF is_optional» : Optional.empty()«ENDIF»;
+         «IF is_optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«api_type»«IF is_optional»>«ENDIF» «member_name» = «IF is_optional»(typedData.«IF is_sequence»get«ELSE»has«ENDIF»«member.name.asProtobufName»«IF is_sequence»Count«ENDIF»()«IF is_sequence» > 0«ENDIF») ? «ENDIF»«IF is_optional»Optional.of(«ENDIF»«IF use_codec»«IF !is_sequence»(«api_type») «ENDIF»«codec».decode«IF is_failable»Failable«ENDIF»(«ENDIF»«IF is_short || is_byte || is_char»(«IF is_byte»byte«ELSEIF is_char»char«ELSE»short«ENDIF») «ENDIF»typedData.get«member.name.asProtobufName»«IF is_sequence»List«ENDIF»()«IF use_codec»)«ENDIF»«IF is_optional»)«ENDIF»«IF is_optional» : Optional.empty()«ENDIF»;
       «ENDFOR»
       
       return new «api_type_name» (
@@ -1126,7 +1125,7 @@ class JavaGenerator
    
    def private dispatch String makeEncode(EnumDeclaration element)
    {
-      val api_type_name = resolve(element)
+      val api_type_name = typeResolver.resolve(element)
       val protobuf_type_name = resolveProtobuf(element, Optional.empty)
       
       '''
@@ -1136,7 +1135,7 @@ class JavaGenerator
             return «protobuf_type_name».«item»;
       «ENDFOR»
       else
-         throw new «resolve("java.util.NoSuchElementException")»("Unknown value " + typedData.toString() + " for enumeration «element.name»");
+         throw new «typeResolver.resolve("java.util.NoSuchElementException")»("Unknown value " + typedData.toString() + " for enumeration «element.name»");
       '''
    }
    
@@ -1153,7 +1152,7 @@ class JavaGenerator
    def private String makeEncodeStructOrException(EObject element, Iterable<MemberElementWrapper> members, Optional<Collection<AbstractTypeDeclaration>> type_declarations)
    {
       val protobuf_type = resolveProtobuf(element, Optional.empty)
-      val plain_type = resolve(element)
+      val plain_type = typeResolver.resolve(element)
       
       '''
       «IF !members.empty»«plain_type» typedData = («plain_type») plainData;«ENDIF»
@@ -1165,7 +1164,7 @@ class JavaGenerator
          «val is_failable = is_sequence && Util.isFailable(member.type)»
          «val method_name = '''«IF is_sequence»addAll«ELSE»set«ENDIF»«member.name.asProtobufName»'''»
          «IF member.optional»
-            if (typedData.get«resolve(JavaClassNames.OPTIONAL).alias(member.name.toFirstUpper)»().isPresent())
+            if (typedData.get«typeResolver.resolve(JavaClassNames.OPTIONAL).alias(member.name.toFirstUpper)»().isPresent())
             {
                builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«member.name.toFirstUpper»().get()«IF is_failable», «resolveFailableProtobufType(member.type, Util.getScopeDeterminant(member.type))».class«ENDIF»«IF use_codec»)«ENDIF»);
             }
@@ -1197,26 +1196,26 @@ class JavaGenerator
    def private String generateClientConsoleProgram(String class_name, String log4j_name, InterfaceDeclaration interface_declaration)
    {
       val resources_location = MavenArtifactType.TEST_RESOURCES.directoryLayout
-      val api_name = resolve(interface_declaration)
+      val api_name = typeResolver.resolve(interface_declaration)
       val connection_string = '''tcp://127.0.0.1:«Constants.DEFAULT_PORT»'''
       
       '''
       public class «class_name» {
       
          private final static String connectionString = "«connection_string»";
-         private static final «resolve("org.apache.log4j.Logger")» logger = Logger.getLogger(«class_name».class);
+         private static final «typeResolver.resolve("org.apache.log4j.Logger")» logger = Logger.getLogger(«class_name».class);
          
          public static void main(String[] args) {
             
-            «resolve(JavaClassNames.CLIENT_ENDPOINT)» client = null;
+            «typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» client = null;
             «api_name» proxy = null;
-            «resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
+            «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
 
             logger.info("Client trying to connect to " + connectionString);
-            «resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» connectionFactory = new «resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqClientConnectionFactory")»(logger);
+            «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» connectionFactory = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqClientConnectionFactory")»(logger);
             
             try {
-               client = new «resolve("com.btc.cab.servicecomm.singlequeue.core.ClientEndpointFactory")»(logger, connectionFactory).create(connectionString);
+               client = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ClientEndpointFactory")»(logger, connectionFactory).create(connectionString);
             } catch (Exception e)
             {
                logger.error("Client could not start! Is there a server running on «connection_string»? Error: " + e.toString());
@@ -1224,7 +1223,7 @@ class JavaGenerator
       
             logger.info("Client started...");
             try {
-               proxy = «resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.PROXY)) + '''.«interface_declaration.name»ProxyFactory''')».createDirectProtobufProxy(client);
+               proxy = «typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.PROXY)) + '''.«interface_declaration.name»ProxyFactory''')».createDirectProtobufProxy(client);
             } catch (Exception e) {
                logger.error("Could not create proxy! Error: " + e.toString());
             }
@@ -1257,9 +1256,9 @@ class JavaGenerator
                   callCount++;
                   «FOR param : function.parameters»
                      «val is_sequence = Util.isSequenceType(param.paramType)»
-                     «val basic_type = resolve(Util.getUltimateType(param.paramType))»
+                     «val basic_type = typeResolver.resolve(Util.getUltimateType(param.paramType))»
                      «val is_failable = is_sequence && Util.isFailable(param.paramType)»
-                     «IF is_sequence»«resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«ENDIF»«basic_type»«IF is_sequence»«IF is_failable»>«ENDIF»>«ENDIF» «param.paramName.asParameter» = «makeDefaultValue(param.paramType)»;
+                     «IF is_sequence»«typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«ENDIF»«basic_type»«IF is_sequence»«IF is_failable»>«ENDIF»>«ENDIF» «param.paramName.asParameter» = «makeDefaultValue(param.paramType)»;
                   «ENDFOR»
                   «IF !is_void»Object result = «ENDIF»proxy.«function_name»(«function.parameters.map[paramName.asParameter].join(", ")»)«IF !function.sync».get()«ENDIF»;
                   logger.info("Result of «api_name».«function_name»: «IF is_void»void"«ELSE»" + result.toString()«ENDIF»);
@@ -1347,15 +1346,15 @@ class JavaGenerator
    {
       reinitializeFile
       
-      val api_name = resolve(interface_declaration)
-      val impl_name = resolve(interface_declaration, ProjectType.IMPL)
-      val dispatcher_name = resolve(interface_declaration, ProjectType.DISPATCHER)
+      val api_name = typeResolver.resolve(interface_declaration)
+      val impl_name = typeResolver.resolve(interface_declaration, ProjectType.IMPL)
+      val dispatcher_name = typeResolver.resolve(interface_declaration, ProjectType.DISPATCHER)
       
       '''
-      public class «class_name» implements «resolve("java.lang.AutoCloseable")» {
+      public class «class_name» implements «typeResolver.resolve("java.lang.AutoCloseable")» {
       
-         private final «resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
-         private «resolve("com.btc.cab.servicecomm.api.IServiceRegistration")» _serviceRegistration;
+         private final «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
+         private «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceRegistration")» _serviceRegistration;
       
          public «class_name»(IServerEndpoint serverEndpoint) {
             _serverEndpoint = serverEndpoint;
@@ -1364,7 +1363,7 @@ class JavaGenerator
          public void registerService() throws Exception {
       
             // Create ServiceDescriptor for the service
-            «resolve("com.btc.cab.servicecomm.api.dto.ServiceDescriptor")» serviceDescriptor = new ServiceDescriptor();
+            «typeResolver.resolve("com.btc.cab.servicecomm.api.dto.ServiceDescriptor")» serviceDescriptor = new ServiceDescriptor();
 
             serviceDescriptor.setServiceTypeUuid(«api_name».TypeGuid);
             serviceDescriptor.setServiceTypeName("«api_name.fullyQualifiedName»");
@@ -1373,7 +1372,7 @@ class JavaGenerator
                .setServiceInstanceDescription("«api_name.fullyQualifiedName» instance for integration tests");
       
             // Create dispatcher and dispatchee instances
-            «resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")» protoBufServerHelper = new ProtoBufServerHelper();
+            «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")» protoBufServerHelper = new ProtoBufServerHelper();
             «impl_name» dispatchee = new «impl_name»();
             «dispatcher_name» dispatcher = new «dispatcher_name»(dispatchee, protoBufServerHelper);
       
@@ -1388,7 +1387,7 @@ class JavaGenerator
          }
       
          @Override
-         public void close() throws «resolve("java.lang.Exception")» {
+         public void close() throws «typeResolver.resolve("java.lang.Exception")» {
             _serviceRegistration.unregisterService();
             _serverEndpoint.close();
          }
@@ -1406,14 +1405,14 @@ class JavaGenerator
       public class «class_name» {
          
          private static String _connectionString;
-         private static «resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
+         private static «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
          private static «server_runner_class_name» _serverRunner;
-         private static final «resolve("org.apache.log4j.Logger")» logger = Logger.getLogger(Program.class);
+         private static final «typeResolver.resolve("org.apache.log4j.Logger")» logger = Logger.getLogger(Program.class);
          private static String _file;
          
          public static void main(String[] args) {
             
-            «resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
+            «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
             // Parse Parameters
             int i = 0;
             while (i < args.length && args[i].startsWith("-")) {
@@ -1443,13 +1442,13 @@ class JavaGenerator
             logger.info("ConnectionString: " + _connectionString);
             
             @SuppressWarnings("resource")
-            «resolve("org.springframework.context.ApplicationContext")» ctx = new «resolve("org.springframework.context.support.FileSystemXmlApplicationContext")»(_file);
+            «typeResolver.resolve("org.springframework.context.ApplicationContext")» ctx = new «typeResolver.resolve("org.springframework.context.support.FileSystemXmlApplicationContext")»(_file);
             
-            «resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» _serverConnectionFactory = (IConnectionFactory) ctx
+            «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» _serverConnectionFactory = (IConnectionFactory) ctx
                   .getBean("ServerFactory", logger);
             
             try {
-               _serverEndpoint = new «resolve("com.btc.cab.servicecomm.singlequeue.core.ServerEndpointFactory")»(logger,_serverConnectionFactory).create(_connectionString);
+               _serverEndpoint = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ServerEndpointFactory")»(logger,_serverConnectionFactory).create(_connectionString);
                
                _serverRunner = new «server_runner_class_name»(_serverEndpoint);
                _serverRunner.registerService();
@@ -1464,7 +1463,7 @@ class JavaGenerator
                if (_serverEndpoint != null)
                   try {
                      _serverEndpoint.close();
-                  } catch («resolve("java.lang.Exception")» e) {
+                  } catch («typeResolver.resolve("java.lang.Exception")» e) {
                      logger.warn("Exception close by ServerRunner", e);
                   }
             }
@@ -1496,16 +1495,16 @@ class JavaGenerator
       reinitializeFile
       
       val anonymous_event = Util.getAnonymousEvent(interface_declaration)
-      val api_name = resolve(interface_declaration)
+      val api_name = typeResolver.resolve(interface_declaration)
       val protobuf_request = resolveProtobuf(interface_declaration, Optional.of(ProtobufType.REQUEST))
       val protobuf_response = resolveProtobuf(interface_declaration, Optional.of(ProtobufType.RESPONSE))
 
       '''
       public class «class_name» implements «api_name» {
          
-         private final «resolve(JavaClassNames.CLIENT_ENDPOINT)» _endpoint;
-         private final «resolve("com.btc.cab.servicecomm.api.IServiceReference")» _serviceReference;
-         private final «resolve("com.btc.cab.servicecomm.serialization.IMessageBufferSerializer")» _serializer;
+         private final «typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» _endpoint;
+         private final «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceReference")» _serviceReference;
+         private final «typeResolver.resolve("com.btc.cab.servicecomm.serialization.IMessageBufferSerializer")» _serializer;
          
          public «class_name»(IClientEndpoint endpoint) throws Exception {
             _endpoint = endpoint;
@@ -1513,12 +1512,12 @@ class JavaGenerator
             _serviceReference = _endpoint
                .connectService(«api_name».TypeGuid);
 
-            _serializer = new «resolve("com.btc.cab.servicecomm.serialization.SinglePartMessageBufferSerializer")»(new «resolve("com.btc.cab.servicecomm.protobuf.ProtobufSerializer")»());
+            _serializer = new «typeResolver.resolve("com.btc.cab.servicecomm.serialization.SinglePartMessageBufferSerializer")»(new «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtobufSerializer")»());
 
             // ServiceFaultHandler
             _serviceReference
                .getServiceFaultHandlerManager()
-               .registerHandler(«resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.SERVICE_API)) + '''.«interface_declaration.asServiceFaultHandlerFactory»''')».createServiceFaultHandler());
+               .registerHandler(«typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.SERVICE_API)) + '''.«interface_declaration.asServiceFaultHandlerFactory»''')».createServiceFaultHandler());
          }
          
          «FOR function : interface_declaration.functions SEPARATOR newLine»
@@ -1551,8 +1550,8 @@ class JavaGenerator
                  .set«protobuf_function_name»«Constants.PROTOBUF_REQUEST»(request«function.name»)
                  .build();
                
-               «resolve("java.util.concurrent.Future")»<byte[]> requestFuture = «resolve("com.btc.cab.servicecomm.util.ClientEndpointExtensions")».RequestAsync(_endpoint, _serviceReference, _serializer, request);
-               «resolve("java.util.concurrent.Callable")»<«return_type»> returnCallable = () -> {
+               «typeResolver.resolve("java.util.concurrent.Future")»<byte[]> requestFuture = «typeResolver.resolve("com.btc.cab.servicecomm.util.ClientEndpointExtensions")».RequestAsync(_endpoint, _serviceReference, _serializer, request);
+               «typeResolver.resolve("java.util.concurrent.Callable")»<«return_type»> returnCallable = () -> {
                    byte[] bytes = requestFuture.get();
                    «protobuf_response» response = «protobuf_response».parseFrom(bytes);
                      «IF !is_void || !out_params.empty»«response_message» «response_name» = «ENDIF»response.get«protobuf_function_name»«Constants.PROTOBUF_RESPONSE»();
@@ -1569,7 +1568,7 @@ class JavaGenerator
                               «handleOutputParameter(out_param, temp_param_name, param_name)»
                            «ELSE»
                               «val is_failable = Util.isFailable(out_param.paramType)»
-                              «resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«toText(Util.getUltimateType(out_param.paramType))»«IF is_failable»>«ENDIF»> «temp_param_name» = «codec».decode«IF is_failable»Failable«ENDIF»( «response_name».get«out_param.paramName.asProtobufName»List() );
+                              «typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«toText(Util.getUltimateType(out_param.paramType))»«IF is_failable»>«ENDIF»> «temp_param_name» = «codec».decode«IF is_failable»Failable«ENDIF»( «response_name».get«out_param.paramName.asProtobufName»List() );
                               «param_name».addAll( «temp_param_name» );
                            «ENDIF»
                            
@@ -1592,23 +1591,23 @@ class JavaGenerator
                      «IF !is_void»return result;«ENDIF»
                   };
 
-               «IF !is_void || !is_sync»return «ENDIF»«resolve("com.btc.cab.commons.helper.AsyncHelper")».createAndRunFutureTask(returnCallable)«IF is_sync».get()«ENDIF»;
+               «IF !is_void || !is_sync»return «ENDIF»«typeResolver.resolve("com.btc.cab.commons.helper.AsyncHelper")».createAndRunFutureTask(returnCallable)«IF is_sync».get()«ENDIF»;
             }
          «ENDFOR»
          
          «IF anonymous_event !== null»
             «IF anonymous_event.keys.empty»
-               «val event_type_name = resolve(anonymous_event.data)»
+               «val event_type_name = typeResolver.resolve(anonymous_event.data)»
                /**
                   @see com.btc.cab.commons.IObservable#subscribe
                */
                @Override
-               public «resolve(JavaClassNames.CLOSEABLE)» subscribe(«resolve(JavaClassNames.OBSERVER)»<«resolve(anonymous_event.data)»> observer) throws Exception {
+               public «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«typeResolver.resolve(anonymous_event.data)»> observer) throws Exception {
                   _endpoint.getEventRegistry().createEventRegistration(
                         «event_type_name».EventTypeGuid,
-                        «resolve("com.btc.cab.servicecomm.api.EventKind")».EVENTKINDPUBLISHSUBSCRIBE,
+                        «typeResolver.resolve("com.btc.cab.servicecomm.api.EventKind")».EVENTKINDPUBLISHSUBSCRIBE,
                         «event_type_name».EventTypeGuid.toString());
-                  return «resolve("com.btc.cab.servicecomm.util.EventRegistryExtensions")».subscribe(_endpoint.getEventRegistry()
+                  return «typeResolver.resolve("com.btc.cab.servicecomm.util.EventRegistryExtensions")».subscribe(_endpoint.getEventRegistry()
                         .getSubscriberManager(), _serializerDeserializer,
                         «event_type_name».EventTypeGuid,
                         EventKind.EVENTKINDPUBLISHSUBSCRIBE, observer);
@@ -1617,7 +1616,7 @@ class JavaGenerator
                /**
                   @see ???
                */
-               public «resolve(JavaClassNames.CLOSEABLE)» subscribe(«resolve(JavaClassNames.OBSERVER)»<«resolve(anonymous_event.data)»> observer, Iterable<KeyType> keys) throws Exception {
+               public «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«typeResolver.resolve(anonymous_event.data)»> observer, Iterable<KeyType> keys) throws Exception {
                   «makeDefaultMethodStub»
                }
             «ENDIF»
@@ -1654,12 +1653,12 @@ class JavaGenerator
    {
       reinitializeFile
       
-      val api_type = resolve(interface_declaration)
+      val api_type = typeResolver.resolve(interface_declaration)
       
       '''
       public class «class_name» {
          
-         public static «api_type» createDirectProtobufProxy(«resolve(JavaClassNames.CLIENT_ENDPOINT)» endpoint) throws Exception
+         public static «api_type» createDirectProtobufProxy(«typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» endpoint) throws Exception
          {
             return new «GeneratorUtil.getClassName(param_bundle.build, ProjectType.PROXY, interface_declaration.name)»(endpoint);
          }
@@ -1672,7 +1671,7 @@ class JavaGenerator
       reinitializeFile
       
       val dispatcher_class_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)
-      val api_class_name = resolve(interface_declaration)
+      val api_class_name = typeResolver.resolve(interface_declaration)
       
       val protobuf_request = resolveProtobuf(interface_declaration, Optional.of(ProtobufType.REQUEST))
       val protobuf_response = resolveProtobuf(interface_declaration, Optional.of(ProtobufType.RESPONSE))
@@ -1681,31 +1680,31 @@ class JavaGenerator
          src_root_path + dispatcher_class_name.java,
          generateSourceFile(interface_declaration,
          '''
-         public class «dispatcher_class_name» implements «resolve("com.btc.cab.servicecomm.api.IServiceDispatcher")» {
+         public class «dispatcher_class_name» implements «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceDispatcher")» {
             
             private final «api_class_name» _dispatchee;
 
-            private final «resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")» _protoBufHelper;
+            private final «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")» _protoBufHelper;
 
-            private final «resolve("com.btc.cab.servicecomm.api.IServiceFaultHandlerManager")» _faultHandlerManager;
+            private final «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceFaultHandlerManager")» _faultHandlerManager;
             
             public «dispatcher_class_name»(«api_class_name» dispatchee, ProtoBufServerHelper protoBufHelper) {
                _dispatchee = dispatchee;
                _protoBufHelper = protoBufHelper;
 
                // ServiceFaultHandlerManager
-               _faultHandlerManager = new «resolve("com.btc.cab.servicecomm.faulthandling.ServiceFaultHandlerManager")»();
+               _faultHandlerManager = new «typeResolver.resolve("com.btc.cab.servicecomm.faulthandling.ServiceFaultHandlerManager")»();
          
                // ServiceFaultHandler
-               _faultHandlerManager.registerHandler(«resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.SERVICE_API)) + '''.«interface_declaration.asServiceFaultHandlerFactory»''')».createServiceFaultHandler());
+               _faultHandlerManager.registerHandler(«typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.SERVICE_API)) + '''.«interface_declaration.asServiceFaultHandlerFactory»''')».createServiceFaultHandler());
             }
             
             /**
                @see com.btc.cab.servicecomm.api.IServiceDispatcher#processRequest
             */
             @Override
-            public «resolve("com.btc.cab.servicecomm.common.IMessageBuffer")» processRequest(
-               IMessageBuffer requestBuffer, «resolve("com.btc.cab.servicecomm.common.IPeerIdentity")» peerIdentity, «resolve(JavaClassNames.SERVER_ENDPOINT)» serverEndpoint) throws Exception {
+            public «typeResolver.resolve("com.btc.cab.servicecomm.common.IMessageBuffer")» processRequest(
+               IMessageBuffer requestBuffer, «typeResolver.resolve("com.btc.cab.servicecomm.common.IPeerIdentity")» peerIdentity, «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» serverEndpoint) throws Exception {
                
                byte[] requestByte = _protoBufHelper.deserializeRequest(requestBuffer);
                «protobuf_request» request
@@ -1714,7 +1713,7 @@ class JavaGenerator
                «FOR function : interface_declaration.functions SEPARATOR newLine»
                   «val is_sync = function.isSync»
                   «val is_void = function.returnedType.isVoid»
-                  «val result_type = resolve(function.returnedType)»
+                  «val result_type = typeResolver.resolve(function.returnedType)»
                   «val result_is_sequence = Util.isSequenceType(function.returnedType)»
                   «val result_is_failable = result_is_sequence && Util.isFailable(function.returnedType)»
                   «val result_use_codec = GeneratorUtil.useCodec(function.returnedType, param_bundle.artifactNature) || result_is_failable»
@@ -1728,15 +1727,15 @@ class JavaGenerator
                         «FOR param : out_params»
                            «val is_sequence = Util.isSequenceType(param.paramType)»
                            «val is_failable = is_sequence && Util.isFailable(param.paramType)»
-                           «IF is_sequence»«resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«resolve(Util.getUltimateType(param.paramType))»«IF is_failable»>«ENDIF»>«ELSE»«resolve(param.paramType)»«ENDIF» «param.paramName.asParameter» = «makeDefaultValue(param.paramType)»;
+                           «IF is_sequence»«typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«typeResolver.resolve(Util.getUltimateType(param.paramType))»«IF is_failable»>«ENDIF»>«ELSE»«typeResolver.resolve(param.paramType)»«ENDIF» «param.paramName.asParameter» = «makeDefaultValue(param.paramType)»;
                         «ENDFOR»
                      «ENDIF»
                      
                      // call actual method
-                     «IF !is_void»«IF result_is_sequence»«resolve(JavaClassNames.COLLECTION)»<«IF result_is_failable»«resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«resolve(Util.getUltimateType(function.returnedType))»«IF result_is_failable»>«ENDIF»>«ELSE»«result_type»«ENDIF» result = «ENDIF»_dispatchee.«function.name.asMethod»
+                     «IF !is_void»«IF result_is_sequence»«typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF result_is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«typeResolver.resolve(Util.getUltimateType(function.returnedType))»«IF result_is_failable»>«ENDIF»>«ELSE»«result_type»«ENDIF» result = «ENDIF»_dispatchee.«function.name.asMethod»
                      (
                         «FOR param : function.parameters SEPARATOR ","»
-                           «val plain_type = resolve(param.paramType)»
+                           «val plain_type = typeResolver.resolve(param.paramType)»
                            «val is_byte = Util.isByte(param.paramType)»
                            «val is_short = Util.isInt16(param.paramType)»
                            «val is_char = Util.isChar(param.paramType)»
@@ -1771,7 +1770,7 @@ class JavaGenerator
                «ENDFOR»
                
                // request could not be processed
-               throw new «resolve("com.btc.cab.servicecomm.api.exceptions.InvalidMessageReceivedException")»("Unknown or invalid request");
+               throw new «typeResolver.resolve("com.btc.cab.servicecomm.api.exceptions.InvalidMessageReceivedException")»("Unknown or invalid request");
             }
 
             /**
@@ -1791,7 +1790,7 @@ class JavaGenerator
    {
       reinitializeFile
       val impl_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)
-      val api_name = resolve(interface_declaration)
+      val api_name = typeResolver.resolve(interface_declaration)
       
       file_system_access.generateFile(src_root_path + impl_name.java,
          generateSourceFile(interface_declaration,
@@ -1827,13 +1826,13 @@ class JavaGenerator
    def private dispatch String toText(ParameterElement element)
    {
       '''
-      «resolve(element)»
+      «typeResolver.resolve(element)»
       '''
    }
    
    def private dispatch String toText(MemberElement element)
    {
-      '''«IF element.optional»«resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(element.type)»«IF element.optional»>«ENDIF»'''
+      '''«IF element.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(element.type)»«IF element.optional»>«ENDIF»'''
    }
    
    def private dispatch String toText(ReturnTypeElement element)
@@ -1858,28 +1857,7 @@ class JavaGenerator
    
    def private dispatch String toText(PrimitiveType element)
    {
-      if (element.isInt64)
-         return "Long"
-      else if (element.isInt32)
-         return "Integer"
-      else if (element.isInt16)
-         return "Short"
-      else if (element.isByte)
-         return "Byte"
-      else if (element.isString)
-         return "String"
-      else if (element.isFloat)
-         return "Float"
-      else if (element.isDouble)
-         return "Double"
-      else if (element.isUUID)
-         return resolve(JavaClassNames.UUID).toString
-      else if (element.isBoolean)
-         return "Boolean"
-      else if (element.isChar)
-         return "Character"
-
-      throw new IllegalArgumentException("Unknown PrimitiveType: " + element.class.toString)
+       return typeResolver.resolve(element).toString
    }
    
    def private dispatch String toText(AliasDeclaration element)
@@ -1888,28 +1866,28 @@ class JavaGenerator
       val ultimate_type = Util.getUltimateType(element.type)
       if (type_name === null)
       {
-         type_name = resolve(ultimate_type)
+         type_name = typeResolver.resolve(ultimate_type)
          typedef_table.put(element.name, type_name)
       }
 
       if (!Util.isPrimitive(ultimate_type))
-         referenced_types.add(type_name.fullyQualifiedName)
+         typeResolver.resolve(type_name.fullyQualifiedName)
       return type_name.toString
    }
    
    def private dispatch String toText(EnumDeclaration element)
    {
-      '''«resolve(element)»'''
+      '''«typeResolver.resolve(element)»'''
    }
    
    def private dispatch String toText(EventDeclaration element)
    {
-      '''«resolve(element)»'''
+      '''«typeResolver.resolve(element)»'''
    }
    
    def private dispatch String toText(StructDeclaration element)
    {
-      '''«resolve(element)»'''
+      '''«typeResolver.resolve(element)»'''
    }
    
    def private String makeGetterSetter(String type_name, String var_name)
@@ -1999,10 +1977,10 @@ class JavaGenerator
    def private dispatch String toDeclaration(StructDeclaration element)
    {
       val class_members = new ArrayList<Pair<String, String>>
-      for (member : element.effectiveMembers) class_members.add(Pair.of(member.name, '''«IF member.optional»«resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(member.type)»«IF member.optional»>«ENDIF»'''))
+      for (member : element.effectiveMembers) class_members.add(Pair.of(member.name, '''«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(member.type)»«IF member.optional»>«ENDIF»'''))
       
       val all_class_members = new ArrayList<Pair<String, String>>
-      for (member : element.allMembers) all_class_members.add(Pair.of(member.name, '''«IF member.optional»«resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(member.type)»«IF member.optional»>«ENDIF»'''))
+      for (member : element.allMembers) all_class_members.add(Pair.of(member.name, '''«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(member.type)»«IF member.optional»>«ENDIF»'''))
       
       val is_derived = ( element.supertype !== null )
       val related_event =  Util.getRelatedEvent(element, idl)
@@ -2011,7 +1989,7 @@ class JavaGenerator
       public class «element.name» «IF is_derived»extends «toText(element.supertype)» «ENDIF»{
          «IF related_event !== null»
             
-            public static final «resolve(JavaClassNames.UUID)» EventTypeGuid = UUID.fromString("«GuidMapper.get(related_event)»");
+            public static final «typeResolver.resolve(JavaClassNames.UUID)» EventTypeGuid = UUID.fromString("«GuidMapper.get(related_event)»");
          «ENDIF»
          «FOR class_member : class_members BEFORE newLine»
             private «class_member.value» «class_member.key»;
@@ -2040,90 +2018,24 @@ class JavaGenerator
    
    def private dispatch String toText(ExceptionDeclaration element)
    {
-      val exception_name = resolveException(qualified_name_provider.getFullyQualifiedName(element).toString)
+      val exception_name = typeResolver.resolveException(qualified_name_provider.getFullyQualifiedName(element).toString)
       if (exception_name.isPresent)
          return exception_name.get()
       else
-         '''«resolve(element)»'''
+         '''«typeResolver.resolve(element)»'''
    }
    
    def private dispatch String toText(SequenceDeclaration item)
    {
       val is_failable = item.failable
       
-      '''«resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«toText(item.type)»«IF is_failable»>«ENDIF»>'''
+      '''«typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«toText(item.type)»«IF is_failable»>«ENDIF»>'''
    }
-   
-   def private ResolvedName resolve(String name)
-   {
-      val fully_qualified_name = QualifiedName.create(name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
-      referenced_types.add(name)
-      val dependency = MavenResolver.resolveDependency(name)
-      if (dependency.present) dependencies.add(dependency.get)
-      return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, false)
-   }
-   
-   def private ResolvedName resolve(EObject element)
-   {
-      return resolve(element, element.mainProjectType)
-   }
-   
-   def private ResolvedName resolve(EObject element, ProjectType project_type)
-   {
-      val fully_qualified = false // we want the toString method show short names by default!
-      var name = qualified_name_provider.getFullyQualifiedName(element)
-      
-      // try to resolve CAB-related pseudo-exceptions
-      if (Util.isException(element))
-      {
-         val exception_name = resolveException(name.toString)
-         if (exception_name.present)
-            return new ResolvedName(exception_name.get(), TransformType.PACKAGE, fully_qualified)
-      }
-      
-      if (name === null)
-      {
-         if (element instanceof AbstractType)
-         {
-            if (element.primitiveType !== null)
-            {
-               return resolve(element.primitiveType, project_type)
-            }
-            else if (element.referenceType !== null)
-            {
-               return resolve(Util.getUltimateType(element.referenceType), if (project_type != ProjectType.PROTOBUF) element.referenceType.mainProjectType else project_type)
-            }
-         }
-         else if (element instanceof PrimitiveType)
-         {
-            if (element.uuidType !== null)
-            {
-               if (project_type == ProjectType.PROTOBUF)
-                  return resolve("com.google.protobuf.ByteString")
-               else
-                  return resolve(JavaClassNames.UUID)
-            }
-            else
-               return new ResolvedName(toText(element), TransformType.PACKAGE, fully_qualified)
-         }
-         return new ResolvedName(Names.plain(element), TransformType.PACKAGE, fully_qualified)
-      }
-      
-      val effective_name = MavenResolver.resolvePackage(element, Optional.of(project_type)) + TransformType.PACKAGE.separator
-         + if (element instanceof InterfaceDeclaration) project_type.getClassName(param_bundle.artifactNature, name.lastSegment)
-         else if (element instanceof EventDeclaration) getObservableName(element)
-         else name.lastSegment
-      val fully_qualified_name = QualifiedName.create(effective_name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
-      
-      referenced_types.add(fully_qualified_name.toString)
-      dependencies.add(MavenResolver.resolveDependency(element))
 
-      return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, fully_qualified)
-   }
-   
+   // TODO remove this function
    def private void reinitializeFile()
    {
-      referenced_types.clear
+      typeResolver = new TypeResolver(qualified_name_provider, param_bundle, dependencies)
    }
    
    def private void reinitializeAll()
@@ -2143,7 +2055,7 @@ class JavaGenerator
    def private ResolvedName resolveProtobuf(EObject object, Optional<ProtobufType> protobuf_type)
    {
       if (Util.isUUIDType(object))
-         return resolve(object, ProjectType.PROTOBUF)
+         return typeResolver.resolve(object, ProjectType.PROTOBUF)
       else if (Util.isAlias(object))
          return resolveProtobuf(Util.getUltimateType(object), protobuf_type)
       else if (object instanceof PrimitiveType)
@@ -2181,14 +2093,6 @@ class JavaGenerator
       MavenResolver.resolvePackage(ultimate_type, Optional.of(ProjectType.PROTOBUF)) + TransformType.PACKAGE.separator + codec_name
    }
    
-   def private static String getObservableName(EventDeclaration event)
-   {
-      if (event.name === null)
-         throw new IllegalArgumentException("No named observable for anonymous events!")
-         
-      event.name.toFirstUpper + "Observable"
-   }
-   
    def private static String newLine()
    {
       '''
@@ -2218,7 +2122,7 @@ class JavaGenerator
          if (element.isString)
             return '''""'''
          else if (element.isUUID)
-            return '''«resolve(JavaClassNames.UUID)».randomUUID()'''
+            return '''«typeResolver.resolve(JavaClassNames.UUID)».randomUUID()'''
          else if (element.isBoolean)
             return "false"
          else if (element.isChar)
@@ -2252,11 +2156,11 @@ class JavaGenerator
          val type = toText(element.type)
          val is_failable = element.failable
          // TODO this should better use Collections.emptyList
-         return '''new «resolve("java.util.Vector")»<«IF is_failable»«resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«type»«IF is_failable»>«ENDIF»>()'''
+         return '''new «typeResolver.resolve("java.util.Vector")»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«type»«IF is_failable»>«ENDIF»>()'''
       }
       else if (element instanceof StructDeclaration)
       {
-         return '''new «resolve(element)»(«FOR member : element.allMembers SEPARATOR ", "»«IF member.optional»«resolve(JavaClassNames.OPTIONAL)».empty()«ELSE»«makeDefaultValue(member.type)»«ENDIF»«ENDFOR»)'''
+         return '''new «typeResolver.resolve(element)»(«FOR member : element.allMembers SEPARATOR ", "»«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)».empty()«ELSE»«makeDefaultValue(member.type)»«ENDIF»«ENDFOR»)'''
       }
       else if (element instanceof EnumDeclaration)
       {
@@ -2265,21 +2169,7 @@ class JavaGenerator
       
       return '''0'''
    }
-   
-   def private static Optional<String> resolveException(String name)
-   {
-      // temporarily some special handling for exceptions, because not all
-      // C++ CAB exceptions are supported by the Java CAB
-      switch (name)
-      {
-         case "BTC.Commons.Core.InvalidArgumentException":
-            // TODO shouldn't this use resolve("java.util.IllegalArgumentException")?
-            return Optional.of("IllegalArgumentException")
-         default:
-            return Optional.empty
-      }
-   }
-   
+      
    def private static String asServiceFaultHandlerFactory(EObject container)
    {
       val name = if (container instanceof InterfaceDeclaration) container.name else ""

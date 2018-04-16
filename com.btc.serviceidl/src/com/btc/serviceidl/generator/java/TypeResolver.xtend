@@ -1,0 +1,172 @@
+package com.btc.serviceidl.generator.java
+
+import com.btc.serviceidl.generator.common.Names
+import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.common.ResolvedName
+import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.EventDeclaration
+import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.util.Constants
+import java.util.HashSet
+import java.util.Optional
+import java.util.Set
+import java.util.regex.Pattern
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtext.naming.IQualifiedNameProvider
+import org.eclipse.xtext.naming.QualifiedName
+
+import static extension com.btc.serviceidl.generator.common.Extensions.*
+import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
+
+class TypeResolver
+{
+    @Accessors(PUBLIC_GETTER) // TODO the idea of collecting types to import them is problematic, while it might improve 
+    // readability, it might also lead to conflicting non-qualified names. Since the generated 
+    // code is not intended to be read, at least user-defined types could never be imported, 
+    // which avoids problems with conflicts. Apart from that, this seems like a recurring 
+    // problem when generating Java code using Xtext. Perhaps there is some reusable solution? 
+    private val referenced_types = new HashSet<String>
+
+    private val IQualifiedNameProvider qualified_name_provider
+    private val ParameterBundle.Builder param_bundle
+    private val Set<MavenDependency> dependencies
+
+    private val fully_qualified = false // we want the toString method show short names by default!
+
+    new(IQualifiedNameProvider qualified_name_provider, ParameterBundle.Builder param_bundle,
+        Set<MavenDependency> dependencies)
+    {
+        this.qualified_name_provider = qualified_name_provider
+        this.param_bundle = param_bundle
+        this.dependencies = dependencies
+    }
+
+    def public ResolvedName resolve(String name)
+    {
+        val fully_qualified_name = QualifiedName.create(name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
+        referenced_types.add(name)
+        val dependency = MavenResolver.resolveDependency(name)
+        if (dependency.present) dependencies.add(dependency.get)
+        return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, false)
+    }
+
+    def public ResolvedName resolve(PrimitiveType element)
+    {
+        if (element.isUUID)
+            return resolve(JavaClassNames.UUID)
+        else
+            return new ResolvedName(getPrimitiveTypeName(element), TransformType.PACKAGE)
+    }
+
+    def getPrimitiveTypeName(PrimitiveType element)
+    {
+        if (element.isInt64)
+            return "Long"
+        else if (element.isInt32)
+            return "Integer"
+        else if (element.isInt16)
+            return "Short"
+        else if (element.isByte)
+            return "Byte"
+        else if (element.isString)
+            return "String"
+        else if (element.isFloat)
+            return "Float"
+        else if (element.isDouble)
+            return "Double"
+        else if (element.isBoolean)
+            return "Boolean"
+        else if (element.isChar)
+            return "Character"
+
+        throw new IllegalArgumentException("Unknown PrimitiveType: " + element.class.toString)
+    }
+
+    def public ResolvedName resolve(EObject element)
+    {
+        return resolve(element, element.mainProjectType)
+    }
+
+    def public ResolvedName resolve(EObject element, ProjectType project_type)
+    {
+        var name = qualified_name_provider.getFullyQualifiedName(element)
+
+        // try to resolve CAB-related pseudo-exceptions
+        if (element.isException)
+        {
+            val exception_name = resolveException(name.toString)
+            if (exception_name.present)
+                return new ResolvedName(exception_name.get(), TransformType.PACKAGE, fully_qualified)
+        }
+
+        if (name === null)
+        {
+            if (element instanceof AbstractType)
+            {
+                if (element.primitiveType !== null)
+                {
+                    return resolve(element.primitiveType, project_type)
+                }
+                else if (element.referenceType !== null)
+                {
+                    return resolve(element.referenceType.ultimateType,
+                        if (project_type != ProjectType.PROTOBUF) element.referenceType.
+                            mainProjectType else project_type)
+                }
+            }
+            else if (element instanceof PrimitiveType)
+            {
+                if (element.uuidType !== null)
+                {
+                    if (project_type == ProjectType.PROTOBUF)
+                        return resolve("com.google.protobuf.ByteString")
+                    else
+                        return resolve(JavaClassNames.UUID)
+                }
+                else
+                    return resolve(element as PrimitiveType)
+            }
+            return new ResolvedName(Names.plain(element), TransformType.PACKAGE, fully_qualified)
+        }
+
+        val effective_name = MavenResolver.resolvePackage(element, Optional.of(project_type)) +
+            TransformType.PACKAGE.separator + if (element instanceof InterfaceDeclaration)
+                project_type.getClassName(param_bundle.artifactNature, name.lastSegment)
+            else if (element instanceof EventDeclaration) getObservableName(element) else name.lastSegment
+        val fully_qualified_name = QualifiedName.create(
+            effective_name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
+
+        referenced_types.add(fully_qualified_name.toString)
+        dependencies.add(MavenResolver.resolveDependency(element))
+
+        return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, fully_qualified)
+    }
+
+    def public Optional<String> resolveException(String name)
+    {
+        // temporarily some special handling for exceptions, because not all
+        // C++ CAB exceptions are supported by the Java CAB
+        switch (name)
+        {
+            case "BTC.Commons.Core.InvalidArgumentException":
+                // TODO shouldn't this use resolve("java.util.IllegalArgumentException")?
+                return Optional.of("IllegalArgumentException")
+            default:
+                return Optional.empty
+        }
+    }
+
+    def private static String getObservableName(EventDeclaration event)
+    {
+        if (event.name === null)
+            throw new IllegalArgumentException("No named observable for anonymous events!")
+
+        event.name.toFirstUpper + "Observable"
+    }
+
+}
