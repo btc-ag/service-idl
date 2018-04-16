@@ -31,7 +31,6 @@ import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
-import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
@@ -42,12 +41,10 @@ import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
-import com.btc.serviceidl.util.MemberElementWrapper
 import com.btc.serviceidl.util.Util
 import com.google.common.collect.Sets
 import java.util.ArrayList
 import java.util.Arrays
-import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
@@ -60,12 +57,10 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
-import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
-import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.generator.java.BasicJavaSourceGenerator.*
 import static extension com.btc.serviceidl.generator.java.ProtobufUtil.*
-import static extension com.btc.serviceidl.util.Util.*
+import static extension com.btc.serviceidl.util.Extensions.*
 
 class JavaGenerator
 {
