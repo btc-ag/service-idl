@@ -23,8 +23,9 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.idl.InterfaceDeclaration
 
-@Accessors(NONE)
+@Accessors(PACKAGE_GETTER)
 class BasicJavaSourceGenerator
 {
     private val IQualifiedNameProvider qualified_name_provider
@@ -258,4 +259,21 @@ class BasicJavaSourceGenerator
         
         '''
     }
+
+    def public static String asMethod(String name)
+    {
+        name.toFirstLower
+    }
+
+    def public static String asParameter(String name)
+    {
+        name.toFirstLower
+    }
+
+    def public static String asServiceFaultHandlerFactory(EObject container)
+    {
+        val name = if (container instanceof InterfaceDeclaration) container.name else ""
+        '''«name»ServiceFaultHandlerFactory'''
+    }
+
 }

@@ -25,11 +25,12 @@ import static extension com.btc.serviceidl.util.Util.*
 
 class TypeResolver
 {
-    @Accessors(PUBLIC_GETTER) // TODO the idea of collecting types to import them is problematic, while it might improve 
+    // TODO the idea of collecting types to import them is problematic, while it might improve 
     // readability, it might also lead to conflicting non-qualified names. Since the generated 
     // code is not intended to be read, at least user-defined types could never be imported, 
     // which avoids problems with conflicts. Apart from that, this seems like a recurring 
     // problem when generating Java code using Xtext. Perhaps there is some reusable solution? 
+    @Accessors(PUBLIC_GETTER)
     private val referenced_types = new HashSet<String>
 
     private val IQualifiedNameProvider qualified_name_provider
@@ -44,6 +45,11 @@ class TypeResolver
         this.qualified_name_provider = qualified_name_provider
         this.param_bundle = param_bundle
         this.dependencies = dependencies
+    }
+    
+    def public addDependency(MavenDependency dependency)
+    {
+        dependencies.add(dependency)
     }
 
     def public ResolvedName resolve(String name)
