@@ -442,7 +442,7 @@ class JavaGenerator
       reinitializeFile
       file_system_access.generateFile(
          makeProjectSourcePath(interface_declaration, ProjectType.CLIENT_CONSOLE, MavenArtifactType.TEST_RESOURCES, PathType.ROOT) + log4j_name,
-         generateLog4jProperties()
+         ConfigFilesGenerator.generateLog4jProperties()
       )
    }
    
@@ -1048,7 +1048,7 @@ class JavaGenerator
       
       file_system_access.generateFile(
          makeProjectSourcePath(interface_declaration, ProjectType.CLIENT_CONSOLE, MavenArtifactType.TEST_RESOURCES, PathType.ROOT) + log4j_name,
-         generateLog4jProperties()
+         ConfigFilesGenerator.generateLog4jProperties()
       )
    }
    
@@ -1155,50 +1155,13 @@ class JavaGenerator
       
       file_system_access.generateFile(
          makeProjectSourcePath(interface_declaration, ProjectType.SERVER_RUNNER, MavenArtifactType.TEST_RESOURCES, PathType.ROOT) + beans_name,
-         generateSpringBeans(package_name, program_name, interface_declaration)
+         ConfigFilesGenerator.generateSpringBeans(package_name, program_name)
       )
       
       file_system_access.generateFile(
          makeProjectSourcePath(interface_declaration, ProjectType.SERVER_RUNNER, MavenArtifactType.TEST_RESOURCES, PathType.ROOT) + log4j_name,
-         generateLog4jProperties()
+         ConfigFilesGenerator.generateLog4jProperties()
       )
-   }
-   
-   def private String generateLog4jProperties()
-   {
-      reinitializeFile
-      
-      '''
-      # Root logger option
-      log4j.rootLogger=INFO, stdout
-      
-      # Direct log messages to stdout
-      log4j.appender.stdout=org.apache.log4j.ConsoleAppender
-      log4j.appender.stdout.Target=System.out
-      log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
-      log4j.appender.stdout.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n
-      '''
-   }
-   
-   def private String generateSpringBeans(String package_name, String program_name, InterfaceDeclaration interface_declaration)
-   {
-      reinitializeFile
-      
-      '''
-      <?xml version="1.0" encoding="UTF-8"?>
-      <beans xmlns="http://www.springframework.org/schema/beans"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
-      
-         <bean id="ServerFactory" class="com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqServerConnectionFactory">
-            <constructor-arg ref="logger" />
-         </bean>
-      
-         <bean id="logger" class="org.apache.log4j.Logger" factory-method="getLogger">
-            <constructor-arg type="java.lang.String" value="«package_name».«program_name»" />
-         </bean>
-      </beans>
-      '''
    }
    
    def private String generateServerRunnerImplementation(String class_name, InterfaceDeclaration interface_declaration)
