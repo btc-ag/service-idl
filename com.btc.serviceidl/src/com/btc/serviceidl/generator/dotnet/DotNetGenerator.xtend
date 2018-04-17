@@ -611,37 +611,7 @@ class DotNetGenerator
    def private String generateCsTest(String class_name, InterfaceDeclaration interface_declaration)
    {
       reinitializeFile
-      
-      val aggregate_exception = resolve("System.AggregateException")
-      val not_implemented_exception = resolve("System.NotSupportedException")
-
-      '''
-      public abstract class «class_name»
-      {
-         protected abstract «resolve(interface_declaration)» TestSubject { get; }
-
-         «FOR function : interface_declaration.functions»
-            «val is_sync = function.sync»
-            «val is_void = function.returnedType.isVoid»
-            [«resolve("NUnit.Framework.Test")»]
-            public void «function.name»Test()
-            {
-               var e = Assert.Catch(() =>
-               {
-                  «FOR param : function.parameters»
-                     var «param.paramName.asParameter» = «makeDefaultValue(param.paramType)»;
-                  «ENDFOR»
-                  «IF !is_void»var result = «ENDIF»TestSubject.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !is_sync».«IF is_void»Wait()«ELSE»Result«ENDIF»«ENDIF»;
-               });
-               
-               var realException = (e is «aggregate_exception») ? (e as «aggregate_exception»).Flatten().InnerException : e;
-               
-               Assert.IsInstanceOf<«not_implemented_exception»>(realException);
-               Assert.IsTrue(realException.Message.Equals("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»"));
-            }
-         «ENDFOR»
-      }
-      '''
+      new TestGenerator(basicCSharpSourceGenerator).generateCsTest(interface_declaration, class_name).toString
    }
    
    def private String generateCsServerRegistration(String class_name, InterfaceDeclaration interface_declaration)
@@ -661,26 +631,7 @@ class DotNetGenerator
    {
       reinitializeFile
       
-      val api_class_name = resolve(interface_declaration)
-      
-      '''
-      [«resolve("NUnit.Framework.TestFixture")»]
-      public class «class_name» : «getTestClassName(interface_declaration)»
-      {
-         private «api_class_name» _testSubject;
-         
-         [«resolve("NUnit.Framework.SetUp")»]
-         public void Setup()
-         {
-            _testSubject = new «resolve(interface_declaration, ProjectType.IMPL)»();
-         }
-         
-         protected override «api_class_name» TestSubject
-         {
-            get { return _testSubject; }
-         }
-      }
-      '''
+      new TestGenerator(basicCSharpSourceGenerator).generateImplTestStub(interface_declaration, class_name).toString      
    }
 
    def private void generateProxy(String project_root_path, InterfaceDeclaration interface_declaration)
