@@ -12,6 +12,7 @@ package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import org.eclipse.xtend.lib.annotations.Accessors
+import com.btc.serviceidl.generator.common.ProjectType
 
 @Accessors(NONE)
 class ServerRunnerGenerator
@@ -21,6 +22,57 @@ class ServerRunnerGenerator
     def private getTypeResolver()
     {
         basicJavaSourceGenerator.typeResolver
+    }
+
+    def public generateServerRunnerImplementation(String class_name, InterfaceDeclaration interface_declaration)
+    {
+        val api_name = typeResolver.resolve(interface_declaration)
+        val impl_name = typeResolver.resolve(interface_declaration, ProjectType.IMPL)
+        val dispatcher_name = typeResolver.resolve(interface_declaration, ProjectType.DISPATCHER)
+
+        '''
+            public class «class_name» implements «typeResolver.resolve("java.lang.AutoCloseable")» {
+            
+               private final «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
+               private «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceRegistration")» _serviceRegistration;
+            
+               public «class_name»(IServerEndpoint serverEndpoint) {
+                  _serverEndpoint = serverEndpoint;
+               }
+            
+               public void registerService() throws Exception {
+            
+                  // Create ServiceDescriptor for the service
+                  «typeResolver.resolve("com.btc.cab.servicecomm.api.dto.ServiceDescriptor")» serviceDescriptor = new ServiceDescriptor();
+            
+                  serviceDescriptor.setServiceTypeUuid(«api_name».TypeGuid);
+                  serviceDescriptor.setServiceTypeName("«api_name.fullyQualifiedName»");
+                  serviceDescriptor.setServiceInstanceName("«interface_declaration.name»TestService");
+                  serviceDescriptor
+               .setServiceInstanceDescription("«api_name.fullyQualifiedName» instance for integration tests");
+            
+                  // Create dispatcher and dispatchee instances
+                  «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")» protoBufServerHelper = new ProtoBufServerHelper();
+                  «impl_name» dispatchee = new «impl_name»();
+                  «dispatcher_name» dispatcher = new «dispatcher_name»(dispatchee, protoBufServerHelper);
+            
+                  // Register dispatcher
+                  _serviceRegistration = _serverEndpoint
+                        .getLocalServiceRegistry()
+                        .registerService(dispatcher, serviceDescriptor);
+               }
+            
+               public IServerEndpoint getServerEndpoint() {
+                  return _serverEndpoint;
+               }
+            
+               @Override
+               public void close() throws «typeResolver.resolve("java.lang.Exception")» {
+                  _serviceRegistration.unregisterService();
+                  _serverEndpoint.close();
+               }
+            }
+        '''
     }
 
     def public generateServerRunnerProgram(String class_name, String server_runner_class_name, String beans_name,

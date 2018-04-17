@@ -756,7 +756,7 @@ class JavaGenerator
       )
 
       generateJavaFile(src_root_path + server_runner_name.java,
-         interface_declaration, [basicJavaSourceGenerator|generateServerRunnerImplementation(server_runner_name, interface_declaration)]
+         interface_declaration, [basicJavaSourceGenerator|new ServerRunnerGenerator(basicJavaSourceGenerator).generateServerRunnerImplementation(server_runner_name, interface_declaration).toString]
       )
       
       val package_name = MavenResolver.resolvePackage(interface_declaration, Optional.of(param_bundle.projectType))
@@ -771,57 +771,6 @@ class JavaGenerator
       )
    }
    
-   def private String generateServerRunnerImplementation(String class_name, InterfaceDeclaration interface_declaration)
-   {
-      val api_name = typeResolver.resolve(interface_declaration)
-      val impl_name = typeResolver.resolve(interface_declaration, ProjectType.IMPL)
-      val dispatcher_name = typeResolver.resolve(interface_declaration, ProjectType.DISPATCHER)
-      
-      '''
-      public class «class_name» implements «typeResolver.resolve("java.lang.AutoCloseable")» {
-      
-         private final «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
-         private «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceRegistration")» _serviceRegistration;
-      
-         public «class_name»(IServerEndpoint serverEndpoint) {
-            _serverEndpoint = serverEndpoint;
-         }
-      
-         public void registerService() throws Exception {
-      
-            // Create ServiceDescriptor for the service
-            «typeResolver.resolve("com.btc.cab.servicecomm.api.dto.ServiceDescriptor")» serviceDescriptor = new ServiceDescriptor();
-
-            serviceDescriptor.setServiceTypeUuid(«api_name».TypeGuid);
-            serviceDescriptor.setServiceTypeName("«api_name.fullyQualifiedName»");
-            serviceDescriptor.setServiceInstanceName("«interface_declaration.name»TestService");
-            serviceDescriptor
-               .setServiceInstanceDescription("«api_name.fullyQualifiedName» instance for integration tests");
-      
-            // Create dispatcher and dispatchee instances
-            «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")» protoBufServerHelper = new ProtoBufServerHelper();
-            «impl_name» dispatchee = new «impl_name»();
-            «dispatcher_name» dispatcher = new «dispatcher_name»(dispatchee, protoBufServerHelper);
-      
-            // Register dispatcher
-            _serviceRegistration = _serverEndpoint
-                  .getLocalServiceRegistry()
-                  .registerService(dispatcher, serviceDescriptor);
-         }
-      
-         public IServerEndpoint getServerEndpoint() {
-            return _serverEndpoint;
-         }
-      
-         @Override
-         public void close() throws «typeResolver.resolve("java.lang.Exception")» {
-            _serviceRegistration.unregisterService();
-            _serverEndpoint.close();
-         }
-      }
-      '''
-   }
-      
    def private void generateProxy(String src_root_path, InterfaceDeclaration interface_declaration)
    {
       val proxy_factory_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name) + "Factory"
