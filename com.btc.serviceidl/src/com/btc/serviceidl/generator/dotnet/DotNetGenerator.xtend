@@ -17,61 +17,62 @@
 package com.btc.serviceidl.generator.dotnet
 
 import com.btc.serviceidl.generator.common.ArtifactNature
-import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.generator.common.FeatureProfile
+import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.GuidMapper
+import com.btc.serviceidl.generator.common.Names
+import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.common.ProtobufType
+import com.btc.serviceidl.generator.common.ResolvedName
+import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractException
+import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeDeclaration
+import com.btc.serviceidl.idl.AliasDeclaration
+import com.btc.serviceidl.idl.DocCommentElement
+import com.btc.serviceidl.idl.EnumDeclaration
+import com.btc.serviceidl.idl.EventDeclaration
+import com.btc.serviceidl.idl.ExceptionDeclaration
+import com.btc.serviceidl.idl.ExceptionReferenceDeclaration
+import com.btc.serviceidl.idl.FunctionDeclaration
+import com.btc.serviceidl.idl.IDLSpecification
+import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.idl.ModuleDeclaration
+import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.ParameterElement
+import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.idl.ReturnTypeElement
+import com.btc.serviceidl.idl.SequenceDeclaration
+import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.idl.TupleDeclaration
+import com.btc.serviceidl.util.Constants
+import com.btc.serviceidl.util.MemberElementWrapper
+import com.google.common.collect.Sets
+import java.util.ArrayList
+import java.util.Arrays
+import java.util.Calendar
+import java.util.Collection
+import java.util.HashMap
+import java.util.HashSet
+import java.util.Optional
+import java.util.Set
+import java.util.UUID
+import java.util.regex.Pattern
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
-import org.eclipse.xtext.scoping.IScopeProvider
-import java.util.Collection
-import com.btc.serviceidl.idl.IDLSpecification
-import java.util.HashMap
-import java.util.HashSet
-import com.btc.serviceidl.util.Constants
-import com.btc.serviceidl.util.Util
-import org.eclipse.xtext.util.Pair
-import com.btc.serviceidl.generator.common.TransformType
-import java.util.UUID
-import java.util.ArrayList
-import com.btc.serviceidl.idl.AliasDeclaration
-import com.btc.serviceidl.generator.common.Names
-import com.btc.serviceidl.idl.AbstractTypeDeclaration
-import com.btc.serviceidl.idl.EventDeclaration
-import com.btc.serviceidl.idl.FunctionDeclaration
-import com.btc.serviceidl.generator.common.GuidMapper
-import org.eclipse.emf.ecore.EObject
-import com.btc.serviceidl.idl.ModuleDeclaration
-import com.btc.serviceidl.idl.StructDeclaration
-import com.btc.serviceidl.idl.AbstractType
-import com.btc.serviceidl.idl.TupleDeclaration
-import com.btc.serviceidl.idl.SequenceDeclaration
-import com.btc.serviceidl.idl.ExceptionDeclaration
-import com.btc.serviceidl.idl.ExceptionReferenceDeclaration
-import com.btc.serviceidl.idl.EnumDeclaration
-import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.ReturnTypeElement
-import com.btc.serviceidl.idl.ParameterElement
 import org.eclipse.xtext.naming.QualifiedName
-import java.util.regex.Pattern
-import java.util.Calendar
+import org.eclipse.xtext.scoping.IScopeProvider
+import org.eclipse.xtext.util.Pair
+import org.eclipse.xtext.util.Triple
 import org.eclipse.xtext.util.Tuples
-import com.btc.serviceidl.idl.DocCommentElement
-import com.btc.serviceidl.generator.common.ParameterBundle
+
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
+import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
-import com.btc.serviceidl.generator.common.ResolvedName
-import com.btc.serviceidl.generator.common.ProtobufType
-import java.util.Optional
-import org.eclipse.xtext.util.Triple
-import com.btc.serviceidl.idl.AbstractException
-import com.btc.serviceidl.util.MemberElementWrapper
-import com.btc.serviceidl.idl.ParameterDirection
-import com.btc.serviceidl.generator.common.GeneratorUtil
-import com.btc.serviceidl.generator.common.FeatureProfile
-import java.util.Set
-import com.google.common.collect.Sets
-import java.util.Arrays
 
 class DotNetGenerator
 {
@@ -117,7 +118,7 @@ class DotNetGenerator
    
    def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
-      param_bundle = ParameterBundle.createBuilder(Util.getModuleStack(module))
+      param_bundle = ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(module))
       param_bundle.reset(ArtifactNature.DOTNET)
       
       if (!module.virtual)
@@ -162,7 +163,7 @@ class DotNetGenerator
       
       for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
       {
-         param_bundle.reset(Util.getModuleStack(interface_declaration))
+         param_bundle.reset(com.btc.serviceidl.util.Util.getModuleStack(interface_declaration))
          generateProject(project_type, interface_declaration, project_root_path)
       }
       
@@ -309,7 +310,7 @@ class DotNetGenerator
       val impl_class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
       val api_fully_qualified_name = resolve(interface_declaration)
       
-      val anonymous_event = Util.getAnonymousEvent(interface_declaration)
+      val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)
       
       cs_files.add(impl_class_name)
       file_system_access.generateFile(
@@ -397,7 +398,7 @@ class DotNetGenerator
 
                var «service_fault_handler» = new «resolve("BTC.CAB.ServiceComm.NET.FaultHandling.ProtobufServiceFaultHandler")»();
 
-               «makeExceptionRegistration(service_fault_handler, Util.getRaisedExceptions(interface_declaration))»
+               «makeExceptionRegistration(service_fault_handler, com.btc.serviceidl.util.Util.getRaisedExceptions(interface_declaration))»
 
                _faultHandlerManager.RegisterHandler(«service_fault_handler»);
             }
@@ -437,7 +438,7 @@ class DotNetGenerator
                            «val use_codec = GeneratorUtil.useCodec(param, param_bundle.artifactNature)»
                            «val decodeMethod = getDecodeMethod(param.paramType)»
                            «IF is_input»
-                              «IF use_codec»(«resolveDecode(param.paramType)») «resolveCodec(param.paramType)».«decodeMethod»(«ENDIF»«IF use_codec»«resolve(param.paramType, ProjectType.PROTOBUF).alias("request")»«ELSE»request«ENDIF».«request_name».«param.paramName.toLowerCase.toFirstUpper»«IF (Util.isSequenceType(param.paramType))»List«ENDIF»«IF use_codec»)«ENDIF»
+                              «IF use_codec»(«resolveDecode(param.paramType)») «resolveCodec(param.paramType)».«decodeMethod»(«ENDIF»«IF use_codec»«resolve(param.paramType, ProjectType.PROTOBUF).alias("request")»«ELSE»request«ENDIF».«request_name».«param.paramName.toLowerCase.toFirstUpper»«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»List«ENDIF»«IF use_codec»)«ENDIF»
                            «ELSE»
                               out «param.paramName.asParameter»
                            «ENDIF»
@@ -445,15 +446,15 @@ class DotNetGenerator
                      )«IF !func.sync».«IF is_void»Wait()«ELSE»Result«ENDIF»«ENDIF»;«IF !func.sync» // «IF is_void»await«ELSE»retrieve«ENDIF» the result in order to trigger exceptions«ENDIF»
 
                   // deliver response
-                  var responseBuilder = «protobuf_response».Types.«Util.asResponse(func.name)».CreateBuilder()
+                  var responseBuilder = «protobuf_response».Types.«com.btc.serviceidl.util.Util.asResponse(func.name)».CreateBuilder()
                      «val use_codec = GeneratorUtil.useCodec(func.returnedType, param_bundle.artifactNature)»
-                     «val method_name = if (Util.isSequenceType(func.returnedType)) "AddRange" + func.name.toLowerCase.toFirstUpper else "Set" + func.name.toLowerCase.toFirstUpper»
+                     «val method_name = if (com.btc.serviceidl.util.Util.isSequenceType(func.returnedType)) "AddRange" + func.name.toLowerCase.toFirstUpper else "Set" + func.name.toLowerCase.toFirstUpper»
                      «val encodeMethod = getEncodeMethod(func.returnedType)»
                      «IF !is_void».«method_name»(«IF use_codec»(«resolveEncode(func.returnedType)») «resolveCodec(func.returnedType)».«encodeMethod»(«ENDIF»«IF use_codec»«resolve(func.returnedType).alias("result")»«ELSE»result«ENDIF»«IF use_codec»)«ENDIF»)«ENDIF»
                      «FOR param : out_params»
                         «val param_name = param.paramName.asParameter»
                         «val use_codec_param = GeneratorUtil.useCodec(param.paramType, param_bundle.artifactNature)»
-                        «val method_name_param = if (Util.isSequenceType(param.paramType)) "AddRange" + param.paramName.toLowerCase.toFirstUpper else "Set" + param.paramName.toLowerCase.toFirstUpper»
+                        «val method_name_param = if (com.btc.serviceidl.util.Util.isSequenceType(param.paramType)) "AddRange" + param.paramName.toLowerCase.toFirstUpper else "Set" + param.paramName.toLowerCase.toFirstUpper»
                         «val encode_method_param = getEncodeMethod(param.paramType)»
                         .«method_name_param»(«IF use_codec_param»(«resolveEncode(param.paramType)») «resolveCodec(param.paramType)».«encode_method_param»(«ENDIF»«IF use_codec_param»«resolve(param.paramType).alias(param_name)»«ELSE»«param_name»«ENDIF»«IF use_codec_param»)«ENDIF»)
                      «ENDFOR»
@@ -810,8 +811,8 @@ class DotNetGenerator
          «val codec = resolveCodec(member.type)»
          «val useCodec = GeneratorUtil.useCodec(member.type, param_bundle.artifactNature)»
          «val encodeMethod = getEncodeMethod(member.type)»
-         «val method_name = if (Util.isSequenceType(member.type)) "AddRange" + member.name.toLowerCase.toFirstUpper else "Set" + member.name.toLowerCase.toFirstUpper»
-         «IF Util.isAbstractCrossReferenceType(member.type) && !(Util.isEnumType(member.type))»
+         «val method_name = if (com.btc.serviceidl.util.Util.isSequenceType(member.type)) "AddRange" + member.name.toLowerCase.toFirstUpper else "Set" + member.name.toLowerCase.toFirstUpper»
+         «IF com.btc.serviceidl.util.Util.isAbstractCrossReferenceType(member.type) && !(com.btc.serviceidl.util.Util.isEnumType(member.type))»
          if (typedData.«member.name.asProperty» !== null)
          {
              builder.«method_name»(«IF useCodec»(«resolveEncode(member.type)») «codec».«encodeMethod»(«ENDIF»typedData.«member.name.asProperty»«IF useCodec»)«ENDIF»);
@@ -819,7 +820,7 @@ class DotNetGenerator
          «ELSE»
             «val is_nullable = (member.optional && member.type.valueType)»
             «val is_optional_reference = (member.optional && !member.type.valueType)»
-            «IF Util.isByte(member.type) || Util.isInt16(member.type) || Util.isChar(member.type)»
+            «IF com.btc.serviceidl.util.Util.isByte(member.type) || com.btc.serviceidl.util.Util.isInt16(member.type) || com.btc.serviceidl.util.Util.isChar(member.type)»
                «IF is_nullable»if (typedData.«member.name.asProperty».HasValue) «ENDIF»builder.«method_name»(typedData.«member.name.asProperty»«IF is_nullable».Value«ENDIF»);
             «ELSE»
                «IF is_nullable»if (typedData.«member.name.asProperty».HasValue) «ENDIF»«IF is_optional_reference»if (typedData.«member.name.asProperty» !== null) «ENDIF»builder.«method_name»(«IF useCodec»(«resolveEncode(member.type)») «codec».«encodeMethod»(«ENDIF»typedData.«member.name.asProperty»«IF is_nullable».Value«ENDIF»«IF useCodec»)«ENDIF»);
@@ -844,17 +845,17 @@ class DotNetGenerator
 
    def private String getEncodeMethod (EObject type)
    {
-      val is_sequence = Util.isSequenceType(type)
-      val ultimate_type = Util.getUltimateType(type)
+      val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(type)
+      val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(type)
       if (is_sequence)
          "encodeEnumerable<" + resolveEncode(ultimate_type) + ", " + toText(ultimate_type, null) + ">"
-      else if (Util.isByte(type))
+      else if (com.btc.serviceidl.util.Util.isByte(type))
          "encodeByte"
-      else if (Util.isInt16(type))
+      else if (com.btc.serviceidl.util.Util.isInt16(type))
          "encodeShort"
-      else if (Util.isChar(type))
+      else if (com.btc.serviceidl.util.Util.isChar(type))
          "encodeChar"
-      else if (Util.isUUIDType(type))
+      else if (com.btc.serviceidl.util.Util.isUUIDType(type))
          "encodeUUID"
       else 
          "encode"
@@ -884,34 +885,34 @@ class DotNetGenerator
 
    def private String resolveEncode(EObject element)
    {
-      if (Util.isUUIDType(element))
+      if (com.btc.serviceidl.util.Util.isUUIDType(element))
          return resolve("Google.ProtocolBuffers.ByteString").toString
       
-      if (Util.isByte(element) || Util.isInt16(element) || Util.isChar(element))
+      if (com.btc.serviceidl.util.Util.isByte(element) || com.btc.serviceidl.util.Util.isInt16(element) || com.btc.serviceidl.util.Util.isChar(element))
          return "int"
       
-      if (Util.isSequenceType(element))
-         return resolve("System.Collections.Generic.IEnumerable") + '''<«resolveEncode(Util.getUltimateType(element))»>'''
+      if (com.btc.serviceidl.util.Util.isSequenceType(element))
+         return resolve("System.Collections.Generic.IEnumerable") + '''<«resolveEncode(com.btc.serviceidl.util.Util.getUltimateType(element))»>'''
       
       return resolve(element, ProjectType.PROTOBUF).toString
    }
 
    def private String resolveDecode(EObject element)
    {
-      if (Util.isUUIDType(element))
+      if (com.btc.serviceidl.util.Util.isUUIDType(element))
          return resolve("System.Guid").fullyQualifiedName
       
-      if (Util.isByte(element))
+      if (com.btc.serviceidl.util.Util.isByte(element))
          return "byte"
       
-      if (Util.isInt16(element))
+      if (com.btc.serviceidl.util.Util.isInt16(element))
          return "short"
       
-      if (Util.isInt16(element))
+      if (com.btc.serviceidl.util.Util.isInt16(element))
          return "char"
       
-      if (Util.isSequenceType(element))
-         return resolve("System.Collections.Generic.IEnumerable") + '''<«resolveDecode(Util.getUltimateType(element))»>'''
+      if (com.btc.serviceidl.util.Util.isSequenceType(element))
+         return resolve("System.Collections.Generic.IEnumerable") + '''<«resolveDecode(com.btc.serviceidl.util.Util.getUltimateType(element))»>'''
       
       return resolve(element).toString
    }
@@ -937,9 +938,9 @@ class DotNetGenerator
          «FOR member : members SEPARATOR ","»
             «val codec = resolveCodec(member.type)»
             «val useCodec = GeneratorUtil.useCodec(member.type, param_bundle.artifactNature)»
-            «val is_sequence = Util.isSequenceType(member.type)»
+            «val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(member.type)»
             «val is_optional = member.optional»
-            «IF Util.isByte(member.type) || Util.isInt16(member.type) || Util.isChar(member.type)»
+            «IF com.btc.serviceidl.util.Util.isByte(member.type) || com.btc.serviceidl.util.Util.isInt16(member.type) || com.btc.serviceidl.util.Util.isChar(member.type)»
             «member.name.asParameter»: «IF is_optional»(typedData.«hasField(member)») ? «ENDIF»(«resolve(member.type)») typedData.«member.name.toLowerCase.toFirstUpper»«IF is_optional» : («toText(member.type, null)»?) null«ENDIF»
             «ELSE»
             «val decode_method = getDecodeMethod(member.type)»
@@ -962,17 +963,12 @@ class DotNetGenerator
       '''
    }
 
-   def private static String hasField(MemberElementWrapper member)
-   {
-      return '''Has«member.name.toLowerCase.toFirstUpper»'''
-   }
-
    def private String getDecodeMethod (EObject type)
    {
-      val is_sequence = Util.isSequenceType(type)
+      val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(type)
       if (is_sequence)
       {
-         val ultimateType = Util.getUltimateType(type)
+         val ultimateType = com.btc.serviceidl.util.Util.getUltimateType(type)
          if (ultimateType instanceof PrimitiveType && (ultimateType as PrimitiveType).integerType !== null)
          {
             if ((ultimateType as PrimitiveType).isByte)
@@ -987,13 +983,13 @@ class DotNetGenerator
          else
             "decodeEnumerable<" + toText(ultimateType, type) + ", " + resolveProtobuf(ultimateType) + ">" 
       }
-      else if (Util.isByte(type))
+      else if (com.btc.serviceidl.util.Util.isByte(type))
          return "decodeByte"
-      else if (Util.isInt16(type))
+      else if (com.btc.serviceidl.util.Util.isInt16(type))
          return "decodeShort"
-      else if (Util.isChar(type))
+      else if (com.btc.serviceidl.util.Util.isChar(type))
          return "decodeChar"
-      else if (Util.isUUIDType(type))
+      else if (com.btc.serviceidl.util.Util.isUUIDType(type))
          return "decodeUUID"
       else 
          "decode"
@@ -1680,12 +1676,12 @@ class DotNetGenerator
                «ENDFOR»
             )
             {
-               var methodRequestBuilder = «api_request_name».Types.«Util.asRequest(function.name)».CreateBuilder();
+               var methodRequestBuilder = «api_request_name».Types.«com.btc.serviceidl.util.Util.asRequest(function.name)».CreateBuilder();
                «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
                   «val use_codec = GeneratorUtil.useCodec(param, param_bundle.artifactNature)»
                   «val encodeMethod = getEncodeMethod(param.paramType)»
                   «val codec = resolveCodec(param.paramType)»
-                  methodRequestBuilder.«IF (Util.isSequenceType(param.paramType))»AddRange«ELSE»Set«ENDIF»«param.paramName.toLowerCase.toFirstUpper»(«IF use_codec»(«resolveEncode(param.paramType)») «codec».«encodeMethod»(«ENDIF»«toText(param, function)»«IF use_codec»)«ENDIF»);
+                  methodRequestBuilder.«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»AddRange«ELSE»Set«ENDIF»«param.paramName.toLowerCase.toFirstUpper»(«IF use_codec»(«resolveEncode(param.paramType)») «codec».«encodeMethod»(«ENDIF»«toText(param, function)»«IF use_codec»)«ENDIF»);
                «ENDFOR»
                var requestBuilder = «api_request_name».CreateBuilder();
                requestBuilder.Set«function.name.toLowerCase.toFirstUpper»Request(methodRequestBuilder.BuildPartial());
@@ -1703,14 +1699,14 @@ class DotNetGenerator
                   «api_response_name» response = «api_response_name».ParseFrom(task.Result.PopFront());
                   «val use_codec = GeneratorUtil.useCodec(function.returnedType, param_bundle.artifactNature)»
                   «val decodeMethod = getDecodeMethod(function.returnedType)»
-                  «val is_sequence = Util.isSequenceType(function.returnedType)»
+                  «val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)»
                   «val codec = resolveCodec(function.returnedType)»
                   «IF !out_params.empty»
                      // handle [out] parameters
                   «ENDIF»
                   «FOR param : out_params»
                      «val basic_name = param.paramName.asParameter»
-                     «val is_sequence_param = Util.isSequenceType(param.paramType)»
+                     «val is_sequence_param = com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
                      «val use_codec_param = GeneratorUtil.useCodec(param.paramType, param_bundle.artifactNature)»
                      «val decode_method_param = getDecodeMethod(param.paramType)»
                      «val codec_param = resolveCodec(param.paramType)»
@@ -1741,7 +1737,7 @@ class DotNetGenerator
                return new «event_name»Impl(_endpoint);
             }
          «ENDFOR»
-         «val anonymous_event = Util.getAnonymousEvent(interface_declaration)»
+         «val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)»
          «IF anonymous_event !== null»
             «val event_type_name = toText(anonymous_event.data, anonymous_event)»
             «val deserializing_observer = getDeserializingObserverName(anonymous_event)»
@@ -1824,13 +1820,13 @@ class DotNetGenerator
          {
             var «service_fault_handler» = new «resolve("BTC.CAB.ServiceComm.NET.FaultHandling.ProtobufServiceFaultHandler")»();
 
-            «makeExceptionRegistration(service_fault_handler, Util.getRaisedExceptions(interface_declaration))»
+            «makeExceptionRegistration(service_fault_handler, com.btc.serviceidl.util.Util.getRaisedExceptions(interface_declaration))»
             
             serviceFaultHandlerManager.RegisterHandler(«service_fault_handler»);
          }
          
          «FOR function : interface_declaration.functions SEPARATOR System.lineSeparator»
-            «val request_name = Util.asRequest(function.name)»
+            «val request_name = com.btc.serviceidl.util.Util.asRequest(function.name)»
             «val data_contract_name = getDataContractName(interface_declaration, function, ProtobufType.REQUEST)»
             public static «protobuf_request» Encode_«request_name»(«data_contract_name» arg)
             {
@@ -1840,7 +1836,7 @@ class DotNetGenerator
                      «val codec = resolveCodec(param.paramType)»
                      «val use_codec = GeneratorUtil.useCodec(param, param_bundle.artifactNature)»
                      «val encodeMethod = getEncodeMethod(param.paramType)»
-                     .«IF (Util.isSequenceType(param.paramType))»AddRange«ELSE»Set«ENDIF»«param.paramName.toLowerCase.toFirstUpper»(«IF use_codec»(«resolveEncode(param.paramType)») «codec».«encodeMethod»(«ENDIF»arg.«param.paramName.asProperty»«IF use_codec»)«ENDIF»)
+                     .«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»AddRange«ELSE»Set«ENDIF»«param.paramName.toLowerCase.toFirstUpper»(«IF use_codec»(«resolveEncode(param.paramType)») «codec».«encodeMethod»(«ENDIF»arg.«param.paramName.asProperty»«IF use_codec»)«ENDIF»)
                   «ENDFOR»
                   ;
                   
@@ -1860,7 +1856,7 @@ class DotNetGenerator
             public static «response_name» Decode_«response_name»(«protobuf_response» arg)
             {
                var response = new «response_name»();
-               response.«returnValueProperty» = «IF use_codec»(«return_type») «codec».«decodeMethod»(«ENDIF»arg.«protobuf_message»Response.«protobuf_message»«IF Util.isSequenceType(function.returnedType)»List«ENDIF»«IF use_codec»)«ENDIF»;
+               response.«returnValueProperty» = «IF use_codec»(«return_type») «codec».«decodeMethod»(«ENDIF»arg.«protobuf_message»Response.«protobuf_message»«IF com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)»List«ENDIF»«IF use_codec»)«ENDIF»;
                return response;
             }
          «ENDFOR»
@@ -1870,7 +1866,7 @@ class DotNetGenerator
    
    def private void generateServiceAPI(String project_root_path, InterfaceDeclaration interface_declaration)
    {
-      val anonymous_event = Util.getAnonymousEvent(interface_declaration)
+      val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)
       
       // record type aliases
       for (type_alias : interface_declaration.contains.filter(AliasDeclaration))
@@ -2078,7 +2074,7 @@ class DotNetGenerator
          val all_class_members = new ArrayList<Triple<String, String, String>>
          element.allMembers.forEach[e | all_class_members.add(Tuples.create(e.name.asProperty, toText(e, element), maybeOptional(e)))]
 
-         val related_event =  Util.getRelatedEvent(element, idl)
+         val related_event =  com.btc.serviceidl.util.Util.getRelatedEvent(element, idl)
          
          '''
          public class «element.name»«IF element.supertype !== null» : «resolve(element.supertype)»«ENDIF»
@@ -2170,7 +2166,7 @@ class DotNetGenerator
    
    def private dispatch String toText(DocCommentElement item, EObject context)
    {
-      return '''/// «Util.getPlainText(item).replaceAll("\\r", System.lineSeparator + "/// ")»'''
+      return '''/// «com.btc.serviceidl.util.Util.getPlainText(item).replaceAll("\\r", System.lineSeparator + "/// ")»'''
    }
    
    def private String generateCsproj(Collection<String> cs_files)
@@ -2431,7 +2427,7 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
          return new ResolvedName(Names.plain(element), TransformType.PACKAGE, fully_qualified)
       }
      
-      var result = GeneratorUtil.transform(ParameterBundle.createBuilder(Util.getModuleStack(Util.getScopeDeterminant(element))).reset(ArtifactNature.DOTNET).with(project_type).with(TransformType.PACKAGE).build)
+      var result = GeneratorUtil.transform(ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(com.btc.serviceidl.util.Util.getScopeDeterminant(element))).reset(ArtifactNature.DOTNET).with(project_type).with(TransformType.PACKAGE).build)
       result += Constants.SEPARATOR_PACKAGE + if (element instanceof InterfaceDeclaration) project_type.getClassName(param_bundle.artifactNature, name.lastSegment) else name.lastSegment
       
       val package_name = QualifiedName.create(result.split(Pattern.quote(Constants.SEPARATOR_PACKAGE))).skipLast(1)
@@ -2447,7 +2443,7 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
    
    def private void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
    {
-      val module_stack = Util.getModuleStack(referenced_object)
+      val module_stack = com.btc.serviceidl.util.Util.getModuleStack(referenced_object)
       var project_path = ""
       
       val temp_param = new ParameterBundle.Builder()
@@ -2527,20 +2523,13 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
    def private String getProtobufRequestClassName(InterfaceDeclaration interface_declaration)
    {
       resolve(interface_declaration, ProjectType.PROTOBUF)
-      return GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).with(ProjectType.PROTOBUF).build) + Constants.SEPARATOR_PACKAGE + Util.asRequest(interface_declaration.name)
+      return GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).with(ProjectType.PROTOBUF).build) + Constants.SEPARATOR_PACKAGE + com.btc.serviceidl.util.Util.asRequest(interface_declaration.name)
    }
-   
-   def private static String getDataContractName(InterfaceDeclaration interface_declaration, FunctionDeclaration function_declaration, ProtobufType protobuf_type)
-   {
-      interface_declaration.name + "_" +
-         if (protobuf_type == ProtobufType.REQUEST) Util.asRequest(function_declaration.name)
-         else Util.asResponse(function_declaration.name)
-   }
-   
+      
    def private String getProtobufResponseClassName(InterfaceDeclaration interface_declaration)
    {
       resolve(interface_declaration, ProjectType.PROTOBUF)
-      return GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).with(ProjectType.PROTOBUF).build) + Constants.SEPARATOR_PACKAGE + Util.asResponse(interface_declaration.name)
+      return GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).with(ProjectType.PROTOBUF).build) + Constants.SEPARATOR_PACKAGE + com.btc.serviceidl.util.Util.asResponse(interface_declaration.name)
    }
    
    def private String getCsprojName(ParameterBundle.Builder builder)
@@ -2573,11 +2562,11 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
    
    def private String resolveCodec(EObject object)
    {
-      val ultimate_type = Util.getUltimateType(object)
+      val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
       
       val temp_param = new ParameterBundle.Builder
       temp_param.reset(param_bundle.artifactNature)
-      temp_param.reset(Util.getModuleStack(ultimate_type))
+      temp_param.reset(com.btc.serviceidl.util.Util.getModuleStack(ultimate_type))
       temp_param.reset(ProjectType.PROTOBUF)
       
       val codec_name = GeneratorUtil.getCodecName(ultimate_type)
@@ -2585,39 +2574,6 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
       resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
       
       GeneratorUtil.transform(temp_param.with(TransformType.PACKAGE).build) + TransformType.PACKAGE.separator + codec_name
-   }
-   
-   def private static String getObservableName(EventDeclaration event)
-   {
-      if (event.name === null)
-         throw new IllegalArgumentException("No named observable for anonymous events!")
-         
-      event.name.toFirstUpper + "Observable"
-   }
-   
-   def private static String getDeserializingObserverName(EventDeclaration event)
-   {
-      (event.name ?: "") + "DeserializingObserver"
-   }
-   
-   def private static String getTestClassName(InterfaceDeclaration interface_declaration)
-   {
-      interface_declaration.name + "Test"
-   }
-   
-   def private static String getProxyFactoryName(InterfaceDeclaration interface_declaration)
-   {
-      interface_declaration.name + "ProxyFactory"
-   }
-   
-   def private static String getServerRegistrationName(InterfaceDeclaration interface_declaration)
-   {
-      interface_declaration.name + "ServerRegistration"
-   }
-   
-   def private static String getConstName(InterfaceDeclaration interface_declaration)
-   {
-      interface_declaration.name + "Const"
    }
    
    /**
@@ -2636,108 +2592,11 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
       }
    }
    
-   def private static boolean isExecutable(ProjectType pt)
-   {
-      return (pt == ProjectType.SERVER_RUNNER || pt == ProjectType.CLIENT_CONSOLE)
-   }
-   
    def private String getLog4NetConfigFile()
    {
       GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).build).toLowerCase + ".log4net".config
    }
-   
-   /**
-    * For optional struct members, this generates an "?" to produce a C# Nullable
-    * type; if the type if already Nullable (e.g. string), an empty string is returned.
-    */
-   def private static String maybeOptional(MemberElementWrapper member)
-   {
-      if (member.optional && member.type.isValueType)
-      {
-         return "?"
-      }
-      return "" // do nothing, if not optional!
-   }
-   
-   /**
-    * Is the given type a C# value type (suitable for Nullable)?
-    */
-   def private static boolean isValueType(EObject element)
-   {
-      if (element instanceof PrimitiveType)
-      {
-         if (element.stringType !== null)
-            return false
-         else
-            return true
-      }
-      else if (element instanceof AliasDeclaration)
-      {
-         return isValueType(element.type)
-      }
-      else if (element instanceof AbstractType)
-      {
-         if (element.referenceType !== null)
-            return isValueType(element.referenceType)
-         else if (element.primitiveType !== null)
-            return isValueType(element.primitiveType)
-         else if (element.collectionType !== null)
-            return isValueType(element.collectionType)
-      }
       
-      return false
-   }
-   
-   /**
-    * Make a C# property name according to BTC naming conventions
-    * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
-    */
-   def private static String asProperty(String name)
-   {
-      name.toFirstUpper
-   }
-   
-   /**
-    * Make a C# member variable name according to BTC naming conventions
-    * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
-    */
-   def private static String asMember(String name)
-   {
-      if (name.allUpperCase)
-         name.toLowerCase     // it looks better, if ID --> id and not ID --> iD
-      else
-         name.toFirstLower
-   }
-   
-   /**
-    * Make a C# parameter name according to BTC naming conventions
-    * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
-    */
-   def private static String asParameter(String name)
-   {
-      asMember(name) // currently the same convention
-   }
-   
-   def private static getEventTypeGuidProperty()
-   {
-      "EventTypeGuid".asMember
-   }
-   
-   def private static getReturnValueProperty()
-   {
-      "ReturnValue".asMember
-   }
-   
-   def private static getTypeGuidProperty()
-   {
-      "TypeGuid".asMember
-   }
-   
-   def private static getTypeNameProperty()
-   {
-      "TypeName".asMember
-   }
-   
    def private String makeDefaultValue(EObject element)
    {
       if (element instanceof PrimitiveType)
@@ -2775,7 +2634,7 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
    {
       '''
       «FOR exception : exceptions.sortBy[name] SEPARATOR System.lineSeparator»
-         «service_fault_handler_name».RegisterException("«Util.getCommonExceptionName(exception, qualified_name_provider)»", typeof («resolve(exception)»));
+         «service_fault_handler_name».RegisterException("«com.btc.serviceidl.util.Util.getCommonExceptionName(exception, qualified_name_provider)»", typeof («resolve(exception)»));
       «ENDFOR»
             
       // most commonly used exception types
@@ -2784,40 +2643,13 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
       «service_fault_handler_name».RegisterException("«Constants.UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER»", typeof(«"System.NotSupportedException"»));
       '''
    }
-   
-   def private static boolean isNullable(EObject element)
-   {
-      if (element instanceof PrimitiveType)
-      {
-         return
-         (
-            element.booleanType !== null
-            || element.integerType !== null
-            || element.charType !== null
-            || element.floatingPointType !== null
-         )
-      }
-      else if (element instanceof AliasDeclaration)
-      {
-         return isNullable(element.type)
-      }
-      else if (element instanceof AbstractType)
-      {
-         if (element.primitiveType !== null)
-            return isNullable(element.primitiveType)
-         else
-            return false
-      }
       
-      return false
-   }
-   
    def private String makeReturnType(FunctionDeclaration function)
    {
       val is_void = function.returnedType.isVoid
       val is_sync = function.isSync
-      val is_sequence = Util.isSequenceType(function.returnedType)
-      val effective_type = '''«IF is_sequence»«resolve("System.Collections.Generic.IEnumerable")»<«resolve(Util.getUltimateType(function.returnedType))»>«ELSE»«resolve(function.returnedType)»«ENDIF»'''
+      val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)
+      val effective_type = '''«IF is_sequence»«resolve("System.Collections.Generic.IEnumerable")»<«resolve(com.btc.serviceidl.util.Util.getUltimateType(function.returnedType))»>«ELSE»«resolve(function.returnedType)»«ENDIF»'''
       
       '''«IF is_void»«IF !is_sync»«resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»«ELSE»«IF !is_sync»«resolve("System.Threading.Tasks.Task")»<«ENDIF»«effective_type»«IF !is_sync»>«ENDIF»«ENDIF»'''
    }
