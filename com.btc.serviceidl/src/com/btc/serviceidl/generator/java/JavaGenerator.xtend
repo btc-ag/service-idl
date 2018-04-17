@@ -826,7 +826,7 @@ class JavaGenerator
    {
       val proxy_factory_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name) + "Factory"
       generateJavaFile(src_root_path + proxy_factory_name.java,
-         interface_declaration, [basicJavaSourceGenerator|generateProxyFactory(proxy_factory_name, interface_declaration)]
+         interface_declaration, [basicJavaSourceGenerator|new ProxyFactoryGenerator(basicJavaSourceGenerator, param_bundle).generateProxyFactory(proxy_factory_name, interface_declaration).toString]
       )
 
       val proxy_class_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)
@@ -836,23 +836,7 @@ class JavaGenerator
          [basicJavaSourceGenerator|new ProxyGenerator(basicJavaSourceGenerator, param_bundle).generateProxyImplementation(proxy_class_name, interface_declaration)]
       )
    }
-   
-   
-   def private String generateProxyFactory(String class_name, InterfaceDeclaration interface_declaration)
-   {
-      val api_type = typeResolver.resolve(interface_declaration)
       
-      '''
-      public class «class_name» {
-         
-         public static «api_type» createDirectProtobufProxy(«typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» endpoint) throws Exception
-         {
-            return new «GeneratorUtil.getClassName(param_bundle.build, ProjectType.PROXY, interface_declaration.name)»(endpoint);
-         }
-      }
-      '''
-   }
-   
    def private void generateDispatcher(String src_root_path, InterfaceDeclaration interface_declaration)
    {
       val dispatcher_class_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)
