@@ -654,72 +654,7 @@ class DotNetGenerator
    def private String generateCsZeroMQIntegrationTest(String class_name, InterfaceDeclaration interface_declaration)
    {
       reinitializeFile
-      
-      val api_class_name = resolve(interface_declaration)
-      val logger_factory = resolve("BTC.CAB.Logging.Log4NET.Log4NETLoggerFactory")
-      val server_registration = getServerRegistrationName(interface_declaration)
-      
-      // explicit resolution of necessary assemblies
-      resolve("BTC.CAB.Logging.API.NET.ILoggerFactory")
-      resolve("BTC.CAB.ServiceComm.NET.Base.AServiceDispatcherBase")
-      
-      '''
-      [«resolve("NUnit.Framework.TestFixture")»]
-      public class «class_name» : «getTestClassName(interface_declaration)»
-      {
-         private «api_class_name» _testSubject;
-         
-         private «resolve("BTC.CAB.ServiceComm.NET.API.IClient")» _client;
-         private «server_registration» _serverRegistration;
-         private «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.API.IConnectionFactory")» _serverConnectionFactory;
-         private «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.Server")» _server;
-         
-         public «class_name»()
-         {}
-      
-         [«resolve("NUnit.Framework.SetUp")»]
-         public void SetupEndpoints()
-         {
-            const «resolve("System.string")» connectionString = "tcp://127.0.0.1:«Constants.DEFAULT_PORT»";
-            
-            var loggerFactory = new «logger_factory»();
-            
-            // server
-            StartServer(loggerFactory, connectionString);
-            
-            // client
-            «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.API.IConnectionFactory")» connectionFactory = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.ZeroMqClientConnectionFactory")»(loggerFactory);
-            _client = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.Client")»(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcClientEndpoint")»(loggerFactory), connectionFactory);
-            
-            _testSubject = «resolve(interface_declaration, ProjectType.PROXY).alias(getProxyFactoryName(interface_declaration))».CreateProtobufProxy(_client.ClientEndpoint);
-         }
-      
-         private void StartServer(«logger_factory» loggerFactory, string connectionString)
-         {
-            _serverConnectionFactory = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.ZeroMqServerConnectionFactory")»(loggerFactory);
-            _server = new Server(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcServerEndpoint")»(loggerFactory), _serverConnectionFactory);
-            _serverRegistration = new «server_registration»(_server);
-            _serverRegistration.RegisterService();
-            // ensure that the server runs when the client is created.
-            System.Threading.Thread.Sleep(1000);
-         }
-      
-         [«resolve("NUnit.Framework.TearDown")»]
-         public void TearDownClientEndpoint()
-         {
-            _serverRegistration.Dispose();
-            _server.Dispose();
-            _testSubject = null;
-            if (_client !== null)
-               _client.Dispose();
-         }
-      
-         protected override «api_class_name» TestSubject
-         {
-            get { return _testSubject; }
-         }
-      }
-      '''
+      new TestGenerator(basicCSharpSourceGenerator).generateIntegrationTest(interface_declaration, class_name).toString      
    }
 
    def private String generateCsImplTest(String class_name, InterfaceDeclaration interface_declaration)
