@@ -1105,8 +1105,7 @@ class CppGenerator
          «ENDFOR»
       };
       '''
-      var underlying_types = new HashSet<StructDeclaration>
-      getUnderlyingTypes(struct, underlying_types)
+      var underlying_types = getUnderlyingTypes(struct)
       makeHxx(file_content, !underlying_types.empty)
    }
    
@@ -1119,8 +1118,9 @@ class CppGenerator
       makeHxx(file_content.toString, false)
    }
    
-   def private void getUnderlyingTypes(StructDeclaration struct, HashSet<StructDeclaration> all_types)
+   def private static Iterable<StructDeclaration> getUnderlyingTypes(StructDeclaration struct)
    {
+      val all_types = new HashSet<StructDeclaration>
       val contained_types = struct.members
          .filter[Util.getUltimateType(type) instanceof StructDeclaration]
          .map[Util.getUltimateType(type) as StructDeclaration]
@@ -1128,10 +1128,11 @@ class CppGenerator
       for ( type : contained_types )
       {
          if (!all_types.contains(type))
-            getUnderlyingTypes( type, all_types )
+            all_types.addAll(getUnderlyingTypes(type))
       }
       
       all_types.addAll(contained_types)
+      return all_types
    }
    
    def private String makeHxx(String file_content, boolean use_common_types)
