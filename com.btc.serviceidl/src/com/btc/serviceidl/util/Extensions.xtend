@@ -367,6 +367,8 @@ class Extensions
 
     def static namedEvents(InterfaceDeclaration interfaceDeclaration)
     {
+        // TODO the events function also includes inherited events, check whether these 
+        // should be included here as well. Adjust naming of the methods. 
         interfaceDeclaration.contains.filter(EventDeclaration).filter[name !== null]
     }
 }
