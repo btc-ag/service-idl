@@ -68,13 +68,17 @@ class JavaGenerator
    private var Map<EObject, String> protobuf_artifacts
    private var IDLSpecification idl
    
-   private var TypeResolver typeResolver
    private var BasicJavaSourceGenerator basicJavaSourceGenerator 
    
    private val typedef_table = new HashMap<String, ResolvedName>
    private val dependencies = new HashSet<MavenDependency>
    
    private var param_bundle = new ParameterBundle.Builder()
+   
+   def private getTypeResolver()
+   {
+       basicJavaSourceGenerator.typeResolver
+   }
    
    def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Set<ProjectType> projectTypes, Map<EObject, String> pa)
    {
@@ -955,7 +959,7 @@ class JavaGenerator
    // TODO remove this function
    def private void reinitializeFile()
    {
-      typeResolver = new TypeResolver(qualified_name_provider, param_bundle, dependencies)
+      val typeResolver = new TypeResolver(qualified_name_provider, param_bundle, dependencies)
       basicJavaSourceGenerator = new BasicJavaSourceGenerator(qualified_name_provider, typeResolver, idl)
    }
    
