@@ -32,7 +32,6 @@ import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
-import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.google.common.collect.Sets
@@ -295,39 +294,12 @@ class DotNetGenerator
    def private void generateImpl(String src_root_path, InterfaceDeclaration interface_declaration)
    {
       val impl_class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
-      val api_fully_qualified_name = resolve(interface_declaration)
-      
-      val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)
       
       cs_files.add(impl_class_name)
       file_system_access.generateFile(
          src_root_path + impl_class_name.cs,
          generateSourceFile(
-         '''
-         public class «impl_class_name» : «IF anonymous_event !== null»«resolve("BTC.CAB.ServiceComm.NET.Base.ABasicObservable")»<«resolve(anonymous_event.data)»>, «ENDIF»«api_fully_qualified_name.shortName»
-         {
-            «FOR function : interface_declaration.functions SEPARATOR System.lineSeparator»
-               /// <see cref="«api_fully_qualified_name».«function.name»"/>
-               public «makeReturnType(function)» «function.name»(
-                  «FOR param : function.parameters SEPARATOR ","»
-                     «IF param.direction == ParameterDirection.PARAM_OUT»out «ENDIF»«toText(param.paramType, function)» «toText(param, function).asParameter»
-                  «ENDFOR»
-               )
-               {
-                  «makeImplementatonStub(function)»
-               }
-            «ENDFOR»
-            
-            «FOR event : interface_declaration.events.filter[name !== null]»
-               «val event_name = toText(event, interface_declaration)»
-               /// <see cref="«api_fully_qualified_name».Get«event_name»"/>
-               public «event_name» Get«event_name»()
-               {
-                  «makeDefaultMethodStub(typeResolver)»
-               }
-            «ENDFOR»
-         }
-         '''
+             new ImplementationStubGenerator(basicCSharpSourceGenerator).generate(interface_declaration, impl_class_name).toString
          )
       )
       
@@ -714,12 +686,7 @@ class DotNetGenerator
       
       new ServiceAPIGenerator(basicCSharpSourceGenerator).generateEvent(event).toString
    }
-      
-   def private String makeImplementatonStub(FunctionDeclaration function)
-   {       
-      new ImplementationStubGenerator(basicCSharpSourceGenerator).generateStub(function).toString
-   }
-   
+         
    def private void addGoogleProtocolBuffersReferences()
    {
       nuget_packages.resolvePackage("Google.ProtocolBuffers")
@@ -739,8 +706,4 @@ class DotNetGenerator
       param_bundle.log4NetConfigFile
    }
          
-   def private String makeReturnType(FunctionDeclaration function)
-   {
-      typeResolver.makeReturnType(function)
-   }
 }
