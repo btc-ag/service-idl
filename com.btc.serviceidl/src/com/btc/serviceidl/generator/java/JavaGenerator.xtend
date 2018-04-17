@@ -18,7 +18,6 @@ package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
-import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
@@ -26,14 +25,12 @@ import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
-import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
 import com.google.common.collect.Sets
-import java.util.ArrayList
 import java.util.Arrays
 import java.util.HashMap
 import java.util.HashSet
@@ -266,9 +263,7 @@ class JavaGenerator
    }
    
    def private void generateServiceAPI(String src_root_path, InterfaceDeclaration interface_declaration)
-   {
-      val anonymous_event = Util.getAnonymousEvent(interface_declaration)
-      
+   {      
       // record type aliases
       for (type_alias : interface_declaration.contains.filter(AliasDeclaration))
       {
@@ -285,7 +280,7 @@ class JavaGenerator
       {
          val file_name = Names.plain(abstract_type)
          generateJavaFile(src_root_path + file_name.java, interface_declaration, 
-             [basicJavaSourceGenerator|basicJavaSourceGenerator.toDeclaration(abstract_type)]
+             [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator, param_bundle).generateContainedType(abstract_type)]
          )
       }
       
@@ -294,29 +289,14 @@ class JavaGenerator
       {
           // TODO do not use basicJavaSourceGenerator/typeResolver to generate the file name!
           generateJavaFile(src_root_path + basicJavaSourceGenerator.toText(event).java, interface_declaration,
-             [basicJavaSourceGenerator|generateEvent(event)]   
+             [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator, param_bundle).generateEvent(event).toString]   
           )
       }
       
       generateJavaFile(src_root_path + param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name).java,
           interface_declaration,
           [basicJavaSourceGenerator|          
-          '''
-          public interface «param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)»«IF anonymous_event !== null» extends «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«basicJavaSourceGenerator.toText(anonymous_event.data)»>«ENDIF» {
-          
-             «typeResolver.resolve(JavaClassNames.UUID)» TypeGuid = UUID.fromString("«GuidMapper.get(interface_declaration)»");
-             
-             «FOR function : interface_declaration.functions»
-                «basicJavaSourceGenerator.makeInterfaceMethodSignature(function)»;
-                
-             «ENDFOR»
-             
-             «FOR event : interface_declaration.events.filter[name !== null]»
-                «val observable_name = basicJavaSourceGenerator.toText(event)»
-                «observable_name» get«observable_name»();
-             «ENDFOR»
-          }
-          '''])
+          new ServiceAPIGenerator(basicJavaSourceGenerator, param_bundle).generateMain(interface_declaration).toString])
       
       // common service fault handler factory
       // TODO the service fault handler factory is ServiceComm-specific and should therefore not be generated to the service API package
@@ -350,42 +330,6 @@ class JavaGenerator
          makeProjectSourcePath(interface_declaration, ProjectType.CLIENT_CONSOLE, MavenArtifactType.TEST_RESOURCES, PathType.ROOT) + log4j_name,
          ConfigFilesGenerator.generateLog4jProperties()
       )
-   }
-   
-   def private String generateEvent(EventDeclaration event)
-   {
-      val keys = new ArrayList<Pair<String, String>>
-      for (key : event.keys)
-      {
-         keys.add(Pair.of(key.keyName, basicJavaSourceGenerator.toText(key.type)))
-      }
-
-      '''
-      public abstract class «basicJavaSourceGenerator.toText(event)» implements «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«basicJavaSourceGenerator.toText(event.data)»> {
-         
-         «IF !keys.empty»
-            public class KeyType {
-               
-               «FOR key : keys»
-                  private «key.value» «key.key»;
-               «ENDFOR»
-               
-               public KeyType(«FOR key : keys SEPARATOR ", "»«key.value» «key.key»«ENDFOR»)
-               {
-                  «FOR key : keys»
-                     this.«key.key» = «key.key»;
-                  «ENDFOR»
-               }
-               
-               «FOR key : keys SEPARATOR System.lineSeparator»
-                  «BasicJavaSourceGenerator.makeGetter(key.value, key.key)»
-               «ENDFOR»
-            }
-            
-            public abstract «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«basicJavaSourceGenerator.toText(event.data)»> subscriber, Iterable<KeyType> keys);
-         «ENDIF»
-      }
-      '''
    }
    
    def private void generateProtobuf(String src_root_path, EObject container)
