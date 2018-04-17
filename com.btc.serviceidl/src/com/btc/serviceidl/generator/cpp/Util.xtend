@@ -3,6 +3,7 @@ package com.btc.serviceidl.generator.cpp
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.util.MemberElementWrapper
 import java.util.HashSet
 import java.util.Optional
 
@@ -75,6 +76,21 @@ class Util
     def static String getEventParamsName(EventDeclaration event)
     {
         (event.name ?: "") + "EventParams"
+    }
+
+    def static int calculateMaximalNameLength(MemberElementWrapper member)
+    {
+        val result = member.name.length
+        var max = 0
+        if (member.type.isStruct)
+        {
+            val struct = member.type.ultimateType as StructDeclaration
+            for (m : struct.allMembers)
+            {
+                max = Math.max(max, calculateMaximalNameLength(m))
+            }
+        }
+        return result + max
     }
 
 }
