@@ -333,18 +333,18 @@ class JavaGenerator
       
       val test_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)
       generateJavaFile(src_root_path + test_name.java, interface_declaration, 
-          [basicJavaSourceGenerator|generateTestStub(test_name, src_root_path, interface_declaration)])
+          [basicJavaSourceGenerator|new TestGenerator(basicJavaSourceGenerator).generateTestStub(test_name, src_root_path, interface_declaration).toString])
       
       val impl_test_name = interface_declaration.name + "ImplTest"
       generateJavaFile(src_root_path + impl_test_name.java,
          interface_declaration, 
-          [basicJavaSourceGenerator|generateFileImplTest(impl_test_name, test_name, interface_declaration)]
+          [basicJavaSourceGenerator|new TestGenerator(basicJavaSourceGenerator).generateFileImplTest(impl_test_name, test_name, interface_declaration).toString]
       )
       
       val zmq_test_name = interface_declaration.name + "ZeroMQIntegrationTest"
       generateJavaFile(src_root_path + zmq_test_name.java,
          interface_declaration, 
-            [basicJavaSourceGenerator|generateFileZeroMQItegrationTest(zmq_test_name, test_name, log4j_name, src_root_path, interface_declaration)]         
+            [basicJavaSourceGenerator|new TestGenerator(basicJavaSourceGenerator).generateFileZeroMQItegrationTest(zmq_test_name, test_name, log4j_name, src_root_path, interface_declaration).toString]         
       )
       
       file_system_access.generateFile(
@@ -353,166 +353,6 @@ class JavaGenerator
       )
    }
    
-   def private String generateFileImplTest(String class_name, String super_class, InterfaceDeclaration interface_declaration)
-   {
-      '''
-      public class «class_name» extends «super_class» {
-      
-         «typeResolver.resolve(JavaClassNames.JUNIT_BEFORE).alias("@Before")»
-         public void setUp() throws Exception {
-            super.setUp();
-            testSubject = new «typeResolver.resolve(interface_declaration, ProjectType.IMPL)»();
-         }
-      }
-      '''
-   }
-   
-   def private String generateTestStub(String class_name, String src_root_path, InterfaceDeclaration interface_declaration)
-   {
-       // TODO is this really useful? it only generates a stub, what should be done when regenerating?
-       // TODO _assertExceptionType should be moved to com.btc.cab.commons or the like
-       
-      val api_class = typeResolver.resolve(interface_declaration)
-      val junit_assert = typeResolver.resolve(JavaClassNames.JUNIT_ASSERT)
-      
-      '''
-      «typeResolver.resolve(JavaClassNames.JUNIT_IGNORE).alias("@Ignore")»
-      public abstract class «class_name» {
-      
-         protected «api_class» testSubject;
-      
-         «typeResolver.resolve(JavaClassNames.JUNIT_BEFORE_CLASS).alias("@BeforeClass")»
-         public static void setUpBeforeClass() throws Exception {
-         }
-      
-         «typeResolver.resolve(JavaClassNames.JUNIT_AFTER_CLASS).alias("@AfterClass")»
-         public static void tearDownAfterClass() throws Exception {
-         }
-      
-         «typeResolver.resolve(JavaClassNames.JUNIT_BEFORE).alias("@Before")»
-         public void setUp() throws Exception {
-         }
-      
-         «typeResolver.resolve(JavaClassNames.JUNIT_AFTER).alias("@After")»
-         public void tearDown() throws Exception {
-         }
-
-         «FOR function : interface_declaration.functions»
-            «val is_sync = function.sync»
-            «typeResolver.resolve(JavaClassNames.JUNIT_TEST).alias("@Test")»
-            public void «function.name.asMethod»Test() throws Exception
-            {
-               boolean _success = false;
-               «FOR param : function.parameters»
-                  «basicJavaSourceGenerator.toText(param.paramType)» «param.paramName.asParameter» = «makeDefaultValue(param.paramType)»;
-               «ENDFOR»
-               try {
-                  testSubject.«function.name.asMethod»(«function.parameters.map[paramName.asParameter].join(",")»)«IF !is_sync».get()«ENDIF»;
-               } catch (Exception e) {
-                  _success = _assertExceptionType(e);
-                  if (!_success)
-                     e.printStackTrace();
-               } finally {
-                  «junit_assert».assertTrue(_success);
-               }
-            }
-         «ENDFOR»
-         
-         public «typeResolver.resolve(interface_declaration)» getTestSubject() {
-            return testSubject;
-         }
-         
-         private boolean _assertExceptionType(Throwable e)
-         {
-            if (e == null)
-               return false;
-            
-            if (e instanceof UnsupportedOperationException)
-                return (e.getMessage() != null && e.getMessage().equals("Auto-generated method stub is not implemented!"));
-            else
-               return _assertExceptionType(«typeResolver.resolve("org.apache.commons.lang3.exception.ExceptionUtils")».getRootCause(e));
-         }
-      }
-      '''
-   }
-   
-   def private String generateFileZeroMQItegrationTest(String class_name, String super_class, String log4j_name, String src_root_path, InterfaceDeclaration interface_declaration)
-   {
-      val resources_location = MavenArtifactType.TEST_RESOURCES.directoryLayout
-      val junit_assert = typeResolver.resolve(JavaClassNames.JUNIT_ASSERT)
-      val server_runner_name = typeResolver.resolve(interface_declaration, ProjectType.SERVER_RUNNER)
-      
-      // TODO this is definitely outdated, as log4j is no longer used
-      
-      '''
-      public class «class_name» extends «super_class» {
-      
-         private final static String connectionString = "tcp://127.0.0.1:«Constants.DEFAULT_PORT»";
-         private static final «typeResolver.resolve("org.apache.log4j.Logger")» logger = Logger.getLogger(«class_name».class);
-         
-         private «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
-         private «typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» _clientEndpoint;
-         private «server_runner_name» _serverRunner;
-         
-         public «class_name»() {
-         }
-         
-         «typeResolver.resolve(JavaClassNames.JUNIT_BEFORE).alias("@Before")»
-         public void setupEndpoints() throws Exception {
-            super.setUp();
-      
-            «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
-      
-            // Start Server
-            try {
-               «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqServerConnectionFactory")» _serverConnectionFactory = new ZeroMqServerConnectionFactory(logger);
-               _serverEndpoint = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ServerEndpointFactory")»(logger, _serverConnectionFactory).create(connectionString);
-               _serverRunner = new «server_runner_name»(_serverEndpoint);
-               _serverRunner.registerService();
-      
-               logger.debug("Server started...");
-               
-               // start client
-               «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» connectionFactory = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqClientConnectionFactory")»(
-                     logger);
-               _clientEndpoint = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ClientEndpointFactory")»(logger, connectionFactory).create(connectionString);
-      
-               logger.debug("Client started...");
-               testSubject = «typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.PROXY)) + '''.«interface_declaration.name»ProxyFactory''')»
-                     .createDirectProtobufProxy(_clientEndpoint);
-      
-               logger.debug("«interface_declaration.name» instantiated...");
-               
-            } catch (Exception e) {
-               logger.error("Error on start: ", e);
-               «junit_assert».fail(e.getMessage());
-            }
-         }
-      
-         «typeResolver.resolve(JavaClassNames.JUNIT_AFTER).alias("@After")»
-         public void tearDown() {
-      
-            try {
-               if (_serverEndpoint != null)
-                  _serverEndpoint.close();
-            } catch (Exception e) {
-               e.printStackTrace();
-               «junit_assert».fail(e.getMessage());
-            }
-            try {
-               if (_clientEndpoint != null)
-                  _clientEndpoint.close();
-               testSubject = null;
-      
-            } catch (Exception e) {
-               e.printStackTrace();
-               «junit_assert».fail(e.getMessage());
-            }
-         }
-      }
-      '''
-   }
-      
    def private String generateEvent(EventDeclaration event)
    {
       val keys = new ArrayList<Pair<String, String>>
