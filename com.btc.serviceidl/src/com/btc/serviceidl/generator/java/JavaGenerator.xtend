@@ -945,12 +945,11 @@ class JavaGenerator
       reinitializeFile
       
       val dispatcher_class_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)
-      val api_class_name = typeResolver.resolve(interface_declaration)
       
       file_system_access.generateFile(
          src_root_path + dispatcher_class_name.java,
          generateSourceFile(interface_declaration,
-         new DispatcherGenerator(basicJavaSourceGenerator, param_bundle).generateDispatcherBody(dispatcher_class_name, api_class_name, interface_declaration).toString
+         new DispatcherGenerator(basicJavaSourceGenerator, param_bundle).generateDispatcherBody(dispatcher_class_name, interface_declaration).toString
          )
       )
    }

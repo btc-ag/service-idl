@@ -14,7 +14,6 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
-import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import java.util.Optional
@@ -37,9 +36,9 @@ class DispatcherGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def generateDispatcherBody(String dispatcher_class_name, ResolvedName api_class_name,
-        InterfaceDeclaration interface_declaration)
+    def generateDispatcherBody(String dispatcher_class_name, InterfaceDeclaration interface_declaration)
     {
+        val api_class_name = typeResolver.resolve(interface_declaration)
         val protobuf_request = resolveProtobuf(basicJavaSourceGenerator, interface_declaration,
             Optional.of(ProtobufType.REQUEST))
         val protobuf_response = resolveProtobuf(basicJavaSourceGenerator, interface_declaration,
@@ -122,7 +121,7 @@ class DispatcherGenerator
                 «val is_failable = is_sequence && out_param.paramType.isFailable»
                 «val use_codec = GeneratorUtil.useCodec(out_param.paramType, param_bundle.artifactNature) || is_failable»
                 «val codec = resolveCodec(out_param.paramType)»
-                   .«IF is_sequence»addAll«out_param.paramName.asProtobufName»«ELSE»set«out_param.paramName.asProtobufName»«ENDIF»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(basicJavaSourceGenerator, out_param.paramType, Optional.empty)») «ENDIF»«codec».encode«IF is_failable»Failable«ENDIF»(«ENDIF»«out_param.paramName.asParameter»«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, out_param.paramType, interface_declaration)».class«ENDIF»«IF use_codec»)«ENDIF»)
+                .«IF is_sequence»addAll«out_param.paramName.asProtobufName»«ELSE»set«out_param.paramName.asProtobufName»«ENDIF»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(basicJavaSourceGenerator, out_param.paramType, Optional.empty)») «ENDIF»«codec».encode«IF is_failable»Failable«ENDIF»(«ENDIF»«out_param.paramName.asParameter»«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, out_param.paramType, interface_declaration)».class«ENDIF»«IF use_codec»)«ENDIF»)
                «ENDFOR»
                .build();
                
@@ -132,7 +131,7 @@ class DispatcherGenerator
                .build();
                
                return _protoBufHelper.serializeResponse(response);
-                  }
+               }
                «ENDFOR»
                
                // request could not be processed
