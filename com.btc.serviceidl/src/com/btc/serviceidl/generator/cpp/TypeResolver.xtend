@@ -31,6 +31,7 @@ class TypeResolver
     private val extension VSSolution vsSolution
     private val Map<String, String> project_references
     private val Collection<String> cab_libs
+    private val Map<EObject, Collection<EObject>> smart_pointer_map
 
     private val modules_includes = new HashSet<String>
     private val cab_includes = new HashSet<String>
@@ -170,6 +171,24 @@ class TypeResolver
             return "char"
 
         throw new IllegalArgumentException("Unknown PrimitiveType: " + item.class.toString)
+    }
+
+    /**
+     * For a given element, check if another type (as member of this element)
+     * must be represented as smart pointer + forward declaration, or as-is.
+     */
+    def boolean useSmartPointer(EObject element, EObject other_type)
+    {
+        // sequences use forward-declared types as template parameters
+        // and do not need the smart pointer wrapping
+        if (com.btc.serviceidl.util.Util.isSequenceType(other_type))
+            return false;
+
+        val dependencies = smart_pointer_map.get(element)
+        if (dependencies !== null)
+            return dependencies.contains(com.btc.serviceidl.util.Util.getUltimateType(other_type))
+        else
+            return false
     }
 
 }
