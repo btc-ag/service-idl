@@ -26,6 +26,7 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.MemberElementWrapper
 import org.eclipse.emf.ecore.EObject
 
+import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
@@ -236,5 +237,33 @@ class Util
         }
 
         return '''default(«basicCSharpSourceGenerator.toText(element, element)»)'''
+    }
+
+    def static String makeReturnType(TypeResolver typeResolver, FunctionDeclaration function)
+    {
+        val is_void = function.returnedType.isVoid
+        val is_sync = function.isSync
+        val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)
+        val effective_type = '''«IF is_sequence»«typeResolver.resolve("System.Collections.Generic.IEnumerable")»<«typeResolver.resolve(com.btc.serviceidl.util.Util.getUltimateType(function.returnedType))»>«ELSE»«typeResolver.resolve(function.returnedType)»«ENDIF»'''
+
+        '''«IF is_void»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»«ELSE»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»<«ENDIF»«effective_type»«IF !is_sync»>«ENDIF»«ENDIF»'''
+    }
+
+    def static String resolveCodec(TypeResolver typeResolver, ParameterBundle.Builder param_bundle,
+        EObject object)
+    {
+        val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
+
+        val temp_param = new ParameterBundle.Builder
+        temp_param.reset(param_bundle.artifactNature)
+        temp_param.reset(com.btc.serviceidl.util.Util.getModuleStack(ultimate_type))
+        temp_param.reset(ProjectType.PROTOBUF)
+
+        val codec_name = GeneratorUtil.getCodecName(ultimate_type)
+
+        typeResolver.resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
+
+        GeneratorUtil.transform(temp_param.with(TransformType.PACKAGE).build) + TransformType.PACKAGE.separator +
+            codec_name
     }
 }
