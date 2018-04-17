@@ -16,60 +16,60 @@
 
 package com.btc.serviceidl.generator.cpp
 
-import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.xtext.generator.IFileSystemAccess
-import com.btc.serviceidl.idl.ModuleDeclaration
+import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.FeatureProfile
+import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.GuidMapper
+import com.btc.serviceidl.generator.common.Names
+import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.common.ProtobufType
+import com.btc.serviceidl.generator.common.ResolvedName
+import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.common.TypeWrapper
+import com.btc.serviceidl.idl.AbstractException
+import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AliasDeclaration
+import com.btc.serviceidl.idl.DocCommentElement
+import com.btc.serviceidl.idl.EnumDeclaration
+import com.btc.serviceidl.idl.EventDeclaration
+import com.btc.serviceidl.idl.ExceptionDeclaration
+import com.btc.serviceidl.idl.ExceptionReferenceDeclaration
+import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.util.Constants
-import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.common.ArtifactNature
-import java.util.HashSet
-import com.btc.serviceidl.idl.FunctionDeclaration
+import com.btc.serviceidl.idl.MemberElement
+import com.btc.serviceidl.idl.ModuleDeclaration
+import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
-import com.btc.serviceidl.idl.TupleDeclaration
-import com.btc.serviceidl.idl.AliasDeclaration
-import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
-import com.btc.serviceidl.idl.ExceptionReferenceDeclaration
-import com.btc.serviceidl.idl.ExceptionDeclaration
+import com.btc.serviceidl.idl.TupleDeclaration
+import com.btc.serviceidl.util.Constants
+import com.btc.serviceidl.util.MemberElementWrapper
+import com.btc.serviceidl.util.Util
+import java.util.Collection
+import java.util.HashMap
+import java.util.HashSet
+import java.util.LinkedHashSet
+import java.util.List
+import java.util.Map
+import java.util.Optional
+import java.util.Set
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.stream.Collectors
 import org.eclipse.emf.ecore.EObject
-import com.btc.serviceidl.idl.EventDeclaration
-import com.btc.serviceidl.idl.ParameterDirection
-import com.btc.serviceidl.idl.AbstractException
-import com.btc.serviceidl.idl.DocCommentElement
-import com.btc.serviceidl.generator.common.Names
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
-import com.btc.serviceidl.util.Util
-import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.generator.common.GuidMapper
-import com.btc.serviceidl.generator.common.ParameterBundle
+
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
-import com.btc.serviceidl.generator.common.ResolvedName
-import com.btc.serviceidl.generator.common.ProtobufType
-import java.util.HashMap
-import java.util.Optional
-import java.util.UUID
-import com.btc.serviceidl.idl.ParameterElement
-import java.util.Collection
-import com.btc.serviceidl.generator.common.FeatureProfile
-import java.util.concurrent.atomic.AtomicInteger
-import com.btc.serviceidl.util.MemberElementWrapper
-import com.btc.serviceidl.idl.MemberElement
-import java.util.stream.Collectors
-import java.util.LinkedHashSet
-import java.util.List
-import com.btc.serviceidl.generator.common.TypeWrapper
-import java.util.Map
-import com.btc.serviceidl.generator.common.GeneratorUtil
-import java.util.Set
 
 class CppGenerator
 {
@@ -80,10 +80,7 @@ class CppGenerator
    private var IScopeProvider scope_provider
    private var IDLSpecification idl
 
-   // it is important for this container to be static! if an *.IDL file contains
-   // "import" references to external *.IDL files, each file will be generated separately
-   // but we need consistent project GUIDs in order to create valid project references!
-   private static val vs_projects = new HashMap<String, UUID>
+   private val extension VSSolution vsSolution = new VSSolution
 
    private var param_bundle = new ParameterBundle.Builder()
    private var protobuf_project_references = new HashMap<String, HashMap<String, String>>
@@ -91,18 +88,16 @@ class CppGenerator
    private val smart_pointer_map = new HashMap<EObject, Collection<EObject>>
 
    // per-project global variables
-   private val modules_includes = new HashSet<String>
-   private val cab_includes = new HashSet<String>
-   private val boost_includes = new HashSet<String>
-   private val stl_includes = new HashSet<String>
-   private val odb_includes = new HashSet<String>
+   private val cab_libs = new HashSet<String>
    private val cpp_files = new HashSet<String>
    private val header_files = new HashSet<String>
    private val dependency_files = new HashSet<String>
    private val protobuf_files = new HashSet<String>
    private val odb_files = new HashSet<String>
-   private val cab_libs = new HashSet<String>
    private val project_references = new HashMap<String, String>
+   
+   // per-file variables
+   private var extension TypeResolver typeResolver = null   
    
    def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Set<ProjectType> projectTypes, Map<String, HashMap<String, String>> pr)
    {
@@ -161,16 +156,11 @@ class CppGenerator
    
    def private void reinitializeFile()
    {
-      modules_includes.clear
-      cab_includes.clear
-      stl_includes.clear
-      boost_includes.clear
-      odb_includes.clear
+      typeResolver = new TypeResolver(qualified_name_provider, param_bundle, vsSolution, project_references, cab_libs)
    }
    
    def private void reinitializeProject(ProjectType pt)
    {
-      reinitializeFile
       param_bundle.reset(pt)
       protobuf_files.clear
       cpp_files.clear
@@ -179,6 +169,7 @@ class CppGenerator
       odb_files.clear
       cab_libs.clear
       project_references.clear
+      reinitializeFile
    }
    
    def private void generateInterfaceProjects(ModuleDeclaration module)
@@ -1123,95 +1114,9 @@ class CppGenerator
    {
       reinitializeFile
       
-      val file_content =
-      '''
-      namespace odb
-      {
-         // ***** MSSQL *****
-         namespace mssql
-         {
-            template<>
-            struct default_type_traits<«resolveModules("BTC::PRINS::Commons::GUID")»>
-            {
-               static const database_type_id db_type_id = «resolveODB("id_uniqueidentifier")»;
-            };
+      val file_content = new OdbGenerator(typeResolver).generateODBTraitsBody()
       
-            template<>
-            class value_traits<BTC::PRINS::Commons::GUID, id_uniqueidentifier>
-            {
-            public:
-               typedef BTC::PRINS::Commons::GUID   value_type;
-               typedef BTC::PRINS::Commons::GUID   query_type;
-               typedef uniqueidentifier            image_type;
-      
-               static void set_value(value_type& val, const image_type& img, bool is_null)
-               {
-                  if (!is_null)
-                  {
-                     «resolveCAB("BTC::Commons::CoreExtras::UUID")» uuid;
-                     «resolveSTL("std::array")»<char, 16> db_data;
-                     «resolveSTL("std::memcpy")»(db_data.data(), &img, 16);
-                     «resolveModules("BTC::PRINS::Commons::Utilities::GUIDHelper")»::guidEncode(db_data.data(), uuid);
-                     val = BTC::PRINS::Commons::GUID::FromStringSafe("{" + uuid.ToString() + "}");
-                  }
-                  else
-                     val = BTC::PRINS::Commons::GUID::nullGuid;
-               }
-      
-               static void set_image(image_type& img, bool& is_null, const value_type& val)
-               {
-                  is_null = false;
-                  auto uuid = BTC::Commons::CoreExtras::UUID::ParseString(val.ToString());
-                  std::array<char, 16> db_data;
-                  BTC::PRINS::Commons::Utilities::GUIDHelper::guidDecode(uuid, db_data.data());
-                  std::memcpy(&img, db_data.data(), 16);
-               }
-            };
-         }
-         
-         // ***** ORACLE *****
-         namespace oracle
-         {
-            template<>
-            struct default_type_traits<«resolveModules("BTC::PRINS::Commons::GUID")»>
-            {
-               static const database_type_id db_type_id = «resolveODB("id_raw")»;
-            };
-      
-            template<>
-            class value_traits<BTC::PRINS::Commons::GUID, id_raw>
-            {
-            public:
-               typedef BTC::PRINS::Commons::GUID   value_type;
-               typedef BTC::PRINS::Commons::GUID   query_type;
-               typedef char                        image_type[16];
-      
-               static void set_value(value_type& val, const image_type img, std::size_t n, bool is_null)
-               {
-                  «resolveCAB("BTC::Commons::CoreExtras::UUID")» uuid;
-                  «resolveSTL("std::vector")»<char> db_data;
-                  db_data.reserve(n);
-                  «resolveSTL("std::memcpy")»(db_data.data(), img, n);
-                  «resolveModules("BTC::PRINS::Commons::Utilities::GUIDHelper")»::guidEncode(db_data.data(), uuid);
-                  val = BTC::PRINS::Commons::GUID::FromStringSafe("{" + uuid.ToString() + "}");
-               }
-      
-               static void set_image(image_type img, std::size_t c, std::size_t& n, bool& is_null, const value_type& val)
-               {
-                  is_null = false;
-                  auto uuid = BTC::Commons::CoreExtras::UUID::ParseString(val.ToString());
-                  std::vector<char> db_data;
-                  db_data.resize(16);
-                  BTC::PRINS::Commons::Utilities::GUIDHelper::guidDecode(uuid, db_data.data());
-                  n = db_data.size();
-                  std::memcpy (img, db_data.data(), n);
-               }
-            };
-         }
-      }
-      '''
-      
-      makeHxx(file_content, false)
+      makeHxx(file_content.toString, false)
    }
    
    def private void getUnderlyingTypes(StructDeclaration struct, HashSet<StructDeclaration> all_types)
@@ -3363,34 +3268,7 @@ class CppGenerator
    
    def private dispatch String toText(PrimitiveType item, EObject context)
    {
-      if (item.integerType !== null)
-      {
-         switch item.integerType
-         {
-         case "int64":
-            return resolveSTL("int64_t")
-         case "int32":
-            return resolveSTL("int32_t")
-         case "int16":
-            return resolveSTL("int16_t")
-         case "byte":
-            return resolveSTL("int8_t")
-         default:
-            return item.integerType
-         }
-      }
-      else if (item.stringType !== null)
-         return resolveSTL("std::string")
-      else if (item.floatingPointType !== null)
-         return item.floatingPointType
-      else if (item.uuidType !== null)
-         return resolveCAB("BTC::Commons::CoreExtras::UUID")
-      else if (item.booleanType !== null)
-         return "bool"
-      else if (item.charType !== null)
-         return "char"
-
-      throw new IllegalArgumentException("Unknown PrimitiveType: " + item.class.toString)
+       getPrimitiveTypeName(item)
    }
    
    def private dispatch String toText(SequenceDeclaration item, EObject context)
@@ -3436,89 +3314,6 @@ class CppGenerator
                          + Constants.SEPARATOR_CPP_HEADER + "EXPORT"
    }
  
-   def private String resolveCAB(String class_name)
-   {
-      val header = HeaderResolver.getCABHeader(class_name)
-      cab_includes.add(header)
-      cab_libs.addAll(LibResolver.getCABLibs(header))
-      return class_name
-   }
-
-   def private String resolveCABImpl(String class_name)
-   {
-      val header = HeaderResolver.getCABImpl(class_name)
-      cab_includes.add(header)
-      cab_libs.addAll(LibResolver.getCABLibs(header))
-      return class_name
-   }
-
-   def private String resolveSTL(String class_name)
-   {
-      stl_includes.add(HeaderResolver.getSTLHeader(class_name))
-      return class_name
-   }
-
-   def private String resolveBoost(String class_name)
-   {
-      boost_includes.add(HeaderResolver.getBoostHeader(class_name))
-      return class_name
-   }
-
-   def private String resolveODB(String class_name)
-   {
-      odb_includes.add(HeaderResolver.getODBHeader(class_name))
-      return class_name
-   }
-
-   def private String resolveModules(String class_name)
-   {
-      modules_includes.add(HeaderResolver.getModulesHeader(class_name))
-      val project_reference = ReferenceResolver.getProjectReference(class_name)
-      vs_projects.put(project_reference.project_name, UUID.fromString(project_reference.project_guid))
-      project_references.put(project_reference.project_name, project_reference.project_path)
-      return class_name
-   }
-
-   def private ResolvedName resolve(EObject object)
-   {
-      return resolve(object, object.mainProjectType)
-   }
-
-   def private ResolvedName resolve(EObject object, ProjectType project_type)
-   {
-      if (Util.isUUIDType(object))
-      {
-         if (project_type == ProjectType.PROTOBUF)
-            return new ResolvedName(resolveSTL("std::string"), TransformType.NAMESPACE)
-         else
-            return new ResolvedName("BTC::Commons::CoreExtras::UUID", TransformType.NAMESPACE)
-      }
-      else if (object instanceof PrimitiveType)
-         return new ResolvedName(toText(object, object), TransformType.NAMESPACE)
-      else if (object instanceof AbstractType && (object as AbstractType).primitiveType !== null)
-         return resolve((object as AbstractType).primitiveType, project_type)
-
-      val qualified_name = qualified_name_provider.getFullyQualifiedName(object)
-      if (qualified_name === null)
-         return new ResolvedName(Names.plain(object), TransformType.NAMESPACE)
-      
-      val resolved_name = qualified_name.toString
-      if (HeaderResolver.isCAB(resolved_name))
-         resolveCAB(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
-      else if (HeaderResolver.isBoost(resolved_name))
-         resolveBoost(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
-      else
-      {
-         var result = GeneratorUtil.transform(ParameterBundle.createBuilder(Util.getModuleStack(Util.getScopeDeterminant(object))).with(project_type).with(TransformType.NAMESPACE).build)
-         result += Constants.SEPARATOR_NAMESPACE + if (object instanceof InterfaceDeclaration) project_type.getClassName(param_bundle.artifactNature, qualified_name.lastSegment) else qualified_name.lastSegment
-         modules_includes.add(object.getIncludeFilePath(project_type))
-         object.resolveProjectFilePath(project_type)
-         return new ResolvedName(result, TransformType.NAMESPACE)
-      }
-
-      return new ResolvedName(qualified_name, TransformType.NAMESPACE)
-   }
-   
    def private ResolvedName resolveProtobuf(EObject object, ProtobufType protobuf_type)
    {
       if (Util.isUUIDType(object))
@@ -3552,21 +3347,7 @@ class CppGenerator
       object.resolveProjectFilePath(ProjectType.PROTOBUF)
       return new ResolvedName(result, TransformType.NAMESPACE)
    }
-   
-   def private void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
-   {
-      val module_stack = Util.getModuleStack(referenced_object)
       
-      val temp_param = new ParameterBundle.Builder()
-      temp_param.reset(param_bundle.artifactNature)
-      temp_param.reset(module_stack)
-      temp_param.reset(project_type)
-      
-      val project_name = getVcxprojName(temp_param, Optional.empty)
-      val project_path = '''$(SolutionDir)\«GeneratorUtil.transform(temp_param.with(TransformType.FILE_SYSTEM).build).replace(Constants.SEPARATOR_FILE, Constants.SEPARATOR_BACKSLASH)»\«project_name»'''
-      project_references.put(project_name, project_path)
-   }
-   
    def private String resolveCodecNS(EObject object)
    {
       resolveCodecNS(object, false, Optional.empty)
@@ -3590,26 +3371,6 @@ class CppGenerator
       GeneratorUtil.transform(temp_param.with(TransformType.NAMESPACE).build) + TransformType.NAMESPACE.separator + codec_name
    }
    
-   def private String getVcxprojName(ParameterBundle.Builder builder, Optional<String> extra_name)
-   {
-      var project_name = GeneratorUtil.transform(builder.with(TransformType.PACKAGE).build)
-      getVcxprojGUID(project_name)
-      return project_name
-   }
-   
-   def private String getVcxprojGUID(String project_name)
-   {
-      var UUID guid
-      if (vs_projects.containsKey(project_name))
-         guid = vs_projects.get(project_name)
-      else
-      {
-         guid = UUID.nameUUIDFromBytes(project_name.bytes)
-         vs_projects.put(project_name, guid)
-      }
-      return guid.toString.toUpperCase
-   }
-
    def private String makeDispatcherBaseTemplate(InterfaceDeclaration interface_declaration)
    {
       val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
