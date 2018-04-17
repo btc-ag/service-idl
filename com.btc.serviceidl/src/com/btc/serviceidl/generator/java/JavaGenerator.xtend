@@ -415,7 +415,7 @@ class JavaGenerator
       
       val test_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)
       generateJavaFile(src_root_path + test_name.java, interface_declaration, 
-          [basicJavaSourceGenerator|generateFileTest(test_name, src_root_path, interface_declaration)])
+          [basicJavaSourceGenerator|generateTestStub(test_name, src_root_path, interface_declaration)])
       
       val impl_test_name = interface_declaration.name + "ImplTest"
       generateJavaFile(src_root_path + impl_test_name.java,
@@ -449,7 +449,7 @@ class JavaGenerator
       '''
    }
    
-   def private String generateFileTest(String class_name, String src_root_path, InterfaceDeclaration interface_declaration)
+   def private String generateTestStub(String class_name, String src_root_path, InterfaceDeclaration interface_declaration)
    {
        // TODO is this really useful? it only generates a stub, what should be done when regenerating?
        // TODO _assertExceptionType should be moved to com.btc.cab.commons or the like
