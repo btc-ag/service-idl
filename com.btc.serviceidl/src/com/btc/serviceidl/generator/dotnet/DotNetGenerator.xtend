@@ -962,7 +962,7 @@ class DotNetGenerator
       '''
    }
 
-   def private String hasField(MemberElementWrapper member)
+   def private static String hasField(MemberElementWrapper member)
    {
       return '''Has«member.name.toLowerCase.toFirstUpper»'''
    }
@@ -2469,7 +2469,7 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
       project_references.put(project_name, project_path)
    }
    
-   def private String resolveException(String name)
+   def private static String resolveException(String name)
    {
       // temporarily some special handling for exceptions, because not all
       // C++ CAB exceptions are supported by the .NET CAB
@@ -2530,7 +2530,7 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
       return GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).with(ProjectType.PROTOBUF).build) + Constants.SEPARATOR_PACKAGE + Util.asRequest(interface_declaration.name)
    }
    
-   def private String getDataContractName(InterfaceDeclaration interface_declaration, FunctionDeclaration function_declaration, ProtobufType protobuf_type)
+   def private static String getDataContractName(InterfaceDeclaration interface_declaration, FunctionDeclaration function_declaration, ProtobufType protobuf_type)
    {
       interface_declaration.name + "_" +
          if (protobuf_type == ProtobufType.REQUEST) Util.asRequest(function_declaration.name)
@@ -2587,7 +2587,7 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
       GeneratorUtil.transform(temp_param.with(TransformType.PACKAGE).build) + TransformType.PACKAGE.separator + codec_name
    }
    
-   def private String getObservableName(EventDeclaration event)
+   def private static String getObservableName(EventDeclaration event)
    {
       if (event.name === null)
          throw new IllegalArgumentException("No named observable for anonymous events!")
@@ -2595,27 +2595,27 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
       event.name.toFirstUpper + "Observable"
    }
    
-   def private String getDeserializingObserverName(EventDeclaration event)
+   def private static String getDeserializingObserverName(EventDeclaration event)
    {
       (event.name ?: "") + "DeserializingObserver"
    }
    
-   def private String getTestClassName(InterfaceDeclaration interface_declaration)
+   def private static String getTestClassName(InterfaceDeclaration interface_declaration)
    {
       interface_declaration.name + "Test"
    }
    
-   def private String getProxyFactoryName(InterfaceDeclaration interface_declaration)
+   def private static String getProxyFactoryName(InterfaceDeclaration interface_declaration)
    {
       interface_declaration.name + "ProxyFactory"
    }
    
-   def private String getServerRegistrationName(InterfaceDeclaration interface_declaration)
+   def private static String getServerRegistrationName(InterfaceDeclaration interface_declaration)
    {
       interface_declaration.name + "ServerRegistration"
    }
    
-   def private String getConstName(InterfaceDeclaration interface_declaration)
+   def private static String getConstName(InterfaceDeclaration interface_declaration)
    {
       interface_declaration.name + "Const"
    }
@@ -2636,7 +2636,7 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
       }
    }
    
-   def private boolean isExecutable(ProjectType pt)
+   def private static boolean isExecutable(ProjectType pt)
    {
       return (pt == ProjectType.SERVER_RUNNER || pt == ProjectType.CLIENT_CONSOLE)
    }
@@ -2650,7 +2650,7 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
     * For optional struct members, this generates an "?" to produce a C# Nullable
     * type; if the type if already Nullable (e.g. string), an empty string is returned.
     */
-   def private String maybeOptional(MemberElementWrapper member)
+   def private static String maybeOptional(MemberElementWrapper member)
    {
       if (member.optional && member.type.isValueType)
       {
@@ -2662,7 +2662,7 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
    /**
     * Is the given type a C# value type (suitable for Nullable)?
     */
-   def private boolean isValueType(EObject element)
+   def private static boolean isValueType(EObject element)
    {
       if (element instanceof PrimitiveType)
       {
@@ -2692,7 +2692,7 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
     * Make a C# property name according to BTC naming conventions
     * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
     */
-   def private String asProperty(String name)
+   def private static String asProperty(String name)
    {
       name.toFirstUpper
    }
@@ -2701,7 +2701,7 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
     * Make a C# member variable name according to BTC naming conventions
     * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
     */
-   def private String asMember(String name)
+   def private static String asMember(String name)
    {
       if (name.allUpperCase)
          name.toLowerCase     // it looks better, if ID --> id and not ID --> iD
@@ -2713,27 +2713,27 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
     * Make a C# parameter name according to BTC naming conventions
     * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
     */
-   def private String asParameter(String name)
+   def private static String asParameter(String name)
    {
       asMember(name) // currently the same convention
    }
    
-   def private getEventTypeGuidProperty()
+   def private static getEventTypeGuidProperty()
    {
       "EventTypeGuid".asMember
    }
    
-   def private getReturnValueProperty()
+   def private static getReturnValueProperty()
    {
       "ReturnValue".asMember
    }
    
-   def private getTypeGuidProperty()
+   def private static getTypeGuidProperty()
    {
       "TypeGuid".asMember
    }
    
-   def private getTypeNameProperty()
+   def private static getTypeNameProperty()
    {
       "TypeName".asMember
    }
@@ -2785,7 +2785,7 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
       '''
    }
    
-   def private boolean isNullable(EObject element)
+   def private static boolean isNullable(EObject element)
    {
       if (element instanceof PrimitiveType)
       {
