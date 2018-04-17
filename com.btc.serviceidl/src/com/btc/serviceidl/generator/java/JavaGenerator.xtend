@@ -215,7 +215,7 @@ class JavaGenerator
       case DISPATCHER:
          generateDispatcher(src_root_path, interface_declaration)
       case IMPL:
-         generateImpl(src_root_path, interface_declaration)
+         generateImplementationStub(src_root_path, interface_declaration)
       case PROXY:
          generateProxy(src_root_path, interface_declaration)
       case PROTOBUF:
@@ -955,39 +955,14 @@ class JavaGenerator
       )
    }
    
-   def private void generateImpl(String src_root_path, InterfaceDeclaration interface_declaration)
+   def private void generateImplementationStub(String src_root_path, InterfaceDeclaration interface_declaration)
    {
       reinitializeFile
       val impl_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)
-      val api_name = typeResolver.resolve(interface_declaration)
       
       file_system_access.generateFile(src_root_path + impl_name.java,
          generateSourceFile(interface_declaration,
-         '''
-         public class «impl_name» implements «api_name» {
-            
-            «FOR function : interface_declaration.functions SEPARATOR BasicJavaSourceGenerator.newLine»
-               /**
-                  @see «api_name.fullyQualifiedName»#«function.name.toFirstLower»
-               */
-               @Override
-               public «basicJavaSourceGenerator.makeInterfaceMethodSignature(function)» {
-                  «makeDefaultMethodStub»
-               }
-            «ENDFOR»
-            
-            «FOR event : interface_declaration.contains.filter(EventDeclaration).filter[name !== null]»
-               «val observable_name = basicJavaSourceGenerator.toText(event)»
-               /**
-                  @see «api_name»#get«observable_name»
-               */
-               @Override
-               public «observable_name» get«observable_name»() {
-                  «makeDefaultMethodStub»
-               }
-            «ENDFOR»
-         }
-         '''
+         new ImplementationStubGenerator(basicJavaSourceGenerator).generateImplementationStubBody(impl_name, interface_declaration).toString
          )
       )
    }
