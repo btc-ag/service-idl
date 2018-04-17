@@ -15,6 +15,8 @@
  */
 package com.btc.serviceidl.generator.dotnet
 
+import java.util.HashSet
+
 class NuGetPackageResolver
 {
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
@@ -38,7 +40,9 @@ class NuGetPackageResolver
             '''Google.ProtocolBuffers.2.4.1.555\lib\net40\Google.ProtocolBuffers.Serialization.dll'''
     }
 
-    def static NuGetPackage resolvePackage(String name)
+    private val nuget_packages = new HashSet<NuGetPackage>
+
+    def private static NuGetPackage resolvePackageInternal(String name)
     {
         val nuget_package = new NuGetPackage
 
@@ -59,5 +63,16 @@ class NuGetPackageResolver
             throw new IllegalArgumentException('''Inconsistent mapping! Not found: «info» of «name»!''')
 
         return value
+    }
+
+    def void resolvePackage(String package_name)
+    {
+        val nuget_package = resolvePackageInternal(package_name)
+        nuget_packages.add(nuget_package)
+    }
+
+    def Iterable<NuGetPackage> getResolvedPackages()
+    {
+        nuget_packages
     }
 }

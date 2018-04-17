@@ -39,7 +39,6 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
@@ -83,7 +82,7 @@ class DotNetGenerator
    private val typedef_table = new HashMap<String, String>
    private val namespace_references = new HashSet<String>
    private val referenced_assemblies = new HashSet<String>
-   private val nuget_packages = new HashSet<NuGetPackage>
+   private var nuget_packages = new NuGetPackageResolver
    private val project_references = new HashMap<String, String>
    private val vsSolution = new VSSolution
    private val cs_files = new HashSet<String>
@@ -230,14 +229,14 @@ class DotNetGenerator
       file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "Properties" + Constants.SEPARATOR_FILE + "AssemblyInfo.cs", generateAssemblyInfo(project_name))
    
       // NuGet (optional)
-      if (!nuget_packages.empty)
+      if (!nuget_packages.resolvedPackages.empty)
          file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "packages.config", generatePackagesConfig)
    }
    
    def private String generatePackagesConfig()
    {
       val packages = new HashMap<String, String>
-      for (nuget_package : nuget_packages)
+      for (nuget_package : nuget_packages.resolvedPackages)
          packages.put(nuget_package.packageID, nuget_package.packageVersion)
 
       '''
@@ -295,7 +294,7 @@ class DotNetGenerator
       referenced_assemblies.clear
       project_references.clear
       protobuf_files.clear
-      nuget_packages.clear
+      nuget_packages = new NuGetPackageResolver
       cs_files.clear
       
       typeResolver = new TypeResolver(DOTNET_FRAMEWORK_VERSION, qualified_name_provider, 
@@ -1009,7 +1008,7 @@ class DotNetGenerator
       val program_name = "Program"
       cs_files.add(program_name)
       file_system_access.generateFile(project_root_path + program_name.cs,
-         generateSourceFile(generateCsClientConsoleProgram(program_name, module))
+         generateSourceFile(generateCsClientConsoleProgram(program_name, module).toString)
       )
       
       file_system_access.generateFile(project_root_path + "App".config, generateAppConfig(module))
@@ -1020,105 +1019,11 @@ class DotNetGenerator
       generateVSProjectFiles(project_root_path)
    }
 
-   def private String generateCsClientConsoleProgram(String class_name, ModuleDeclaration module)
+   def private generateCsClientConsoleProgram(String class_name, ModuleDeclaration module)
    {
       reinitializeFile
-      
-      resolveNugetPackage("CommandLine")
-      
-      val console = resolve("System.Console")
-      val exception = resolve("System.Exception")
-      val aggregate_exception = resolve("System.AggregateException")
-      
-      '''
-      internal class «class_name»
-      {
-         private static int Main(«resolve("System.string")»[] args)
-         {
-            var options = new Options();
-            if (!Parser.Default.ParseArguments(args, options))
-            {
-               return 0;
-            }
-      
-            var ctx = «resolve("Spring.Context.Support.ContextRegistry")».GetContext();
-            
-            var loggerFactory = («resolve("BTC.CAB.Logging.API.NET.ILoggerFactory")») ctx.GetObject("BTC.CAB.Logging.API.NET.LoggerFactory");
-            var logger = loggerFactory.GetLogger(typeof (Program));
-            logger.«resolve("BTC.CAB.Commons.Core.NET.CodeWhere").alias("Info")»("ConnectionString: " + options.ConnectionString);
-            
-            var clientFactory = («resolve("BTC.CAB.ServiceComm.NET.API.IClientFactory")») ctx.GetObject("BTC.CAB.ServiceComm.NET.API.ClientFactory");
-            
-            var client = clientFactory.Create(options.ConnectionString);
-            
-            «FOR interface_declaration : module.moduleComponents.filter(InterfaceDeclaration)»
-               «val proxy_name = interface_declaration.name.toFirstLower + "Proxy"»
-               // «interface_declaration.name» proxy
-               var «proxy_name» = «resolve(interface_declaration, ProjectType.PROXY).alias(getProxyFactoryName(interface_declaration))».CreateProtobufProxy(client.ClientEndpoint);
-               TestRequestResponse«interface_declaration.name»(«proxy_name»);
-               
-            «ENDFOR»
-            
-            client.Dispose();
-            return 0;
-         }
-         
-         «FOR interface_declaration : module.moduleComponents.filter(InterfaceDeclaration)»
-            «val api_name = resolve(interface_declaration).shortName»
-            private static void TestRequestResponse«interface_declaration.name»(«resolve(interface_declaration)» proxy)
-            {
-               var errorCount = 0;
-               var callCount = 0;
-               «FOR function : interface_declaration.functions»
-                  «val is_void = function.returnedType.isVoid»
-                  try
-                  {
-                     callCount++;
-                     «FOR param : function.parameters»
-                        var «param.paramName.asParameter» = «makeDefaultValue(param.paramType)»;
-                     «ENDFOR»
-                     «IF !is_void»var result = «ENDIF»proxy.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !function.sync».«IF is_void»Wait()«ELSE»Result«ENDIF»«ENDIF»;
-                     «console».WriteLine("Result of «api_name».«function.name»: «IF is_void»Void"«ELSE»" + result.ToString()«ENDIF»);
-                  }
-                  catch («exception» e)
-                  {
-                     errorCount++;
-                     var realException = (e is «aggregate_exception») ? (e as «aggregate_exception»).Flatten().InnerException : e;
-                     «console».WriteLine("Result of «api_name».«function.name»: " + realException.Message);
-                  }
-               «ENDFOR»
-               
-               «console».WriteLine("");
-               «console».ForegroundColor = ConsoleColor.Yellow;
-               «console».WriteLine("READY! Overall result: " + callCount + " function calls, " + errorCount + " errors.");
-               «console».ResetColor();
-               «console».WriteLine("Press any key to exit...");
-               «console».ReadLine();
-            }
-         «ENDFOR»
-      
-         private class Options
-         {
-            [«resolve("CommandLine.Option")»('c', "connectionString", DefaultValue = null,
-               HelpText = "connection string, e.g. tcp://127.0.0.1:12345 (for ZeroMQ).")]
-            public string ConnectionString { get; set; }
-            
-            [Option('f', "configurationFile", DefaultValue = null,
-               HelpText = "file that contains an alternative spring configuration. By default this is taken from the application configuration.")]
-            public string ConfigurationFile { get; set; }
-            
-            [ParserState]
-            public «resolve("CommandLine.IParserState")» LastParserState { get; set; }
-            
-            [HelpOption]
-            public string GetUsage()
-            {
-               return «resolve("CommandLine.Text.HelpText")».AutoBuild(this,
-                  (HelpText current) => HelpText.DefaultParsingErrorsHandler(this, current));
-            }
-         }
-      }
-      '''
+
+      new ClientConsoleProgramGenerator(basicCSharpSourceGenerator, nuget_packages).generate(class_name, module)      
    }
 
    def private void generateServerRunner(ModuleDeclaration module)
@@ -1193,7 +1098,7 @@ class DotNetGenerator
    {
       reinitializeFile
       
-      resolveNugetPackage("CommandLine")
+      nuget_packages.resolvePackage("CommandLine")
       
       '''
       /// <summary>
@@ -1901,7 +1806,7 @@ class DotNetGenerator
          }
       }
 
-      CSProjGenerator.generateCSProj(project_name, vsSolution, param_bundle, referenced_assemblies, nuget_packages, project_references, cs_files, if (is_protobuf) protobuf_files else null
+      CSProjGenerator.generateCSProj(project_name, vsSolution, param_bundle, referenced_assemblies, nuget_packages.resolvedPackages, project_references, cs_files, if (is_protobuf) protobuf_files else null
       )      
    }
    
@@ -1973,16 +1878,10 @@ class DotNetGenerator
       '''
    }
    
-   def private void resolveNugetPackage(String package_name)
-   {
-      val nuget_package = NuGetPackageResolver.resolvePackage(package_name)
-      nuget_packages.add(nuget_package)
-   }
-   
    def private void addGoogleProtocolBuffersReferences()
    {
-      resolveNugetPackage("Google.ProtocolBuffers")
-      resolveNugetPackage("Google.ProtocolBuffers.Serialization")
+      nuget_packages.resolvePackage("Google.ProtocolBuffers")
+      nuget_packages.resolvePackage("Google.ProtocolBuffers.Serialization")
    }
    
    def private String getProtobufRequestClassName(InterfaceDeclaration interface_declaration)
@@ -2028,37 +1927,9 @@ class DotNetGenerator
          
    def private String makeDefaultValue(EObject element)
    {
-      if (element instanceof PrimitiveType)
-      {
-         if (element.stringType !== null)
-            return '''«resolve("System.string")».Empty'''
-      }
-      else if (element instanceof AliasDeclaration)
-      {
-         return makeDefaultValue(element.type)
-      }
-      else if (element instanceof AbstractType)
-      {
-         if (element.referenceType !== null)
-            return makeDefaultValue(element.referenceType)
-         else if (element.primitiveType !== null)
-            return makeDefaultValue(element.primitiveType)
-         else if (element.collectionType !== null)
-            return makeDefaultValue(element.collectionType)
-      }
-      else if (element instanceof SequenceDeclaration)
-      {
-         val type = toText(element.type, element)
-         return '''new «resolve("System.Collections.Generic.List")»<«type»>() as «resolve("System.IEnumerable")»<«type»>'''
-      }
-      else if (element instanceof StructDeclaration)
-      {
-         return '''new «resolve(element)»(«FOR member : element.allMembers SEPARATOR ", "»«member.name.asParameter»: «IF member.optional»null«ELSE»«makeDefaultValue(member.type)»«ENDIF»«ENDFOR»)'''
-      }
-      
-      return '''default(«toText(element, element)»)'''
+      basicCSharpSourceGenerator.makeDefaultValue(element)
    }
-   
+
    def private String makeExceptionRegistration(String service_fault_handler_name, Iterable<AbstractException> exceptions)
    {
       '''

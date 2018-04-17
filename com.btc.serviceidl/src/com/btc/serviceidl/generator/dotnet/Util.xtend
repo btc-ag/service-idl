@@ -21,6 +21,8 @@ import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.idl.SequenceDeclaration
+import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.MemberElementWrapper
 import org.eclipse.emf.ecore.EObject
 
@@ -200,5 +202,39 @@ class Util
     {
         GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).build).toLowerCase + ".log4net".config
 
+    }
+
+    def static String makeDefaultValue(BasicCSharpSourceGenerator basicCSharpSourceGenerator, EObject element)
+    {
+        val typeResolver = basicCSharpSourceGenerator.typeResolver
+        if (element instanceof PrimitiveType)
+        {
+            if (element.stringType !== null)
+                return '''«typeResolver.resolve("System.string")».Empty'''
+        }
+        else if (element instanceof AliasDeclaration)
+        {
+            return makeDefaultValue(basicCSharpSourceGenerator, element.type)
+        }
+        else if (element instanceof AbstractType)
+        {
+            if (element.referenceType !== null)
+                return makeDefaultValue(basicCSharpSourceGenerator, element.referenceType)
+            else if (element.primitiveType !== null)
+                return makeDefaultValue(basicCSharpSourceGenerator, element.primitiveType)
+            else if (element.collectionType !== null)
+                return makeDefaultValue(basicCSharpSourceGenerator, element.collectionType)
+        }
+        else if (element instanceof SequenceDeclaration)
+        {
+            val type = basicCSharpSourceGenerator.toText(element.type, element)
+            return '''new «typeResolver.resolve("System.Collections.Generic.List")»<«type»>() as «typeResolver.resolve("System.IEnumerable")»<«type»>'''
+        }
+        else if (element instanceof StructDeclaration)
+        {
+            return '''new «typeResolver.resolve(element)»(«FOR member : element.allMembers SEPARATOR ", "»«member.name.asParameter»: «IF member.optional»null«ELSE»«makeDefaultValue(basicCSharpSourceGenerator, member.type)»«ENDIF»«ENDFOR»)'''
+        }
+
+        return '''default(«basicCSharpSourceGenerator.toText(element, element)»)'''
     }
 }
