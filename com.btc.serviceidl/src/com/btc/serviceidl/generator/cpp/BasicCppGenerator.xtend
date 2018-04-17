@@ -197,13 +197,18 @@ class BasicCppGenerator
 
     def dispatch String toText(ExceptionDeclaration item, EObject context)
     {
-        '''
-            «IF (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)»
-                «IF item.members.empty»
+        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
+            context instanceof StructDeclaration)
+        {
+            if (item.members.empty)
+                '''
                     «resolveCAB("CAB_SIMPLE_EXCEPTION_DEFINITION")»( «item.name», «IF item.supertype !== null»«resolve(item.supertype)»«ELSE»«resolveCAB("BTC::Commons::Core::Exception")»«ENDIF», «makeExportMacro()» )
-                «ELSE»
-                    «val class_name = item.name»
-                    «val base_class_name = makeBaseExceptionType(item)»
+                '''
+            else
+            {
+                val class_name = item.name
+                val base_class_name = makeBaseExceptionType(item)
+                '''                    
                     // based on CAB macro CAB_SIMPLE_EXCEPTION_DEFINITION_EX from Exception.h
                     struct «makeExportMacro» «class_name» : public virtual «base_class_name»
                     {
@@ -224,9 +229,11 @@ class BasicCppGenerator
                        protected:
                           virtual «resolveCAB("BTC::Commons::Core::Exception")» *IntClone() const;
                     };
-                «ENDIF»
-            «ELSE»«resolve(item)»«ENDIF»
-        '''
+                '''
+            }
+        }
+        else
+            resolve(item).toString
     }
 
     def dispatch String toText(PrimitiveType item, EObject context)
@@ -236,7 +243,12 @@ class BasicCppGenerator
 
     def dispatch String toText(SequenceDeclaration item, EObject context)
     {
-        val inner_type = '''«IF item.failable»«resolveCAB("BTC::Commons::CoreExtras::FailableHandle")»< «ENDIF»«toText(item.type, item)»«IF item.failable» >«ENDIF»'''
+        val inner_type = '''«IF item.failable»«
+
+resolveCAB
+("BTC::Commons::CoreExtras::FailableHandle")»< «ENDIF»«toText
+(item.type, item)»«IF item
+.failable» >«ENDIF»'''
 
         if (item.isOutputParameter)
             '''«resolveCAB("BTC::Commons::CoreExtras::InsertableTraits")»< «inner_type» >::Type'''
