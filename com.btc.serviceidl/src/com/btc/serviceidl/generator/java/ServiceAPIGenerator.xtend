@@ -42,30 +42,30 @@ class ServiceAPIGenerator
         }
 
         '''
-            public abstract class «basicJavaSourceGenerator.toText(event)» implements «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«basicJavaSourceGenerator.toText(event.data)»> {
+        public abstract class «basicJavaSourceGenerator.toText(event)» implements «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«basicJavaSourceGenerator.toText(event.data)»> {
+           
+           «IF !keys.empty»
+               public class KeyType {
+                  
+                  «FOR key : keys»
+                      private «key.value» «key.key»;
+                  «ENDFOR»
+                  
+                  public KeyType(«FOR key : keys SEPARATOR ", "»«key.value» «key.key»«ENDFOR»)
+                  {
+                     «FOR key : keys»
+                         this.«key.key» = «key.key»;
+                     «ENDFOR»
+                  }
+                  
+                  «FOR key : keys SEPARATOR System.lineSeparator»
+                      «BasicJavaSourceGenerator.makeGetter(key.value, key.key)»
+                  «ENDFOR»
+               }
                
-               «IF !keys.empty»
-                   public class KeyType {
-                      
-                      «FOR key : keys»
-                          private «key.value» «key.key»;
-                      «ENDFOR»
-                      
-                      public KeyType(«FOR key : keys SEPARATOR ", "»«key.value» «key.key»«ENDFOR»)
-                      {
-                         «FOR key : keys»
-                             this.«key.key» = «key.key»;
-                         «ENDFOR»
-                      }
-                      
-                      «FOR key : keys SEPARATOR System.lineSeparator»
-                          «BasicJavaSourceGenerator.makeGetter(key.value, key.key)»
-                      «ENDFOR»
-                   }
-                   
-                   public abstract «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«basicJavaSourceGenerator.toText(event.data)»> subscriber, Iterable<KeyType> keys);
-               «ENDIF»
-            }
+               public abstract «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«basicJavaSourceGenerator.toText(event.data)»> subscriber, Iterable<KeyType> keys);
+           «ENDIF»
+        }
         '''
     }
 
