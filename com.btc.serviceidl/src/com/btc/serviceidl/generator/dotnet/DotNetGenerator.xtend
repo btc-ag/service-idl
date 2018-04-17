@@ -1087,11 +1087,6 @@ class DotNetGenerator
          + Constants.SEPARATOR_FILE
    }
    
-   def private String resolveCodec(EObject object)
-   {
-       resolveCodec(typeResolver, param_bundle, object)
-   }
-
    def private String getLog4NetConfigFile()
    {
       param_bundle.log4NetConfigFile
