@@ -18,7 +18,6 @@ package com.btc.serviceidl.generator.dotnet
 
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
-import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
@@ -38,7 +37,6 @@ import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.google.common.collect.Sets
-import java.util.ArrayList
 import java.util.Arrays
 import java.util.Calendar
 import java.util.Collection
@@ -51,8 +49,6 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
-import org.eclipse.xtext.util.Pair
-import org.eclipse.xtext.util.Tuples
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
@@ -904,7 +900,9 @@ class DotNetGenerator
          reinitializeFile
          val file_name = Names.plain(abstract_type)
          cs_files.add(file_name)
-         file_system_access.generateFile(project_root_path + file_name.cs, generateSourceFile(toText(abstract_type, interface_declaration)))
+         file_system_access.generateFile(project_root_path + file_name.cs, 
+             generateSourceFile(new ServiceAPIGenerator(basicCSharpSourceGenerator).generate(interface_declaration, abstract_type).toString
+         ))
       }
       
       // generate named events
@@ -920,14 +918,7 @@ class DotNetGenerator
       cs_files.add(file_name)
       file_system_access.generateFile(project_root_path + file_name.cs,
       generateSourceFile(
-         '''
-         public static class «file_name»
-         {
-            public static readonly «resolve("System.Guid")» «typeGuidProperty» = new Guid("«GuidMapper.get(interface_declaration)»");
-            
-            public static readonly «resolve("System.string")» «typeNameProperty» = typeof(«resolve(interface_declaration)»).FullName;
-         }
-         '''
+          new ServiceAPIGenerator(basicCSharpSourceGenerator).generateConstants(interface_declaration, file_name).toString
       ))
       
       reinitializeFile
@@ -1014,38 +1005,7 @@ class DotNetGenerator
    {
       reinitializeFile
       
-      val keys = new ArrayList<Pair<String, String>>
-      for (key : event.keys)
-      {
-         keys.add(Tuples.create(key.keyName.asProperty, toText(key.type, event)))
-      }
-
-      '''
-      public abstract class «toText(event, event)» : «resolve("System.IObservable")»<«toText(event.data, event)»>
-      {
-            /// <see cref="IObservable{T}.Subscribe"/>
-            public abstract «resolve("System.IDisposable")» Subscribe(«resolve("System.IObserver")»<«toText(event.data, event)»> subscriber);
-         
-         «IF !keys.empty»
-            public class KeyType
-            {
-               
-               public KeyType(«FOR key : keys SEPARATOR ", "»«key.second» «key.first.asParameter»«ENDFOR»)
-               {
-                  «FOR key : keys»
-                     this.«key.first» = «key.first.asParameter»;
-                  «ENDFOR»
-               }
-               
-               «FOR key : keys SEPARATOR System.lineSeparator»
-                  public «key.second» «key.first.asProperty» { get; set; }
-               «ENDFOR»
-            }
-            
-            public abstract «resolve("System.IDisposable")» Subscribe(«resolve("System.IObserver")»<«toText(event.data, event)»> subscriber, «resolve("System.Collections.Generic.IEnumerable")»<KeyType> keys);
-         «ENDIF»
-      }
-      '''
+      new ServiceAPIGenerator(basicCSharpSourceGenerator).generateEvent(event).toString
    }
       
    def private String makeImplementatonStub(FunctionDeclaration function)

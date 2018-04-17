@@ -25,17 +25,8 @@ import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(NONE)
-class ProxyDispatcherGeneratorBase
+class ProxyDispatcherGeneratorBase extends GeneratorBase
 {
-    protected val extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
-    protected val extension TypeResolver typeResolver
-
-    new(BasicCSharpSourceGenerator basicCSharpSourceGenerator)
-    {
-        this.basicCSharpSourceGenerator = basicCSharpSourceGenerator
-        this.typeResolver = basicCSharpSourceGenerator.typeResolver
-    }
-
     def protected String getProtobufRequestClassName(InterfaceDeclaration interface_declaration)
     {
         resolve(interface_declaration, ProjectType.PROTOBUF)
