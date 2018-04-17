@@ -708,8 +708,6 @@ class DotNetGenerator
    
    def private void generateServiceAPI(String project_root_path, InterfaceDeclaration interface_declaration)
    {
-      val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)
-      
       // record type aliases
       for (type_alias : interface_declaration.contains.filter(AliasDeclaration))
       {
@@ -752,40 +750,9 @@ class DotNetGenerator
       file_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
       cs_files.add(file_name)
       file_system_access.generateFile(project_root_path + file_name.cs,
-      generateSourceFile(
-      '''
-      «IF !interface_declaration.docComments.empty»
-         /// <summary>
-         «FOR comment : interface_declaration.docComments»«toText(comment, comment)»«ENDFOR»
-         /// </summary>
-      «ENDIF»
-      public interface «GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)»«IF anonymous_event !== null» : «resolve("System.IObservable")»<«toText(anonymous_event.data, anonymous_event)»>«ENDIF»
-      {
-         
-         «FOR function : interface_declaration.functions SEPARATOR System.lineSeparator»
-            «val is_void = function.returnedType.isVoid»
-            /// <summary>
-            «FOR comment : function.docComments»«toText(comment, comment)»«ENDFOR»
-            /// </summary>
-            «FOR parameter : function.parameters»
-            /// <param name="«parameter.paramName.asParameter»"></param>
-            «ENDFOR»
-            «FOR exception : function.raisedExceptions»
-            /// <exception cref="«toText(exception, function)»"></exception>
-            «ENDFOR»
-            «IF !is_void»/// <returns></returns>«ENDIF»
-            «makeReturnType(function)» «function.name»(
-               «FOR param : function.parameters SEPARATOR ","»
-                  «IF param.direction == ParameterDirection.PARAM_OUT»out «ENDIF»«toText(param.paramType, function)» «toText(param, function)»
-               «ENDFOR»
-            );
-         «ENDFOR»
-         
-         «FOR event : interface_declaration.events.filter[name !== null]»
-            «toText(event, interface_declaration)» Get«toText(event, interface_declaration)»();
-         «ENDFOR»
-      }
-      '''))
+        generateSourceFile(
+          new ServiceAPIGenerator(basicCSharpSourceGenerator).generateInterface(interface_declaration, file_name).toString
+      ))
    }
    
    def private String generateSourceFile(String main_content)
