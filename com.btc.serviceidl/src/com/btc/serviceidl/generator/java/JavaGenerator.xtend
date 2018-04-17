@@ -747,19 +747,19 @@ class JavaGenerator
    {
       val program_name = "Program"
       val server_runner_name = ProjectType.SERVER_RUNNER.getClassName(param_bundle.artifactNature, interface_declaration.name)
-      val package_name = MavenResolver.resolvePackage(interface_declaration, Optional.of(param_bundle.projectType))
       val beans_name = "ServerRunnerBeans".xml
       val log4j_name = "log4j.ServerRunner".properties
       
       generateJavaFile(src_root_path + program_name.java,
          interface_declaration,
-         [basicJavaSourceGenerator|generateServerRunnerProgram(program_name, server_runner_name, beans_name, log4j_name, interface_declaration)]
+         [basicJavaSourceGenerator|new ServerRunnerGenerator(basicJavaSourceGenerator).generateServerRunnerProgram(program_name, server_runner_name, beans_name, log4j_name, interface_declaration).toString]
       )
 
       generateJavaFile(src_root_path + server_runner_name.java,
          interface_declaration, [basicJavaSourceGenerator|generateServerRunnerImplementation(server_runner_name, interface_declaration)]
       )
       
+      val package_name = MavenResolver.resolvePackage(interface_declaration, Optional.of(param_bundle.projectType))
       file_system_access.generateFile(
          makeProjectSourcePath(interface_declaration, ProjectType.SERVER_RUNNER, MavenArtifactType.TEST_RESOURCES, PathType.ROOT) + beans_name,
          ConfigFilesGenerator.generateSpringBeans(package_name, program_name)
@@ -821,84 +821,7 @@ class JavaGenerator
       }
       '''
    }
-   
-   def private String generateServerRunnerProgram(String class_name, String server_runner_class_name, String beans_name, String log4j_name, InterfaceDeclaration interface_declaration)
-   {
-      val resources_location = MavenArtifactType.TEST_RESOURCES.directoryLayout
       
-      '''
-      public class «class_name» {
-         
-         private static String _connectionString;
-         private static «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
-         private static «server_runner_class_name» _serverRunner;
-         private static final «typeResolver.resolve("org.apache.log4j.Logger")» logger = Logger.getLogger(Program.class);
-         private static String _file;
-         
-         public static void main(String[] args) {
-            
-            «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
-            // Parse Parameters
-            int i = 0;
-            while (i < args.length && args[i].startsWith("-")) {
-               if (args[i].equals("-connectionString") || args[i].equals("-c")) {
-                  _connectionString = args[++i];
-               } else if (args[i].equals("-file") || args[i].equals("-f"))
-                  _file = args[++i];
-               i++;
-            }
-            
-            if (_file == null)
-               _file = "«resources_location»/«beans_name»";
-            
-            //no parameters; help the user...
-            if (i == 0) {
-               System.out.println("Parameters:");
-               System.out
-                     .println("-connectionString or -c  required: set host and port (e.g. tcp://127.0.0.1:1234)");
-               System.out.println("");
-               System.out
-                     .println("-file or -f              set springBeansFile for class of ServerFactory");
-               System.out
-                     .println("                         use: bean id=\"ServerFactory\";Instance of com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory");
-               return;
-            }
-            
-            logger.info("ConnectionString: " + _connectionString);
-            
-            @SuppressWarnings("resource")
-            «typeResolver.resolve("org.springframework.context.ApplicationContext")» ctx = new «typeResolver.resolve("org.springframework.context.support.FileSystemXmlApplicationContext")»(_file);
-            
-            «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» _serverConnectionFactory = (IConnectionFactory) ctx
-                  .getBean("ServerFactory", logger);
-            
-            try {
-               _serverEndpoint = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ServerEndpointFactory")»(logger,_serverConnectionFactory).create(_connectionString);
-               
-               _serverRunner = new «server_runner_class_name»(_serverEndpoint);
-               _serverRunner.registerService();
-               
-               System.out.println("Server listening at " + _connectionString);
-               System.out.println("Press any key to close");
-               System.in.read();
-               
-            } catch (Exception e) {
-               logger.error("Exception thrown by ServerRunner", e);
-            } finally {
-               if (_serverEndpoint != null)
-                  try {
-                     _serverEndpoint.close();
-                  } catch («typeResolver.resolve("java.lang.Exception")» e) {
-                     logger.warn("Exception close by ServerRunner", e);
-                  }
-            }
-            
-            return;
-         }
-      }
-      '''
-   }
-   
    def private void generateProxy(String src_root_path, InterfaceDeclaration interface_declaration)
    {
       val proxy_factory_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name) + "Factory"
