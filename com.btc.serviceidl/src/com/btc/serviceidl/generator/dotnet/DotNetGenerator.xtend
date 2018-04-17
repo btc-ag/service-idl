@@ -1233,95 +1233,10 @@ class DotNetGenerator
       '''
    }
 
-   def private String generateAppConfig(ModuleDeclaration module)
+   def private generateAppConfig(ModuleDeclaration module)
    {
       reinitializeFile
-      
-      '''
-      <?xml version="1.0"?>
-      <configuration>
-        <configSections>
-          <section name="log4net" type="«resolve("log4net.Config.Log4NetConfigurationSectionHandler").fullyQualifiedName», log4net" requirePermission="false"/>
-          <sectionGroup name="spring">
-            <section name="context" type="«resolve("Spring.Context.Support.ContextHandler").fullyQualifiedName», Spring.Core" />
-            <section name="objects" type="«resolve("Spring.Context.Support.DefaultSectionHandler").fullyQualifiedName», Spring.Core" />
-          </sectionGroup>
-        </configSections>
-      
-        <log4net configSource="«log4NetConfigFile»" />
-      
-        <spring>
-          <context>
-            <resource uri="config://spring/objects" />
-          </context>
-          <objects xmlns="http://www.springframework.net">
-            <object id="BTC.CAB.Logging.API.NET.LoggerFactory" type="«resolve("BTC.CAB.Logging.Log4NET.Log4NETLoggerFactory").fullyQualifiedName», BTC.CAB.Logging.Log4NET"/>
-            
-            «IF param_bundle.projectType == ProjectType.SERVER_RUNNER»
-               «val protobuf_server_helper = resolve("BTC.CAB.ServiceComm.NET.ProtobufUtil.ProtoBufServerHelper").fullyQualifiedName»
-               «val service_descriptor = '''«resolve("BTC.CAB.ServiceComm.NET.API.DTO.ServiceDescriptor").fullyQualifiedName»'''»
-               «val service_dispatcher = resolve("BTC.CAB.ServiceComm.NET.API.IServiceDispatcher").fullyQualifiedName»
-               <!--ZeroMQ server factory-->
-               <object id="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" type="«resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.ZeroMqServerConnectionFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ">
-                 <constructor-arg index="0" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
-               </object>
-               <object id="BTC.CAB.ServiceComm.NET.API.ServerFactory" type="«resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.ServerFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.Core">
-                 <constructor-arg index="0" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
-                 <constructor-arg index="1" ref="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" />
-                 <constructor-arg index="2" value="tcp://127.0.0.1:«Constants.DEFAULT_PORT»"/>
-               </object>
-
-               <object id="«protobuf_server_helper»" type="«protobuf_server_helper», BTC.CAB.ServiceComm.NET.ProtobufUtil"/>
-
-               «FOR interface_declaration : module.moduleComponents.filter(InterfaceDeclaration)»
-                  «val api = resolve(interface_declaration)»
-                  «val impl = resolve(interface_declaration, ProjectType.IMPL)»
-                  «val dispatcher = resolve(interface_declaration, ProjectType.DISPATCHER)»
-                  <!-- «interface_declaration.name» Service -->
-                  <object id="«dispatcher».ServiceDescriptor" type="«service_descriptor», BTC.CAB.ServiceComm.NET.API">
-                    <constructor-arg name="typeGuid" expression="T(«api.namespace».«getConstName(interface_declaration)», «api.namespace»).«typeGuidProperty»"/>
-                    <constructor-arg name="typeName" expression="T(«api.namespace».«getConstName(interface_declaration)», «api.namespace»).«typeNameProperty»"/>
-                    <constructor-arg name="instanceName" value="PerformanceTestService"/>
-                    <constructor-arg name="instanceDescription" value="«api» instance for performance tests"/>
-                  </object>
-                  <object id="«impl»" type="«impl», «impl.namespace»"/>
-                  <object id="«dispatcher»" type="«dispatcher», «dispatcher.namespace»">
-                    <constructor-arg index="0" ref="«impl»" />
-                    <constructor-arg index="1" ref="«protobuf_server_helper»" />
-                  </object>
-               «ENDFOR»
-               
-               <!-- Service Dictionary -->
-               <object id="BTC.CAB.ServiceComm.ServerRunner.Services" type="«resolve("System.Collections.Generic.Dictionary").fullyQualifiedName»&lt;«service_descriptor», «service_dispatcher»>">
-                 <constructor-arg>
-                   <dictionary key-type="«service_descriptor»" value-type="«service_dispatcher»">
-                     «FOR interface_declaration : module.moduleComponents.filter(InterfaceDeclaration)»
-                        «val dispatcher = resolve(interface_declaration, ProjectType.DISPATCHER)»
-                        <entry key-ref="«dispatcher».ServiceDescriptor" value-ref="«dispatcher»" />
-                     «ENDFOR»
-                   </dictionary>
-                 </constructor-arg>
-               </object>
-            «ELSEIF param_bundle.projectType == ProjectType.CLIENT_CONSOLE»
-               <!--ZeroMQ client factory-->
-               <object id="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" type="«resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.ZeroMqClientConnectionFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ">
-                 <constructor-arg index="0" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
-               </object>
-               <object id="BTC.CAB.ServiceComm.NET.API.ClientFactory" type="«resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.ClientFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.Core">
-                 <constructor-arg index="0" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
-                 <constructor-arg index="1" ref="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" />
-                 <constructor-arg index="2" value="tcp://127.0.0.1:«Constants.DEFAULT_PORT»"/>
-               </object>
-            «ENDIF»
-            
-          </objects>
-        </spring>
-        
-        <startup>
-          <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.0"/>
-        </startup>
-      </configuration>
-      '''
+      new AppConfigGenerator(basicCSharpSourceGenerator).generateAppConfig(module)
    }
 
    def private void generateTest(String project_root_path, InterfaceDeclaration interface_declaration)

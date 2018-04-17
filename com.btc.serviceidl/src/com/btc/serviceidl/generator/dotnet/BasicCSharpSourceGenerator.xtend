@@ -41,7 +41,7 @@ import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
-@Accessors(NONE)
+@Accessors(PACKAGE_GETTER)
 class BasicCSharpSourceGenerator {
     private val extension TypeResolver typeResolver 
     private val Map<String, String> typedef_table    

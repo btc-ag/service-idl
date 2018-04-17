@@ -31,7 +31,7 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 
-@Accessors(NONE)
+@Accessors(PACKAGE_GETTER)
 class TypeResolver
 {
     private val DotNetFrameworkVersion frameworkVersion
