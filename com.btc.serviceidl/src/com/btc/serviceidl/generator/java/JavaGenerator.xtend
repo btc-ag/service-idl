@@ -24,7 +24,6 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.idl.AbstractException
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
@@ -500,9 +499,4 @@ class JavaGenerator
       dependencies.clear
    }
       
-   def private String makeDefaultValue(EObject element)
-   {
-       basicJavaSourceGenerator.makeDefaultValue(element)
-   }
-
 }
