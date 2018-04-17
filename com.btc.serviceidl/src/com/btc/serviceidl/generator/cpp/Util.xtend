@@ -1,5 +1,7 @@
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
@@ -92,5 +94,4 @@ class Util
         }
         return result + max
     }
-
 }

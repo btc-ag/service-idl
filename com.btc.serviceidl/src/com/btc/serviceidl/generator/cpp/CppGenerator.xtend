@@ -24,29 +24,20 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
-import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.common.TypeWrapper
 import com.btc.serviceidl.idl.AbstractException
 import com.btc.serviceidl.idl.AbstractType
-import com.btc.serviceidl.idl.AliasDeclaration
-import com.btc.serviceidl.idl.DocCommentElement
 import com.btc.serviceidl.idl.EnumDeclaration
-import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
-import com.btc.serviceidl.idl.ExceptionReferenceDeclaration
-import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
-import com.btc.serviceidl.idl.ParameterElement
-import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
-import com.btc.serviceidl.idl.TupleDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
 import java.util.Collection
@@ -67,6 +58,7 @@ import org.eclipse.xtext.scoping.IScopeProvider
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
+import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
@@ -97,6 +89,7 @@ class CppGenerator
    
    // per-file variables
    private var extension TypeResolver typeResolver = null   
+   private var extension BasicCppGenerator basicCppGenerator = null   
    
    def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Set<ProjectType> projectTypes, Map<String, HashMap<String, String>> pr)
    {
@@ -155,7 +148,8 @@ class CppGenerator
    
    def private void reinitializeFile()
    {
-      typeResolver = new TypeResolver(qualified_name_provider, param_bundle, vsSolution, project_references, cab_libs)
+      typeResolver = new TypeResolver(qualified_name_provider, param_bundle, vsSolution, project_references, cab_libs, smart_pointer_map)
+      basicCppGenerator = new BasicCppGenerator(typeResolver, param_bundle, idl)
    }
    
    def private void reinitializeProject(ProjectType pt)
@@ -937,7 +931,7 @@ class CppGenerator
          
          «FOR type : failable_types»
             «val api_type_name = resolve(type)»
-            «val proto_type_name = resolveFailableProtobufType(type, owner)»
+            «val proto_type_name = typeResolver.resolveFailableProtobufType(type, owner)»
             «api_type_name» DecodeFailable(«proto_type_name» const& protobuf_input);
             
             void EncodeFailable(«api_type_name» const& api_input, «proto_type_name» * const protobuf_output);
@@ -1400,11 +1394,11 @@ class CppGenerator
       
       «FOR type : failable_types»
          «val api_type_name = resolve(type)»
-         «val proto_failable_type_name = resolveFailableProtobufType(type, owner)»
+         «val proto_failable_type_name = typeResolver.resolveFailableProtobufType(type, owner)»
          «val proto_type_name = resolve(type, ProjectType.PROTOBUF)»
          inline «api_type_name» DecodeFailable(«proto_failable_type_name» const& protobuf_entry)
          {
-            return «resolveDecode(type, owner)»(protobuf_entry.value());
+            return «typeResolver.resolveDecode(type, owner)»(protobuf_entry.value());
          }
          
          inline void EncodeFailable(«api_type_name» const& api_input, «proto_failable_type_name» * const protobuf_output)
@@ -1448,7 +1442,7 @@ class CppGenerator
    {
       '''
       «FOR enum_value : element.containedIdentifiers»
-         «IF enum_value != element.containedIdentifiers.head»else «ENDIF»if (protobuf_input == «resolveProtobuf(element, ProtobufType.REQUEST)»::«enum_value»)
+         «IF enum_value != element.containedIdentifiers.head»else «ENDIF»if (protobuf_input == «typeResolver.resolveProtobuf(element, ProtobufType.REQUEST)»::«enum_value»)
             return «resolve(element)»::«enum_value»;
       «ENDFOR»
       
@@ -1464,7 +1458,7 @@ class CppGenerator
       val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(element.type)
       val protobuf_name = element.name.toLowerCase
       val is_failable = com.btc.serviceidl.util.Util.isFailable(element.type)
-      val codec_name = if (use_codec) resolveDecode(element.type, container, !is_failable)
+      val codec_name = if (use_codec) typeResolver.resolveDecode(element.type, container, !is_failable)
       
       '''
       «IF is_optional && !is_sequence»if (protobuf_input.has_«protobuf_name»())«ENDIF»
@@ -1501,7 +1495,7 @@ class CppGenerator
       '''
       «FOR enum_value : element.containedIdentifiers»
          «IF enum_value != element.containedIdentifiers.head»else «ENDIF»if (api_input == «resolve(element)»::«enum_value»)
-            return «resolveProtobuf(element, ProtobufType.RESPONSE)»::«enum_value»;
+            return «typeResolver.resolveProtobuf(element, ProtobufType.RESPONSE)»::«enum_value»;
       «ENDFOR»
       
       «resolveCAB("CABTHROW_V2")»(«resolveCAB("BTC::Commons::Core::InvalidArgumentException")»("Unknown enum value!"));
@@ -1539,86 +1533,7 @@ class CppGenerator
       if (com.btc.serviceidl.util.Util.isUUIDType(element))
          return '''Encode'''
       
-      return '''«resolveCodecNS(element)»::Encode'''
-   }
-   
-   def private String resolveFailableProtobufType(EObject element, EObject container)
-   {
-      // explicitly include some essential dependencies
-      cab_libs.add("BTC.CAB.ServiceComm.Default.lib")
-
-      var namespace = GeneratorUtil.transform
-      (
-         ParameterBundle
-         .createBuilder(com.btc.serviceidl.util.Util.getModuleStack(com.btc.serviceidl.util.Util.getScopeDeterminant(container)))
-         .with(ProjectType.PROTOBUF)
-         .with(TransformType.NAMESPACE)
-         .build
-      )
-      return namespace + Constants.SEPARATOR_NAMESPACE + GeneratorUtil.asFailable(element, container, qualified_name_provider)
-   }
-   
-   def private String resolveDecode(EObject element, EObject container)
-   {
-      resolveDecode(element, container, true)
-   }
-   
-   def private String resolveDecode(EObject element, EObject container, boolean use_codec_ns)
-   {
-      // handle sequence first, because it may include UUIDs and other types from below
-      if (com.btc.serviceidl.util.Util.isSequenceType(element))
-      {
-         val is_failable = com.btc.serviceidl.util.Util.isFailable(element)
-         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(element)
-         
-         var protobuf_type = resolve(ultimate_type, ProjectType.PROTOBUF).fullyQualifiedName
-         if (is_failable)
-            protobuf_type = resolveFailableProtobufType(element, container)
-         else if (com.btc.serviceidl.util.Util.isByte(ultimate_type) || com.btc.serviceidl.util.Util.isInt16(ultimate_type) || com.btc.serviceidl.util.Util.isChar(ultimate_type))
-            protobuf_type = "google::protobuf::int32"
-         
-         var decodeMethodName = ""
-         if (is_failable)
-         {
-            if (element.eContainer instanceof MemberElement)
-               decodeMethodName = '''DecodeFailableToVector'''
-            else
-               decodeMethodName = '''DecodeFailable'''
-         }
-         else
-         {
-            if (element.eContainer instanceof MemberElement)
-            {
-               if (com.btc.serviceidl.util.Util.isUUIDType(ultimate_type))
-                  decodeMethodName = "DecodeUUIDToVector"
-               else
-                  decodeMethodName = "DecodeToVector"
-            }
-            else
-            {
-               if (com.btc.serviceidl.util.Util.isUUIDType(ultimate_type))
-                  decodeMethodName = "DecodeUUID"
-               else
-                  decodeMethodName = "Decode"
-            }
-         }
-         
-         return '''«IF use_codec_ns»«resolveCodecNS(ultimate_type, is_failable, Optional.of(container))»::«ENDIF»«decodeMethodName»«IF is_failable || !com.btc.serviceidl.util.Util.isUUIDType(ultimate_type)»< «protobuf_type», «resolve(ultimate_type)» >«ENDIF»'''
-      }
-      
-      if (com.btc.serviceidl.util.Util.isUUIDType(element))
-         return '''«resolveCodecNS(element)»::DecodeUUID'''
-      
-      if (com.btc.serviceidl.util.Util.isByte(element))
-         return '''static_cast<«resolveSTL("int8_t")»>'''
-      
-      if (com.btc.serviceidl.util.Util.isInt16(element))
-         return '''static_cast<«resolveSTL("int16_t")»>'''
-      
-      if (com.btc.serviceidl.util.Util.isChar(element))
-         return '''static_cast<char>'''
-      
-      return '''«resolveCodecNS(element)»::Decode'''
+      return '''«typeResolver.resolveCodecNS(element)»::Encode'''
    }
    
    def private String generateProjectSource(InterfaceDeclaration interface_declaration)
@@ -1759,79 +1674,7 @@ class CppGenerator
    
    def private String generateCppProxy(InterfaceDeclaration interface_declaration)
    {
-      val class_name = resolve(interface_declaration, param_bundle.projectType)
-      val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
-      
-      // the class name is not used explicitly in the following code, but
-      // we need to include this *.impl.h file to avoid linker errors
-      resolveCABImpl("BTC::ServiceComm::Util::CDefaultObservableRegistrationProxy")
-      
-      '''
-      «class_name.shortName»::«class_name.shortName»
-      (
-         «resolveCAB("BTC::Commons::Core::Context")» &context
-         ,«resolveCAB("BTC::Logging::API::LoggerFactory")» &loggerFactory
-         ,«resolveCAB("BTC::ServiceComm::API::IClientEndpoint")» &localEndpoint
-         ,«resolveCABImpl("BTC::Commons::CoreExtras::Optional")»<«resolveCAB("BTC::Commons::CoreExtras::UUID")»> const &serverServiceInstanceGuid
-      ) :
-      m_context(context)
-      , «resolveCAB("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
-      , «interface_declaration.asBaseName»(context, localEndpoint, «api_class_name»::TYPE_GUID(), serverServiceInstanceGuid)
-      «FOR event : interface_declaration.events»
-      , «event.observableRegistrationName»(context, localEndpoint.GetEventRegistry(), «event.eventParamsName»())
-      «ENDFOR»
-      { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(param_bundle.with(ProjectType.SERVICE_API).with(TransformType.NAMESPACE).build)))»( GetClientServiceReference().GetServiceFaultHandlerManager() ); }
-      
-      «generateCppDestructor(interface_declaration)»
-      
-      «generateInheritedInterfaceMethods(interface_declaration)»
-      
-      «FOR event : interface_declaration.events AFTER System.lineSeparator»
-         «val event_type = resolve(event.data)»
-         «val event_name = event_type.shortName»
-         «val event_params_name = event.eventParamsName»
-         
-         namespace // anonymous namespace to avoid naming collisions
-         {
-            «event_type» const Unmarshal«event_name»( «resolveCAB("BTC::ServiceComm::API::IEventSubscriberManager")»::ObserverType::OnNextParamType event )
-            {
-               «resolve(event.data, ProjectType.PROTOBUF)» eventProtobuf;
-               if (!(event->GetNumElements() == 1))
-                  «resolveCAB("CABTHROW_V2")»(«resolveCAB("BTC::ServiceComm::API::InvalidMessageReceivedException")»("Event message has not exactly one part"));
-               «resolveCAB("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ParseMessageOrThrow<«resolveCAB("BTC::ServiceComm::API::InvalidMessageReceivedException")»>(eventProtobuf, (*event)[0]);
-
-               return «resolveCodecNS(event.data)»::Decode( eventProtobuf );
-            }
-         }
-         
-         «resolveCAB("BTC::Commons::CoreExtras::UUID")» «class_name.shortName»::«event_params_name»::GetEventTypeGuid()
-         {
-           /** this uses a global event type, i.e. if there are multiple instances of the service (dispatcher), these will all be subscribed;
-           *  alternatively, an instance-specific type guid must be registered by the dispatcher and queried by the proxy */
-           return «event_type»::EVENT_TYPE_GUID();
-         }
-         
-         «resolveCAB("BTC::ServiceComm::API::EventKind")» «class_name.shortName»::«event_params_name»::GetEventKind()
-         {
-           return «resolveCAB("BTC::ServiceComm::API::EventKind")»::EventKind_PublishSubscribe;
-         }
-         
-         «resolveCAB("BTC::Commons::Core::String")» «class_name.shortName»::«event_params_name»::GetEventTypeDescription()
-         {
-           return «resolveCAB("CABTYPENAME")»(«event_type»);
-         }
-         
-         «resolveSTL("std::function")»<«class_name.shortName»::«event_params_name»::EventDataType const ( «resolveCAB("BTC::ServiceComm::Commons::ConstSharedMessageSharedPtr")» const & )> «class_name»::«event_params_name»::GetUnmarshalFunction( )
-         {
-           return &Unmarshal«event_name»;
-         }
-         
-         «resolveCAB("BTC::Commons::Core::UniquePtr")»<«resolveCAB("BTC::Commons::Core::Disposable")»> «class_name.shortName»::Subscribe( «resolveCAB("BTC::Commons::CoreExtras::IObserver")»<«event_type»> &observer )
-         {
-           return «event.observableRegistrationName».Subscribe(observer);
-         }
-      «ENDFOR»
-      '''
+      new ProxyGenerator(typeResolver, param_bundle, idl).generateImplementationFileBody(interface_declaration).toString
    }
    
    def private String generateCppImpl(InterfaceDeclaration interface_declaration)
@@ -2004,94 +1847,15 @@ class CppGenerator
    
    def private String generateCppDestructor(InterfaceDeclaration interface_declaration)
    {
-      val class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
-      
-      '''
-      «class_name»::~«class_name»()
-      {}
-      '''
+       basicCppGenerator.generateCppDestructor(interface_declaration)
    }
-   
-   def private String generateInheritedInterfaceMethods(InterfaceDeclaration interface_declaration)
-   {
-      val class_name = resolve(interface_declaration, param_bundle.projectType)
-      var ResolvedName protobuf_request_message
-      var ResolvedName protobuf_response_message
       
-      if (param_bundle.projectType == ProjectType.PROXY)
-      {
-         protobuf_request_message = resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
-         protobuf_response_message = resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
-      }
-      
-      '''
-      «FOR function : interface_declaration.functions»
-         «IF !function.isSync»«resolveCAB("BTC::Commons::CoreExtras::Future")»<«ENDIF»«toText(function.returnedType, interface_declaration)»«IF !function.isSync»>«ENDIF» «class_name.shortName»::«function.name»(«generateParameters(function)»)«IF function.isQuery» const«ENDIF»
-         {
-            «IF param_bundle.projectType == ProjectType.IMPL || param_bundle.projectType == ProjectType.EXTERNAL_DB_IMPL»
-               // \todo Auto-generated method stub! Implement actual business logic!
-               «resolveCAB("CABTHROW_V2")»(«resolveCAB("BTC::Commons::Core::UnsupportedOperationException")»( "«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»" ));
-            «ENDIF»
-
-            «IF param_bundle.projectType == ProjectType.PROXY»
-               «resolveCAB("BTC::Commons::Core::UniquePtr")»< «protobuf_request_message» > request( BorrowRequestMessage() );
-
-               // encode request -->
-               auto * const concreteRequest( request->mutable_«com.btc.serviceidl.util.Util.makeProtobufMethodName(function.name, Constants.PROTOBUF_REQUEST)»() );
-               «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
-                  «IF GeneratorUtil.useCodec(param.paramType, param_bundle.artifactNature) && !(com.btc.serviceidl.util.Util.isByte(param.paramType) || com.btc.serviceidl.util.Util.isInt16(param.paramType) || com.btc.serviceidl.util.Util.isChar(param.paramType))»
-                     «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
-                        «val ulimate_type = com.btc.serviceidl.util.Util.getUltimateType(param.paramType)»
-                        «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
-                        «val protobuf_type = resolveProtobuf(ulimate_type, ProtobufType.RESPONSE).fullyQualifiedName»
-                        «resolveCodecNS(ulimate_type, is_failable, Optional.of(interface_declaration))»::Encode«IF is_failable»Failable«ENDIF»< «resolve(ulimate_type)», «IF is_failable»«resolveFailableProtobufType(param.paramType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF» >
-                           ( «resolveSTL("std::move")»(«param.paramName»), concreteRequest->mutable_«param.paramName.toLowerCase»() );
-                     «ELSEIF com.btc.serviceidl.util.Util.isEnumType(param.paramType)»
-                        concreteRequest->set_«param.paramName.toLowerCase»( «resolveCodecNS(param.paramType)»::Encode(«param.paramName») );
-                     «ELSE»
-                        «resolveCodecNS(param.paramType)»::Encode( «param.paramName», concreteRequest->mutable_«param.paramName.toLowerCase»() );
-                     «ENDIF»
-                  «ELSE»
-                     concreteRequest->set_«param.paramName.toLowerCase»(«param.paramName»);
-                  «ENDIF»
-               «ENDFOR»
-               // encode request <--
-               
-               «IF function.returnedType.isVoid»
-                  return Request«IF function.isSync»Sync«ELSE»Async«ENDIF»UnmarshalVoid( *request );
-               «ELSE»
-                  return RequestAsyncUnmarshal< «toText(function.returnedType, interface_declaration)» >( *request, [&]( «resolveCAB("BTC::Commons::Core::UniquePtr")»< «protobuf_response_message» > response )
-                  {
-                     // decode response -->
-                     auto const& concreteResponse( response->«com.btc.serviceidl.util.Util.makeProtobufMethodName(function.name, Constants.PROTOBUF_RESPONSE)»() );
-                     «val output_parameters = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
-                     «IF !output_parameters.empty»
-                        // handle [out] parameters
-                        «FOR param : output_parameters»
-                           «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
-                              «resolveDecode(param.paramType, interface_declaration)»( concreteResponse.«param.paramName.toLowerCase»(), «param.paramName» );
-                           «ELSE»
-                              «param.paramName» = «makeDecodeResponse(param.paramType, interface_declaration, param.paramName.toLowerCase)»
-                           «ENDIF»
-                        «ENDFOR»
-                     «ENDIF»
-                     return «makeDecodeResponse(function.returnedType, interface_declaration, function.name.toLowerCase)»
-                     // decode response <--
-                  } )«IF function.isSync».Get()«ENDIF»;
-               «ENDIF»
-            «ENDIF»
-         }
-         
-      «ENDFOR»
-      '''
-   }
-   
    def private String generateCppDispatcher(InterfaceDeclaration interface_declaration)
    {
       val class_name = resolve(interface_declaration, param_bundle.projectType)
       val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
-      val protobuf_request_message = resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
-      val protobuf_response_message = resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
+      val protobuf_request_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
+      val protobuf_response_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
       
       val cab_message_ptr = resolveCAB("BTC::ServiceComm::Commons::MessagePtr")
       
@@ -2153,14 +1917,14 @@ class CppGenerator
                      «val ulimate_type = com.btc.serviceidl.util.Util.getUltimateType(param.paramType)»
                      «val is_uuid = com.btc.serviceidl.util.Util.isUUIDType(ulimate_type)»
                      «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
-                     auto «param.paramName»( «resolveCodecNS(ulimate_type, is_failable, Optional.of(interface_declaration))»::Decode«IF is_failable»Failable«ELSEIF is_uuid»UUID«ENDIF»
+                     auto «param.paramName»( «typeResolver.resolveCodecNS(ulimate_type, is_failable, Optional.of(interface_declaration))»::Decode«IF is_failable»Failable«ELSEIF is_uuid»UUID«ENDIF»
                         «IF !is_uuid || is_failable»
-                           «val protobuf_type = resolveProtobuf(ulimate_type, ProtobufType.REQUEST).fullyQualifiedName»
-                           < «IF is_failable»«resolveFailableProtobufType(param.paramType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF», «resolve(ulimate_type)» >
+                           «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.REQUEST).fullyQualifiedName»
+                           < «IF is_failable»«typeResolver.resolveFailableProtobufType(param.paramType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF», «resolve(ulimate_type)» >
                         «ENDIF»
                         (concreteRequest.«param.paramName.toLowerCase»()) );
                   «ELSE»
-                     auto «param.paramName»( «resolveCodecNS(param.paramType)»::Decode«IF com.btc.serviceidl.util.Util.isUUIDType(param.paramType)»UUID«ENDIF»(concreteRequest.«param.paramName.toLowerCase»()) );
+                     auto «param.paramName»( «typeResolver.resolveCodecNS(param.paramType)»::Decode«IF com.btc.serviceidl.util.Util.isUUIDType(param.paramType)»UUID«ENDIF»(concreteRequest.«param.paramName.toLowerCase»()) );
                   «ENDIF»
                «ELSE»
                   auto «param.paramName»( concreteRequest.«param.paramName.toLowerCase»() );
@@ -2275,24 +2039,18 @@ class CppGenerator
          «IF com.btc.serviceidl.util.Util.isSequenceType(type)»
             «val ulimate_type = com.btc.serviceidl.util.Util.getUltimateType(type)»
             «val is_failable = com.btc.serviceidl.util.Util.isFailable(type)»
-            «val protobuf_type = resolveProtobuf(ulimate_type, ProtobufType.RESPONSE).fullyQualifiedName»
-            «resolveCodecNS(ulimate_type, is_failable, Optional.of(container))»::Encode«IF is_failable»Failable«ENDIF»< «resolve(ulimate_type)», «IF is_failable»«resolveFailableProtobufType(type, container)»«ELSE»«protobuf_type»«ENDIF» >
+            «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.RESPONSE).fullyQualifiedName»
+            «typeResolver.resolveCodecNS(ulimate_type, is_failable, Optional.of(container))»::Encode«IF is_failable»Failable«ENDIF»< «resolve(ulimate_type)», «IF is_failable»«typeResolver.resolveFailableProtobufType(type, container)»«ELSE»«protobuf_type»«ENDIF» >
                ( «resolveSTL("std::move")»(«api_input»«IF output_param.present»Future.Get()«ENDIF»), concreteResponse->mutable_«protobuf_name»() );
          «ELSEIF com.btc.serviceidl.util.Util.isEnumType(type)»
-            concreteResponse->set_«protobuf_name»( «resolveCodecNS(type)»::Encode(«api_input») );
+            concreteResponse->set_«protobuf_name»( «typeResolver.resolveCodecNS(type)»::Encode(«api_input») );
          «ELSE»
-            «resolveCodecNS(type)»::Encode( «api_input», concreteResponse->mutable_«protobuf_name»() );
+            «typeResolver.resolveCodecNS(type)»::Encode( «api_input», concreteResponse->mutable_«protobuf_name»() );
          «ENDIF»
       «ELSE»
          concreteResponse->set_«protobuf_name»(«api_input»);
       «ENDIF»
       '''
-   }
-   
-   def private String makeDecodeResponse(EObject type, EObject container, String protobuf_name)
-   {
-      val use_codec = GeneratorUtil.useCodec(type, param_bundle.artifactNature)
-      '''«IF use_codec»«resolveDecode(type, container)»( «ENDIF»concreteResponse.«protobuf_name»()«IF use_codec» )«ENDIF»;'''
    }
    
    def private String generateProjectHeader(String export_header, InterfaceDeclaration interface_declaration)
@@ -2583,8 +2341,8 @@ class CppGenerator
          namespace
          {
             typedef «resolveCAB("BTC::ServiceComm::ProtobufBase::AProtobufServiceProxyBaseTemplate")»<
-               «resolveProtobuf(interface_declaration, ProtobufType.REQUEST)»
-               ,«resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)» > «interface_declaration.asBaseName»;
+               «typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)»
+               ,«typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)» > «interface_declaration.asBaseName»;
          }
       «ENDIF»
       «IF !interface_declaration.docComments.empty»
@@ -2720,256 +2478,13 @@ class CppGenerator
          «ENDIF»
       );
       '''
-   }
-   
-   def private String generateParameters(FunctionDeclaration function)
-   {
-      '''«FOR parameter : function.parameters SEPARATOR ", "»«toText(parameter, function)»«ENDFOR»'''
-   }
-   
-   def private dispatch String toText(ParameterElement item, EObject context)
-   {
-      val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(item.paramType)
-      if (is_sequence)
-         '''«toText(item.paramType, context.eContainer)» «IF item.direction == ParameterDirection.PARAM_OUT»&«ENDIF»«item.paramName»'''
-      else
-         '''«toText(item.paramType, context.eContainer)»«IF item.direction == ParameterDirection.PARAM_IN» const«ENDIF» &«item.paramName»'''
-   }
-   
-   def private dispatch String toText(ReturnTypeElement return_type, EObject context)
-   {
-      if (return_type.isVoid)
-         return "void"
-
-      throw new IllegalArgumentException("Unknown ReturnTypeElement: " + return_type.class.toString)
-   }
-   
-   def private dispatch String toText(AbstractType item, EObject context)
-   {
-      if (item.primitiveType !== null)
-         return toText(item.primitiveType, item)
-      else if (item.referenceType !== null)
-         return toText(item.referenceType, item)
-      else if (item.collectionType !== null)
-         return toText(item.collectionType, item)
-      
-      throw new IllegalArgumentException("Unknown AbstractType: " + item.class.toString)
-   }
-   
-   def private dispatch String toText(AliasDeclaration item, EObject context)
-   {
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
-         '''typedef «toText(item.type, context)» «item.name»;'''
-      else
-         '''«resolve(item)»'''
-   }
-   
-   def private dispatch String toText(EnumDeclaration item, EObject context)
-   {
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
-      '''
-      enum class «item.name»
-      {
-         «FOR enum_value : item.containedIdentifiers»
-            «enum_value»«IF enum_value != item.containedIdentifiers.last»,«ENDIF»
-         «ENDFOR»
-      }«IF item.declarator !== null» «item.declarator»«ENDIF»;
-      '''
-      else
-         '''«resolve(item)»'''
-   }
-   
-   def private dispatch String toText(StructDeclaration item, EObject context)
-   {
-      
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
-      {
-         val related_event =  com.btc.serviceidl.util.Util.getRelatedEvent(item, idl)
-         var makeCompareOperator = false
-         for (member :item.members)
-         {
-            if (member.name == "Id" && member.type.primitiveType !== null && member.type.primitiveType.uuidType !== null)
-               makeCompareOperator = true
-         }
+   }       
          
-         '''
-         struct «makeExportMacro()» «item.name»«IF item.supertype !== null» : «resolve(item.supertype)»«ENDIF»
-         {
-            «FOR type_declaration : item.typeDecls»
-               «toText(type_declaration, item)»
-            «ENDFOR»
-            «FOR member : item.members»
-               «val is_pointer = useSmartPointer(item, member.type)»
-               «val is_optional = member.isOptional»
-               «IF is_optional && !is_pointer»«resolveCAB("BTC::Commons::CoreExtras::Optional")»< «ENDIF»«IF is_pointer»«resolveSTL("std::shared_ptr")»< «ENDIF»«toText(member.type, item)»«IF is_pointer» >«ENDIF»«IF is_optional && !is_pointer» >«ENDIF» «member.name.asMember»;
-            «ENDFOR»
-            
-            «IF related_event !== null»
-               /** \return {«GuidMapper.get(related_event)»} */
-               static «resolveCAB("BTC::Commons::CoreExtras::UUID")» EVENT_TYPE_GUID();
-               
-            «ENDIF»
-            
-            «IF makeCompareOperator»
-               bool operator==( «item.name» const &other ) const
-                  {   return id == other.id; }
-            «ENDIF»
-         }«IF item.declarator !== null» «item.declarator»«ENDIF»;
-         '''
-      }
-      else
-         '''«resolve(item)»'''
-   }
-   
-   def private dispatch String toText(ExceptionReferenceDeclaration item, EObject context)
-   {
-      if (context instanceof FunctionDeclaration) '''«Names.plain(item)»'''
-   }
-   
-   def private dispatch String toText(ExceptionDeclaration item, EObject context)
-   {
-      '''
-      «IF (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)»
-         «IF item.members.empty»
-            «resolveCAB("CAB_SIMPLE_EXCEPTION_DEFINITION")»( «item.name», «IF item.supertype !== null»«resolve(item.supertype)»«ELSE»«resolveCAB("BTC::Commons::Core::Exception")»«ENDIF», «makeExportMacro()» )
-         «ELSE»
-            «val class_name = item.name»
-            «val base_class_name = makeBaseExceptionType(item)»
-            // based on CAB macro CAB_SIMPLE_EXCEPTION_DEFINITION_EX from Exception.h
-            struct «makeExportMacro» «class_name» : public virtual «base_class_name»
-            {
-               typedef «base_class_name» BASE;
-               
-               «class_name»();
-               explicit «class_name»(«resolveCAB("BTC::Commons::Core::String")» const &msg);
-               «class_name»( «FOR member : item.members SEPARATOR ", "»«toText(member.type, item)» const& «member.name.asMember»«ENDFOR» );
-               
-               virtual ~«class_name»();
-               virtual void Throw() const;
-               virtual void Throw();
-               
-               «FOR member : item.members»
-                  «toText(member.type, item)» «member.name.asMember»;
-               «ENDFOR»
-               
-               protected:
-                  virtual «resolveCAB("BTC::Commons::Core::Exception")» *IntClone() const;
-            };
-         «ENDIF»
-      «ELSE»«resolve(item)»«ENDIF»
-      '''
-   }
-   
-   def private dispatch String toText(PrimitiveType item, EObject context)
-   {
-       getPrimitiveTypeName(item)
-   }
-   
-   def private dispatch String toText(SequenceDeclaration item, EObject context)
-   {
-      val inner_type = '''«IF item.failable»«resolveCAB("BTC::Commons::CoreExtras::FailableHandle")»< «ENDIF»«toText(item.type, item)»«IF item.failable» >«ENDIF»'''
-      
-      if (item.isOutputParameter)
-         '''«resolveCAB("BTC::Commons::CoreExtras::InsertableTraits")»< «inner_type» >::Type'''
-      else if (context.eContainer instanceof MemberElement)
-         '''«resolveSTL("std::vector")»< «inner_type» >'''
-      else
-         '''«resolveCAB("BTC::Commons::Core::ForwardConstIterator")»< «inner_type» >'''
-   }
-   
-   def private dispatch String toText(TupleDeclaration item, EObject context)
-   {
-      '''«resolveSTL("std::tuple")»<«FOR type : item.types»«toText(type, item)»«IF type != item.types.last», «ENDIF»«ENDFOR»>'''
-   }
-   
-   def private dispatch String toText(EventDeclaration item, EObject context)
-   {
-      '''«toText(item.data, item)»'''
-   }
-   
-   def private dispatch String toText(DocCommentElement item, EObject context)
-   {
-      return com.btc.serviceidl.util.Util.getPlainText(item)
-   }
-   
-   def private dispatch String toText(ModuleDeclaration item, EObject context)
-   {
-      return Names.plain(item)
-   }
-
-   def private dispatch String toText(InterfaceDeclaration item, EObject context)
-   {
-      return Names.plain(item)
-   }
-   
-   def private String makeExportMacro()
-   {
-      return GeneratorUtil.transform(param_bundle.with(TransformType.EXPORT_HEADER).build).toUpperCase
-                         + Constants.SEPARATOR_CPP_HEADER + "EXPORT"
-   }
- 
-   def private ResolvedName resolveProtobuf(EObject object, ProtobufType protobuf_type)
-   {
-      if (com.btc.serviceidl.util.Util.isUUIDType(object))
-         return new ResolvedName(resolveSTL("std::string"), TransformType.NAMESPACE)
-      else if (com.btc.serviceidl.util.Util.isInt16(object) || com.btc.serviceidl.util.Util.isByte(object) || com.btc.serviceidl.util.Util.isChar(object))
-         return new ResolvedName("::google::protobuf::int32", TransformType.NAMESPACE)
-      else if (object instanceof PrimitiveType)
-         return new ResolvedName(toText(object, object), TransformType.NAMESPACE)
-      else if (object instanceof AbstractType && (object as AbstractType).primitiveType !== null)
-         return resolveProtobuf((object as AbstractType).primitiveType, protobuf_type)
-
-      val is_function = (object instanceof FunctionDeclaration)
-      val is_interface = (object instanceof InterfaceDeclaration)
-      val scope_determinant = com.btc.serviceidl.util.Util.getScopeDeterminant(object)
-
-      val builder = ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(scope_determinant))
-      builder.reset(ProjectType.PROTOBUF)
-
-      var result = GeneratorUtil.transform(builder.with(TransformType.NAMESPACE).build)
-      result += Constants.SEPARATOR_NAMESPACE
-      if (is_interface)
-         result += Names.plain(object) + "_" + protobuf_type.getName
-      else if (is_function)
-         result += Names.plain(scope_determinant) + "_" + protobuf_type.getName + "_" + Names.plain(object) + "_" + protobuf_type.getName
-      else
-         result += Names.plain(object)
-      
-      var header_path = GeneratorUtil.transform(builder.with(TransformType.FILE_SYSTEM).build)
-      var header_file = GeneratorUtil.getPbFileName(object)
-      modules_includes.add("modules/" + header_path + "/gen/" + header_file.pb.h)
-      object.resolveProjectFilePath(ProjectType.PROTOBUF)
-      return new ResolvedName(result, TransformType.NAMESPACE)
-   }
-      
-   def private String resolveCodecNS(EObject object)
-   {
-      resolveCodecNS(object, false, Optional.empty)
-   }
-   
-   def private String resolveCodecNS(EObject object, boolean is_failable, Optional<EObject> container)
-   {
-      val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
-      
-      val temp_param = new ParameterBundle.Builder
-      temp_param.reset(param_bundle.artifactNature)
-      temp_param.reset( if (is_failable) param_bundle.moduleStack else com.btc.serviceidl.util.Util.getModuleStack(ultimate_type) ) // failable wrappers always local!
-      temp_param.reset(ProjectType.PROTOBUF)
-      
-      val codec_name = if (is_failable) GeneratorUtil.getCodecName(container.get) else GeneratorUtil.getCodecName(ultimate_type)
-      
-      var header_path = GeneratorUtil.transform(temp_param.with(TransformType.FILE_SYSTEM).build)
-      modules_includes.add("modules/" + header_path + "/include/" + codec_name.h)
-      resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
-      
-      GeneratorUtil.transform(temp_param.with(TransformType.NAMESPACE).build) + TransformType.NAMESPACE.separator + codec_name
-   }
-   
    def private String makeDispatcherBaseTemplate(InterfaceDeclaration interface_declaration)
    {
       val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
-      val protobuf_request = resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
-      val protobuf_response = resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
+      val protobuf_request = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
+      val protobuf_response = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
       
       '''
       typedef «resolveCAB("BTC::ServiceComm::ProtobufBase::AProtobufServiceDispatcherBaseTemplate")»<
@@ -3020,29 +2535,6 @@ class CppGenerator
       '''
    }
    
-   def private String makeBaseExceptionType(ExceptionDeclaration exception)
-   {
-      '''«IF exception.supertype === null»«resolveCAB("BTC::Commons::Core::Exception")»«ELSE»«resolve(exception.supertype)»«ENDIF»'''
-   }
-      
-   /**
-    * For a given element, check if another type (as member of this element)
-    * must be represented as smart pointer + forward declaration, or as-is.
-    */
-   def private boolean useSmartPointer(EObject element, EObject other_type)
-   {
-      // sequences use forward-declared types as template parameters
-      // and do not need the smart pointer wrapping
-      if (com.btc.serviceidl.util.Util.isSequenceType(other_type))
-         return false;
-       
-      val dependencies = smart_pointer_map.get(element)
-      if (dependencies !== null)
-         return dependencies.contains(com.btc.serviceidl.util.Util.getUltimateType(other_type))
-      else
-         return false
-   }
-
    def private List<EObject> resolveForwardDeclarations(Collection<TypeWrapper> sorted_types)
    {
       val forward_declarations = sorted_types
