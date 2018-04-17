@@ -3624,24 +3624,24 @@ class CppGenerator
       '''
    }
    
-   def private String getRegisterServerFaults(InterfaceDeclaration interface_declaration, Optional<String> namespace)
+   def private static String getRegisterServerFaults(InterfaceDeclaration interface_declaration, Optional<String> namespace)
    {
       '''«IF namespace.present»«namespace.get»::«ENDIF»Register«interface_declaration.name»ServiceFaults'''
    }
    
-   def private String getObservableName(EventDeclaration event)
+   def private static String getObservableName(EventDeclaration event)
    {
       var basic_name = event.name ?: ""
       basic_name += "Observable"
       '''m_«basic_name.asMember»'''
    }
    
-   def private String getObservableRegistrationName(EventDeclaration event)
+   def private static String getObservableRegistrationName(EventDeclaration event)
    {
       event.observableName + "Registration"
    }
    
-   def private String getEventParamsName(EventDeclaration event)
+   def private static String getEventParamsName(EventDeclaration event)
    {
       (event.name ?: "") + "EventParams"
    }
@@ -3778,7 +3778,7 @@ class CppGenerator
     * Make a C++ member variable name according to BTC naming conventions
     * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
     */
-   def private String asMember(String name)
+   def private static String asMember(String name)
    {
       if (name.allUpperCase)
          name.toLowerCase     // it looks better, if ID --> id and not ID --> iD
@@ -3790,7 +3790,7 @@ class CppGenerator
     * Make a C++ parameter name according to BTC naming conventions
     * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
     */
-   def private String asParameter(String name)
+   def private static String asParameter(String name)
    {
       asMember(name) // currently the same convention
    }
@@ -3823,13 +3823,14 @@ class CppGenerator
    def private boolean isMutableField(EObject type)
    {
       val ultimate_type = Util.getUltimateType(type)
+      // TODO isn't param_bundle.artifactNature always CPP here? Then the method could be made static
       val use_codec = GeneratorUtil.useCodec(ultimate_type, param_bundle.artifactNature)
       val is_enum = Util.isEnumType(ultimate_type)
 
       return ( use_codec && !(Util.isByte(ultimate_type) || Util.isInt16(ultimate_type) || Util.isChar(ultimate_type) || is_enum) )
    }
    
-   def private String asBaseName(InterfaceDeclaration interface_declaration)
+   def private static String asBaseName(InterfaceDeclaration interface_declaration)
    {
       '''«interface_declaration.name»Base'''
    }
