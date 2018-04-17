@@ -323,7 +323,7 @@ class DotNetGenerator
                /// <see cref="«api_fully_qualified_name».Get«event_name»"/>
                public «event_name» Get«event_name»()
                {
-                  «makeDefaultMethodStub»
+                  «makeDefaultMethodStub(typeResolver)»
                }
             «ENDFOR»
          }
@@ -803,28 +803,8 @@ class DotNetGenerator
    }
       
    def private String makeImplementatonStub(FunctionDeclaration function)
-   {
-      val is_void = function.returnedType.isVoid
-      
-      '''
-      «IF !function.sync»
-         // TODO Auto-generated method stub
-         «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
-            «param.paramName.asParameter» = «makeDefaultValue(param.paramType)»;
-         «ENDFOR»
-         return «resolve("System.Threading.Tasks.Task")»«IF !is_void»<«toText(function.returnedType, function)»>«ENDIF».Factory.StartNew(() => { throw new «resolve("System.NotSupportedException")»("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»"); });
-      «ELSE»
-         «makeDefaultMethodStub»
-      «ENDIF»
-      '''
-   }
-   
-   def private String makeDefaultMethodStub()
-   {
-      '''
-      // TODO Auto-generated method stub
-      throw new «resolve("System.NotSupportedException")»("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»");
-      '''
+   {       
+      new ImplementationStubGenerator(basicCSharpSourceGenerator).generateStub(function).toString
    }
    
    def private void addGoogleProtocolBuffersReferences()
@@ -846,11 +826,6 @@ class DotNetGenerator
       param_bundle.log4NetConfigFile
    }
          
-   def private String makeDefaultValue(EObject element)
-   {
-      basicCSharpSourceGenerator.makeDefaultValue(element)
-   }
-
    def private String makeReturnType(FunctionDeclaration function)
    {
       typeResolver.makeReturnType(function)

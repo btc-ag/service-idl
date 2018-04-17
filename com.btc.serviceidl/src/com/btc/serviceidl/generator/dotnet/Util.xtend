@@ -23,6 +23,7 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
 import org.eclipse.emf.ecore.EObject
 
@@ -249,8 +250,7 @@ class Util
         '''«IF is_void»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»«ELSE»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»<«ENDIF»«effective_type»«IF !is_sync»>«ENDIF»«ENDIF»'''
     }
 
-    def static String resolveCodec(TypeResolver typeResolver, ParameterBundle.Builder param_bundle,
-        EObject object)
+    def static String resolveCodec(TypeResolver typeResolver, ParameterBundle.Builder param_bundle, EObject object)
     {
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
 
@@ -265,5 +265,13 @@ class Util
 
         GeneratorUtil.transform(temp_param.with(TransformType.PACKAGE).build) + TransformType.PACKAGE.separator +
             codec_name
+    }
+
+    def public static String makeDefaultMethodStub(TypeResolver typeResolver)
+    {
+        '''
+            // TODO Auto-generated method stub
+            throw new «typeResolver.resolve("System.NotSupportedException")»("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»");
+        '''
     }
 }
