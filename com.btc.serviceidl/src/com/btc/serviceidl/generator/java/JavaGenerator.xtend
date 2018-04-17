@@ -262,7 +262,7 @@ class JavaGenerator
       // TODO the "common" service fault handler factory is also generated as part of the ServiceAPI!?      
       val service_fault_handler_factory_name = module.asServiceFaultHandlerFactory
       generateJavaFile(src_root_path + param_bundle.projectType.getClassName(param_bundle.artifactNature, service_fault_handler_factory_name).java,
-          module, [basicJavaSourceGenerator|generateServiceFaultHandlerFactory(service_fault_handler_factory_name, module )]
+          module, [basicJavaSourceGenerator|new ServiceFaultHandlerFactoryGenerator(basicJavaSourceGenerator).generateServiceFaultHandlerFactory(service_fault_handler_factory_name, module ).toString]
       )
    }
    
@@ -323,91 +323,9 @@ class JavaGenerator
       // TODO the service fault handler factory is ServiceComm-specific and should therefore not be generated to the service API package
       val service_fault_handler_factory_name = interface_declaration.asServiceFaultHandlerFactory
       generateJavaFile(src_root_path + param_bundle.projectType.getClassName(param_bundle.artifactNature, service_fault_handler_factory_name).java,
-          interface_declaration, [basicJavaSourceGenerator|generateServiceFaultHandlerFactory(service_fault_handler_factory_name, interface_declaration )]
+          interface_declaration, [basicJavaSourceGenerator|new ServiceFaultHandlerFactoryGenerator(basicJavaSourceGenerator).generateServiceFaultHandlerFactory(service_fault_handler_factory_name, interface_declaration ).toString]
       )
-   }
-   
-   def private String generateServiceFaultHandlerFactory(String class_name, EObject container)
-   {
-      val service_fault_handler = typeResolver.resolve(JavaClassNames.DEFAULT_SERVICE_FAULT_HANDLER)
-      val i_error = typeResolver.resolve(JavaClassNames.ERROR)
-      val optional = typeResolver.resolve(JavaClassNames.OPTIONAL)
-      val raised_exceptions = Util.getRaisedExceptions(container)
-      val failable_exceptions = Util.getFailableExceptions(container)
-      
-      // merge both collections to avoid duplicate entries
-      val exceptions = new HashSet<AbstractException>
-      exceptions.addAll(raised_exceptions)
-      exceptions.addAll(failable_exceptions)
-      
-      // TODO except for the static initializer, this can be extracted into a reusable class, which can be provided 
-      // from com.btc.cab.servicecomm
-      
-      // TODO InvalidArgumentException and UnsupportedOperationException should not be added to the error map, only 
-      // service-specific subtypes 
-      
-      '''
-      public class «class_name»
-      {
-         private static final «typeResolver.resolve("org.apache.commons.collections4.BidiMap")»<String, Exception> errorMap = new «typeResolver.resolve("org.apache.commons.collections4.bidimap.DualHashBidiMap")»<>();
-         
-         static
-         {
-            «FOR exception : exceptions.sortBy[name]»
-               errorMap.put("«Util.getCommonExceptionName(exception, qualified_name_provider)»", new «typeResolver.resolve(exception)»());
-            «ENDFOR»
-            
-            // most commonly used exception types
-            errorMap.put("«Constants.INVALID_ARGUMENT_EXCEPTION_FAULT_HANDLER»", new IllegalArgumentException());
-            errorMap.put("«Constants.UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER»", new UnsupportedOperationException());
-         }
-         
-         public static final «typeResolver.resolve(JavaClassNames.SERVICE_FAULT_HANDLER)» createServiceFaultHandler()
-         {
-            «service_fault_handler» serviceFaultHandler = new «service_fault_handler»();
-            errorMap.forEach( (key, value) -> serviceFaultHandler.registerException(key, value) );
-            return serviceFaultHandler;
-            
-         }
-         
-         public static final Exception createException(String errorType, String message, String stackTrace)
-         {
-            if (errorMap.containsKey(errorType))
-            {
-               Exception exception = errorMap.get(errorType);
-               try
-               {
-                  «typeResolver.resolve("java.lang.reflect.Constructor")»<?> constructor = exception.getClass().getConstructor(String.class);
-                  return (Exception) constructor.newInstance( new Object[] {message} );
-               } catch (Exception ex)
-               {
-                  return exception;
-               }
-            }
-            
-            return new Exception(message); // default exception
-         }
-         
-         public static final «i_error» createError(Exception exception)
-         {
-            «optional»<String> errorType = «optional».empty();
-            for (Exception e : errorMap.values())
-            {
-               if (e.getClass().equals(exception.getClass()))
-               {
-                  errorType = «optional».of(errorMap.inverseBidiMap().get(e));
-                  break;
-               }
-            }
-            «i_error» error = new «typeResolver.resolve("com.btc.cab.servicecomm.faulthandling.ErrorMessage")»(
-                exception.getMessage(),
-                errorType.isPresent() ? errorType.get() : exception.getClass().getName(),
-                «typeResolver.resolve("org.apache.commons.lang3.exception.ExceptionUtils")».getStackTrace(exception));
-            return error;
-         }
-      }
-      '''
-   }
+   }   
    
    def private void generateTest(String src_root_path, InterfaceDeclaration interface_declaration)
    {
