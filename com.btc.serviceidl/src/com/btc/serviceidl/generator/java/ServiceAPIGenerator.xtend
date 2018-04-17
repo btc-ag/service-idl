@@ -10,24 +10,17 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.java
 
-import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.generator.common.ParameterBundle
-import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.common.ProtobufType
+import com.btc.serviceidl.idl.AbstractTypeDeclaration
+import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.idl.ParameterDirection
-import java.util.Optional
+import java.util.ArrayList
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
-import static extension com.btc.serviceidl.generator.java.BasicJavaSourceGenerator.*
-import static extension com.btc.serviceidl.generator.java.ProtobufUtil.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.EventDeclaration
-import java.util.ArrayList
-import com.btc.serviceidl.generator.common.GuidMapper
-import com.btc.serviceidl.idl.AbstractTypeDeclaration
 
 @Accessors(NONE)
 class ServiceAPIGenerator
