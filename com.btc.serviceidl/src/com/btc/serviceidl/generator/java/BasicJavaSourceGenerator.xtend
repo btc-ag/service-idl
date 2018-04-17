@@ -30,7 +30,7 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
 import java.util.ArrayList
-import java.util.HashMap
+import java.util.Map
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -44,8 +44,7 @@ class BasicJavaSourceGenerator
     private val IQualifiedNameProvider qualified_name_provider
     private val TypeResolver typeResolver
     private val IDLSpecification idl
-
-    private val typedef_table = new HashMap<String, ResolvedName>
+    private val Map<String, ResolvedName> typedef_table
 
     def public dispatch String toText(ExceptionDeclaration element)
     {

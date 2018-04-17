@@ -21,7 +21,6 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
@@ -32,7 +31,6 @@ import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
 import com.google.common.collect.Sets
 import java.util.Arrays
-import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
 import java.util.Optional
@@ -47,6 +45,8 @@ import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.java.BasicJavaSourceGenerator.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import java.util.HashMap
+import com.btc.serviceidl.generator.common.ResolvedName
 
 class JavaGenerator
 {
@@ -69,7 +69,7 @@ class JavaGenerator
    private val typedef_table = new HashMap<String, ResolvedName>
    private val dependencies = new HashSet<MavenDependency>
    
-   private var param_bundle = new ParameterBundle.Builder()
+   private var param_bundle = new ParameterBundle.Builder()    
    
    def private getTypeResolver()
    {
@@ -148,6 +148,17 @@ class JavaGenerator
 
             if (!activeProjectTypes.empty)
             {
+                // record type aliases
+                for (type_alias : interface_declaration.contains.filter(AliasDeclaration))
+                {
+                   var type_name = typedef_table.get(type_alias.name)
+                   if (type_name === null)
+                   {
+                      type_name = typeResolver.resolve(type_alias.type)
+                      typedef_table.put(type_alias.name, type_name)
+                   }
+                }
+                  
                 activeProjectTypes.forEach[generateProject(it, interface_declaration)]
                 generatePOM(interface_declaration)
             }
@@ -264,17 +275,6 @@ class JavaGenerator
    
    def private void generateServiceAPI(String src_root_path, InterfaceDeclaration interface_declaration)
    {      
-      // record type aliases
-      for (type_alias : interface_declaration.contains.filter(AliasDeclaration))
-      {
-         var type_name = typedef_table.get(type_alias.name)
-         if (type_name === null)
-         {
-            type_name = typeResolver.resolve(type_alias.type)
-            typedef_table.put(type_alias.name, type_name)
-         }
-      }
-      
       // generate all contained types
       for (abstract_type : interface_declaration.contains.filter(AbstractTypeDeclaration).filter[e | !(e instanceof AliasDeclaration)])
       {
@@ -434,13 +434,14 @@ class JavaGenerator
    def private void reinitializeFile()
    {
       val typeResolver = new TypeResolver(qualified_name_provider, param_bundle, dependencies)
-      basicJavaSourceGenerator = new BasicJavaSourceGenerator(qualified_name_provider, typeResolver, idl)
+      basicJavaSourceGenerator = new BasicJavaSourceGenerator(qualified_name_provider, typeResolver, idl, typedef_table)
    }
    
    def private void reinitializeAll()
    {
       reinitializeFile
       dependencies.clear
+      typedef_table.clear
    }
       
 }
