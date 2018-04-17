@@ -21,7 +21,6 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
@@ -850,26 +849,8 @@ class DotNetGenerator
    def private String generateProxyData(String class_name, InterfaceDeclaration interface_declaration)
    {
       reinitializeFile
-
-      '''
-      «FOR function : interface_declaration.functions SEPARATOR System.lineSeparator»
-         [«resolve("System.Runtime.Serialization.DataContract")»]
-         internal class «getDataContractName(interface_declaration, function, ProtobufType.REQUEST)»
-         {
-            «FOR param : function.parameters»
-               public «toText(param.paramType, function)» «param.paramName.asProperty» { get; set; }
-            «ENDFOR»
-         }
-         
-         «IF !function.returnedType.isVoid»
-            [DataContract]
-            internal class «getDataContractName(interface_declaration, function, ProtobufType.RESPONSE)»
-            {
-               public «toText(function.returnedType, function)» «returnValueProperty» { get; set; }
-            }
-         «ENDIF»
-      «ENDFOR»
-      '''
+      
+      new ProxyDataGenerator(basicCSharpSourceGenerator).generate(interface_declaration).toString
    }
    
    def private String generateProxyProtocol(String class_name, InterfaceDeclaration interface_declaration)
