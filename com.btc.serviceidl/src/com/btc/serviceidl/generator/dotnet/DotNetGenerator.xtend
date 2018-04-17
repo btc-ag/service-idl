@@ -673,16 +673,7 @@ class DotNetGenerator
    def private String generateProxyFactory(String class_name, InterfaceDeclaration interface_declaration)
    {
       reinitializeFile
-      
-      '''
-      public class «class_name»
-      {
-         public static «resolve(interface_declaration).shortName» CreateProtobufProxy(«resolve("BTC.CAB.ServiceComm.NET.API.IClientEndpoint")» endpoint)
-         {
-            return new «GeneratorUtil.getClassName(param_bundle.build, ProjectType.PROXY, interface_declaration.name)»(endpoint);
-         }
-      }
-      '''
+      new ProxyFactoryGenerator(basicCSharpSourceGenerator).generate(interface_declaration, class_name).toString
    }
    
    def private String generateProxyImplementation(String class_name, InterfaceDeclaration interface_declaration)
