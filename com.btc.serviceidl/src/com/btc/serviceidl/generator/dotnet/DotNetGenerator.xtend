@@ -30,22 +30,17 @@ import com.btc.serviceidl.idl.AbstractException
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
-import com.btc.serviceidl.idl.DocCommentElement
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
-import com.btc.serviceidl.idl.ExceptionReferenceDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
-import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
-import com.btc.serviceidl.idl.TupleDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
 import com.google.common.collect.Sets
@@ -58,15 +53,12 @@ import java.util.HashSet
 import java.util.Optional
 import java.util.Set
 import java.util.UUID
-import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
-import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.scoping.IScopeProvider
 import org.eclipse.xtext.util.Pair
-import org.eclipse.xtext.util.Triple
 import org.eclipse.xtext.util.Tuples
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
@@ -92,11 +84,13 @@ class DotNetGenerator
    private val namespace_references = new HashSet<String>
    private val referenced_assemblies = new HashSet<String>
    private val nuget_packages = new HashSet<NuGetPackage>
-   private val vs_projects = new HashMap<String, UUID>
    private val project_references = new HashMap<String, String>
+   private val vsSolution = new VSSolution
    private val cs_files = new HashSet<String>
    private val protobuf_files = new HashSet<String>
    private var protobuf_project_references = new HashMap<String, HashMap<String, String>>
+   private var extension TypeResolver typeResolver
+   private var extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
    
    def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Set<ProjectType> projectTypes, HashMap<String, HashMap<String, String>> pr)
    {
@@ -108,7 +102,7 @@ class DotNetGenerator
       param_bundle.reset(ArtifactNature.DOTNET)
       
       idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
-      
+            
       // iterate module by module and generate included content
       for (module : idl.modules)
       {
@@ -227,7 +221,7 @@ class DotNetGenerator
    
    def private void generateVSProjectFiles(String project_root_path)
    {
-      val project_name = getCsprojName(param_bundle)
+      val project_name = vsSolution.getCsprojName(param_bundle)
       
       // generate project file
       file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + project_name.csproj, generateCsproj(cs_files))
@@ -303,6 +297,11 @@ class DotNetGenerator
       protobuf_files.clear
       nuget_packages.clear
       cs_files.clear
+      
+      typeResolver = new TypeResolver(DOTNET_FRAMEWORK_VERSION, qualified_name_provider, 
+          namespace_references, referenced_assemblies, project_references, vsSolution, param_bundle
+      )
+      basicCSharpSourceGenerator = new BasicCSharpSourceGenerator(typeResolver, typedef_table, idl)      
    }
    
    def private void generateImpl(String src_root_path, InterfaceDeclaration interface_declaration)
@@ -1964,219 +1963,14 @@ class DotNetGenerator
       '''
    }
    
-   def private dispatch String toText(AliasDeclaration element, EObject context)
-   {
-      var type_name = typedef_table.get(element.name)
-      if (type_name === null)
-      {
-         type_name = toText(element.type, element)
-         typedef_table.put(element.name, type_name)
-      }
-
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
-         return "" // in this context, we only denote the substitute type without any output
-      else
-         return type_name
-   }
-   
-   def private dispatch String toText(AbstractType element, EObject context)
-   {
-      if (element.primitiveType !== null)
-         return toText(element.primitiveType, element)
-      else if (element.referenceType !== null)
-         return toText(element.referenceType, element)
-      else if (element.collectionType !== null)
-         return toText(element.collectionType, element)
-      
-      throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
-   }
-   
-   def private dispatch String toText(ParameterElement element, EObject context)
-   {
-      '''«element.paramName.asParameter»'''
-   }
-   
-   def private dispatch String toText(ReturnTypeElement element, EObject context)
-   {
-      if (element.isVoid)
-         return "void"
-
-      throw new IllegalArgumentException("Unknown ReturnTypeElement: " + element.class.toString)
-   }
-   
-   def private dispatch String toText(PrimitiveType element, EObject context)
-   {
-      if (element.integerType !== null)
-      {
-         switch element.integerType
-         {
-         case "int64":
-            return "long"
-         case "int32":
-            return "int"
-         case "int16":
-            return "short"
-         case "byte":
-            return "byte"
-         }
-      }
-      else if (element.stringType !== null)
-         return "string"
-      else if (element.floatingPointType !== null)
-      {
-         switch element.floatingPointType
-         {
-         case "double":
-            return "double"
-         case "float":
-            return "float"
-         }
-      }
-      else if (element.uuidType !== null)
-      {
-         return resolve("System.Guid").fullyQualifiedName
-      }
-      else if (element.booleanType !== null)
-         return "bool"
-      else if (element.charType !== null)
-         return "char"
-
-      throw new IllegalArgumentException("Unknown PrimitiveType: " + element.class.toString)
-   }
-   
-   def private dispatch String toText(EnumDeclaration element, EObject context)
-   {
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
-      '''
-      public enum «element.name»
-      {
-         «FOR enum_value : element.containedIdentifiers SEPARATOR ","»
-            «enum_value»
-         «ENDFOR»
-      }
-      '''
-      else
-         '''«resolve(element)»'''
-   }
-   
-   def private dispatch String toText(EventDeclaration element, EObject context)
-   {
-      '''«resolve(element.data).alias(getObservableName(element))»'''
-   }
-   
-   def private dispatch String toText(StructDeclaration element, EObject context)
-   {
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
-      {
-         val class_members = new ArrayList<Triple<String, String, String>>
-         for (member : element.effectiveMembers) class_members.add(Tuples.create(member.name.asProperty, toText(member, element), maybeOptional(member)))
-         
-         val all_class_members = new ArrayList<Triple<String, String, String>>
-         element.allMembers.forEach[e | all_class_members.add(Tuples.create(e.name.asProperty, toText(e, element), maybeOptional(e)))]
-
-         val related_event =  com.btc.serviceidl.util.Util.getRelatedEvent(element, idl)
-         
-         '''
-         public class «element.name»«IF element.supertype !== null» : «resolve(element.supertype)»«ENDIF»
-         {
-            «IF related_event !== null»
-               
-               public static readonly «resolve("System.Guid")» «eventTypeGuidProperty» = new Guid("«GuidMapper.get(related_event.data)»");
-            «ENDIF»
-            «FOR class_member : class_members BEFORE System.lineSeparator»
-               public «class_member.second»«class_member.third» «class_member.first» { get; private set; }
-            «ENDFOR»
-            
-            «IF !class_members.empty»
-               public «element.name»(«FOR class_member : all_class_members SEPARATOR ", "»«class_member.second»«class_member.third» «class_member.first.asParameter»«ENDFOR»)
-               «IF element.supertype !== null» : base(«element.supertype.allMembers.map[name.asParameter].join(", ")»)«ENDIF»
-               {
-                  «FOR class_member : class_members»
-                     this.«class_member.first» = «class_member.first.asParameter»;
-                  «ENDFOR»
-               }
-            «ENDIF»
-            
-            «FOR type : element.typeDecls SEPARATOR System.lineSeparator AFTER System.lineSeparator»
-               «toText(type, element)»
-            «ENDFOR»
-         }
-         '''
-      }
-      else
-         '''«resolve(element)»'''
-   }
-   
-   def private dispatch String toText(ExceptionReferenceDeclaration element, EObject context)
-   {
-      if (context instanceof FunctionDeclaration) '''«resolve(element)»'''
-   }
-   
-   def private dispatch String toText(MemberElementWrapper element, EObject context)
-   {
-      '''«toText(element.type, null)»'''
-   }
-   
-   def private dispatch String toText(ExceptionDeclaration element, EObject context)
-   {
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
-      {
-         val class_members = new ArrayList<Pair<MemberElementWrapper, String>>
-         for (member : element.effectiveMembers) class_members.add(Tuples.create(member, toText(member, element)))
-
-         '''
-         public class «element.name» : «IF element.supertype === null»«resolve("System.Exception")»«ELSE»«toText(element.supertype, element)»«ENDIF»
-         {
-            
-            public «element.name»(«FOR class_member : class_members SEPARATOR ", "»«class_member.second»«maybeOptional(class_member.first)» «class_member.first.name.asParameter»«ENDFOR»)
-            «IF element.supertype !== null && (element.supertype instanceof ExceptionDeclaration)» : base(«»)«ENDIF»
-            {
-               «FOR class_member : class_members»
-                  this.«class_member.first.name.asProperty» = «class_member.first.name.asParameter»;
-               «ENDFOR»
-            }
-            
-            «IF !(class_members.size == 1 && class_members.head.second.equalsIgnoreCase("string"))»
-            public «element.name»(«resolve("System.string")» msg) : base(msg)
-            {
-               // this dummy constructor is necessary because otherwise
-               // ProtobufServiceFaultHandler::RegisterException will fail!
-            }
-            «ENDIF»
-            
-            «FOR class_member : class_members SEPARATOR System.lineSeparator»
-               public «class_member.second»«maybeOptional(class_member.first)» «class_member.first.name.asProperty» { get; private set; }
-            «ENDFOR»
-         }
-         '''
-      }
-      else
-         '''«resolve(element)»'''
-   }
-   
-   def private dispatch String toText(SequenceDeclaration element, EObject context)
-   {
-      '''«resolve("System.Collections.Generic.IEnumerable")»<«toText(element.type, element)»>'''
-   }
-   
-   def private dispatch String toText(TupleDeclaration element, EObject context)
-   {
-      '''«resolve("System.Tuple")»<«FOR type : element.types SEPARATOR ","»«toText(type, element)»«ENDFOR»>'''
-   }
-   
-   def private dispatch String toText(DocCommentElement item, EObject context)
-   {
-      return '''/// «com.btc.serviceidl.util.Util.getPlainText(item).replaceAll("\\r", System.lineSeparator + "/// ")»'''
-   }
-   
    def private String generateCsproj(Collection<String> cs_files)
    {
       // Please do NOT edit line indents in the code below (even though they
       // may look misplaced) unless you are fully aware of what you are doing!!!
       // Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
       
-      val project_name = getCsprojName(param_bundle)
-      val project_guid = getCsprojGUID(project_name)
+      val project_name = vsSolution.getCsprojName(param_bundle)
+      val project_guid = vsSolution.getCsprojGUID(project_name)
       
       val is_exe = isExecutable(param_bundle.projectType)
       val is_protobuf = (param_bundle.projectType == ProjectType.PROTOBUF)
@@ -2304,7 +2098,7 @@ class DotNetGenerator
         </ItemGroup>
           «FOR name : project_references.keySet.filter[it != project_name] BEFORE "  <ItemGroup>" AFTER "  </ItemGroup>"»
              <ProjectReference Include="«project_references.get(name)».csproj">
-               <Project>{«getCsprojGUID(name)»}</Project>
+               <Project>{«vsSolution.getCsprojGUID(name)»}</Project>
                <Name>«name»</Name>
              </ProjectReference>
           «ENDFOR»
@@ -2369,119 +2163,10 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
       '''
    }
    
-   def private ResolvedName resolve(String name)
-   {
-      val effective_name = resolveException(name) ?: name
-      val fully_qualified_name = QualifiedName.create(effective_name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
-      val namespace = fully_qualified_name.skipLast(1).toString
-      
-      if (namespace.startsWith("System"))
-         referenced_assemblies.add(DotNetAssemblies.getAssemblyForNamespace(namespace, DOTNET_FRAMEWORK_VERSION))
-      else
-         referenced_assemblies.add(AssemblyResolver.resolveReference(namespace))
-      
-      namespace_references.add(namespace)
-      return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, false)
-   }
-   
-   def private ResolvedName resolve(EObject element)
-   {
-      return resolve(element, element.mainProjectType)
-   }
-   
-   def private ResolvedName resolveProtobuf(EObject element)
-   {
-      return resolve(element, ProjectType.PROTOBUF)
-   }
-   
-   def private ResolvedName resolve(EObject element, ProjectType project_type)
-   {
-      var name = qualified_name_provider.getFullyQualifiedName(element)
-      val fully_qualified = true
-      
-      if (name === null)
-      {
-         if (element instanceof AbstractType)
-         {
-            if (element.primitiveType !== null)
-            {
-               return resolve(element.primitiveType, project_type)
-            }
-            else if (element.referenceType !== null)
-            {
-               return resolve(element.referenceType, if (project_type != ProjectType.PROTOBUF) element.referenceType.mainProjectType else project_type)
-            }
-         }
-         else if (element instanceof PrimitiveType)
-         {
-            if (element.uuidType !== null)
-            {
-               if (project_type == ProjectType.PROTOBUF)
-                  return resolve("Google.ProtocolBuffers")
-               else
-                  return resolve("System.Guid")
-            }
-            else
-               return new ResolvedName(toText(element, element), TransformType.PACKAGE, fully_qualified)
-         }
-         return new ResolvedName(Names.plain(element), TransformType.PACKAGE, fully_qualified)
-      }
-     
-      var result = GeneratorUtil.transform(ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(com.btc.serviceidl.util.Util.getScopeDeterminant(element))).reset(ArtifactNature.DOTNET).with(project_type).with(TransformType.PACKAGE).build)
-      result += Constants.SEPARATOR_PACKAGE + if (element instanceof InterfaceDeclaration) project_type.getClassName(param_bundle.artifactNature, name.lastSegment) else name.lastSegment
-      
-      val package_name = QualifiedName.create(result.split(Pattern.quote(Constants.SEPARATOR_PACKAGE))).skipLast(1)
-      if (!isSameProject(package_name))
-      {
-         // just use namespace, no assembly required - project reference will be used instead!
-         namespace_references.add(package_name.toString)
-         element.resolveProjectFilePath(project_type)
-      }
-      
-      return new ResolvedName(result, TransformType.PACKAGE, fully_qualified)
-   }
-   
-   def private void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
-   {
-      val module_stack = com.btc.serviceidl.util.Util.getModuleStack(referenced_object)
-      var project_path = ""
-      
-      val temp_param = new ParameterBundle.Builder()
-      temp_param.reset(param_bundle.artifactNature)
-      temp_param.reset(module_stack)
-      temp_param.reset(project_type)
-      
-      val project_name = getCsprojName(temp_param)
-
-      if (module_stack.elementsEqual(param_bundle.moduleStack))
-      {
-         project_path = "../" + project_type.getName + "/" + project_name
-      }
-      else
-      {
-         project_path = "../" + GeneratorUtil.getRelativePathsUpwards(param_bundle.build) + GeneratorUtil.transform(temp_param.with(TransformType.FILE_SYSTEM).build) + "/" + project_name
-      }
-
-      project_references.put(project_name, project_path)
-   }
-   
-   def private static String resolveException(String name)
-   {
-      // temporarily some special handling for exceptions, because not all
-      // C++ CAB exceptions are supported by the .NET CAB
-      switch (name)
-      {
-         case "BTC.Commons.Core.InvalidArgumentException":
-            return "System.ArgumentException"
-         default:
-            return null
-      }
-   }
-   
-   def private boolean isSameProject(QualifiedName referenced_package)
-   {
-      return (GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).build) == referenced_package.toString)
-   }
+    def private ResolvedName resolveProtobuf(EObject element)
+    {
+        return resolve(element, ProjectType.PROTOBUF)
+    }
    
    def private String makeImplementatonStub(FunctionDeclaration function)
    {
@@ -2530,26 +2215,6 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
    {
       resolve(interface_declaration, ProjectType.PROTOBUF)
       return GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).with(ProjectType.PROTOBUF).build) + Constants.SEPARATOR_PACKAGE + com.btc.serviceidl.util.Util.asResponse(interface_declaration.name)
-   }
-   
-   def private String getCsprojName(ParameterBundle.Builder builder)
-   {
-      val project_name = GeneratorUtil.transform(builder.with(TransformType.PACKAGE).build)
-      getCsprojGUID(project_name)
-      return project_name
-   }
-   
-   def private String getCsprojGUID(String project_name)
-   {
-      var UUID guid
-      if (vs_projects.containsKey(project_name))
-         guid = vs_projects.get(project_name)
-      else
-      {
-         guid = UUID.nameUUIDFromBytes(project_name.bytes)
-         vs_projects.put(project_name, guid)
-      }
-      return guid.toString.toUpperCase
    }
    
    def private String getProjectRootPath()
