@@ -35,9 +35,10 @@ class Util
     def public static String getDataContractName(InterfaceDeclaration interface_declaration,
         FunctionDeclaration function_declaration, ProtobufType protobuf_type)
     {
-        interface_declaration.name + "_" +
-            if (protobuf_type == ProtobufType.REQUEST) function_declaration.name.asRequest else function_declaration.
-                name.asResponse
+        interface_declaration.name + "_" + if (protobuf_type == ProtobufType.REQUEST)
+            function_declaration.name.asRequest
+        else
+            function_declaration.name.asResponse
     }
 
     /**
@@ -170,27 +171,24 @@ class Util
         interface_declaration.name + "Const"
     }
 
-    def public static boolean isNullable(EObject element)
+    def public static dispatch boolean isNullable(EObject element)
     {
-        if (element instanceof PrimitiveType)
-        {
-            return (
-            element.booleanType !== null || element.integerType !== null || element.charType !== null ||
-                element.floatingPointType !== null
-         )
-        }
-        else if (element instanceof AliasDeclaration)
-        {
-            return isNullable(element.type)
-        }
-        else if (element instanceof AbstractType)
-        {
-            if (element.primitiveType !== null)
-                return isNullable(element.primitiveType)
-            else
-                return false
-        }
+        false
+    }
 
-        return false
+    def public static dispatch boolean isNullable(PrimitiveType element)
+    {
+        element.booleanType !== null || element.integerType !== null || element.charType !== null ||
+            element.floatingPointType !== null
+    }
+
+    def public static dispatch boolean isNullable(AliasDeclaration element)
+    {
+        isNullable(element.type)
+    }
+
+    def public static dispatch boolean isNullable(AbstractType element)
+    {
+        element.primitiveType !== null && isNullable(element.primitiveType)
     }
 }
