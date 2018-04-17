@@ -1,13 +1,13 @@
 /*********************************************************************
-* \author see AUTHORS file
-* \copyright 2015-2018 BTC Business Technology Consulting AG and others
-*
-* This program and the accompanying materials are made
-* available under the terms of the Eclipse Public License 2.0
-* which is available at https://www.eclipse.org/legal/epl-2.0/
-*
-* SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+ * \author see AUTHORS file
+ * \copyright 2015-2018 BTC Business Technology Consulting AG and others
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
+ **********************************************************************/
 package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.common.GuidMapper
@@ -18,12 +18,14 @@ import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
+import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
 import java.util.ArrayList
 import java.util.HashMap
@@ -33,7 +35,8 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.FunctionDeclaration
 
 @Accessors(PACKAGE_GETTER)
 class BasicJavaSourceGenerator
@@ -236,6 +239,19 @@ class BasicJavaSourceGenerator
         '''
     }
 
+    def public String makeInterfaceMethodSignature(FunctionDeclaration function)
+    {
+        val is_sync = function.isSync
+        val is_void = function.returnedType.isVoid
+
+        '''
+        «IF !is_sync»«typeResolver.resolve("java.util.concurrent.Future")»<«ENDIF»«IF !is_sync && is_void»Void«ELSE»«toText(function.returnedType)»«ENDIF»«IF !function.isSync»>«ENDIF» «function.name.toFirstLower»(
+           «FOR param : function.parameters SEPARATOR ","»
+               «IF param.direction == ParameterDirection.PARAM_IN»final «ENDIF»«toText(param.paramType)» «toText(param)»
+           «ENDFOR»
+        ) throws«FOR exception : function.raisedExceptions SEPARATOR ',' AFTER ','» «toText(exception)»«ENDFOR» Exception'''
+    }
+
     def private static String makeGetterSetter(String type_name, String var_name)
     {
         '''
@@ -284,6 +300,14 @@ class BasicJavaSourceGenerator
     {
         val name = if (container instanceof InterfaceDeclaration) container.name else ""
         '''«name»ServiceFaultHandlerFactory'''
+    }
+
+    def public static String makeDefaultMethodStub()
+    {
+        '''
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»");
+        '''
     }
 
 }
