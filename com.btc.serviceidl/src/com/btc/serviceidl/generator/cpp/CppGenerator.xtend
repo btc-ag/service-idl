@@ -69,6 +69,7 @@ import org.eclipse.xtext.scoping.IScopeProvider
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
+import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
 class CppGenerator
@@ -1116,23 +1117,6 @@ class CppGenerator
       val file_content = new OdbGenerator(typeResolver).generateODBTraitsBody()
       
       makeHxx(file_content.toString, false)
-   }
-   
-   def private static Iterable<StructDeclaration> getUnderlyingTypes(StructDeclaration struct)
-   {
-      val all_types = new HashSet<StructDeclaration>
-      val contained_types = struct.members
-         .filter[Util.getUltimateType(type) instanceof StructDeclaration]
-         .map[Util.getUltimateType(type) as StructDeclaration]
-      
-      for ( type : contained_types )
-      {
-         if (!all_types.contains(type))
-            all_types.addAll(getUnderlyingTypes(type))
-      }
-      
-      all_types.addAll(contained_types)
-      return all_types
    }
    
    def private String makeHxx(String file_content, boolean use_common_types)
@@ -3386,28 +3370,6 @@ class CppGenerator
       '''
    }
    
-   def private static String getRegisterServerFaults(InterfaceDeclaration interface_declaration, Optional<String> namespace)
-   {
-      '''«IF namespace.present»«namespace.get»::«ENDIF»Register«interface_declaration.name»ServiceFaults'''
-   }
-   
-   def private static String getObservableName(EventDeclaration event)
-   {
-      var basic_name = event.name ?: ""
-      basic_name += "Observable"
-      '''m_«basic_name.asMember»'''
-   }
-   
-   def private static String getObservableRegistrationName(EventDeclaration event)
-   {
-      event.observableName + "Registration"
-   }
-   
-   def private static String getEventParamsName(EventDeclaration event)
-   {
-      (event.name ?: "") + "EventParams"
-   }
-   
    def private String makeExceptionImplementation(ExceptionDeclaration exception)
    {
       '''
@@ -3535,28 +3497,7 @@ class CppGenerator
       else
          return false
    }
-   
-   /**
-    * Make a C++ member variable name according to BTC naming conventions
-    * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
-    */
-   def private static String asMember(String name)
-   {
-      if (name.allUpperCase)
-         name.toLowerCase     // it looks better, if ID --> id and not ID --> iD
-      else
-         name.toFirstLower
-   }
-   
-   /**
-    * Make a C++ parameter name according to BTC naming conventions
-    * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
-    */
-   def private static String asParameter(String name)
-   {
-      asMember(name) // currently the same convention
-   }
-   
+
    def private List<EObject> resolveForwardDeclarations(Collection<TypeWrapper> sorted_types)
    {
       val forward_declarations = sorted_types
@@ -3592,8 +3533,4 @@ class CppGenerator
       return ( use_codec && !(Util.isByte(ultimate_type) || Util.isInt16(ultimate_type) || Util.isChar(ultimate_type) || is_enum) )
    }
    
-   def private static String asBaseName(InterfaceDeclaration interface_declaration)
-   {
-      '''«interface_declaration.name»Base'''
-   }
 }
