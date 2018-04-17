@@ -17,9 +17,11 @@ import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
+import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.MemberElement
+import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.ReturnTypeElement
@@ -35,8 +37,6 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.ParameterDirection
-import com.btc.serviceidl.idl.FunctionDeclaration
 
 @Accessors(PACKAGE_GETTER)
 class BasicJavaSourceGenerator
@@ -250,6 +250,61 @@ class BasicJavaSourceGenerator
                «IF param.direction == ParameterDirection.PARAM_IN»final «ENDIF»«toText(param.paramType)» «toText(param)»
            «ENDFOR»
         ) throws«FOR exception : function.raisedExceptions SEPARATOR ',' AFTER ','» «toText(exception)»«ENDFOR» Exception'''
+    }
+
+    def public String makeDefaultValue(EObject element)
+    {
+        if (element instanceof PrimitiveType)
+        {
+            if (element.isString)
+                return '''""'''
+            else if (element.isUUID)
+                return '''«typeResolver.resolve(JavaClassNames.UUID)».randomUUID()'''
+            else if (element.isBoolean)
+                return "false"
+            else if (element.isChar)
+                return "'\\u0000'"
+            else if (element.isDouble)
+                return "0D"
+            else if (element.isFloat)
+                return "0F"
+            else if (element.isInt64)
+                return "0L"
+            else if (element.isByte)
+                return "Byte.MIN_VALUE"
+            else if (element.isInt16)
+                return "Short.MIN_VALUE"
+        }
+        else if (element instanceof AliasDeclaration)
+        {
+            return makeDefaultValue(element.type)
+        }
+        else if (element instanceof AbstractType)
+        {
+            if (element.referenceType !== null)
+                return makeDefaultValue(element.referenceType)
+            else if (element.primitiveType !== null)
+                return makeDefaultValue(element.primitiveType)
+            else if (element.collectionType !== null)
+                return makeDefaultValue(element.collectionType)
+        }
+        else if (element instanceof SequenceDeclaration)
+        {
+            val type = toText(element.type)
+            val is_failable = element.failable
+            // TODO this should better use Collections.emptyList
+            return '''new «typeResolver.resolve("java.util.Vector")»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«type»«IF is_failable»>«ENDIF»>()'''
+        }
+        else if (element instanceof StructDeclaration)
+        {
+            return '''new «typeResolver.resolve(element)»(«FOR member : element.allMembers SEPARATOR ", "»«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)».empty()«ELSE»«makeDefaultValue(member.type)»«ENDIF»«ENDFOR»)'''
+        }
+        else if (element instanceof EnumDeclaration)
+        {
+            return '''«toText(element)».«element.containedIdentifiers.head»''';
+        }
+
+        return '''0'''
     }
 
     def private static String makeGetterSetter(String type_name, String var_name)

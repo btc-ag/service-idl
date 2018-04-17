@@ -22,22 +22,15 @@ import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractException
-import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
-import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
-import com.btc.serviceidl.idl.ParameterDirection
-import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.SequenceDeclaration
-import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
 import com.google.common.collect.Sets
@@ -57,7 +50,6 @@ import org.eclipse.xtext.scoping.IScopeProvider
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.java.BasicJavaSourceGenerator.*
-import static extension com.btc.serviceidl.generator.java.ProtobufUtil.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
 class JavaGenerator
@@ -955,115 +947,10 @@ class JavaGenerator
       val dispatcher_class_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)
       val api_class_name = typeResolver.resolve(interface_declaration)
       
-      val protobuf_request = resolveProtobuf(basicJavaSourceGenerator, interface_declaration, Optional.of(ProtobufType.REQUEST))
-      val protobuf_response = resolveProtobuf(basicJavaSourceGenerator, interface_declaration, Optional.of(ProtobufType.RESPONSE))
-      
       file_system_access.generateFile(
          src_root_path + dispatcher_class_name.java,
          generateSourceFile(interface_declaration,
-         '''
-         public class «dispatcher_class_name» implements «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceDispatcher")» {
-            
-            private final «api_class_name» _dispatchee;
-
-            private final «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")» _protoBufHelper;
-
-            private final «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceFaultHandlerManager")» _faultHandlerManager;
-            
-            public «dispatcher_class_name»(«api_class_name» dispatchee, ProtoBufServerHelper protoBufHelper) {
-               _dispatchee = dispatchee;
-               _protoBufHelper = protoBufHelper;
-
-               // ServiceFaultHandlerManager
-               _faultHandlerManager = new «typeResolver.resolve("com.btc.cab.servicecomm.faulthandling.ServiceFaultHandlerManager")»();
-         
-               // ServiceFaultHandler
-               _faultHandlerManager.registerHandler(«typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.SERVICE_API)) + '''.«interface_declaration.asServiceFaultHandlerFactory»''')».createServiceFaultHandler());
-            }
-            
-            /**
-               @see com.btc.cab.servicecomm.api.IServiceDispatcher#processRequest
-            */
-            @Override
-            public «typeResolver.resolve("com.btc.cab.servicecomm.common.IMessageBuffer")» processRequest(
-               IMessageBuffer requestBuffer, «typeResolver.resolve("com.btc.cab.servicecomm.common.IPeerIdentity")» peerIdentity, «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» serverEndpoint) throws Exception {
-               
-               byte[] requestByte = _protoBufHelper.deserializeRequest(requestBuffer);
-               «protobuf_request» request
-                  = «protobuf_request».parseFrom(requestByte);
-               
-               «FOR function : interface_declaration.functions SEPARATOR BasicJavaSourceGenerator.newLine»
-                  «val is_sync = function.isSync»
-                  «val is_void = function.returnedType.isVoid»
-                  «val result_type = typeResolver.resolve(function.returnedType)»
-                  «val result_is_sequence = Util.isSequenceType(function.returnedType)»
-                  «val result_is_failable = result_is_sequence && Util.isFailable(function.returnedType)»
-                  «val result_use_codec = GeneratorUtil.useCodec(function.returnedType, param_bundle.artifactNature) || result_is_failable»
-                  «var result_codec = resolveCodec(function.returnedType)»
-                  «val request_method_name = function.name.asProtobufName + "Request"»
-                  «val response_method_name = '''«protobuf_response».«Util.asResponse(function.name)»'''»
-                  if (request.has«request_method_name»()) {
-                     «val out_params = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
-                     «IF !out_params.empty»
-                        // prepare [out] parameters
-                        «FOR param : out_params»
-                           «val is_sequence = Util.isSequenceType(param.paramType)»
-                           «val is_failable = is_sequence && Util.isFailable(param.paramType)»
-                           «IF is_sequence»«typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«typeResolver.resolve(Util.getUltimateType(param.paramType))»«IF is_failable»>«ENDIF»>«ELSE»«typeResolver.resolve(param.paramType)»«ENDIF» «param.paramName.asParameter» = «makeDefaultValue(param.paramType)»;
-                        «ENDFOR»
-                     «ENDIF»
-                     
-                     // call actual method
-                     «IF !is_void»«IF result_is_sequence»«typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF result_is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«typeResolver.resolve(Util.getUltimateType(function.returnedType))»«IF result_is_failable»>«ENDIF»>«ELSE»«result_type»«ENDIF» result = «ENDIF»_dispatchee.«function.name.asMethod»
-                     (
-                        «FOR param : function.parameters SEPARATOR ","»
-                           «val plain_type = typeResolver.resolve(param.paramType)»
-                           «val is_byte = Util.isByte(param.paramType)»
-                           «val is_short = Util.isInt16(param.paramType)»
-                           «val is_char = Util.isChar(param.paramType)»
-                           «val is_input = (param.direction == ParameterDirection.PARAM_IN)»
-                           «val use_codec = GeneratorUtil.useCodec(param.paramType, param_bundle.artifactNature)»
-                           «var codec = resolveCodec(param.paramType)»
-                           «val is_sequence = Util.isSequenceType(param.paramType)»
-                           «IF is_input»«IF use_codec»«IF !is_sequence»(«plain_type») «ENDIF»«codec».decode(«ENDIF»«IF is_byte || is_short || is_char»(«IF is_byte»byte«ELSEIF is_char»char«ELSE»short«ENDIF») «ENDIF»request.get«request_method_name»().get«param.paramName.asProtobufName»«IF is_sequence»List«ENDIF»()«IF use_codec»)«ENDIF»«ELSE»«param.paramName.asParameter»«ENDIF»
-                        «ENDFOR»
-                     )«IF !is_sync».get();«IF is_void» // retrieve the result in order to trigger exceptions«ENDIF»«ELSE»;«ENDIF»
-                     
-                     // deliver response
-                     «response_method_name» methodResponse
-                        = «response_method_name».newBuilder()
-                        «IF !is_void».«IF result_is_sequence»addAll«function.name.asProtobufName»«ELSE»set«function.name.asProtobufName»«ENDIF»(«IF result_use_codec»«IF !result_is_sequence»(«resolveProtobuf(basicJavaSourceGenerator, function.returnedType, Optional.empty)»)«ENDIF»«result_codec».encode«IF result_is_failable»Failable«ENDIF»(«ENDIF»result«IF result_is_failable», «resolveFailableProtobufType(function.returnedType, interface_declaration)».class«ENDIF»«IF result_use_codec»)«ENDIF»)«ENDIF»
-                        «FOR out_param : function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
-                           «val is_sequence = Util.isSequenceType(out_param.paramType)»
-                           «val is_failable = is_sequence && Util.isFailable(out_param.paramType)»
-                           «val use_codec = GeneratorUtil.useCodec(out_param.paramType, param_bundle.artifactNature) || is_failable»
-                           «val codec = resolveCodec(out_param.paramType)»
-                           .«IF is_sequence»addAll«out_param.paramName.asProtobufName»«ELSE»set«out_param.paramName.asProtobufName»«ENDIF»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(basicJavaSourceGenerator, out_param.paramType, Optional.empty)») «ENDIF»«codec».encode«IF is_failable»Failable«ENDIF»(«ENDIF»«out_param.paramName.asParameter»«IF is_failable», «resolveFailableProtobufType(out_param.paramType, interface_declaration)».class«ENDIF»«IF use_codec»)«ENDIF»)
-                        «ENDFOR»
-                        .build();
-                     
-                     «protobuf_response» response
-                        = «protobuf_response».newBuilder()
-                        .set«function.name.asProtobufName»Response(methodResponse)
-                        .build();
-                     
-                     return _protoBufHelper.serializeResponse(response);
-                  }
-               «ENDFOR»
-               
-               // request could not be processed
-               throw new «typeResolver.resolve("com.btc.cab.servicecomm.api.exceptions.InvalidMessageReceivedException")»("Unknown or invalid request");
-            }
-
-            /**
-               @see com.btc.cab.servicecomm.api.IServiceDispatcher#getServiceFaultHandlerManager
-            */
-            @Override
-            public IServiceFaultHandlerManager getServiceFaultHandlerManager() {
-               return _faultHandlerManager;
-            }
-         }
-         '''
+         new DispatcherGenerator(basicJavaSourceGenerator, param_bundle).generateDispatcherBody(dispatcher_class_name, api_class_name, interface_declaration).toString
          )
       )
    }
@@ -1120,61 +1007,7 @@ class JavaGenerator
       
    def private String makeDefaultValue(EObject element)
    {
-      if (element instanceof PrimitiveType)
-      {
-         if (element.isString)
-            return '''""'''
-         else if (element.isUUID)
-            return '''«typeResolver.resolve(JavaClassNames.UUID)».randomUUID()'''
-         else if (element.isBoolean)
-            return "false"
-         else if (element.isChar)
-            return "'\\u0000'"
-         else if (element.isDouble)
-            return "0D"
-         else if (element.isFloat)
-            return "0F"
-         else if (element.isInt64)
-            return "0L"
-         else if (element.isByte)
-            return "Byte.MIN_VALUE"
-         else if (element.isInt16)
-            return "Short.MIN_VALUE"
-      }
-      else if (element instanceof AliasDeclaration)
-      {
-         return makeDefaultValue(element.type)
-      }
-      else if (element instanceof AbstractType)
-      {
-         if (element.referenceType !== null)
-            return makeDefaultValue(element.referenceType)
-         else if (element.primitiveType !== null)
-            return makeDefaultValue(element.primitiveType)
-         else if (element.collectionType !== null)
-            return makeDefaultValue(element.collectionType)
-      }
-      else if (element instanceof SequenceDeclaration)
-      {
-         val type = basicJavaSourceGenerator.toText(element.type)
-         val is_failable = element.failable
-         // TODO this should better use Collections.emptyList
-         return '''new «typeResolver.resolve("java.util.Vector")»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«type»«IF is_failable»>«ENDIF»>()'''
-      }
-      else if (element instanceof StructDeclaration)
-      {
-         return '''new «typeResolver.resolve(element)»(«FOR member : element.allMembers SEPARATOR ", "»«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)».empty()«ELSE»«makeDefaultValue(member.type)»«ENDIF»«ENDFOR»)'''
-      }
-      else if (element instanceof EnumDeclaration)
-      {
-         return '''«basicJavaSourceGenerator.toText(element)».«element.containedIdentifiers.head»''';
-      }
-      
-      return '''0'''
+       basicJavaSourceGenerator.makeDefaultValue(element)
    }
-      
-   def private String resolveFailableProtobufType(EObject element, EObject container)
-   {
-       resolveFailableProtobufType(qualified_name_provider, element, container)
-   }
+
 }
