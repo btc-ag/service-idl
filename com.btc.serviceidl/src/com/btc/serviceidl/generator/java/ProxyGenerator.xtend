@@ -75,7 +75,7 @@ class ProxyGenerator
                «IF anonymous_event !== null»
                    «outputAnonymousEvent(anonymous_event)»
                «ENDIF»
-               «FOR event : interface_declaration.contains.filter(EventDeclaration).filter[name !== null]»
+               «FOR event : interface_declaration.namedEvents»
                    «val observable_name = basicJavaSourceGenerator.toText(event)»
                    /**
                       @see «api_name»#get«observable_name»

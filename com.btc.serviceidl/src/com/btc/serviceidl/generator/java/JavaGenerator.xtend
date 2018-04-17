@@ -284,7 +284,7 @@ class JavaGenerator
       }
       
       // generate named events
-      for (event : interface_declaration.contains.filter(EventDeclaration).filter[name !== null])
+      for (event : interface_declaration.namedEvents)
       {
          reinitializeFile
          file_system_access.generateFile(src_root_path + basicJavaSourceGenerator.toText(event).java, generateSourceFile(interface_declaration, generateEvent(event)))

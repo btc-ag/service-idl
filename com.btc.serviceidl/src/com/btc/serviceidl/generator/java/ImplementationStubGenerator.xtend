@@ -44,7 +44,7 @@ class ImplementationStubGenerator
                }
            «ENDFOR»
            
-           «FOR event : interface_declaration.contains.filter(EventDeclaration).filter[name !== null]»
+           «FOR event : interface_declaration.namedEvents»
                «val observable_name = basicJavaSourceGenerator.toText(event)»
                /**
                   @see «api_name»#get«observable_name»

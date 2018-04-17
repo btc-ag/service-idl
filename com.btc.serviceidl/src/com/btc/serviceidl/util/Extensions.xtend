@@ -364,4 +364,9 @@ class Extensions
     {
         return new MemberElementWrapper(enum_declaration)
     }
+
+    def static namedEvents(InterfaceDeclaration interfaceDeclaration)
+    {
+        interfaceDeclaration.contains.filter(EventDeclaration).filter[name !== null]
+    }
 }
