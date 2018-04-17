@@ -36,12 +36,10 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.google.common.collect.Sets
 import java.util.Arrays
-import java.util.Calendar
 import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Set
-import java.util.UUID
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -239,35 +237,7 @@ class DotNetGenerator
    
    def private String generateAssemblyInfo(String project_name)
    {
-      val is_exe = isExecutable(param_bundle.projectType)
-      
-      '''
-      using System.Reflection;
-      using System.Runtime.CompilerServices;
-      using System.Runtime.InteropServices;
-      
-      // General Information about an assembly is controlled through the following 
-      // set of attributes. Change these attribute values to modify the information
-      // associated with an assembly.
-      [assembly: AssemblyTitle("«project_name»")]
-      [assembly: AssemblyDescription("")]
-      [assembly: AssemblyConfiguration("")]
-      [assembly: AssemblyProduct("«project_name»")]
-      «IF !is_exe»
-      [assembly: AssemblyCompany("BTC Business Technology Consulting AG")]
-      [assembly: AssemblyCopyright("Copyright (C) BTC Business Technology Consulting AG «Calendar.getInstance().get(Calendar.YEAR)»")]
-      [assembly: AssemblyTrademark("")]
-      [assembly: AssemblyCulture("")]
-      «ENDIF»
-      
-      // Setting ComVisible to false makes the types in this assembly not visible 
-      // to COM components.  If you need to access a type in this assembly from 
-      // COM, set the ComVisible attribute to true on that type.
-      [assembly: ComVisible(false)]
-      
-      // The following GUID is for the ID of the typelib if this project is exposed to COM
-      [assembly: Guid("«UUID.nameUUIDFromBytes((project_name+"Assembly").bytes).toString.toLowerCase»")]
-      '''
+       new AssemblyInfoGenerator(param_bundle).generate(project_name).toString
    }
    
    def private void reinitializeFile()
