@@ -10,8 +10,11 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.dotnet
 
+import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
+import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
@@ -21,6 +24,7 @@ import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.MemberElementWrapper
 import org.eclipse.emf.ecore.EObject
 
+import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
@@ -190,5 +194,11 @@ class Util
     def public static dispatch boolean isNullable(AbstractType element)
     {
         element.primitiveType !== null && isNullable(element.primitiveType)
+    }
+
+    def static String getLog4NetConfigFile(ParameterBundle.Builder param_bundle)
+    {
+        GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).build).toLowerCase + ".log4net".config
+
     }
 }
