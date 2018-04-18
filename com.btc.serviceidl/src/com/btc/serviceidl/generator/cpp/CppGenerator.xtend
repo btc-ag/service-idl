@@ -1006,36 +1006,11 @@ class CppGenerator
       new ProxyGenerator(typeResolver, param_bundle, idl).generateImplementationFileBody(interface_declaration).toString
    }
    
-   def private String generateCppImpl(InterfaceDeclaration interface_declaration)
+   def private generateCppImpl(InterfaceDeclaration interface_declaration)
    {
-      val class_name = resolve(interface_declaration, param_bundle.projectType).shortName
-      
-      '''
-      «class_name»::«class_name»
-      (
-         «resolveCAB("BTC::Commons::Core::Context")»& context
-         ,«resolveCAB("BTC::Logging::API::LoggerFactory")»& loggerFactory
-      ) :
-      m_context(context)
-      , «resolveCAB("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
-      «FOR event : interface_declaration.events»
-         , «event.observableName»(context)
-      «ENDFOR»
-      {}
-      
-      «generateCppDestructor(interface_declaration)»
-      
-      «generateInheritedInterfaceMethods(interface_declaration)»
-
-      «FOR event : interface_declaration.events»
-         «resolveCAB("BTC::Commons::Core::UniquePtr")»<«resolveCAB("BTC::Commons::Core::Disposable")»> «class_name»::Subscribe( «resolveCAB("BTC::Commons::CoreExtras::IObserver")»<«toText(event.data, event)»> &observer )
-         {
-            return «event.observableName».Subscribe(observer);
-         }
-      «ENDFOR»
-      '''
+       new ImplementationStubGenerator(typeResolver, param_bundle, idl).generateCppImpl(interface_declaration)
    }
-   
+
    def private generateCppTest(InterfaceDeclaration interface_declaration)
    {
         new TestGenerator(typeResolver, param_bundle, idl).generateCppTest(interface_declaration)       
