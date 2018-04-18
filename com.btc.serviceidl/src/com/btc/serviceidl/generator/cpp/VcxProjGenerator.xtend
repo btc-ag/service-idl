@@ -339,5 +339,143 @@ class VcxProjGenerator
     {
         '''-x -Wno-unknown-pragmas -x -Wno-pragmas -x -Wno-literal-suffix -x -Wno-attributes'''
     }
+    
+    def generateVcxprojFilters() {
+              // Please do NOT edit line indents in the code below (even though they
+      // may look misplaced) unless you are fully aware of what you are doing!!!
+      // Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
+      
+      '''
+      <?xml version="1.0" encoding="utf-8"?>
+      <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+        <ItemGroup>
+           «IF !cpp_files.empty || !protobuf_files.empty»
+              <Filter Include="Source Files">
+                <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+                <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+              </Filter>
+           «ENDIF»
+           «IF !(header_files.empty && odb_files.empty)»
+              <Filter Include="Header Files">
+                <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+                <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+              </Filter>
+           «ENDIF»
+           «IF !dependency_files.empty»
+              <Filter Include="Dependencies">
+                <UniqueIdentifier>{0e47593f-5119-4a3e-a4ac-b88dba5ffd81}</UniqueIdentifier>
+              </Filter>
+           «ENDIF»
+           «IF !protobuf_files.empty»
+             <Filter Include="Protobuf Files">
+               <UniqueIdentifier>{6f3dd233-58fc-4467-a4cc-9ba5ef3b5517}</UniqueIdentifier>
+             </Filter>
+           «ENDIF»
+           «IF !odb_files.empty»
+             <Filter Include="ODB Files">
+               <UniqueIdentifier>{31ddc234-0d60-4695-be06-2c69510365ac}</UniqueIdentifier>
+             </Filter>
+           «ENDIF»
+        </ItemGroup>
+        «IF !(header_files.empty && protobuf_files.empty)»
+          <ItemGroup>
+            «FOR pb_h_file : protobuf_files»
+               <ClCompile Include="gen\«pb_h_file.pb.h»">
+                 <Filter>Header Files</Filter>
+               </ClCompile>
+            «ENDFOR»
+            «FOR header_file : header_files»
+              <ClInclude Include="include\«header_file»">
+                <Filter>Header Files</Filter>
+              </ClInclude>
+            «ENDFOR»
+          </ItemGroup>
+        «ENDIF»
+        «IF !(cpp_files.empty && protobuf_files.empty)»
+          <ItemGroup>
+            «FOR pb_cc_file : protobuf_files»
+              <ClCompile Include="gen\«pb_cc_file».pb.cc">
+                <Filter>Source Files</Filter>
+              </ClCompile>
+            «ENDFOR»
+            «FOR cpp_file : cpp_files»
+              <ClCompile Include="source\«cpp_file»">
+                <Filter>Source Files</Filter>
+              </ClCompile>
+            «ENDFOR»
+          </ItemGroup>
+        «ENDIF»
+        «IF !dependency_files.empty»
+          <ItemGroup>
+            «FOR dependency_file : dependency_files»
+              <ClCompile Include="source\«dependency_file»">
+                <Filter>Dependencies</Filter>
+              </ClCompile>
+            «ENDFOR»
+          </ItemGroup>
+        «ENDIF»
+        «IF !protobuf_files.empty»
+        <ItemGroup>
+          «FOR proto_file : protobuf_files»
+             <Google_Protocol_Buffers Include="gen\«proto_file».proto">
+               <Filter>Protobuf Files</Filter>
+             </Google_Protocol_Buffers>
+          «ENDFOR»
+        </ItemGroup>
+        «ENDIF»
+        «IF !odb_files.empty»
+        <ItemGroup>
+          «FOR odb_file : odb_files»
+             <ClInclude Include="odb\«odb_file.hxx»">
+               <Filter>ODB Files</Filter>
+             </ClInclude>
+             <ClInclude Include="odb\«odb_file»-odb.hxx">
+               <Filter>ODB Files</Filter>
+             </ClInclude>
+             <ClInclude Include="odb\«odb_file»-odb-oracle.hxx">
+               <Filter>ODB Files</Filter>
+             </ClInclude>
+             <ClInclude Include="odb\«odb_file»-odb-mssql.hxx">
+               <Filter>ODB Files</Filter>
+             </ClInclude>
+          «ENDFOR»
+        </ItemGroup>
+        <ItemGroup>
+          «FOR odb_file : odb_files»
+            <ClCompile Include="odb\«odb_file»-odb.cxx">
+              <Filter>ODB Files</Filter>
+            </ClCompile>
+            <ClCompile Include="odb\«odb_file»-odb-oracle.cxx">
+              <Filter>ODB Files</Filter>
+            </ClCompile>
+            <ClCompile Include="odb\«odb_file»-odb-mssql.cxx">
+              <Filter>ODB Files</Filter>
+            </ClCompile>
+          «ENDFOR»
+        </ItemGroup>
+        <ItemGroup>
+          «FOR odb_file : odb_files»
+            <None Include="odb\«odb_file»-odb.ixx">
+              <Filter>ODB Files</Filter>
+            </None>
+            <None Include="odb\«odb_file»-odb-oracle.ixx">
+              <Filter>ODB Files</Filter>
+            </None>
+            <None Include="odb\«odb_file»-odb-mssql.ixx">
+              <Filter>ODB Files</Filter>
+            </None>
+          «ENDFOR»
+        </ItemGroup>
+        <ItemGroup>
+          «FOR odb_file : odb_files»
+            <CustomBuild Include="odb\«odb_file.hxx»">
+              <Filter>Header Files</Filter>
+            </CustomBuild>
+          «ENDFOR»
+        </ItemGroup>
+        «ENDIF»
+      </Project>
+      '''
+    }
 
 }
