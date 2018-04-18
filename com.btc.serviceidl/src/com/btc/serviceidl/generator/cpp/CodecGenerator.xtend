@@ -13,15 +13,18 @@ package com.btc.serviceidl.generator.cpp
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
+import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
+import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.TypeResolverExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
@@ -30,7 +33,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors
 class CodecGenerator extends BasicCppGenerator
 {
-    def generateHCodecInline(EObject owner, Iterable<EObject> nested_types)
+    def private generateHCodecInline(EObject owner, Iterable<EObject> nested_types)
     {
         val cab_uuid = resolveCAB("BTC::Commons::CoreExtras::UUID")
         val forward_const_iterator = resolveCAB("BTC::Commons::Core::ForwardConstIterator")
@@ -623,4 +626,157 @@ class CodecGenerator extends BasicCppGenerator
                 com.btc.serviceidl.util.Util.isInt16(ultimate_type) ||
                 com.btc.serviceidl.util.Util.isChar(ultimate_type) || is_enum) )
     }
+
+    def generateHeaderFileBody(EObject owner)
+    {
+        // collect all contained distinct types which need conversion
+        val nested_types = GeneratorUtil.getEncodableTypes(owner)
+
+        val cab_uuid = resolveCAB("BTC::Commons::CoreExtras::UUID")
+        val forward_const_iterator = resolveCAB("BTC::Commons::Core::ForwardConstIterator")
+        val std_vector = resolveSTL("std::vector")
+        val insertable_traits = resolveCAB("BTC::Commons::CoreExtras::InsertableTraits")
+        val std_string = resolveSTL("std::string")
+        val std_function = resolveSTL("std::function")
+        val failable_handle = resolveCAB("BTC::Commons::CoreExtras::FailableHandle")
+        val cab_exception = resolveCAB("BTC::Commons::Core::Exception")
+        val cab_auto_ptr = resolveCAB("BTC::Commons::Core::AutoPtr")
+        val cab_string = resolveCAB("BTC::Commons::Core::String")
+
+        val failable_types = GeneratorUtil.getFailableTypes(owner)
+        
+        // always include corresponding *.pb.h file due to local failable types definitions
+        val include_path = "modules" + Constants.SEPARATOR_FILE +
+            GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).build) + Constants.SEPARATOR_FILE +
+            "gen" + Constants.SEPARATOR_FILE + GeneratorUtil.getPbFileName(owner).pb.h
+        modules_includes.add(include_path)
+        
+
+        '''
+            namespace «GeneratorUtil.getCodecName(owner)»
+            {
+               static «resolveSTL("std::once_flag")» register_fault_handlers;
+               static «resolveSTL("std::map")»<«std_string», «std_function»< «cab_auto_ptr»<«cab_exception»>(«cab_string» const&)> > fault_handlers;
+               
+               // forward declarations
+               template<typename PROTOBUF_TYPE, typename API_TYPE>
+               «forward_const_iterator»< API_TYPE > Decode(google::protobuf::RepeatedPtrField< PROTOBUF_TYPE > const& protobuf_input);
+               
+               template<typename PROTOBUF_TYPE, typename API_TYPE>
+               «forward_const_iterator»< API_TYPE > Decode(google::protobuf::RepeatedField< PROTOBUF_TYPE > const& protobuf_input);
+               
+               template<typename PROTOBUF_TYPE, typename API_TYPE>
+               «std_vector»< API_TYPE > DecodeToVector(google::protobuf::RepeatedPtrField< PROTOBUF_TYPE > const& protobuf_input);
+            
+               template<typename PROTOBUF_TYPE, typename API_TYPE>
+               «std_vector»< API_TYPE > DecodeToVector(google::protobuf::RepeatedField< PROTOBUF_TYPE > const& protobuf_input);
+               
+               void EnsureFailableHandlers();
+               
+               template<typename PROTOBUF_TYPE>
+               «resolveCAB("BTC::Commons::Core::AutoPtr")»<«cab_exception»> MakeException
+               (
+               PROTOBUF_TYPE const& protobuf_entry
+               );
+               
+               template<typename PROTOBUF_TYPE>
+               void SerializeException
+               (
+                  const «cab_exception» &exception,
+                  PROTOBUF_TYPE & protobuf_item
+               );
+               
+               template<typename PROTOBUF_TYPE, typename API_TYPE >
+               void DecodeFailable
+               (
+                  google::protobuf::RepeatedPtrField< PROTOBUF_TYPE > const& protobuf_input,
+                  typename «insertable_traits»< «failable_handle»< API_TYPE > >::Type &api_output
+               );
+               
+               template<typename PROTOBUF_TYPE, typename API_TYPE>
+               «forward_const_iterator»< «failable_handle»<API_TYPE> >
+               DecodeFailable
+               (
+                  google::protobuf::RepeatedPtrField< PROTOBUF_TYPE > const& protobuf_input
+               );
+               
+               template<typename API_TYPE, typename PROTOBUF_TYPE>
+               void EncodeFailable
+               (
+                  «forward_const_iterator»< «failable_handle»<API_TYPE> > api_input,
+                  google::protobuf::RepeatedPtrField< PROTOBUF_TYPE >* const protobuf_output
+               );
+               
+               template<typename PROTOBUF_TYPE, typename API_TYPE>
+               «std_vector»< «failable_handle»< API_TYPE > > DecodeFailableToVector(google::protobuf::RepeatedPtrField< PROTOBUF_TYPE > const& protobuf_input);
+               
+               template<typename API_TYPE, typename PROTOBUF_TYPE>
+               void EncodeFailable(«std_vector»< «failable_handle»< API_TYPE > > const& api_input, google::protobuf::RepeatedPtrField< PROTOBUF_TYPE >* const protobuf_output);
+               
+               template<typename API_TYPE, typename PROTOBUF_TYPE>
+               void Encode(«forward_const_iterator»< API_TYPE > api_input, google::protobuf::RepeatedPtrField< PROTOBUF_TYPE >* const protobuf_output);
+               
+               template<typename API_TYPE, typename PROTOBUF_TYPE>
+               void Encode(«forward_const_iterator»< API_TYPE > api_input, google::protobuf::RepeatedField< PROTOBUF_TYPE >* const protobuf_output);
+               
+               template<typename API_TYPE, typename PROTOBUF_TYPE>
+               void Encode(«std_vector»< API_TYPE > const& api_input, google::protobuf::RepeatedPtrField< PROTOBUF_TYPE >* const protobuf_output);
+               
+               template<typename API_TYPE, typename PROTOBUF_TYPE>
+               void Encode(«std_vector»< API_TYPE > const& api_input, google::protobuf::RepeatedField< PROTOBUF_TYPE >* protobuf_output);
+               
+               template<typename IDENTICAL_TYPE>
+               IDENTICAL_TYPE Decode(IDENTICAL_TYPE const& protobuf_input);
+               
+               template<typename PROTOBUF_TYPE, typename API_TYPE>
+               void Encode(API_TYPE const& api_input, PROTOBUF_TYPE * const protobuf_output);
+               
+               template<typename PROTOBUF_TYPE, typename API_TYPE>
+               void Decode(google::protobuf::RepeatedPtrField< PROTOBUF_TYPE > const& protobuf_input, typename «insertable_traits»< API_TYPE >::Type &api_output);
+               
+               template<typename PROTOBUF_TYPE, typename API_TYPE>
+               void Decode(google::protobuf::RepeatedField< PROTOBUF_TYPE > const& protobuf_input, typename «insertable_traits»< API_TYPE >::Type &api_output);
+               
+               template<typename PROTOBUF_ENUM_TYPE, typename API_ENUM_TYPE>
+               «forward_const_iterator»< API_ENUM_TYPE > Decode(google::protobuf::RepeatedField< google::protobuf::int32 > const& protobuf_input);
+               
+               template<typename IDENTICAL_TYPE>
+               void Encode(IDENTICAL_TYPE const& api_input, IDENTICAL_TYPE * const protobuf_output);
+               
+               «std_vector»< «cab_uuid» > DecodeUUIDToVector(google::protobuf::RepeatedPtrField< «std_string» > const& protobuf_input);
+               
+               «forward_const_iterator»< «cab_uuid» > DecodeUUID(google::protobuf::RepeatedPtrField< «std_string» > const& protobuf_input);
+            
+               void DecodeUUID(google::protobuf::RepeatedPtrField< «std_string» > const& protobuf_input, «insertable_traits»< «cab_uuid» >::Type &api_output);
+               
+               «cab_uuid» DecodeUUID(«std_string» const& protobuf_input);
+               
+               void Encode(«cab_uuid» const& api_input, «std_string» * const protobuf_output);
+               
+               «FOR type : nested_types»
+                «val api_type_name = resolve(type)»
+                «val proto_type_name = resolve(type, ProjectType.PROTOBUF)»
+                «api_type_name» Decode(«proto_type_name» const& protobuf_input);
+                
+                «IF type instanceof EnumDeclaration»
+                    «proto_type_name» Encode(«api_type_name» const& api_input);
+                «ELSE»
+                    void Encode(«api_type_name» const& api_input, «proto_type_name» * const protobuf_output);
+                «ENDIF»
+               «ENDFOR»
+               
+               «FOR type : failable_types»
+                «val api_type_name = resolve(type)»
+                «val proto_type_name = typeResolver.resolveFailableProtobufType(type, owner)»
+                «api_type_name» DecodeFailable(«proto_type_name» const& protobuf_input);
+                
+                void EncodeFailable(«api_type_name» const& api_input, «proto_type_name» * const protobuf_output);
+               «ENDFOR»
+               
+               // inline implementations
+               «generateHCodecInline(owner, nested_types)»
+            }
+        '''
+    }
+
 }
