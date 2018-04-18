@@ -1925,53 +1925,7 @@ class CppGenerator
    {
       reinitializeFile
       
-      // explicitly resolve some *.lib dependencies
-      cab_libs.add("BTC.CAB.Commons.CoreExtras.lib") // due to BTC::Commons::CoreExtras::IObserverBase used in dispatcher
-      val dispatcher = resolve(interface_declaration, ProjectType.DISPATCHER)
-      
-      val file_content =
-      '''
-      «resolveCAB("BTC::Commons::Core::UniquePtr")»<«resolveCAB("BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder")»> RegisterMessageTypes()
-      {
-         auto decoder(«resolveCAB("BTC::Commons::Core::CreateUnique")»<«resolveCAB("BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder")»>());
-         «resolveCAB("BTC::ServiceComm::Default::RegisterBaseMessageTypes")»(*decoder);
-         «dispatcher»::RegisterMessageTypes(*decoder);
-         return «resolveSTL("std::move")»(decoder);
-      }
-      
-      BOOL WINAPI MyCtrlHandler(_In_  DWORD dwCtrlType)
-      {
-         ExitProcess(0);
-      }
-      
-      int main(int argc, char *argv[])
-      {
-      
-         SetConsoleCtrlHandler(&MyCtrlHandler, true);
-      
-         «resolveCAB("BTC::Commons::CoreYacl::Context")» context;
-         «resolveCAB("BTC::Commons::Core::BlockStackTraceSettings")» settings(BTC::Commons::Core::BlockStackTraceSettings::BlockStackTraceSettings_OnDefault, BTC::Commons::Core::ConcurrencyScope_Process);
-      
-         try
-         {
-            «resolveCAB("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")»().GetLogger("")->SetLevel(«resolveCAB("BTC::Logging::API::Logger")»::LWarning);
-            «resolveCAB("BTC::ServiceComm::PerformanceBase::PerformanceTestServer")» server(context,
-               «resolveCAB("BTC::Commons::Core::CreateAuto")»<«resolve(interface_declaration, ProjectType.IMPL)»>(context, «resolveCAB("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")»()),
-               &RegisterMessageTypes,
-               «resolveSTL("std::bind")»(&«dispatcher»::CreateDispatcherAutoRegistrationFactory,
-               std::placeholders::_1, std::placeholders::_2,
-               «resolveCAB("BTC::ServiceComm::PerformanceBase::PerformanceTestServerBase")»::PERFORMANCE_INSTANCE_GUID(),
-               «resolveCAB("BTC::Commons::Core::String")»()));
-            return server.Run(argc, argv);
-         }
-         catch («resolveCAB("BTC::Commons::Core::Exception")» const *e)
-         {
-            «resolveCAB("BTC::Commons::Core::DelException")» _(e);
-            context.GetStdOut() << e->ToString();
-            return 1;
-         }
-      }
-      '''
+      val file_content = new ServerRunnerGenerator(typeResolver, param_bundle, idl).generateImplFileBody(interface_declaration)
       
       '''
       «generateIncludes(false)»
