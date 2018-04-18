@@ -416,30 +416,9 @@ class CppGenerator
       cpp_files.add(main_cpp_file_name)
    }
    
-   def private String generateCppReflection(InterfaceDeclaration interface_declaration)
+   def private generateCppReflection(InterfaceDeclaration interface_declaration)
    {
-      val class_name = resolve(interface_declaration, param_bundle.projectType)
-      
-      '''
-      extern "C" 
-      {
-         «makeExportMacro()» void Reflect_«class_name.shortName»( «resolveCAB("BTC::Commons::CoreExtras::ReflectedClass")» &ci )
-         {  
-            ci.Set< «class_name» >().AddConstructor
-            (
-                ci.CContextRef()
-               ,ci.CArgRefNotNull< «resolveCAB("BTC::Logging::API::LoggerFactory")» >( "loggerFactory" )
-               «IF param_bundle.projectType == ProjectType.PROXY»
-                  ,ci.CArgRefNotNull< «resolveCAB("BTC::ServiceComm::API::IClientEndpoint")» >( "localEndpoint" )
-                  ,ci.CArgRefOptional< «resolveCAB("BTC::Commons::CoreExtras::UUID")» >( "serverServiceInstanceGuid" )
-               «ELSEIF param_bundle.projectType == ProjectType.DISPATCHER»
-                  ,ci.CArgRefNotNull< «resolveCAB("BTC::ServiceComm::API::IServerEndpoint")» >( "serviceEndpoint" )
-                  ,ci.CArgRef< «resolveCAB("BTC::Commons::Core::AutoPtr")»<«resolve(interface_declaration, ProjectType.SERVICE_API)»> >( "dispatchee" )
-               «ENDIF»
-            );
-         }
-      }
-      '''
+       new ReflectionGenerator(typeResolver, param_bundle, idl).generateImplFileBody(interface_declaration)
    }
    
    def private String generateDependencies()
