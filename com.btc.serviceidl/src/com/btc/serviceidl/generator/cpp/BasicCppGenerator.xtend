@@ -373,4 +373,46 @@ resolveCAB
             «ENDIF»
         '''
     }
+
+    def String makeExceptionImplementation(ExceptionDeclaration exception)
+    {
+        '''
+            «IF exception.members.empty»
+                «resolveCAB("CAB_SIMPLE_EXCEPTION_IMPLEMENTATION")»( «resolve(exception).shortName» )
+            «ELSE»
+                «val class_name = exception.name»
+                // based on CAB macro CAB_SIMPLE_EXCEPTION_IMPLEMENTATION_DEFAULT_MSG from Exception.h
+                «class_name»::«class_name»() : BASE("")
+                {}
+                
+                «class_name»::«class_name»(«resolveCAB("BTC::Commons::Core::String")» const &msg) : BASE("")
+                {}
+                
+                «class_name»::«class_name»(
+                   «FOR member : exception.members SEPARATOR ", "»«toText(member.type, exception)» const& «member.name.asMember»«ENDFOR»
+                ) : BASE("")
+                   «FOR member : exception.members», «member.name.asMember»( «member.name.asMember» )«ENDFOR»
+                {}
+                
+                «class_name»::~«class_name»()
+                {}
+                
+                void «class_name»::Throw() const
+                {
+                   throw this;
+                }
+                
+                void «class_name»::Throw()
+                {
+                   throw this;
+                }
+                
+                «resolveCAB("BTC::Commons::Core::Exception")» *«class_name»::IntClone() const
+                {
+                   return new «class_name»(GetSingleMsg());
+                }
+            «ENDIF»
+        '''
+    }
+
 }
