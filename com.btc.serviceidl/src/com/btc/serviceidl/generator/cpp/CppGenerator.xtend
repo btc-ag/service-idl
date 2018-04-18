@@ -510,45 +510,9 @@ class CppGenerator
       '''
    }
    
-   def private String generateExportHeader()
+   def private generateExportHeader()
    {
-      val prefix = GeneratorUtil.transform(param_bundle.with(TransformType.EXPORT_HEADER).build).toUpperCase
-      
-      '''
-      #ifndef «prefix»_EXPORT_H
-      #define «prefix»_EXPORT_H
-      
-      #ifndef CAB_NO_LEGACY_EXPORT_MACROS
-      #define CAB_NO_LEGACY_EXPORT_MACROS
-      #endif
-      
-      #include <modules/Commons/include/Export.h>
-      
-      #ifdef «prefix»_STATIC_DEFINE
-      #  define «prefix»_EXPORT
-      #  define «prefix»_EXTERN
-      #  define «prefix»_NO_EXPORT
-      #else
-      #  ifndef «prefix»_EXPORT
-      #    ifdef «prefix»_EXPORTS
-              /* We are building this library */
-      #      define «prefix»_EXPORT CAB_EXPORT
-      #      define «prefix»_EXTERN 
-      #    else
-              /* We are using this library */
-      #      define «prefix»_EXPORT CAB_IMPORT
-      #      define «prefix»_EXTERN CAB_EXTERN
-      #    endif
-      #  endif
-      
-      #  ifndef «prefix»_NO_EXPORT
-      #    define «prefix»_NO_EXPORT CAB_NO_EXPORT
-      #  endif
-      #endif
-      
-      #endif
-      
-      '''
+      new ExportHeaderGenerator(param_bundle).generateExportHeader()
    }
    
    def private generateVcxprojUser(ProjectType project_type)
