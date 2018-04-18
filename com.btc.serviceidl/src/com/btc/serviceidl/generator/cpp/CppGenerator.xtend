@@ -1940,7 +1940,7 @@ class CppGenerator
    
    def private generateInterface(InterfaceDeclaration interface_declaration)
    {
-      new InterfaceGenerator(typeResolver, param_bundle, idl).generateInterface(interface_declaration)       
+      new ServiceAPIGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(interface_declaration)       
    }
    
    def private String makeExceptionImplementation(ExceptionDeclaration exception)

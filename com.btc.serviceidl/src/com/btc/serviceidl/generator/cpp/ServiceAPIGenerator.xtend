@@ -27,9 +27,12 @@ import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
 @Accessors
-class InterfaceGenerator extends BasicCppGenerator {
-   def String generateInterface(InterfaceDeclaration interface_declaration)
+class ServiceAPIGenerator extends BasicCppGenerator {
+   def String generateHeaderFileBody(InterfaceDeclaration interface_declaration)
    {
+      // TODO this file should only contain the service API functionality, generic functionality should be extracted, 
+      // and functionality specific to other project types should be moved elsewhere
+      
       // API requires some specific conditions (GUID, pure virtual functions, etc.)
       // non-API also (e.g. override keyword etc.)
       val is_api = param_bundle.projectType == ProjectType.SERVICE_API
