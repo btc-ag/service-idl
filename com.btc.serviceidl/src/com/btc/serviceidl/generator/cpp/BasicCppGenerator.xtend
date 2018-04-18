@@ -294,4 +294,40 @@ resolveCAB
         '''«IF exception.supertype === null»«resolveCAB("BTC::Commons::Core::Exception")»«ELSE»«resolve(exception.supertype)»«ENDIF»'''
     }
 
+    def String generateHConstructor(InterfaceDeclaration interface_declaration)
+    {
+        val class_name = resolve(interface_declaration, param_bundle.projectType)
+
+        '''
+            /**
+               \brief Object constructor
+            */
+            «class_name.shortName»
+            (
+               «resolveCAB("BTC::Commons::Core::Context")» &context
+               ,«resolveCAB("BTC::Logging::API::LoggerFactory")» &loggerFactory
+               «IF param_bundle.projectType == ProjectType.PROXY»
+                   ,«resolveCAB("BTC::ServiceComm::API::IClientEndpoint")» &localEndpoint
+                   ,«resolveCAB("BTC::Commons::CoreExtras::Optional")»<«resolveCAB("BTC::Commons::CoreExtras::UUID")»> const &serverServiceInstanceGuid 
+                      = «resolveCAB("BTC::Commons::CoreExtras::Optional")»<«resolveCAB("BTC::Commons::CoreExtras::UUID")»>()
+               «ELSEIF param_bundle.projectType == ProjectType.DISPATCHER»
+                   ,«resolveCAB("BTC::ServiceComm::API::IServerEndpoint")»& serviceEndpoint
+                   ,«resolveCAB("BTC::Commons::Core::AutoPtr")»< «resolve(interface_declaration, ProjectType.SERVICE_API)» > dispatchee
+               «ENDIF»
+            );
+        '''
+    }
+
+    def String generateHDestructor(InterfaceDeclaration interface_declaration)
+    {
+        val class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
+
+        '''
+            /**
+               \brief Object destructor
+            */
+            virtual ~«class_name»();
+        '''
+    }
+
 }
