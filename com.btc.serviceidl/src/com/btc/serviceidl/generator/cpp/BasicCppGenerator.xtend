@@ -330,4 +330,47 @@ resolveCAB
         '''
     }
 
+    def String generateIncludes(boolean is_header)
+    {
+        '''
+            «FOR module_header : modules_includes.sort»
+                #include "«module_header»"
+            «ENDFOR»
+            
+            «IF is_header && typeResolver.param_bundle.projectType == ProjectType.PROXY»
+                // resolve naming conflict between Windows' API function InitiateShutdown and CAB's AServiceProxyBase::InitiateShutdown
+                #ifdef InitiateShutdown
+                #undef InitiateShutdown
+                #endif
+                
+            «ENDIF»
+            «FOR cab_header : cab_includes.sort BEFORE '''#include "modules/Commons/include/BeginCabInclude.h"     // CAB -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndCabInclude.h"       // <-- CAB
+
+         '''»
+                #include "«cab_header»"
+            «ENDFOR»
+            «FOR boost_header : boost_includes.sort BEFORE '''#include "modules/Commons/include/BeginBoostInclude.h"   // BOOST -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndBoostInclude.h"     // <-- BOOST
+
+         '''»
+                #include <«boost_header»>
+            «ENDFOR»
+            «FOR odb_header : odb_includes.sort BEFORE "// ODB" + System.lineSeparator AFTER '''
+
+         '''»
+                #include <«odb_header»>
+            «ENDFOR»
+            «FOR stl_header : stl_includes.sort BEFORE '''#include "modules/Commons/include/BeginStdInclude.h"     // STD -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndStdInclude.h"       // <-- STD
+
+         '''»
+                #include <«stl_header»>
+            «ENDFOR»
+            «IF !is_header && typeResolver.param_bundle.projectType == ProjectType.SERVER_RUNNER»
+                
+                #ifndef NOMINMAX
+                #define NOMINMAX
+                #endif
+                #include <windows.h>
+            «ENDIF»
+        '''
+    }
 }
