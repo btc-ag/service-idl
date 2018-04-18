@@ -551,49 +551,11 @@ class CppGenerator
       '''
    }
    
-   def private String generateVcxprojUser(ProjectType project_type)
+   def private generateVcxprojUser(ProjectType project_type)
    {
-      // Please do NOT edit line indents in the code below (even though they
-      // may look misplaced) unless you are fully aware of what you are doing!!!
-      // Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
-      
-      val path = if (project_type == ProjectType.TEST) "$(UnitTestLibraryPaths)" else "$(CabBin)"
-      val command = if (project_type == ProjectType.TEST) "$(UnitTestRunner)" else "$(TargetPath)"
-      val args = if (project_type == ProjectType.TEST) "$(UnitTestDefaultArguments)" else '''--connection tcp://127.0.0.1:«Constants.DEFAULT_PORT» --ioc $(ProjectDir)etc\ServerFactory.xml'''
-      
-      '''
-      <?xml version="1.0" encoding="utf-8"?>
-      <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-        <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-          <LocalDebuggerCommand>«command»</LocalDebuggerCommand>
-          <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-          <LocalDebuggerCommandArguments>«args»</LocalDebuggerCommandArguments>
-          <LocalDebuggerWorkingDirectory>$(TargetDir)</LocalDebuggerWorkingDirectory>
-          <LocalDebuggerEnvironment>PATH=«path»</LocalDebuggerEnvironment>
-        </PropertyGroup>
-        <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-          <LocalDebuggerCommand>«command»</LocalDebuggerCommand>
-          <LocalDebuggerCommandArguments>«args»</LocalDebuggerCommandArguments>
-          <LocalDebuggerWorkingDirectory>$(TargetDir)</LocalDebuggerWorkingDirectory>
-          <LocalDebuggerEnvironment>PATH=«path»</LocalDebuggerEnvironment>
-          <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-        </PropertyGroup>
-        <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-          <LocalDebuggerCommand>«command»</LocalDebuggerCommand>
-          <LocalDebuggerCommandArguments>«args»</LocalDebuggerCommandArguments>
-          <LocalDebuggerWorkingDirectory>$(TargetDir)</LocalDebuggerWorkingDirectory>
-          <LocalDebuggerEnvironment>PATH=«path»</LocalDebuggerEnvironment>
-          <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-        </PropertyGroup>
-        <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-          <LocalDebuggerCommand>«command»</LocalDebuggerCommand>
-          <LocalDebuggerCommandArguments>«args»</LocalDebuggerCommandArguments>
-          <LocalDebuggerWorkingDirectory>$(TargetDir)</LocalDebuggerWorkingDirectory>
-          <LocalDebuggerEnvironment>PATH=«path»</LocalDebuggerEnvironment>
-          <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-        </PropertyGroup>
-      </Project>
-      '''
+      new VcxProjGenerator(param_bundle, vsSolution, protobuf_project_references, project_references, cpp_files, 
+          header_files, dependency_files, protobuf_files, odb_files
+      ).generateVcxprojUser(project_type)
    }
    
    def private generateVcxprojFilters()
