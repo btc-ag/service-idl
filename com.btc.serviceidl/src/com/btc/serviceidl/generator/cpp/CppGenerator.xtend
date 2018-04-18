@@ -17,17 +17,13 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.ArtifactNature
-import com.btc.serviceidl.generator.common.FeatureProfile
 import com.btc.serviceidl.generator.common.GeneratorUtil
-import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
-import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import java.util.Collection
@@ -42,7 +38,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
-import static com.btc.serviceidl.generator.cpp.TypeResolverExtensions.*
 import static com.btc.serviceidl.generator.cpp.Util.*
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
@@ -660,51 +655,16 @@ class CppGenerator
    
    def private String generateHFileCommons(ModuleDeclaration module, String export_header)
    {
-      val sorted_types = module.topologicallySortedTypes
-      val forward_declarations = resolveForwardDeclarations(sorted_types)
-      
-      var file_content = 
-      '''
-         «FOR type : forward_declarations»
-            struct «Names.plain(type)»;
-         «ENDFOR»
-
-         «FOR wrapper : sorted_types»
-            «toText(wrapper.type, module)»
-
-         «ENDFOR»
-      '''
-
-      generateHeader(file_content, Optional.of(export_header))
+      val file_content = new CommonsGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(module, export_header)      
+      generateHeader(file_content.toString, Optional.of(export_header))
    }
    
    def private String generateCppCommons(ModuleDeclaration module, String export_header)
    {
       reinitializeFile
       
-      // for optional element, include the impl file!
-      if ( new FeatureProfile(module.moduleComponents).uses_optionals
-         || !module.eAllContents.filter(SequenceDeclaration).filter[failable].empty
-      )
-      {
-         resolveCABImpl("BTC::Commons::CoreExtras::Optional")
-      }
-      
-      val file_content =
-      '''
-      «FOR exception : module.moduleComponents.filter(ExceptionDeclaration)»
-         «makeExceptionImplementation(exception)»
-      «ENDFOR»
-      
-      «makeEventGUIDImplementations(typeResolver, idl, module.moduleComponents.filter(StructDeclaration))»
-      '''
-      
-      // resolve any type to include the header: important for *.lib file
-      // to be built even if there is no actual content in the *.cpp file
-      resolve(module.moduleComponents.filter[o | !(o instanceof ModuleDeclaration)
-         && !(o instanceof InterfaceDeclaration)].head)
-      
-      generateSource(file_content, Optional.empty)
+      val file_content = new CommonsGenerator(typeResolver, param_bundle, idl).generateImplFileBody(module, export_header)      
+      generateSource(file_content.toString, Optional.empty)
    }
    
    def private String generateCppServerRunner(InterfaceDeclaration interface_declaration)
