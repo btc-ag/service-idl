@@ -421,32 +421,9 @@ class CppGenerator
        new ReflectionGenerator(typeResolver, param_bundle, idl).generateImplFileBody(interface_declaration)
    }
    
-   def private String generateDependencies()
+   def private generateDependencies()
    {
-      // proxy and dispatcher include a *.impl.h file from the Protobuf project
-      // for type-conversion routines; therefore some hidden dependencies
-      // exist, which are explicitly resolved here
-      if (param_bundle.projectType == ProjectType.PROXY || param_bundle.projectType == ProjectType.DISPATCHER)
-      {
-         resolveCAB("BTC::Commons::FutureUtil::InsertableTraits")
-      }
-      
-      '''
-      «FOR lib : cab_libs.sort
-      BEFORE '''#include "modules/Commons/include/BeginCabInclude.h"  // CAB -->''' + System.lineSeparator
-      AFTER '''#include "modules/Commons/include/EndCabInclude.h"    // CAB <--''' + System.lineSeparator
-      »
-         #pragma comment(lib, "«lib»")
-      «ENDFOR»
-      
-      «IF param_bundle.projectType == ProjectType.PROTOBUF
-         || param_bundle.projectType == ProjectType.DISPATCHER
-         || param_bundle.projectType == ProjectType.PROXY
-         || param_bundle.projectType == ProjectType.SERVER_RUNNER
-         »
-         #pragma comment(lib, "libprotobuf.lib")
-      «ENDIF»
-      '''
+       new DependenciesGenerator(typeResolver, param_bundle, idl).generate()
    }
    
    def private generateExportHeader()
