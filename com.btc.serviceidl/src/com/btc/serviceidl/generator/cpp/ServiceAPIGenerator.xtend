@@ -23,8 +23,15 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
+import static extension com.btc.serviceidl.generator.cpp.TypeResolverExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import java.util.HashSet
+import com.btc.serviceidl.idl.AbstractException
+import com.btc.serviceidl.idl.MemberElement
+import com.btc.serviceidl.idl.SequenceDeclaration
+import com.btc.serviceidl.idl.ExceptionDeclaration
+import com.btc.serviceidl.idl.StructDeclaration
 
 @Accessors
 class ServiceAPIGenerator extends BasicCppGenerator {
@@ -174,5 +181,66 @@ class ServiceAPIGenerator extends BasicCppGenerator {
       «ENDIF»
       '''
    }
+    
+    def generateImplFileBody(InterfaceDeclaration interface_declaration) {
+      val class_name = resolve(interface_declaration, param_bundle.projectType)
+      
+      // prepare for re-use
+      val register_service_fault = resolveCAB("BTC::ServiceComm::Base::RegisterServiceFault")
+      val cab_string = resolveCAB("BTC::Commons::Core::String")
+      
+      // collect exceptions thrown by interface methods
+      val thrown_exceptions = new HashSet<AbstractException>
+      interface_declaration
+         .functions
+         .filter[!raisedExceptions.empty]
+         .map[raisedExceptions]
+         .flatten
+         .forEach[ thrown_exceptions.add(it) ]
+      
+      // for optional element, include the impl file!
+      if
+      (
+         !interface_declaration.eAllContents.filter(MemberElement).filter[optional].empty
+         || !interface_declaration.eAllContents.filter(SequenceDeclaration).filter[failable].empty
+      )
+      {
+         resolveCABImpl("BTC::Commons::CoreExtras::Optional")
+      }
+      
+      '''
+      «FOR exception : interface_declaration.contains.filter(ExceptionDeclaration).sortBy[name]»
+         «makeExceptionImplementation(exception)»
+      «ENDFOR»
+      
+      // {«GuidMapper.get(interface_declaration)»}
+      static const «resolveCAB("BTC::Commons::CoreExtras::UUID")» s«interface_declaration.name»TypeGuid = 
+         «resolveCAB("BTC::Commons::CoreExtras::UUID")»::ParseString("«GuidMapper.get(interface_declaration)»");
+
+      «resolveCAB("BTC::Commons::CoreExtras::UUID")» «class_name.shortName»::TYPE_GUID()
+      {
+         return s«interface_declaration.name»TypeGuid;
+      }
+
+      «makeEventGUIDImplementations(typeResolver, idl, interface_declaration.contains.filter(StructDeclaration))»
+      
+      void «getRegisterServerFaults(interface_declaration, Optional.empty)»(«resolveCAB("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager)
+      {
+         «IF !thrown_exceptions.empty»// register exceptions thrown by service methods«ENDIF»
+         «FOR exception : thrown_exceptions.sortBy[name]»
+            «val resolve_exc_name = resolve(exception)»
+            «register_service_fault»<«resolve_exc_name»>(
+               serviceFaultHandlerManager, «cab_string»("«com.btc.serviceidl.util.Util.getCommonExceptionName(exception, qualified_name_provider)»"));
+         «ENDFOR»
+         
+         // most commonly used exception types
+         «val default_exceptions = typeResolver.defaultExceptionRegistration»
+         «FOR exception : default_exceptions.keySet.sort»
+            «register_service_fault»<«default_exceptions.get(exception)»>(
+               serviceFaultHandlerManager, «cab_string»("«exception»"));
+         «ENDFOR»
+      }
+      '''
+    }
                
 }

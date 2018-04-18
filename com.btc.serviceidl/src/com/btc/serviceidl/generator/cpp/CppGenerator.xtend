@@ -19,19 +19,16 @@ package com.btc.serviceidl.generator.cpp
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.FeatureProfile
 import com.btc.serviceidl.generator.common.GeneratorUtil
-import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.idl.AbstractException
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.SequenceDeclaration
@@ -54,6 +51,7 @@ import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
+import static extension com.btc.serviceidl.generator.cpp.TypeResolverExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
@@ -1029,7 +1027,7 @@ class CppGenerator
             «ENDFOR»
             
             // most commonly used exception types
-            «val default_exceptions = getDefaultExceptionRegistration»
+            «val default_exceptions = typeResolver.defaultExceptionRegistration»
             «FOR exception : default_exceptions.keySet.sort»
                fault_handlers["«exception»"] = [](«cab_string» const& msg) { return «cab_create_unique»<«default_exceptions.get(exception)»>(msg); };
             «ENDFOR»
@@ -1577,94 +1575,9 @@ class CppGenerator
       '''
    }
    
-   def private String generateCppServiceAPI(InterfaceDeclaration interface_declaration)
+   def private generateCppServiceAPI(InterfaceDeclaration interface_declaration)
    {
-      val class_name = resolve(interface_declaration, param_bundle.projectType)
-      
-      // prepare for re-use
-      val register_service_fault = resolveCAB("BTC::ServiceComm::Base::RegisterServiceFault")
-      val cab_string = resolveCAB("BTC::Commons::Core::String")
-      
-      // collect exceptions thrown by interface methods
-      val thrown_exceptions = new HashSet<AbstractException>
-      interface_declaration
-         .functions
-         .filter[!raisedExceptions.empty]
-         .map[raisedExceptions]
-         .flatten
-         .forEach[ thrown_exceptions.add(it) ]
-      
-      // for optional element, include the impl file!
-      if
-      (
-         !interface_declaration.eAllContents.filter(MemberElement).filter[optional].empty
-         || !interface_declaration.eAllContents.filter(SequenceDeclaration).filter[failable].empty
-      )
-      {
-         resolveCABImpl("BTC::Commons::CoreExtras::Optional")
-      }
-      
-      '''
-      «FOR exception : interface_declaration.contains.filter(ExceptionDeclaration).sortBy[name]»
-         «makeExceptionImplementation(exception)»
-      «ENDFOR»
-      
-      // {«GuidMapper.get(interface_declaration)»}
-      static const «resolveCAB("BTC::Commons::CoreExtras::UUID")» s«interface_declaration.name»TypeGuid = 
-         «resolveCAB("BTC::Commons::CoreExtras::UUID")»::ParseString("«GuidMapper.get(interface_declaration)»");
-
-      «resolveCAB("BTC::Commons::CoreExtras::UUID")» «class_name.shortName»::TYPE_GUID()
-      {
-         return s«interface_declaration.name»TypeGuid;
-      }
-
-      «makeEventGUIDImplementations(interface_declaration.contains.filter(StructDeclaration))»
-      
-      void «getRegisterServerFaults(interface_declaration, Optional.empty)»(«resolveCAB("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager)
-      {
-         «IF !thrown_exceptions.empty»// register exceptions thrown by service methods«ENDIF»
-         «FOR exception : thrown_exceptions.sortBy[name]»
-            «val resolve_exc_name = resolve(exception)»
-            «register_service_fault»<«resolve_exc_name»>(
-               serviceFaultHandlerManager, «cab_string»("«com.btc.serviceidl.util.Util.getCommonExceptionName(exception, qualified_name_provider)»"));
-         «ENDFOR»
-         
-         // most commonly used exception types
-         «val default_exceptions = getDefaultExceptionRegistration»
-         «FOR exception : default_exceptions.keySet.sort»
-            «register_service_fault»<«default_exceptions.get(exception)»>(
-               serviceFaultHandlerManager, «cab_string»("«exception»"));
-         «ENDFOR»
-      }
-      '''
-   }
-   
-   def private Map<String, String> getDefaultExceptionRegistration()
-   {
-      #{
-          Constants.INVALID_ARGUMENT_EXCEPTION_FAULT_HANDLER         -> resolveCAB("BTC::Commons::Core::InvalidArgumentException")
-         ,Constants.UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER    -> resolveCAB("BTC::Commons::Core::UnsupportedOperationException")
-      }
-   }
-   
-   def private String makeEventGUIDImplementations(Iterable<StructDeclaration> structs)
-   {
-      '''
-      «FOR event_data : structs»
-         «val related_event = com.btc.serviceidl.util.Util.getRelatedEvent(event_data, idl)»
-         «IF related_event !== null»
-            «val event_uuid = GuidMapper.get(event_data)»
-            // {«event_uuid»}
-            static const «resolveCAB("BTC::Commons::CoreExtras::UUID")» s«event_data.name»TypeGuid = 
-               «resolveCAB("BTC::Commons::CoreExtras::UUID")»::ParseString("«event_uuid»");
-
-            «resolveCAB("BTC::Commons::CoreExtras::UUID")» «resolve(event_data)»::EVENT_TYPE_GUID()
-            {
-               return s«event_data.name»TypeGuid;
-            }
-         «ENDIF»
-      «ENDFOR»
-      '''
+       new ServiceAPIGenerator(typeResolver, param_bundle, idl).generateImplFileBody(interface_declaration)
    }
    
    def private String generateCppProxy(InterfaceDeclaration interface_declaration)
@@ -1910,7 +1823,7 @@ class CppGenerator
          «makeExceptionImplementation(exception)»
       «ENDFOR»
       
-      «makeEventGUIDImplementations(module.moduleComponents.filter(StructDeclaration))»
+      «makeEventGUIDImplementations(typeResolver, idl, module.moduleComponents.filter(StructDeclaration))»
       '''
       
       // resolve any type to include the header: important for *.lib file
@@ -1943,47 +1856,6 @@ class CppGenerator
       new ServiceAPIGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(interface_declaration)       
    }
    
-   def private String makeExceptionImplementation(ExceptionDeclaration exception)
-   {
-      '''
-      «IF exception.members.empty»
-         «resolveCAB("CAB_SIMPLE_EXCEPTION_IMPLEMENTATION")»( «resolve(exception).shortName» )
-      «ELSE»
-         «val class_name = exception.name»
-         // based on CAB macro CAB_SIMPLE_EXCEPTION_IMPLEMENTATION_DEFAULT_MSG from Exception.h
-         «class_name»::«class_name»() : BASE("")
-         {}
-         
-         «class_name»::«class_name»(«resolveCAB("BTC::Commons::Core::String")» const &msg) : BASE("")
-         {}
-         
-         «class_name»::«class_name»(
-            «FOR member : exception.members SEPARATOR ", "»«toText(member.type, exception)» const& «member.name.asMember»«ENDFOR»
-         ) : BASE("")
-            «FOR member : exception.members», «member.name.asMember»( «member.name.asMember» )«ENDFOR»
-         {}
-         
-         «class_name»::~«class_name»()
-         {}
-         
-         void «class_name»::Throw() const
-         {
-            throw this;
-         }
-         
-         void «class_name»::Throw()
-         {
-            throw this;
-         }
-         
-         «resolveCAB("BTC::Commons::Core::Exception")» *«class_name»::IntClone() const
-         {
-            return new «class_name»(GetSingleMsg());
-         }
-      «ENDIF»
-      '''
-   }
-      
    def private boolean isMutableField(EObject type)
    {
       val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(type)
