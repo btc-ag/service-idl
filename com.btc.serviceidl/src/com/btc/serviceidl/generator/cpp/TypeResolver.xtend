@@ -6,16 +6,19 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.common.TypeWrapper
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
-import com.btc.serviceidl.util.Util
 import java.util.Collection
 import java.util.HashSet
+import java.util.LinkedHashSet
+import java.util.List
 import java.util.Map
 import java.util.Optional
 import java.util.UUID
+import java.util.stream.Collectors
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -89,7 +92,7 @@ class TypeResolver
 
     def ResolvedName resolve(EObject object, ProjectType project_type)
     {
-        if (Util.isUUIDType(object))
+        if (com.btc.serviceidl.util.Util.isUUIDType(object))
         {
             if (project_type == ProjectType.PROTOBUF)
                 return new ResolvedName(resolveSTL("std::string"), TransformType.NAMESPACE)
@@ -113,8 +116,10 @@ class TypeResolver
         else
         {
             var result = GeneratorUtil.transform(
-                ParameterBundle.createBuilder(Util.getModuleStack(Util.getScopeDeterminant(object))).with(project_type).
-                    with(TransformType.NAMESPACE).build)
+                ParameterBundle.createBuilder(
+                    com.btc.serviceidl.util.Util.getModuleStack(
+                        com.btc.serviceidl.util.Util.getScopeDeterminant(object))).with(project_type).with(
+                    TransformType.NAMESPACE).build)
             result += Constants.SEPARATOR_NAMESPACE + if (object instanceof InterfaceDeclaration)
                 project_type.getClassName(param_bundle.artifactNature, qualified_name.lastSegment)
             else
@@ -129,7 +134,7 @@ class TypeResolver
 
     def void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
     {
-        val module_stack = Util.getModuleStack(referenced_object)
+        val module_stack = com.btc.serviceidl.util.Util.getModuleStack(referenced_object)
 
         val temp_param = new ParameterBundle.Builder()
         temp_param.reset(param_bundle.artifactNature)
@@ -191,4 +196,22 @@ class TypeResolver
             return false
     }
 
+    def List<EObject> resolveForwardDeclarations(Collection<TypeWrapper> sorted_types)
+    {
+        val forward_declarations = sorted_types.filter[!forwardDeclarations.empty].map[forwardDeclarations].flatten.
+            toList.stream.distinct.collect(Collectors.toList)
+
+        for (wrapper : sorted_types)
+        {
+            var dependencies = smart_pointer_map.get(wrapper.type)
+            if (dependencies === null)
+            {
+                dependencies = new LinkedHashSet<EObject>
+                smart_pointer_map.put(wrapper.type, dependencies)
+            }
+            dependencies.addAll(wrapper.forwardDeclarations)
+        }
+
+        return forward_declarations
+    }
 }
