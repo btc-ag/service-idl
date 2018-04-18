@@ -234,4 +234,81 @@ class DispatcherGenerator extends BasicCppGenerator
         '''
     }
 
+    def generateHeaderFileBody(InterfaceDeclaration interface_declaration)
+    {
+        val class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
+
+        val cab_message_ptr = resolveCAB("BTC::ServiceComm::Commons::MessagePtr")
+        
+        // TODO do not use anonymous namespaces in a header file!
+        '''
+            // anonymous namespace for internally used typedef
+            namespace
+            {
+               «makeDispatcherBaseTemplate(interface_declaration)»
+            }
+            
+            class «makeExportMacro()» «class_name» :
+            virtual private «resolveCAB("BTC::Logging::API::LoggerAware")»
+            , public «interface_declaration.asBaseName»
+            {
+            public:
+               «generateHConstructor(interface_declaration)»
+               
+               «class_name»
+               (
+                  «resolveCAB("BTC::Logging::API::LoggerFactory")» &loggerFactory
+                  ,«resolveCAB("BTC::ServiceComm::API::IServiceFaultHandlerManagerFactory")» &serviceFaultHandlerManagerFactory
+                  ,«resolveCAB("BTC::Commons::Core::AutoPtr")»< «resolve(interface_declaration)» > dispatchee
+               );
+               
+               «generateHDestructor(interface_declaration)»
+               
+               /**
+                  \see BTC::ServiceComm::API::IRequestDispatcher::ProcessRequest
+               */
+               virtual «cab_message_ptr» ProcessRequest
+               (
+                  «cab_message_ptr» request,
+                  «resolveCAB("BTC::ServiceComm::Commons::CMessage")» const& clientIdentity
+               ) override;
+               
+               /**
+                  \see BTC::ServiceComm::API::IRequestDispatcher::AttachEndpoint
+               */
+               virtual void AttachEndpoint( «resolveCAB("BTC::ServiceComm::API::IServerEndpoint")» &endpoint ) override;
+               
+               /**
+                  \see BTC::ServiceComm::API::IRequestDispatcher::DetachEndpoint
+               */
+               virtual void DetachEndpoint( «resolveCAB("BTC::ServiceComm::API::IServerEndpoint")» &endpoint ) override;
+               
+               static void RegisterMessageTypes( «resolveCAB("BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder")» &decoder );
+               
+               // for server runner
+               static «resolveCAB("BTC::Commons::Core::UniquePtr")»<«resolveCAB("BTC::ServiceComm::Util::IDispatcherAutoRegistrationFactory")»> CreateDispatcherAutoRegistrationFactory
+               (
+                  «resolveCAB("BTC::Logging::API::LoggerFactory")» &loggerFactory
+                  ,«resolveCAB("BTC::ServiceComm::API::IServerEndpoint")» &serverEndpoint
+                  ,«resolveCAB("BTC::Commons::CoreExtras::UUID")» const &instanceGuid = BTC::Commons::CoreExtras::UUID()
+                  ,«resolveCAB("BTC::Commons::Core::String")» const &instanceName = BTC::Commons::Core::String()
+               );
+            };
+        '''
+    }
+
+    def private String makeDispatcherBaseTemplate(InterfaceDeclaration interface_declaration)
+    {
+        val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
+        val protobuf_request = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
+        val protobuf_response = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
+
+        '''
+            typedef «resolveCAB("BTC::ServiceComm::ProtobufBase::AProtobufServiceDispatcherBaseTemplate")»<
+               «api_class_name»
+               , «protobuf_request»
+               , «protobuf_response» > «interface_declaration.asBaseName»;
+        '''
+    }
+
 }

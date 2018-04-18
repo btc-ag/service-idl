@@ -1833,23 +1833,6 @@ class CppGenerator
       '''
    }
    
-   def private String generateHDestructor(InterfaceDeclaration interface_declaration)
-   {
-      val class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
-      
-      '''
-      /**
-         \brief Object destructor
-      */
-      virtual ~«class_name»();
-      '''
-   }
-   
-   def private String generateCppDestructor(InterfaceDeclaration interface_declaration)
-   {
-       basicCppGenerator.generateCppDestructor(interface_declaration)
-   }
-      
    def private generateCppDispatcher(InterfaceDeclaration interface_declaration)
    {
        new DispatcherGenerator(typeResolver, param_bundle, idl).generateImplementationFileBody(interface_declaration)
@@ -1875,7 +1858,7 @@ class CppGenerator
             throw new IllegalArgumentException("Inapplicable project type:" + param_bundle.projectType)
          }
       
-      generateHeader(file_content, Optional.of(export_header))
+      generateHeader(file_content.toString, Optional.of(export_header))
    }
    
    def private String generateHeader(String file_content, Optional<String> export_header)
@@ -2052,66 +2035,9 @@ class CppGenerator
       '''
    }
    
-   def private String generateHFileDispatcher(InterfaceDeclaration interface_declaration)
+   def private generateHFileDispatcher(InterfaceDeclaration interface_declaration)
    {
-      val class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
-      
-      val cab_message_ptr = resolveCAB("BTC::ServiceComm::Commons::MessagePtr")
-      
-      '''
-      // anonymous namespace for internally used typedef
-      namespace
-      {
-         «makeDispatcherBaseTemplate(interface_declaration)»
-      }
-      
-      class «makeExportMacro()» «class_name» :
-      virtual private «resolveCAB("BTC::Logging::API::LoggerAware")»
-      , public «interface_declaration.asBaseName»
-      {
-      public:
-         «generateHConstructor(interface_declaration)»
-         
-         «class_name»
-         (
-            «resolveCAB("BTC::Logging::API::LoggerFactory")» &loggerFactory
-            ,«resolveCAB("BTC::ServiceComm::API::IServiceFaultHandlerManagerFactory")» &serviceFaultHandlerManagerFactory
-            ,«resolveCAB("BTC::Commons::Core::AutoPtr")»< «resolve(interface_declaration)» > dispatchee
-         );
-         
-         «generateHDestructor(interface_declaration)»
-         
-         /**
-            \see BTC::ServiceComm::API::IRequestDispatcher::ProcessRequest
-         */
-         virtual «cab_message_ptr» ProcessRequest
-         (
-            «cab_message_ptr» request,
-            «resolveCAB("BTC::ServiceComm::Commons::CMessage")» const& clientIdentity
-         ) override;
-         
-         /**
-            \see BTC::ServiceComm::API::IRequestDispatcher::AttachEndpoint
-         */
-         virtual void AttachEndpoint( «resolveCAB("BTC::ServiceComm::API::IServerEndpoint")» &endpoint ) override;
-         
-         /**
-            \see BTC::ServiceComm::API::IRequestDispatcher::DetachEndpoint
-         */
-         virtual void DetachEndpoint( «resolveCAB("BTC::ServiceComm::API::IServerEndpoint")» &endpoint ) override;
-         
-         static void RegisterMessageTypes( «resolveCAB("BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder")» &decoder );
-         
-         // for server runner
-         static «resolveCAB("BTC::Commons::Core::UniquePtr")»<«resolveCAB("BTC::ServiceComm::Util::IDispatcherAutoRegistrationFactory")»> CreateDispatcherAutoRegistrationFactory
-         (
-            «resolveCAB("BTC::Logging::API::LoggerFactory")» &loggerFactory
-            ,«resolveCAB("BTC::ServiceComm::API::IServerEndpoint")» &serverEndpoint
-            ,«resolveCAB("BTC::Commons::CoreExtras::UUID")» const &instanceGuid = BTC::Commons::CoreExtras::UUID()
-            ,«resolveCAB("BTC::Commons::Core::String")» const &instanceName = BTC::Commons::Core::String()
-         );
-      };
-      '''
+      new DispatcherGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(interface_declaration)
    }
    
    def private String generateInterface(InterfaceDeclaration interface_declaration)
@@ -2257,45 +2183,7 @@ class CppGenerator
       «ENDIF»
       '''
    }
-   
-   def private String generateHConstructor(InterfaceDeclaration interface_declaration)
-   {
-      val class_name = resolve(interface_declaration, param_bundle.projectType)
-      
-      '''
-      /**
-         \brief Object constructor
-      */
-      «class_name.shortName»
-      (
-         «resolveCAB("BTC::Commons::Core::Context")» &context
-         ,«resolveCAB("BTC::Logging::API::LoggerFactory")» &loggerFactory
-         «IF param_bundle.projectType == ProjectType.PROXY»
-            ,«resolveCAB("BTC::ServiceComm::API::IClientEndpoint")» &localEndpoint
-            ,«resolveCAB("BTC::Commons::CoreExtras::Optional")»<«resolveCAB("BTC::Commons::CoreExtras::UUID")»> const &serverServiceInstanceGuid 
-               = «resolveCAB("BTC::Commons::CoreExtras::Optional")»<«resolveCAB("BTC::Commons::CoreExtras::UUID")»>()
-         «ELSEIF param_bundle.projectType == ProjectType.DISPATCHER»
-            ,«resolveCAB("BTC::ServiceComm::API::IServerEndpoint")»& serviceEndpoint
-            ,«resolveCAB("BTC::Commons::Core::AutoPtr")»< «resolve(interface_declaration, ProjectType.SERVICE_API)» > dispatchee
-         «ENDIF»
-      );
-      '''
-   }       
-         
-   def private String makeDispatcherBaseTemplate(InterfaceDeclaration interface_declaration)
-   {
-      val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
-      val protobuf_request = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
-      val protobuf_response = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
-      
-      '''
-      typedef «resolveCAB("BTC::ServiceComm::ProtobufBase::AProtobufServiceDispatcherBaseTemplate")»<
-         «api_class_name»
-         , «protobuf_request»
-         , «protobuf_response» > «interface_declaration.asBaseName»;
-      '''
-   }
-   
+               
    def private String makeExceptionImplementation(ExceptionDeclaration exception)
    {
       '''
