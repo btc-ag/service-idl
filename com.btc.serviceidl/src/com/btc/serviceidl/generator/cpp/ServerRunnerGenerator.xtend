@@ -12,6 +12,7 @@ package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.util.Constants
 import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors
@@ -66,4 +67,46 @@ class ServerRunnerGenerator extends BasicCppGenerator
             }
         '''
     }
+
+    def generateIoC()
+    {
+        '''
+            <?xml version="1.0" encoding="utf-8"?>
+            <objects BTC.CAB.IoC.Version="1.2">
+               <argument-default argument="loggerFactory" type="BTC.CAB.Logging.Default.AdvancedFileLoggerFactory"/>
+               <argument-default argument="connectionString" value="tcp://127.0.0.1:«Constants.DEFAULT_PORT»"/>
+               <argument-default argument="threadCount" value="4"/>
+               
+               <object id="connectionOptions" type="BTC.CAB.ServiceComm.SQ.ZeroMQ.ConnectionOptions">
+                  <constructor-arg name="remoteSocketType" value="Router"/>
+                  <!-- ENABLE THIS SECTION FOR ZEROMQ ENCRYPTION -->
+                  <!--
+                  <constructor-arg name="authenticationMode" value="Curve"/>
+                  <constructor-arg name="serverSecretKey" value="«Constants.ZMQ_SERVER_PRIVATE_KEY»" />
+                  <constructor-arg name="serverPublicKey" value="«Constants.ZMQ_SERVER_PUBLIC_KEY»" />
+                  <constructor-arg name="serverAcceptAnyClientKey" value="true"/>
+                  -->
+               </object>
+               
+               <object id="taskProcessorParameters" type="BTC.CAB.ServiceComm.SQ.API.TaskProcessorParameters">
+                  <constructor-arg name="threadCount" arg-ref="threadCount"/>
+               </object>
+               
+               <object id="connectionFactory" type="BTC.CAB.ServiceComm.SQ.ZeroMQ.CZeroMQConnectionFactory">
+                  <constructor-arg name="loggerFactory" arg-ref="loggerFactory"/>
+                  <constructor-arg name="connectionOptions" ref="connectionOptions"/>
+               </object>
+               
+               <object id="serverEndpointFactory" type="BTC.CAB.ServiceComm.SQ.Default.CServerEndpointFactory">
+                  <constructor-arg name="loggerFactory" arg-ref="loggerFactory"/>
+                  <constructor-arg name="serverConnectionFactory" ref="connectionFactory"/>
+                  <constructor-arg name="connectionString" arg-ref="connectionString"/>
+                  <constructor-arg name="taskProcessorParameters" ref="taskProcessorParameters"/>
+               </object>
+               
+            </objects>
+        '''
+
+    }
+
 }
