@@ -16,6 +16,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import com.google.inject.Provider
 import org.eclipse.emf.common.util.URI
 import org.junit.Ignore
+import com.btc.serviceidl.tests.testdata.TestData
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -267,5 +268,13 @@ class IdlParsingTest
         Assert.assertNotNull(result)
         val errors = result.eResource.errors
         Assert.assertTrue('''Unexpected errors: «errors.join(", ")»''', errors.isEmpty)
+    }
+
+    @Test
+    def void testFull()
+    {
+        val spec = TestData.full.parse;
+
+        spec.assertNoErrors;
     }
 }
