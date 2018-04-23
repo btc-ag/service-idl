@@ -21,7 +21,7 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
     def override String generateProjectSource(InterfaceDeclaration interface_declaration)
     {
         reinitializeFile
-        val project_type = param_bundle.projectType.get
+        val project_type = param_bundle.projectType
 
         val file_content = switch (project_type)
         {
@@ -56,7 +56,7 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
     {
         reinitializeFile
 
-        val file_content = switch (param_bundle.projectType.get)
+        val file_content = switch (param_bundle.projectType)
         {
             case SERVICE_API:
                 generateInterface(interface_declaration)

@@ -31,7 +31,7 @@ class DispatcherGenerator extends BasicCppGenerator
 {
     def generateImplementationFileBody(InterfaceDeclaration interface_declaration)
     {
-        val class_name = resolve(interface_declaration, param_bundle.projectType.get)
+        val class_name = resolve(interface_declaration, param_bundle.projectType)
         val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
         val protobuf_request_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
         val protobuf_response_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)

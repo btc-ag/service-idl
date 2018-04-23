@@ -20,7 +20,7 @@ class ReflectionGenerator extends BasicCppGenerator
 
     def generateImplFileBody(InterfaceDeclaration interface_declaration)
     {
-        val class_name = resolve(interface_declaration, param_bundle.projectType.get)
+        val class_name = resolve(interface_declaration, param_bundle.projectType)
 
         '''
             extern "C" 

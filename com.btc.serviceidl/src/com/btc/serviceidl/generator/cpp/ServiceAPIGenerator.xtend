@@ -182,7 +182,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
    }
     
     def generateImplFileBody(InterfaceDeclaration interface_declaration) {
-      val class_name = resolve(interface_declaration, param_bundle.projectType.get)
+      val class_name = resolve(interface_declaration, param_bundle.projectType)
       
       // prepare for re-use
       val register_service_fault = resolveCAB("BTC::ServiceComm::Base::RegisterServiceFault")
