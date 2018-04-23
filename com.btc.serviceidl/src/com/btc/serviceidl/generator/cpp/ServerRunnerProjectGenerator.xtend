@@ -88,7 +88,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
     {
         reinitializeFile
 
-        val file_content = new ServerRunnerGenerator(typeResolver, param_bundle, idl).generateImplFileBody(
+        val file_content = new ServerRunnerGenerator(typeResolver, param_bundle.build, idl).generateImplFileBody(
             interface_declaration)
 
         '''
@@ -99,7 +99,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
 
     def private generateIoCServerRunner()
     {
-        new ServerRunnerGenerator(typeResolver, param_bundle, idl).generateIoC()
+        new ServerRunnerGenerator(typeResolver, param_bundle.build, idl).generateIoC()
     }
 
 }

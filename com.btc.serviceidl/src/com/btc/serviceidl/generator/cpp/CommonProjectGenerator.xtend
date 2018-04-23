@@ -81,7 +81,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
 
     def private String generateHFileCommons(ModuleDeclaration module, String export_header)
     {
-        val file_content = new CommonsGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(module,
+        val file_content = new CommonsGenerator(typeResolver, param_bundle.build, idl).generateHeaderFileBody(module,
             export_header)
         generateHeader(file_content.toString, Optional.of(export_header))
     }
@@ -90,7 +90,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
     {
         reinitializeFile
 
-        val file_content = new CommonsGenerator(typeResolver, param_bundle, idl).generateImplFileBody(module,
+        val file_content = new CommonsGenerator(typeResolver, param_bundle.build, idl).generateImplFileBody(module,
             export_header)
         generateSource(file_content.toString, Optional.empty)
     }

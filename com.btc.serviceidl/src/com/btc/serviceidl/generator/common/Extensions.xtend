@@ -21,7 +21,7 @@ class Extensions
 {
     def static ProjectType getProjectType(Builder param)
     {
-        param.read.project_type.get
+        param.read.getProjectType.get
     }
 
     def static Deque<ModuleDeclaration> getModuleStack(Builder param)
@@ -31,7 +31,7 @@ class Extensions
 
     def static ArtifactNature getArtifactNature(Builder param)
     {
-        param.read.artifact_nature
+        param.read.getArtifactNature
     }
 
     def static ProjectType getMainProjectType(EObject item)

@@ -86,13 +86,13 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
     // TODO move this somewhere else
     def protected generateCppImpl(InterfaceDeclaration interface_declaration)
     {
-        new ImplementationStubGenerator(typeResolver, param_bundle, idl).generateCppImpl(interface_declaration)
+        new ImplementationStubGenerator(typeResolver, param_bundle.build, idl).generateCppImpl(interface_declaration)
     }
 
     // TODO move this somewhere else
     def protected generateInterface(InterfaceDeclaration interface_declaration)
     {
-        new ServiceAPIGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(interface_declaration)
+        new ServiceAPIGenerator(typeResolver, param_bundle.build, idl).generateHeaderFileBody(interface_declaration)
     }
 
 }

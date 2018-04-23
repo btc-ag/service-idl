@@ -24,18 +24,29 @@ import org.eclipse.xtend.lib.annotations.Accessors
 class ParameterBundle
 {
     private Deque<ModuleDeclaration> module_stack
-    private ArtifactNature artifact_nature
-    private Optional<ProjectType> project_type = Optional.empty
+    private ArtifactNature artifactNature
+    private Optional<ProjectType> projectType = Optional.empty
 
     // TODO redesign this, the role of "master_data" is unclear and confusing
     static class Builder
     {
         private Optional<ProjectType> project_type = Optional.empty
         private val master_data = new ParameterBundle
+        
+        new() {}
+        
+        new(ParameterBundle bundle) { 
+            this.master_data.module_stack = bundle.module_stack
+            this.master_data.artifactNature = bundle.artifactNature
+            
+            // TODO check if handling of projectType is correct
+            this.master_data.projectType = bundle.projectType
+            this.project_type = bundle.projectType
+        }
 
         def Builder reset(ArtifactNature element)
         {
-            master_data.artifact_nature = element
+            master_data.artifactNature = element
             return this
         }
 
@@ -46,7 +57,7 @@ class ParameterBundle
 
         def void reset(ProjectType element)
         {
-            master_data.project_type = Optional.of(element)
+            master_data.projectType = Optional.of(element)
         }
 
         def Builder with(ProjectType element)
@@ -62,7 +73,7 @@ class ParameterBundle
 
             if (project_type.present)
             {
-                bundle.project_type = Optional.of(project_type.get)
+                bundle.projectType = Optional.of(project_type.get)
                 project_type = Optional.empty // reset
             }
 
@@ -82,8 +93,8 @@ class ParameterBundle
     private new(Builder builder)
     {
         module_stack = builder.master_data.module_stack
-        artifact_nature = builder.master_data.artifact_nature
-        project_type = builder.master_data.project_type
+        artifactNature = builder.master_data.artifactNature
+        projectType = builder.master_data.projectType
     }
     
     def static Builder createBuilder(Deque<ModuleDeclaration> module_stack)

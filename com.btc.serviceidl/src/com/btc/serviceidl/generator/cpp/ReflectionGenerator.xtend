@@ -14,15 +14,13 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
-
 @Accessors
 class ReflectionGenerator extends BasicCppGenerator
 {
 
     def generateImplFileBody(InterfaceDeclaration interface_declaration)
     {
-        val class_name = resolve(interface_declaration, param_bundle.projectType)
+        val class_name = resolve(interface_declaration, param_bundle.projectType.get)
 
         '''
             extern "C" 

@@ -11,6 +11,7 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.TransformType
@@ -22,7 +23,6 @@ import java.util.Optional
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
@@ -31,7 +31,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 class ProxyGenerator extends BasicCppGenerator {
     
     def generateImplementationFileBody(InterfaceDeclaration interface_declaration) {
-      val class_name = resolve(interface_declaration, param_bundle.projectType)
+      val class_name = resolve(interface_declaration, param_bundle.projectType.get)
       val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
       
       // the class name is not used explicitly in the following code, but
@@ -52,7 +52,7 @@ class ProxyGenerator extends BasicCppGenerator {
       «FOR event : interface_declaration.events»
       , «event.observableRegistrationName»(context, localEndpoint.GetEventRegistry(), «event.eventParamsName»())
       «ENDFOR»
-      { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(param_bundle.with(ProjectType.SERVICE_API).build, TransformType.NAMESPACE)))»( GetClientServiceReference().GetServiceFaultHandlerManager() ); }
+      { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(new ParameterBundle.Builder(param_bundle).with(ProjectType.SERVICE_API).build, TransformType.NAMESPACE)))»( GetClientServiceReference().GetServiceFaultHandlerManager() ); }
       
       «generateCppDestructor(interface_declaration)»
       
