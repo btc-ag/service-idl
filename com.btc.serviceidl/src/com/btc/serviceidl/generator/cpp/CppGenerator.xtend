@@ -15,8 +15,6 @@
  */
 package com.btc.serviceidl.generator.cpp
 
-import com.btc.serviceidl.generator.common.ArtifactNature
-import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -46,7 +44,6 @@ class CppGenerator
 
     private val extension VSSolution vsSolution = new VSSolution
 
-    private var param_bundle = new ParameterBundle.Builder()
     private var protobuf_project_references = new HashMap<String, HashMap<String, String>>
 
     private val smart_pointer_map = new HashMap<EObject, Collection<EObject>>
@@ -58,7 +55,6 @@ class CppGenerator
         file_system_access = fsa
         qualified_name_provider = qnp
         scope_provider = sp
-        param_bundle.reset(ArtifactNature.CPP)
         protobuf_project_references = if (pr !== null) new HashMap<String, HashMap<String, String>>(pr) else null
 
         idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
@@ -77,9 +73,6 @@ class CppGenerator
 
     def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
     {
-        param_bundle = ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(module))
-        param_bundle.reset(ArtifactNature.CPP)
-
         if (!module.virtual)
         {
             // generate common data types and exceptions, if available
