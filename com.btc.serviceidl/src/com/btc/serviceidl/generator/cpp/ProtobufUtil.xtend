@@ -51,7 +51,7 @@ class ProtobufUtil
         val builder = ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(scope_determinant))
         builder.reset(ProjectType.PROTOBUF)
 
-        var result = GeneratorUtil.transform(builder.with(TransformType.NAMESPACE).build)
+        var result = GeneratorUtil.transform(builder.build, TransformType.NAMESPACE)
         result += Constants.SEPARATOR_NAMESPACE
         if (is_interface)
             result += Names.plain(object) + "_" + protobuf_type.getName
@@ -61,7 +61,7 @@ class ProtobufUtil
         else
             result += Names.plain(object)
 
-        var header_path = GeneratorUtil.transform(builder.with(TransformType.FILE_SYSTEM).build)
+        var header_path = GeneratorUtil.transform(builder.build, TransformType.FILE_SYSTEM)
         var header_file = GeneratorUtil.getPbFileName(object)
         modules_includes.add("modules/" + header_path + "/gen/" + header_file.pb.h)
         object.resolveProjectFilePath(ProjectType.PROTOBUF)
@@ -155,11 +155,11 @@ class ProtobufUtil
             else
                 GeneratorUtil.getCodecName(ultimate_type)
 
-        var header_path = GeneratorUtil.transform(temp_param.with(TransformType.FILE_SYSTEM).build)
+        var header_path = GeneratorUtil.transform(temp_param.build, TransformType.FILE_SYSTEM)
         modules_includes.add("modules/" + header_path + "/include/" + codec_name.h)
         resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
-        GeneratorUtil.transform(temp_param.with(TransformType.NAMESPACE).build) + TransformType.NAMESPACE.separator +
+        GeneratorUtil.transform(temp_param.build, TransformType.NAMESPACE) + TransformType.NAMESPACE.separator +
             codec_name
     }
 
@@ -171,8 +171,8 @@ class ProtobufUtil
 
         var namespace = GeneratorUtil.transform(
             ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(
-                com.btc.serviceidl.util.Util.getScopeDeterminant(container))).with(ProjectType.PROTOBUF).with(
-                TransformType.NAMESPACE).build
+                com.btc.serviceidl.util.Util.getScopeDeterminant(container))).with(ProjectType.PROTOBUF).build,
+            TransformType.NAMESPACE
         )
         return namespace + Constants.SEPARATOR_NAMESPACE +
             GeneratorUtil.asFailable(element, container, qualified_name_provider)

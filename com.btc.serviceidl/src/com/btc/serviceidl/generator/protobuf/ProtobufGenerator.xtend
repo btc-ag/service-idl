@@ -154,7 +154,7 @@ class ProtobufGenerator
       if (param_bundle.artifactNature == ArtifactNature.JAVA) // special directory structure according to Maven conventions
          project_path += getJavaProtoLocation(container)
       else
-         project_path += GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).build)
+         project_path += GeneratorUtil.transform(param_bundle.build, TransformType.FILE_SYSTEM)
          + Constants.SEPARATOR_FILE
          + "gen"
          + Constants.SEPARATOR_FILE
@@ -276,7 +276,7 @@ class ProtobufGenerator
       «IF artifact_nature == ArtifactNature.JAVA»
          package «MavenResolver.resolvePackage(container, Optional.of(ProjectType.PROTOBUF))»;         
       «ELSE»
-         package «GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).build)»;
+         package «GeneratorUtil.transform(param_bundle.build, TransformType.PACKAGE)»;
       «ENDIF»
       '''
    }
@@ -525,15 +525,15 @@ class ProtobufGenerator
       {
          val builder = ParameterBundle.createBuilder(Util.getModuleStack(object_root)).with(ProjectType.PROTOBUF).reset(param_bundle.artifactNature)
 
-         val root_path = GeneratorUtil.transform(builder.with(TransformType.FILE_SYSTEM).build)
+         val root_path = GeneratorUtil.transform(builder.build, TransformType.FILE_SYSTEM)
          
          var String referenced_project
          var String current_project
          
          if (param_bundle.artifactNature != ArtifactNature.JAVA)
          {
-            referenced_project = GeneratorUtil.transform(builder.with(ProjectType.PROTOBUF).with(TransformType.PACKAGE).build)
-            current_project = GeneratorUtil.transform(param_bundle.with(ProjectType.PROTOBUF).with(TransformType.PACKAGE).build)
+            referenced_project = GeneratorUtil.transform(builder.with(ProjectType.PROTOBUF).build, TransformType.PACKAGE)
+            current_project = GeneratorUtil.transform(param_bundle.with(ProjectType.PROTOBUF).build, TransformType.PACKAGE)
          }
          else
          {
@@ -586,7 +586,7 @@ class ProtobufGenerator
    def private String makeImportPath(ArtifactNature artifact_nature, EObject container, String file_name)
    {
       val builder = ParameterBundle.createBuilder(Util.getModuleStack(container)).with(ProjectType.PROTOBUF).reset(param_bundle.artifactNature)
-      val root_path = GeneratorUtil.transform(builder.with(TransformType.FILE_SYSTEM).build)
+      val root_path = GeneratorUtil.transform(builder.build, TransformType.FILE_SYSTEM)
       var String import_path
       if (artifact_nature == ArtifactNature.JAVA)
          import_path = getJavaProtoLocation(container) + file_name.proto

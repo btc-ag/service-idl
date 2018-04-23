@@ -63,7 +63,7 @@ class CppExtensions
         val include_folder = if (project_type == ProjectType.PROTOBUF) "gen" else "include"
         val file_extension = if (project_type == ProjectType.PROTOBUF) ".pb.h" else ".h"
 
-        "modules/" + GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).with(project_type).build) +
+        "modules/" + GeneratorUtil.transform(param_bundle.with(project_type).build, TransformType.FILE_SYSTEM) +
             "/" + include_folder + "/" + file_name + file_extension
     }
 

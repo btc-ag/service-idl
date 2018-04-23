@@ -30,14 +30,14 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
     def protected String getProtobufRequestClassName(InterfaceDeclaration interface_declaration)
     {
         resolve(interface_declaration, ProjectType.PROTOBUF)
-        return GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).with(ProjectType.PROTOBUF).build) +
+        return GeneratorUtil.transform(param_bundle.with(ProjectType.PROTOBUF).build, TransformType.PACKAGE) +
             Constants.SEPARATOR_PACKAGE + com.btc.serviceidl.util.Util.asRequest(interface_declaration.name)
     }
 
     def protected String getProtobufResponseClassName(InterfaceDeclaration interface_declaration)
     {
         resolve(interface_declaration, ProjectType.PROTOBUF)
-        return GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).with(ProjectType.PROTOBUF).build) +
+        return GeneratorUtil.transform(param_bundle.with(ProjectType.PROTOBUF).build, TransformType.PACKAGE) +
             Constants.SEPARATOR_PACKAGE + com.btc.serviceidl.util.Util.asResponse(interface_declaration.name)
     }
 

@@ -202,7 +202,7 @@ class Util
 
     def static String getLog4NetConfigFile(ParameterBundle.Builder param_bundle)
     {
-        GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).build).toLowerCase + ".log4net".config
+        GeneratorUtil.transform(param_bundle.build, TransformType.PACKAGE).toLowerCase + ".log4net".config
 
     }
 
@@ -263,8 +263,7 @@ class Util
 
         typeResolver.resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
-        GeneratorUtil.transform(temp_param.with(TransformType.PACKAGE).build) + TransformType.PACKAGE.separator +
-            codec_name
+        GeneratorUtil.transform(temp_param.build, TransformType.PACKAGE) + TransformType.PACKAGE.separator + codec_name
     }
 
     def public static String makeDefaultMethodStub(TypeResolver typeResolver)

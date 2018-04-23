@@ -16,7 +16,7 @@ class VSSolution
 
     def String getVcxprojName(ParameterBundle.Builder builder, Optional<String> extra_name)
     {
-        var project_name = GeneratorUtil.transform(builder.with(TransformType.PACKAGE).build)
+        var project_name = GeneratorUtil.transform(builder.build, TransformType.PACKAGE)
         getVcxprojGUID(project_name)
         return project_name
     }

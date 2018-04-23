@@ -52,7 +52,7 @@ class ProxyGenerator extends BasicCppGenerator {
       «FOR event : interface_declaration.events»
       , «event.observableRegistrationName»(context, localEndpoint.GetEventRegistry(), «event.eventParamsName»())
       «ENDFOR»
-      { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(param_bundle.with(ProjectType.SERVICE_API).with(TransformType.NAMESPACE).build)))»( GetClientServiceReference().GetServiceFaultHandlerManager() ); }
+      { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(param_bundle.with(ProjectType.SERVICE_API).build, TransformType.NAMESPACE)))»( GetClientServiceReference().GetServiceFaultHandlerManager() ); }
       
       «generateCppDestructor(interface_declaration)»
       

@@ -30,7 +30,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
 //        if (project_type != ProjectType.EXTERNAL_DB_IMPL) // for ExternalDBImpl, keep both C++ and ODB artifacts
 //            reinitializeProject(project_type)
 
-        val export_header_file_name = (GeneratorUtil.transform(param_bundle.with(TransformType.EXPORT_HEADER).build) +
+        val export_header_file_name = (GeneratorUtil.transform(param_bundle.build, TransformType.EXPORT_HEADER) +
             "_export".h).toLowerCase
         file_system_access.generateFile(projectPath + "include" + Constants.SEPARATOR_FILE + export_header_file_name,
             generateExportHeader())

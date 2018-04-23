@@ -48,7 +48,7 @@ class DispatcherGenerator extends BasicCppGenerator
             ) :
             «resolveCAB("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
             , «interface_declaration.asBaseName»( serviceEndpoint.GetServiceFaultHandlerManagerFactory(), «resolveSTL("std::move")»(dispatchee) )
-            { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(param_bundle.with(ProjectType.SERVICE_API).with(TransformType.NAMESPACE).build)))»( GetServiceFaultHandlerManager() ); }
+            { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(param_bundle.with(ProjectType.SERVICE_API).build, TransformType.NAMESPACE)))»( GetServiceFaultHandlerManager() ); }
             
             «class_name.shortName»::«class_name.shortName»
             (
@@ -58,7 +58,7 @@ class DispatcherGenerator extends BasicCppGenerator
             ) :
             «resolveCAB("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
             , «interface_declaration.asBaseName»( serviceFaultHandlerManagerFactory, «resolveSTL("std::move")»(dispatchee) )
-            { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(param_bundle.with(ProjectType.SERVICE_API).with(TransformType.NAMESPACE).build)))»( GetServiceFaultHandlerManager() ); }
+            { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(param_bundle.with(ProjectType.SERVICE_API).build, TransformType.NAMESPACE)))»( GetServiceFaultHandlerManager() ); }
             
             «generateCppDestructor(interface_declaration)»
             

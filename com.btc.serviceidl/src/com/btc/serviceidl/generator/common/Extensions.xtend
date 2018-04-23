@@ -24,11 +24,6 @@ class Extensions
         param.read.project_type.get
     }
 
-    def static TransformType getTransformType(Builder param)
-    {
-        param.read.transform_type
-    }
-
     def static Deque<ModuleDeclaration> getModuleStack(Builder param)
     {
         param.read.module_stack

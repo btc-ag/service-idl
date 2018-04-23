@@ -194,7 +194,7 @@ class JavaGenerator
       
       if (path_type == PathType.FULL)
       {
-         result.append(GeneratorUtil.transform(temp_param.with(TransformType.FILE_SYSTEM).build))
+         result.append(GeneratorUtil.transform(temp_param.build, TransformType.FILE_SYSTEM))
          result.append((if (container instanceof InterfaceDeclaration) "/" + container.name.toLowerCase else ""))
          result.append(Constants.SEPARATOR_FILE)
          result.append(project_type.getName.toLowerCase)

@@ -143,7 +143,7 @@ class CSProjGenerator {
           <PropertyGroup>
             <PreBuildEvent>
             «FOR protobuf_file : protobuf_files»
-               protoc.exe --include_imports --proto_path=$(SolutionDir).. --descriptor_set_out=$(ProjectDir)gen/«protobuf_file».protobin $(SolutionDir)../«GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).build)»/gen/«protobuf_file».proto
+               protoc.exe --include_imports --proto_path=$(SolutionDir).. --descriptor_set_out=$(ProjectDir)gen/«protobuf_file».protobin $(SolutionDir)../«GeneratorUtil.transform(param_bundle.build, TransformType.FILE_SYSTEM)»/gen/«protobuf_file».proto
 Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».protobin
             «ENDFOR»
             </PreBuildEvent>
