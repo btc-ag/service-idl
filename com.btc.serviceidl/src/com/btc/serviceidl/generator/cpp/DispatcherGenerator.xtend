@@ -14,7 +14,6 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.util.Constants
