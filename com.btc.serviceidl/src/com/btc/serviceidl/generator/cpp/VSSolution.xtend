@@ -14,9 +14,9 @@ class VSSolution
     // but we need consistent project GUIDs in order to create valid project references!
     private static val vs_projects = new HashMap<String, UUID>
 
-    def String getVcxprojName(ParameterBundle.Builder builder, Optional<String> extra_name)
+    def String getVcxprojName(ParameterBundle builder, Optional<String> extra_name)
     {
-        var project_name = GeneratorUtil.transform(builder.build, TransformType.PACKAGE)
+        var project_name = GeneratorUtil.transform(builder, TransformType.PACKAGE)
         getVcxprojGUID(project_name)
         return project_name
     }

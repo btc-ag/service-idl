@@ -19,13 +19,12 @@ import java.util.HashMap
 import java.util.Map
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 
 @Accessors
 class VcxProjGenerator
 {
-    private val ParameterBundle.Builder param_bundle
+    private val ParameterBundle param_bundle
     private val VSSolution vsSolution
     private val Map<String, HashMap<String, String>> protobuf_project_references
     private val Map<String, String> project_references
@@ -38,7 +37,7 @@ class VcxProjGenerator
 
     def generate(String project_name)
     {
-        val project_export_macro = GeneratorUtil.transform(param_bundle.build, TransformType.EXPORT_HEADER).
+        val project_export_macro = GeneratorUtil.transform(param_bundle, TransformType.EXPORT_HEADER).
             toUpperCase
         val is_protobuf = (param_bundle.projectType == ProjectType.PROTOBUF)
         val is_server_runner = (param_bundle.projectType == ProjectType.SERVER_RUNNER)

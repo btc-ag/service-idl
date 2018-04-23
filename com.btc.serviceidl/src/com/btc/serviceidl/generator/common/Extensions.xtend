@@ -26,7 +26,7 @@ class Extensions
 
     def static Deque<ModuleDeclaration> getModuleStack(Builder param)
     {
-        param.read.module_stack
+        param.read.getModuleStack
     }
 
     def static ArtifactNature getArtifactNature(Builder param)
