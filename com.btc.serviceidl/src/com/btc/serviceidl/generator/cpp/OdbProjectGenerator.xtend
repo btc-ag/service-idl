@@ -12,15 +12,16 @@ package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
+import java.util.Collection
 import java.util.HashMap
 import java.util.Map
 import java.util.Optional
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -29,11 +30,8 @@ import org.eclipse.xtext.scoping.IScopeProvider
 
 import static com.btc.serviceidl.generator.cpp.Util.*
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
-import org.eclipse.emf.ecore.EObject
-import java.util.Collection
 
 @Accessors
 class OdbProjectGenerator extends ProjectGeneratorBase {
@@ -66,10 +64,8 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       if (id_structs.empty)
       { return }
                   
-      val project_path = param_bundle.artifactNature.label + Constants.SEPARATOR_FILE + GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).build) + Constants.SEPARATOR_FILE
-      
       // paths
-      val odb_path = project_path + "odb" + Constants.SEPARATOR_FILE
+      val odb_path = projectPath + "odb" + Constants.SEPARATOR_FILE
       
       // collect all commonly used types to include them in an centralized header
       val common_types = all_elements
@@ -97,7 +93,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
          cpp_files.add(basic_file_name.cpp)
       }
       
-      generateVSProjectFiles(ProjectType.EXTERNAL_DB_IMPL, project_path, vsSolution.getVcxprojName(param_bundle, Optional.empty))
+      generateVSProjectFiles(ProjectType.EXTERNAL_DB_IMPL, projectPath, vsSolution.getVcxprojName(param_bundle, Optional.empty))
    }
 
    def private String generateCommonHxx(Iterable<StructDeclaration> common_types)

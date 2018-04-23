@@ -29,29 +29,27 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         // TODO check how to reflect this special handling of EXTERNAL_DB_IMPL
 //        if (project_type != ProjectType.EXTERNAL_DB_IMPL) // for ExternalDBImpl, keep both C++ and ODB artifacts
 //            reinitializeProject(project_type)
-        val project_path = param_bundle.artifactNature.label + Constants.SEPARATOR_FILE +
-            GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).build) + Constants.SEPARATOR_FILE
 
         val export_header_file_name = (GeneratorUtil.transform(param_bundle.with(TransformType.EXPORT_HEADER).build) +
             "_export".h).toLowerCase
-        file_system_access.generateFile(project_path + "include" + Constants.SEPARATOR_FILE + export_header_file_name,
+        file_system_access.generateFile(projectPath + "include" + Constants.SEPARATOR_FILE + export_header_file_name,
             generateExportHeader())
         header_files.add(export_header_file_name)
 
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
             param_bundle.reset(com.btc.serviceidl.util.Util.getModuleStack(interface_declaration))
-            generateProject(param_bundle.projectType, interface_declaration, project_path, export_header_file_name)
+            generateProject(param_bundle.projectType, interface_declaration, projectPath, export_header_file_name)
         }
 
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
-        file_system_access.generateFile(project_path + "source" + Constants.SEPARATOR_FILE + dependency_file_name,
+        file_system_access.generateFile(projectPath + "source" + Constants.SEPARATOR_FILE + dependency_file_name,
             generateDependencies())
         dependency_files.add(dependency_file_name)
 
         if (param_bundle.projectType != ProjectType.EXTERNAL_DB_IMPL) // done separately for ExternalDBImpl to include ODB files also
         {
-            generateVSProjectFiles(param_bundle.projectType, project_path,
+            generateVSProjectFiles(param_bundle.projectType, projectPath,
                 vsSolution.getVcxprojName(param_bundle, Optional.empty))
         }
     }

@@ -11,26 +11,29 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
+import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
 import java.util.Optional
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
+import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import org.eclipse.emf.ecore.EObject
-import java.util.Collection
 
 @Accessors(PROTECTED_GETTER)
 class ProjectGeneratorBaseBase
@@ -190,5 +193,11 @@ class ProjectGeneratorBaseBase
             «param_bundle.build.closeNamespaces»
             «IF file_tail.present»«file_tail.get»«ENDIF»
         '''
+    }
+
+    def protected getProjectPath()
+    {
+        param_bundle.artifactNature.label + Constants.SEPARATOR_FILE +
+            GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).build) + Constants.SEPARATOR_FILE
     }
 }
