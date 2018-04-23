@@ -163,15 +163,15 @@ class ProtobufUtil
             codec_name
     }
 
-    def static String resolveFailableProtobufType(extension TypeResolver typeResolver, EObject element, EObject container)
+    def static String resolveFailableProtobufType(extension TypeResolver typeResolver, EObject element,
+        EObject container)
     {
         // explicitly include some essential dependencies
         cab_libs.add("BTC.CAB.ServiceComm.Default.lib")
 
         var namespace = GeneratorUtil.transform(
-            ParameterBundle.createBuilder(
-                com.btc.serviceidl.util.Util.getModuleStack(
-                    com.btc.serviceidl.util.Util.getScopeDeterminant(container))).with(ProjectType.PROTOBUF).with(
+            ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(
+                com.btc.serviceidl.util.Util.getScopeDeterminant(container))).with(ProjectType.PROTOBUF).with(
                 TransformType.NAMESPACE).build
         )
         return namespace + Constants.SEPARATOR_NAMESPACE +
