@@ -17,6 +17,7 @@ import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
+import java.util.Collection
 import java.util.HashMap
 import java.util.Map
 import java.util.Optional
@@ -27,10 +28,8 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
-import java.util.Collection
 
 @Accessors(PROTECTED_GETTER)
 class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
@@ -46,12 +45,9 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
 
     def generate()
     {
-        val project_path = param_bundle.artifactNature.label + Constants.SEPARATOR_FILE +
-            GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).build) + Constants.SEPARATOR_FILE
-
         // paths
-        val include_path = project_path + "include" + Constants.SEPARATOR_FILE
-        val source_path = project_path + "source" + Constants.SEPARATOR_FILE
+        val include_path = projectPath + "include" + Constants.SEPARATOR_FILE
+        val source_path = projectPath + "source" + Constants.SEPARATOR_FILE
 
         // file names
         var export_header_file_name = (GeneratorUtil.transform(param_bundle.with(TransformType.EXPORT_HEADER).build) +
@@ -91,7 +87,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
             protobuf_files.add(file_name)
         }
 
-        generateVSProjectFiles(ProjectType.PROTOBUF, project_path,
+        generateVSProjectFiles(ProjectType.PROTOBUF, projectPath,
             vsSolution.getVcxprojName(param_bundle, Optional.empty))
     }
 

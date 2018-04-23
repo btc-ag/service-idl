@@ -27,7 +27,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 
 @Accessors(PROTECTED_GETTER)
@@ -46,13 +45,10 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
     {
         param_bundle.reset(com.btc.serviceidl.util.Util.getModuleStack(module))
 
-        val project_path = param_bundle.artifactNature.label + Constants.SEPARATOR_FILE +
-            GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).build) + Constants.SEPARATOR_FILE
-
         // paths
-        val include_path = project_path + "include" + Constants.SEPARATOR_FILE
-        val source_path = project_path + "source" + Constants.SEPARATOR_FILE
-        val etc_path = project_path + "etc" + Constants.SEPARATOR_FILE
+        val include_path = projectPath + "include" + Constants.SEPARATOR_FILE
+        val source_path = projectPath + "source" + Constants.SEPARATOR_FILE
+        val etc_path = projectPath + "etc" + Constants.SEPARATOR_FILE
 
         // sub-folder "./include"
         val export_header_file_name = (GeneratorUtil.transform(param_bundle.with(TransformType.EXPORT_HEADER).build) +
@@ -80,7 +76,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
                 TransformType.PACKAGE.separator + interface_declaration.name
             val cpp_file = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name).cpp
             cpp_files.add(cpp_file)
-            generateVSProjectFiles(ProjectType.SERVER_RUNNER, project_path, project_name)
+            generateVSProjectFiles(ProjectType.SERVER_RUNNER, projectPath, project_name)
         }
 
         // sub-folder "./etc"
