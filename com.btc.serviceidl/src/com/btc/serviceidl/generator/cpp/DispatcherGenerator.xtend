@@ -11,6 +11,7 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.TransformType
@@ -21,7 +22,6 @@ import java.util.Optional
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
@@ -31,7 +31,7 @@ class DispatcherGenerator extends BasicCppGenerator
 {
     def generateImplementationFileBody(InterfaceDeclaration interface_declaration)
     {
-        val class_name = resolve(interface_declaration, param_bundle.projectType)
+        val class_name = resolve(interface_declaration, param_bundle.projectType.get)
         val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
         val protobuf_request_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
         val protobuf_response_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
@@ -48,7 +48,7 @@ class DispatcherGenerator extends BasicCppGenerator
             ) :
             «resolveCAB("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
             , «interface_declaration.asBaseName»( serviceEndpoint.GetServiceFaultHandlerManagerFactory(), «resolveSTL("std::move")»(dispatchee) )
-            { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(param_bundle.with(ProjectType.SERVICE_API).build, TransformType.NAMESPACE)))»( GetServiceFaultHandlerManager() ); }
+            { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(new ParameterBundle.Builder(param_bundle).with(ProjectType.SERVICE_API).build, TransformType.NAMESPACE)))»( GetServiceFaultHandlerManager() ); }
             
             «class_name.shortName»::«class_name.shortName»
             (
@@ -58,7 +58,7 @@ class DispatcherGenerator extends BasicCppGenerator
             ) :
             «resolveCAB("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
             , «interface_declaration.asBaseName»( serviceFaultHandlerManagerFactory, «resolveSTL("std::move")»(dispatchee) )
-            { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(param_bundle.with(ProjectType.SERVICE_API).build, TransformType.NAMESPACE)))»( GetServiceFaultHandlerManager() ); }
+            { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(new ParameterBundle.Builder(param_bundle).with(ProjectType.SERVICE_API).build, TransformType.NAMESPACE)))»( GetServiceFaultHandlerManager() ); }
             
             «generateCppDestructor(interface_declaration)»
             
@@ -235,7 +235,7 @@ class DispatcherGenerator extends BasicCppGenerator
 
     def generateHeaderFileBody(InterfaceDeclaration interface_declaration)
     {
-        val class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
+        val class_name = GeneratorUtil.getClassName(param_bundle, interface_declaration.name)
 
         val cab_message_ptr = resolveCAB("BTC::ServiceComm::Commons::MessagePtr")
         

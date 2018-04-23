@@ -94,7 +94,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
     def private String generateHCodec(EObject owner)
     {
         reinitializeFile
-        val file_content = new CodecGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(owner)
+        val file_content = new CodecGenerator(typeResolver, param_bundle.build, idl).generateHeaderFileBody(owner)
         generateHeader(file_content.toString, Optional.empty)
     }
 

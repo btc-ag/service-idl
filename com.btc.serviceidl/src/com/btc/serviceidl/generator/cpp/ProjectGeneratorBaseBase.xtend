@@ -89,7 +89,7 @@ class ProjectGeneratorBaseBase
     {
         typeResolver = new TypeResolver(qualified_name_provider, param_bundle, vsSolution, project_references, cab_libs,
             smart_pointer_map)
-        basicCppGenerator = new BasicCppGenerator(typeResolver, param_bundle, idl)
+        basicCppGenerator = new BasicCppGenerator(typeResolver, param_bundle.build, idl)
     }
 
     def protected void generateVSProjectFiles(ProjectType project_type, String project_path, String project_name)
@@ -160,7 +160,7 @@ class ProjectGeneratorBaseBase
 
     def protected generateDependencies()
     {
-        new DependenciesGenerator(typeResolver, param_bundle, idl).generate()
+        new DependenciesGenerator(typeResolver, param_bundle.build, idl).generate()
     }
 
     def protected generateExportHeader()

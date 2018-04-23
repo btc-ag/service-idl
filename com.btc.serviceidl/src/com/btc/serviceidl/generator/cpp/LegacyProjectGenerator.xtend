@@ -78,33 +78,33 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
 
     def private generateCppServiceAPI(InterfaceDeclaration interface_declaration)
     {
-        new ServiceAPIGenerator(typeResolver, param_bundle, idl).generateImplFileBody(interface_declaration)
+        new ServiceAPIGenerator(typeResolver, param_bundle.build, idl).generateImplFileBody(interface_declaration)
     }
 
     def private String generateCppProxy(InterfaceDeclaration interface_declaration)
     {
-        new ProxyGenerator(typeResolver, param_bundle, idl).generateImplementationFileBody(interface_declaration).
+        new ProxyGenerator(typeResolver, param_bundle.build, idl).generateImplementationFileBody(interface_declaration).
             toString
     }
 
     def private generateCppTest(InterfaceDeclaration interface_declaration)
     {
-        new TestGenerator(typeResolver, param_bundle, idl).generateCppTest(interface_declaration)
+        new TestGenerator(typeResolver, param_bundle.build, idl).generateCppTest(interface_declaration)
     }
 
     def private generateCppDispatcher(InterfaceDeclaration interface_declaration)
     {
-        new DispatcherGenerator(typeResolver, param_bundle, idl).generateImplementationFileBody(interface_declaration)
+        new DispatcherGenerator(typeResolver, param_bundle.build, idl).generateImplementationFileBody(interface_declaration)
     }
 
     def private generateHFileDispatcher(InterfaceDeclaration interface_declaration)
     {
-        new DispatcherGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(interface_declaration)
+        new DispatcherGenerator(typeResolver, param_bundle.build, idl).generateHeaderFileBody(interface_declaration)
     }
 
     def private generateCppReflection(InterfaceDeclaration interface_declaration)
     {
-        new ReflectionGenerator(typeResolver, param_bundle, idl).generateImplFileBody(interface_declaration)
+        new ReflectionGenerator(typeResolver, param_bundle.build, idl).generateImplFileBody(interface_declaration)
     }
 
 }

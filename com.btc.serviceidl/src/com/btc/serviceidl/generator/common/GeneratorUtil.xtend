@@ -50,7 +50,7 @@ class GeneratorUtil
             }
             else
             {
-                if (transform_type.useVirtual || param_bundle.artifact_nature == ArtifactNature.JAVA)
+                if (transform_type.useVirtual || param_bundle.getArtifactNature == ArtifactNature.JAVA)
                     result += getEffectiveModuleName(module, param_bundle, transform_type) +
                         if (module != param_bundle.module_stack.last)
                             transform_type.getSeparator
@@ -58,9 +58,9 @@ class GeneratorUtil
                             ""
             }
         }
-        if (param_bundle.project_type.present)
-            result += transform_type.getSeparator + param_bundle.project_type.get.getName
-        if (param_bundle.artifact_nature == ArtifactNature.JAVA)
+        if (param_bundle.projectType.present)
+            result += transform_type.getSeparator + param_bundle.projectType.get.getName
+        if (param_bundle.artifactNature == ArtifactNature.JAVA)
             result = result.toLowerCase
         return result
     }
@@ -68,7 +68,7 @@ class GeneratorUtil
     def private static String getEffectiveModuleName(ModuleDeclaration module, ParameterBundle param_bundle,
         TransformType transform_type)
     {
-        val artifact_nature = param_bundle.artifact_nature
+        val artifact_nature = param_bundle.getArtifactNature
 
         if (artifact_nature == ArtifactNature.DOTNET)
         {
@@ -154,12 +154,12 @@ class GeneratorUtil
 
     def public static String getClassName(ParameterBundle param_bundle, String basic_name)
     {
-        return getClassName(param_bundle, param_bundle.project_type.get, basic_name)
+        return getClassName(param_bundle, param_bundle.getProjectType.get, basic_name)
     }
 
     def static String getClassName(ParameterBundle param_bundle, ProjectType project_type, String basic_name)
     {
-        return project_type.getClassName(param_bundle.artifact_nature, basic_name)
+        return project_type.getClassName(param_bundle.getArtifactNature, basic_name)
     }
 
     def static boolean useCodec(EObject element, ArtifactNature artifact_nature)

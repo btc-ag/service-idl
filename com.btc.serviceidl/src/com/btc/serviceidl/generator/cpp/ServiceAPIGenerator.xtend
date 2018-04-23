@@ -15,23 +15,22 @@ import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
+import com.btc.serviceidl.idl.AbstractException
+import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.ReturnTypeElement
+import com.btc.serviceidl.idl.SequenceDeclaration
+import com.btc.serviceidl.idl.StructDeclaration
+import java.util.HashSet
 import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.TypeResolverExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
-import java.util.HashSet
-import com.btc.serviceidl.idl.AbstractException
-import com.btc.serviceidl.idl.MemberElement
-import com.btc.serviceidl.idl.SequenceDeclaration
-import com.btc.serviceidl.idl.ExceptionDeclaration
-import com.btc.serviceidl.idl.StructDeclaration
 
 @Accessors
 class ServiceAPIGenerator extends BasicCppGenerator {
@@ -168,7 +167,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
       val is_proxy = param_bundle.projectType == ProjectType.PROXY
       val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)
       
-      '''«GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)» : 
+      '''«GeneratorUtil.getClassName(param_bundle, interface_declaration.name)» : 
       «IF is_api»
          virtual public «resolveCAB("BTC::Commons::Core::Object")»
          «IF anonymous_event !== null», public «resolveCAB("BTC::Commons::CoreExtras::IObservableRegistration")»<«resolve(anonymous_event.data)»>«ENDIF»
@@ -183,7 +182,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
    }
     
     def generateImplFileBody(InterfaceDeclaration interface_declaration) {
-      val class_name = resolve(interface_declaration, param_bundle.projectType)
+      val class_name = resolve(interface_declaration, param_bundle.projectType.get)
       
       // prepare for re-use
       val register_service_fault = resolveCAB("BTC::ServiceComm::Base::RegisterServiceFault")

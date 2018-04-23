@@ -286,8 +286,8 @@ class CppExtensions
                 namespace «module.name»
                 {
             «ENDFOR»
-            «IF param_bundle.project_type.present»
-                namespace «param_bundle.project_type.get.getName»
+            «IF param_bundle.getProjectType.present»
+                namespace «param_bundle.getProjectType.get.getName»
                 {
             «ENDIF»
         '''
@@ -296,7 +296,7 @@ class CppExtensions
     def public static String closeNamespaces(ParameterBundle param_bundle)
     {
         '''
-            «FOR module : param_bundle.module_stack»}«ENDFOR»«IF param_bundle.project_type.present»}«ENDIF»
+            «FOR module : param_bundle.module_stack»}«ENDFOR»«IF param_bundle.getProjectType.present»}«ENDIF»
             
         '''
     }

@@ -47,12 +47,12 @@ import static extension com.btc.serviceidl.util.Extensions.*
 class BasicCppGenerator
 {
     protected val extension TypeResolver typeResolver
-    protected val ParameterBundle.Builder param_bundle
+    protected val ParameterBundle param_bundle
     protected val IDLSpecification idl
 
     def String generateCppDestructor(InterfaceDeclaration interface_declaration)
     {
-        val class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
+        val class_name = GeneratorUtil.getClassName(param_bundle, interface_declaration.name)
 
         '''
             «class_name»::~«class_name»()
@@ -62,7 +62,7 @@ class BasicCppGenerator
 
     def String generateInheritedInterfaceMethods(InterfaceDeclaration interface_declaration)
     {
-        val class_name = resolve(interface_declaration, param_bundle.projectType)
+        val class_name = resolve(interface_declaration, param_bundle.projectType.get)
 
         '''
             «FOR function : interface_declaration.functions»
@@ -285,7 +285,7 @@ resolveCAB
 
     def String makeExportMacro()
     {
-        GeneratorUtil.transform(param_bundle.build, TransformType.EXPORT_HEADER).toUpperCase +
+        GeneratorUtil.transform(param_bundle, TransformType.EXPORT_HEADER).toUpperCase +
             Constants.SEPARATOR_CPP_HEADER + "EXPORT"
     }
 
@@ -296,7 +296,7 @@ resolveCAB
 
     def String generateHConstructor(InterfaceDeclaration interface_declaration)
     {
-        val class_name = resolve(interface_declaration, param_bundle.projectType)
+        val class_name = resolve(interface_declaration, param_bundle.projectType.get)
 
         '''
             /**
@@ -320,7 +320,7 @@ resolveCAB
 
     def String generateHDestructor(InterfaceDeclaration interface_declaration)
     {
-        val class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
+        val class_name = GeneratorUtil.getClassName(param_bundle, interface_declaration.name)
 
         '''
             /**
