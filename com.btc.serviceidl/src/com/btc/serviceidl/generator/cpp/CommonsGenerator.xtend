@@ -30,7 +30,7 @@ class CommonsGenerator extends BasicCppGenerator
     def generateHeaderFileBody(ModuleDeclaration module, String string)
     {
         val sorted_types = module.topologicallySortedTypes
-        val forward_declarations = resolveForwardDeclarations(sorted_types)
+        val forward_declarations = typeResolver.resolveForwardDeclarations(sorted_types)
       
         '''
          «FOR type : forward_declarations»
