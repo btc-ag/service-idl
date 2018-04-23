@@ -8,19 +8,23 @@
  * 
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
-package com.btc.serviceidl.generator.cpp
+package com.btc.serviceidl.generator.cpp.prins
 
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.IProjectReference
+import com.btc.serviceidl.generator.cpp.IProjectSet
+import com.btc.serviceidl.generator.cpp.ProjectGeneratorBase
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
+import com.btc.serviceidl.util.Util
 import java.util.Collection
-import java.util.HashMap
 import java.util.Map
 import java.util.Optional
+import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -37,8 +41,8 @@ import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 class OdbProjectGenerator extends ProjectGeneratorBase {
      
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, VSSolution vsSolution,
-        Map<String, HashMap<String, String>> protobuf_project_references,
+        IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
+        Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map,  ModuleDeclaration module)
     {
         super(resource, file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
@@ -48,17 +52,17 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
    override void generate()
    {
       val all_elements = module.moduleComponents
-         .filter[e | com.btc.serviceidl.util.Util.isStruct(e)]
-         .map(e | com.btc.serviceidl.util.Util.getUltimateType(e) as StructDeclaration)
+         .filter[e | Util.isStruct(e)]
+         .map(e | Util.getUltimateType(e) as StructDeclaration)
          .filter[!members.empty]
-         .filter[!members.filter[m | m.name.toUpperCase == "ID" && com.btc.serviceidl.util.Util.isUUIDType(m.type)].empty]
+         .filter[!members.filter[m | m.name.toUpperCase == "ID" && Util.isUUIDType(m.type)].empty]
          .resolveAllDependencies
          .map[type]
          .filter(StructDeclaration)
       
       // all structs, for which ODB files will be generated; characteristic: 
       // they have a member called "ID" with type UUID
-      val id_structs = all_elements.filter[!members.filter[m | m.name.toUpperCase == "ID" && com.btc.serviceidl.util.Util.isUUIDType(m.type)].empty ]
+      val id_structs = all_elements.filter[!members.filter[m | m.name.toUpperCase == "ID" && Util.isUUIDType(m.type)].empty ]
       
       // nothing to do...
       if (id_structs.empty)
@@ -69,7 +73,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       
       // collect all commonly used types to include them in an centralized header
       val common_types = all_elements
-         .filter[members.filter[m | m.name.toUpperCase == "ID" && com.btc.serviceidl.util.Util.isUUIDType(m.type)].empty]
+         .filter[members.filter[m | m.name.toUpperCase == "ID" && Util.isUUIDType(m.type)].empty]
       if (!common_types.empty)
       {
          val basic_file_name = Constants.FILE_NAME_ODB_COMMON
@@ -93,7 +97,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
          cpp_files.add(basic_file_name.cpp)
       }
       
-      generateVSProjectFiles(ProjectType.EXTERNAL_DB_IMPL, projectPath, vsSolution.getVcxprojName(param_bundle, Optional.empty))
+      generateVSProjectFiles(ProjectType.EXTERNAL_DB_IMPL, projectPath, vsSolution.getVcxprojName(param_bundle))
    }
 
    def private String generateCommonHxx(Iterable<StructDeclaration> common_types)

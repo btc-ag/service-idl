@@ -16,6 +16,7 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.prins.OdbProjectGenerator
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.google.common.collect.Sets
@@ -32,6 +33,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
+import com.btc.serviceidl.generator.cpp.prins.VSSolution
 
 class CppGenerator
 {
@@ -42,9 +44,9 @@ class CppGenerator
     private var IScopeProvider scope_provider
     private var IDLSpecification idl
 
-    private val extension VSSolution vsSolution = new VSSolution
+    private val extension IProjectSet vsSolution = new VSSolution
 
-    private var protobuf_project_references = new HashMap<String, HashMap<String, String>>
+    private var protobuf_project_references = new HashMap<String, Set<IProjectReference>>
 
     private val smart_pointer_map = new HashMap<EObject, Collection<EObject>>
 
@@ -55,7 +57,8 @@ class CppGenerator
         file_system_access = fsa
         qualified_name_provider = qnp
         scope_provider = sp
-        protobuf_project_references = if (pr !== null) new HashMap<String, HashMap<String, String>>(pr) else null
+        // TODO the protobuf projects must be added to the vsSolution, and converted into IProjectReference 
+        protobuf_project_references = /*if (pr !== null) new HashMap<String, Set<IProjectReference>>(pr) else */null
 
         idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
         if (idl === null)

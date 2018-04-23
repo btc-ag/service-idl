@@ -13,7 +13,7 @@
  * 
  * \brief      Resolution of C++ project references
  */
-package com.btc.serviceidl.generator.cpp
+package com.btc.serviceidl.generator.cpp.prins
 
 import com.btc.serviceidl.generator.common.VSProjectInfo
 import com.btc.serviceidl.util.Constants

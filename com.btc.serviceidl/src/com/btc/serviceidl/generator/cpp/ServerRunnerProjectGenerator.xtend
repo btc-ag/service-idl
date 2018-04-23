@@ -18,8 +18,8 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
 import java.util.Collection
-import java.util.HashMap
 import java.util.Map
+import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -33,8 +33,8 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
 {
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, VSSolution vsSolution,
-        Map<String, HashMap<String, String>> protobuf_project_references,
+        IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
+        Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ModuleDeclaration module)
     {
         super(resource, file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
