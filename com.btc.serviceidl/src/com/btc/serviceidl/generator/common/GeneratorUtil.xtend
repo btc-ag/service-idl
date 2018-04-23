@@ -38,34 +38,35 @@ import com.btc.serviceidl.idl.ParameterElement
 
 class GeneratorUtil
 {
-    def public static String transform(ParameterBundle param_bundle)
+    def public static String transform(ParameterBundle param_bundle, TransformType transform_type)
     {
         var result = ""
         for (module : param_bundle.module_stack)
         {
             if (!module.virtual)
             {
-                result += getEffectiveModuleName(module, param_bundle) +
-                    (if (module != param_bundle.module_stack.last) param_bundle.transform_type.getSeparator else "")
+                result += getEffectiveModuleName(module, param_bundle, transform_type) +
+                    (if (module != param_bundle.module_stack.last) transform_type.getSeparator else "")
             }
             else
             {
-                if (param_bundle.transform_type.useVirtual || param_bundle.artifact_nature == ArtifactNature.JAVA)
-                    result += getEffectiveModuleName(module, param_bundle) +
+                if (transform_type.useVirtual || param_bundle.artifact_nature == ArtifactNature.JAVA)
+                    result += getEffectiveModuleName(module, param_bundle, transform_type) +
                         if (module != param_bundle.module_stack.last)
-                            param_bundle.transform_type.getSeparator
+                            transform_type.getSeparator
                         else
                             ""
             }
         }
         if (param_bundle.project_type.present)
-            result += param_bundle.transform_type.getSeparator + param_bundle.project_type.get.getName
+            result += transform_type.getSeparator + param_bundle.project_type.get.getName
         if (param_bundle.artifact_nature == ArtifactNature.JAVA)
             result = result.toLowerCase
         return result
     }
 
-    def public static String getEffectiveModuleName(ModuleDeclaration module, ParameterBundle param_bundle)
+    def private static String getEffectiveModuleName(ModuleDeclaration module, ParameterBundle param_bundle,
+        TransformType transform_type)
     {
         val artifact_nature = param_bundle.artifact_nature
 
@@ -76,7 +77,7 @@ class GeneratorUtil
         else if (artifact_nature == ArtifactNature.JAVA)
         {
             if (module.eContainer === null || (module.eContainer instanceof IDLSpecification))
-                return "com" + param_bundle.transform_type.separator + module.name
+                return "com" + transform_type.separator + module.name
             else
                 return module.name
         }

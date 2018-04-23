@@ -38,7 +38,7 @@ class VcxProjGenerator
 
     def generate(String project_name)
     {
-        val project_export_macro = GeneratorUtil.transform(param_bundle.with(TransformType.EXPORT_HEADER).build).
+        val project_export_macro = GeneratorUtil.transform(param_bundle.build, TransformType.EXPORT_HEADER).
             toUpperCase
         val is_protobuf = (param_bundle.projectType == ProjectType.PROTOBUF)
         val is_server_runner = (param_bundle.projectType == ProjectType.SERVER_RUNNER)

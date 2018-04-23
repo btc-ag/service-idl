@@ -12,7 +12,7 @@ class VSSolution
 
     def public String getCsprojName(ParameterBundle.Builder builder)
     {
-        val project_name = GeneratorUtil.transform(builder.with(TransformType.PACKAGE).build)
+        val project_name = GeneratorUtil.transform(builder.build, TransformType.PACKAGE)
         getCsprojGUID(project_name)
         return project_name
     }

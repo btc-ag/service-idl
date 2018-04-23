@@ -24,14 +24,12 @@ import org.eclipse.xtend.lib.annotations.Accessors
 class ParameterBundle
 {
     private Deque<ModuleDeclaration> module_stack
-    private TransformType transform_type
     private ArtifactNature artifact_nature
     private Optional<ProjectType> project_type = Optional.empty
 
     // TODO redesign this, the role of "master_data" is unclear and confusing
     static class Builder
     {
-        private Optional<TransformType> transform_type = Optional.empty
         private Optional<ProjectType> project_type = Optional.empty
         private val master_data = new ParameterBundle
 
@@ -51,12 +49,6 @@ class ParameterBundle
             master_data.project_type = Optional.of(element)
         }
 
-        def Builder with(TransformType element)
-        {
-            transform_type = Optional.of(element)
-            return this
-        }
-
         def Builder with(ProjectType element)
         {
             project_type = Optional.of(element)
@@ -67,13 +59,6 @@ class ParameterBundle
         {
             // initially same as default data
             val bundle = new ParameterBundle(this)
-
-            // overwrite with optionally provided values, if applicable
-            if (transform_type.present)
-            {
-                bundle.transform_type = transform_type.get
-                transform_type = Optional.empty // reset
-            }
 
             if (project_type.present)
             {
@@ -98,7 +83,6 @@ class ParameterBundle
     {
         module_stack = builder.master_data.module_stack
         artifact_nature = builder.master_data.artifact_nature
-        transform_type = builder.master_data.transform_type
         project_type = builder.master_data.project_type
     }
     

@@ -15,7 +15,7 @@ class Log4NetConfigGenerator
         '''
             <log4net>
                <appender name="RollingLogFileAppender" type="log4net.Appender.RollingFileAppender">
-                  <file value="log_«GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).build).toLowerCase».txt"/>
+                  <file value="log_«GeneratorUtil.transform(param_bundle.build, TransformType.PACKAGE).toLowerCase».txt"/>
                   <appendToFile value="true"/>
                   <datePattern value="yyyyMMdd"/>
                   <rollingStyle value="Date"/>

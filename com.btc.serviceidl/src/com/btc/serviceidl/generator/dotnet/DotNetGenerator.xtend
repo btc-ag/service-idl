@@ -616,7 +616,7 @@ class DotNetGenerator
       «FOR reference : namespace_references.sort AFTER System.lineSeparator»
          using «reference»;
       «ENDFOR»
-      namespace «GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).build)»
+      namespace «GeneratorUtil.transform(param_bundle.build, TransformType.PACKAGE)»
       {
          «main_content»
       }
@@ -667,7 +667,7 @@ class DotNetGenerator
    {
       param_bundle.artifactNature.label
          + Constants.SEPARATOR_FILE
-         + GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).build)
+         + GeneratorUtil.transform(param_bundle.build, TransformType.FILE_SYSTEM)
          + Constants.SEPARATOR_FILE
    }
    

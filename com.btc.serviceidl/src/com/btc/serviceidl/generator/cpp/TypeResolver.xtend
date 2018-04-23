@@ -117,8 +117,8 @@ class TypeResolver
         {
             var result = GeneratorUtil.transform(
                 ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(
-                    com.btc.serviceidl.util.Util.getScopeDeterminant(object))).with(project_type).with(
-                    TransformType.NAMESPACE).build)
+                    com.btc.serviceidl.util.Util.getScopeDeterminant(object))).with(project_type).build,
+                TransformType.NAMESPACE)
             result += Constants.SEPARATOR_NAMESPACE + if (object instanceof InterfaceDeclaration)
                 project_type.getClassName(param_bundle.artifactNature, qualified_name.lastSegment)
             else
@@ -141,7 +141,7 @@ class TypeResolver
         temp_param.reset(project_type)
 
         val project_name = getVcxprojName(temp_param, Optional.empty)
-        val project_path = '''$(SolutionDir)\«GeneratorUtil.transform(temp_param.with(TransformType.FILE_SYSTEM).build).replace(Constants.SEPARATOR_FILE, Constants.SEPARATOR_BACKSLASH)»\«project_name»'''
+        val project_path = '''$(SolutionDir)\«GeneratorUtil.transform(temp_param.build, TransformType.FILE_SYSTEM).replace(Constants.SEPARATOR_FILE, Constants.SEPARATOR_BACKSLASH)»\«project_name»'''
         project_references.put(project_name, project_path)
     }
 

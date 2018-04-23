@@ -155,7 +155,7 @@ class ProjectGeneratorBaseBase
 
     def protected generateExportHeader()
     {
-        new ExportHeaderGenerator(param_bundle).generateExportHeader()
+        new ExportHeaderGenerator(param_bundle.build).generateExportHeader()
     }
 
     def protected String generateHeader(String file_content, Optional<String> export_header)
@@ -188,6 +188,6 @@ class ProjectGeneratorBaseBase
     def protected getProjectPath()
     {
         param_bundle.artifactNature.label + Constants.SEPARATOR_FILE +
-            GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).build) + Constants.SEPARATOR_FILE
+            GeneratorUtil.transform(param_bundle.build, TransformType.FILE_SYSTEM) + Constants.SEPARATOR_FILE
     }
 }

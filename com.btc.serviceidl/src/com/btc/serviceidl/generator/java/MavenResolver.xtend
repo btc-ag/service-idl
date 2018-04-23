@@ -114,8 +114,8 @@ class MavenResolver
     {
         val scope_determinant = Util.getScopeDeterminant(element)
         return GeneratorUtil.transform(
-            ParameterBundle.createBuilder(Util.getModuleStack(scope_determinant)).reset(ArtifactNature.JAVA).with(
-                TransformType.PACKAGE).build) +
+            ParameterBundle.createBuilder(Util.getModuleStack(scope_determinant)).reset(ArtifactNature.JAVA).build,
+            TransformType.PACKAGE) +
             (if (scope_determinant instanceof InterfaceDeclaration) "." + scope_determinant.name.toLowerCase else "") +
             if (project_type.present) "." + project_type.get.getName.toLowerCase else ""
     }
