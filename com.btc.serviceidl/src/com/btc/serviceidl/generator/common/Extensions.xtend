@@ -21,7 +21,7 @@ class Extensions
 {
     def static ProjectType getProjectType(Builder param)
     {
-        param.read.getProjectType.get
+        param.read.getProjectType
     }
 
     def static Deque<ModuleDeclaration> getModuleStack(Builder param)

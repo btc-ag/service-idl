@@ -61,7 +61,7 @@ class BasicCppGenerator
 
     def String generateInheritedInterfaceMethods(InterfaceDeclaration interface_declaration)
     {
-        val class_name = resolve(interface_declaration, param_bundle.projectType.get)
+        val class_name = resolve(interface_declaration, param_bundle.projectType)
 
         '''
             «FOR function : interface_declaration.functions»
@@ -295,7 +295,7 @@ resolveCAB
 
     def String generateHConstructor(InterfaceDeclaration interface_declaration)
     {
-        val class_name = resolve(interface_declaration, param_bundle.projectType.get)
+        val class_name = resolve(interface_declaration, param_bundle.projectType)
 
         '''
             /**

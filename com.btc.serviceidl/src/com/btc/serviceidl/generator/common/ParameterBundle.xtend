@@ -25,7 +25,7 @@ class ParameterBundle
 {
     private Deque<ModuleDeclaration> moduleStack
     private ArtifactNature artifactNature
-    private Optional<ProjectType> projectType = Optional.empty
+    private ProjectType projectType
 
     // TODO redesign this, the role of "master_data" is unclear and confusing
     static class Builder
@@ -41,7 +41,7 @@ class ParameterBundle
             
             // TODO check if handling of projectType is correct
             this.master_data.projectType = bundle.projectType
-            this.project_type = bundle.projectType
+            this.project_type = Optional.of(bundle.projectType)
         }
 
         def Builder reset(ArtifactNature element)
@@ -57,7 +57,7 @@ class ParameterBundle
 
         def void reset(ProjectType element)
         {
-            master_data.projectType = Optional.of(element)
+            master_data.projectType = element
         }
 
         def Builder with(ProjectType element)
@@ -73,7 +73,7 @@ class ParameterBundle
 
             if (project_type.present)
             {
-                bundle.projectType = Optional.of(project_type.get)
+                bundle.projectType = project_type.get
                 project_type = Optional.empty // reset
             }
 

@@ -63,8 +63,8 @@ class CppExtensions
         val include_folder = if (project_type == ProjectType.PROTOBUF) "gen" else "include"
         val file_extension = if (project_type == ProjectType.PROTOBUF) ".pb.h" else ".h"
 
-        "modules/" + GeneratorUtil.transform(param_bundle.with(project_type).build, TransformType.FILE_SYSTEM) +
-            "/" + include_folder + "/" + file_name + file_extension
+        "modules/" + GeneratorUtil.transform(param_bundle.with(project_type).build, TransformType.FILE_SYSTEM) + "/" +
+            include_folder + "/" + file_name + file_extension
     }
 
     /**
@@ -286,8 +286,8 @@ class CppExtensions
                 namespace «module.name»
                 {
             «ENDFOR»
-            «IF param_bundle.getProjectType.present»
-                namespace «param_bundle.getProjectType.get.getName»
+            «IF param_bundle.getProjectType !== null»
+                namespace «param_bundle.getProjectType.getName»
                 {
             «ENDIF»
         '''
@@ -296,7 +296,7 @@ class CppExtensions
     def public static String closeNamespaces(ParameterBundle param_bundle)
     {
         '''
-            «FOR module : param_bundle.getModuleStack»}«ENDFOR»«IF param_bundle.getProjectType.present»}«ENDIF»
+            «FOR module : param_bundle.moduleStack»}«ENDFOR»«IF param_bundle.getProjectType !== null»}«ENDIF»
             
         '''
     }

@@ -31,7 +31,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 class ProxyGenerator extends BasicCppGenerator {
     
     def generateImplementationFileBody(InterfaceDeclaration interface_declaration) {
-      val class_name = resolve(interface_declaration, param_bundle.projectType.get)
+      val class_name = resolve(interface_declaration, param_bundle.projectType)
       val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
       
       // the class name is not used explicitly in the following code, but

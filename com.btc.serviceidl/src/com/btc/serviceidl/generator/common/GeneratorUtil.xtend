@@ -58,8 +58,9 @@ class GeneratorUtil
                             ""
             }
         }
-        if (param_bundle.projectType.present)
-            result += transform_type.getSeparator + param_bundle.projectType.get.getName
+
+        if (param_bundle.projectType !== null)
+            result += transform_type.getSeparator + param_bundle.projectType.getName
         if (param_bundle.artifactNature == ArtifactNature.JAVA)
             result = result.toLowerCase
         return result
@@ -154,7 +155,7 @@ class GeneratorUtil
 
     def public static String getClassName(ParameterBundle param_bundle, String basic_name)
     {
-        return getClassName(param_bundle, param_bundle.getProjectType.get, basic_name)
+        return getClassName(param_bundle, param_bundle.getProjectType, basic_name)
     }
 
     def static String getClassName(ParameterBundle param_bundle, ProjectType project_type, String basic_name)

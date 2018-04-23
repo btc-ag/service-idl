@@ -38,7 +38,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
 
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
-            generateProject(param_bundle.projectType.get, interface_declaration, projectPath, export_header_file_name)
+            generateProject(param_bundle.projectType, interface_declaration, projectPath, export_header_file_name)
         }
 
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
@@ -48,7 +48,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
 
         if (param_bundle.projectType != ProjectType.EXTERNAL_DB_IMPL) // done separately for ExternalDBImpl to include ODB files also
         {
-            generateVSProjectFiles(param_bundle.projectType.get, projectPath,
+            generateVSProjectFiles(param_bundle.projectType, projectPath,
                 vsSolution.getVcxprojName(param_bundle, Optional.empty))
         }
     }
