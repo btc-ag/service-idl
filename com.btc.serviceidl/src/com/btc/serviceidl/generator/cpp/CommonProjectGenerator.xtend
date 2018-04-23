@@ -17,9 +17,9 @@ import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
 import java.util.Collection
-import java.util.HashMap
 import java.util.Map
 import java.util.Optional
+import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -33,8 +33,8 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 class CommonProjectGenerator extends ProjectGeneratorBaseBase
 {
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, VSSolution vsSolution,
-        Map<String, HashMap<String, String>> protobuf_project_references,
+        IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
+        Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ModuleDeclaration module)
     {
         super(resource, file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
@@ -74,7 +74,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
         file_system_access.generateFile(source_path + dependency_file_name, generateDependencies)
         dependency_files.add(dependency_file_name)
 
-        generateVSProjectFiles(ProjectType.COMMON, projectPath, vsSolution.getVcxprojName(param_bundle, Optional.empty))
+        generateVSProjectFiles(ProjectType.COMMON, projectPath, vsSolution.getVcxprojName(param_bundle))
     }
 
     def private String generateHFileCommons(ModuleDeclaration module, String export_header)

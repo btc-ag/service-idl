@@ -5,14 +5,15 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.prins.VSProjectFileGenerator
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
 import java.util.Collection
-import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
 import java.util.Optional
+import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -20,7 +21,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
-import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
@@ -32,8 +32,8 @@ class ProjectGeneratorBaseBase
     private val IQualifiedNameProvider qualified_name_provider
     private val IScopeProvider scope_provider
     private val IDLSpecification idl
-    private val extension VSSolution vsSolution
-    private val Map<String, HashMap<String, String>> protobuf_project_references
+    private val extension IProjectSet vsSolution
+    private val Map<String, Set<IProjectReference>> protobuf_project_references
     private val Map<EObject, Collection<EObject>> smart_pointer_map
 
     private var ParameterBundle param_bundle
@@ -46,11 +46,11 @@ class ProjectGeneratorBaseBase
     private val dependency_files = new HashSet<String>
     private val protobuf_files = new HashSet<String>
     private val odb_files = new HashSet<String>
-    private val project_references = new HashMap<String, String>
+    private val project_references = new HashSet<IProjectReference>
 
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, VSSolution vsSolution,
-        Map<String, HashMap<String, String>> protobuf_project_references,
+        IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
+        Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ProjectType type, ModuleDeclaration module)
     {
         this.resource = resource
@@ -83,68 +83,9 @@ class ProjectGeneratorBaseBase
 
     def protected void generateVSProjectFiles(ProjectType project_type, String project_path, String project_name)
     {
-        // root folder of the project
-        file_system_access.generateFile(
-            project_path + Constants.SEPARATOR_FILE + project_name.vcxproj,
-            generateVcxproj(project_name)
-        )
-        file_system_access.generateFile(
-            project_path + Constants.SEPARATOR_FILE + project_name.vcxproj.filters,
-            generateVcxprojFilters()
-        )
-        // *.vcxproj.user file for executable projects
-        if (project_type == ProjectType.TEST || project_type == ProjectType.SERVER_RUNNER)
-        {
-            file_system_access.generateFile(
-                project_path + Constants.SEPARATOR_FILE + project_name.vcxproj.user,
-                generateVcxprojUser(project_type)
-            )
-        }
-    }
-
-    def private generateVcxprojUser(ProjectType project_type)
-    {
-        new VcxProjGenerator(
-            param_bundle,
-            vsSolution,
-            protobuf_project_references,
-            project_references,
-            cpp_files,
-            header_files,
-            dependency_files,
-            protobuf_files,
-            odb_files
-        ).generateVcxprojUser(project_type)
-    }
-
-    def private generateVcxprojFilters()
-    {
-        new VcxProjGenerator(
-            param_bundle,
-            vsSolution,
-            protobuf_project_references,
-            project_references,
-            cpp_files,
-            header_files,
-            dependency_files,
-            protobuf_files,
-            odb_files
-        ).generateVcxprojFilters()
-    }
-
-    def private String generateVcxproj(String project_name)
-    {
-        new VcxProjGenerator(
-            param_bundle,
-            vsSolution,
-            protobuf_project_references,
-            project_references,
-            cpp_files,
-            header_files,
-            dependency_files,
-            protobuf_files,
-            odb_files
-        ).generate(project_name).toString
+        new VSProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
+            project_references, cpp_files, header_files, dependency_files, protobuf_files, odb_files, project_type,
+            project_path, project_name).generate()
     }
 
     def protected generateDependencies()
@@ -189,11 +130,11 @@ class ProjectGeneratorBaseBase
         param_bundle.artifactNature.label + Constants.SEPARATOR_FILE +
             GeneratorUtil.transform(param_bundle, TransformType.FILE_SYSTEM) + Constants.SEPARATOR_FILE
     }
-    
+
     @Deprecated
     def protected setParam_bundle(ParameterBundle param_bundle)
     {
         this.param_bundle = param_bundle
     }
-    
+
 }

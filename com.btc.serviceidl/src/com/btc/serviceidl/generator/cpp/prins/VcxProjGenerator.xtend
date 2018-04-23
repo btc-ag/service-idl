@@ -8,15 +8,15 @@
  * 
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
-package com.btc.serviceidl.generator.cpp
+package com.btc.serviceidl.generator.cpp.prins
 
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.util.Constants
-import java.util.HashMap
 import java.util.Map
+import java.util.Set
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
@@ -26,8 +26,8 @@ class VcxProjGenerator
 {
     private val ParameterBundle param_bundle
     private val VSSolution vsSolution
-    private val Map<String, HashMap<String, String>> protobuf_project_references
-    private val Map<String, String> project_references
+    private val Map<String, Set<VSSolution.ProjectReference>> protobuf_project_references
+    private val Set<VSSolution.ProjectReference> project_references
 
     private val Iterable<String> cpp_files
     private val Iterable<String> header_files
@@ -35,28 +35,26 @@ class VcxProjGenerator
     private val Iterable<String> protobuf_files
     private val Iterable<String> odb_files
 
-    def generate(String project_name)
+    def generate(String project_name, String project_path)
     {
-        val project_export_macro = GeneratorUtil.transform(param_bundle, TransformType.EXPORT_HEADER).
-            toUpperCase
+        val project_export_macro = GeneratorUtil.transform(param_bundle, TransformType.EXPORT_HEADER).toUpperCase
         val is_protobuf = (param_bundle.projectType == ProjectType.PROTOBUF)
         val is_server_runner = (param_bundle.projectType == ProjectType.SERVER_RUNNER)
         val is_test = (param_bundle.projectType == ProjectType.TEST)
         val is_proxy = (param_bundle.projectType == ProjectType.PROXY)
         val is_dispatcher = (param_bundle.projectType == ProjectType.DISPATCHER)
         val is_external_db_impl = (param_bundle.projectType == ProjectType.EXTERNAL_DB_IMPL)
-        val project_guid = vsSolution.getVcxprojGUID(project_name)
+        val project_guid = vsSolution.getVcxprojGUID(vsSolution.resolve(project_name, project_path))
 
         if (is_protobuf)
         {
-            val protobuf_references = protobuf_project_references.get(project_name)
+            val protobuf_references = if (protobuf_project_references === null)
+                    null
+                else
+                    protobuf_project_references.get(project_name)
             if (protobuf_references !== null)
             {
-                for (key : protobuf_references.keySet)
-                {
-                    if (!project_references.containsKey(key))
-                        project_references.put(key, protobuf_references.get(key))
-                }
+                project_references.addAll(protobuf_references)
             }
         }
 
@@ -68,9 +66,9 @@ class VcxProjGenerator
                 '''
             }
 
-        // Please do NOT edit line indents in the code below (even though they
-        // may look misplaced) unless you are fully aware of what you are doing!!!
-        // Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
+// Please do NOT edit line indents in the code below (even though they
+// may look misplaced) unless you are fully aware of what you are doing!!!
+// Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
         '''
         <?xml version="1.0" encoding="utf-8"?>
         <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -312,11 +310,11 @@ class VcxProjGenerator
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
-          «val effective_project_references = project_references.keySet.filter[it != project_name]»
+          «val effective_project_references = project_references.filter[it.projectName != project_name]»
           «IF !effective_project_references.empty»
               <ItemGroup>
                 «FOR name : effective_project_references»
-                    <ProjectReference Include="«project_references.get(name)».vcxproj">
+                    <ProjectReference Include="«vsSolution.getVcxProjPath(name)».vcxproj">
                       <Project>{«vsSolution.getVcxprojGUID(name)»}</Project>
                     </ProjectReference>
                 «ENDFOR»

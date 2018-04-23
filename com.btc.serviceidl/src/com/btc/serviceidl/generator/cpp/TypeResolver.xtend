@@ -16,8 +16,6 @@ import java.util.HashSet
 import java.util.LinkedHashSet
 import java.util.List
 import java.util.Map
-import java.util.Optional
-import java.util.UUID
 import java.util.stream.Collectors
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -31,8 +29,8 @@ class TypeResolver
 {
     private val IQualifiedNameProvider qualified_name_provider
     private val ParameterBundle param_bundle
-    private val extension VSSolution vsSolution
-    private val Map<String, String> project_references
+    private val extension IProjectSet vsSolution
+    private val Collection<IProjectReference> project_references
     private val Collection<String> cab_libs
     private val Map<EObject, Collection<EObject>> smart_pointer_map
 
@@ -78,10 +76,8 @@ class TypeResolver
 
     def String resolveModules(String class_name)
     {
-        modules_includes.add(HeaderResolver.getModulesHeader(class_name))
-        val project_reference = ReferenceResolver.getProjectReference(class_name)
-        vsSolution.add(project_reference.project_name, UUID.fromString(project_reference.project_guid))
-        project_references.put(project_reference.project_name, project_reference.project_path)
+        modules_includes.add(HeaderResolver.getModulesHeader(class_name))        
+        project_references.add(vsSolution.resolveClass(class_name))
         return class_name
     }
 
@@ -140,9 +136,7 @@ class TypeResolver
         temp_param.reset(module_stack)
         temp_param.reset(project_type)
 
-        val project_name = getVcxprojName(temp_param.build, Optional.empty)
-        val project_path = '''$(SolutionDir)\«GeneratorUtil.transform(temp_param.build, TransformType.FILE_SYSTEM).replace(Constants.SEPARATOR_FILE, Constants.SEPARATOR_BACKSLASH)»\«project_name»'''
-        project_references.put(project_name, project_path)
+        project_references.add(vsSolution.resolve(temp_param.build))
     }
 
     def getPrimitiveTypeName(PrimitiveType item)

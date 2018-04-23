@@ -48,8 +48,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
 
         if (param_bundle.projectType != ProjectType.EXTERNAL_DB_IMPL) // done separately for ExternalDBImpl to include ODB files also
         {
-            generateVSProjectFiles(param_bundle.projectType, projectPath,
-                vsSolution.getVcxprojName(param_bundle, Optional.empty))
+            generateVSProjectFiles(param_bundle.projectType, projectPath, vsSolution.getVcxprojName(param_bundle))
         }
     }
 
@@ -60,7 +59,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         val builder = new ParameterBundle.Builder(param_bundle)
         builder.reset(interface_declaration.moduleStack)
         param_bundle = builder.build
-        
+
         // paths
         val include_path = project_path + "include" + Constants.SEPARATOR_FILE
         val source_path = project_path + "source" + Constants.SEPARATOR_FILE
