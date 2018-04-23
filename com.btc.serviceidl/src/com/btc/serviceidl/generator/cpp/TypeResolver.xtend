@@ -30,7 +30,7 @@ import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 class TypeResolver
 {
     private val IQualifiedNameProvider qualified_name_provider
-    private val ParameterBundle.Builder param_bundle
+    private val ParameterBundle param_bundle
     private val extension VSSolution vsSolution
     private val Map<String, String> project_references
     private val Collection<String> cab_libs
@@ -140,7 +140,7 @@ class TypeResolver
         temp_param.reset(module_stack)
         temp_param.reset(project_type)
 
-        val project_name = getVcxprojName(temp_param, Optional.empty)
+        val project_name = getVcxprojName(temp_param.build, Optional.empty)
         val project_path = '''$(SolutionDir)\«GeneratorUtil.transform(temp_param.build, TransformType.FILE_SYSTEM).replace(Constants.SEPARATOR_FILE, Constants.SEPARATOR_BACKSLASH)»\«project_name»'''
         project_references.put(project_name, project_path)
     }

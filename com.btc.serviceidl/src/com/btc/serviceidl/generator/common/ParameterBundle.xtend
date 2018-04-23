@@ -23,7 +23,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 @Accessors(PUBLIC_GETTER)
 class ParameterBundle
 {
-    private Deque<ModuleDeclaration> module_stack
+    private Deque<ModuleDeclaration> moduleStack
     private ArtifactNature artifactNature
     private Optional<ProjectType> projectType = Optional.empty
 
@@ -36,7 +36,7 @@ class ParameterBundle
         new() {}
         
         new(ParameterBundle bundle) { 
-            this.master_data.module_stack = bundle.module_stack
+            this.master_data.moduleStack = bundle.moduleStack
             this.master_data.artifactNature = bundle.artifactNature
             
             // TODO check if handling of projectType is correct
@@ -52,7 +52,7 @@ class ParameterBundle
 
         def void reset(Deque<ModuleDeclaration> element)
         {
-            master_data.module_stack = element
+            master_data.moduleStack = element
         }
 
         def void reset(ProjectType element)
@@ -92,7 +92,7 @@ class ParameterBundle
 
     private new(Builder builder)
     {
-        module_stack = builder.master_data.module_stack
+        moduleStack = builder.master_data.moduleStack
         artifactNature = builder.master_data.artifactNature
         projectType = builder.master_data.projectType
     }

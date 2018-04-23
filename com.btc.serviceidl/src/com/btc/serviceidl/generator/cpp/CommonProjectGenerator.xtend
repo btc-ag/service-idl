@@ -44,14 +44,12 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
     // TODO this is largely a clone of ProjectGeneratorBase.generateProjectStructure
     def generate()
     {
-        param_bundle.reset(com.btc.serviceidl.util.Util.getModuleStack(module))
-
         // paths
         val include_path = projectPath + "include" + Constants.SEPARATOR_FILE
         val source_path = projectPath + "source" + Constants.SEPARATOR_FILE
 
         // file names
-        val export_header_file_name = (GeneratorUtil.transform(param_bundle.build, TransformType.EXPORT_HEADER) +
+        val export_header_file_name = (GeneratorUtil.transform(param_bundle, TransformType.EXPORT_HEADER) +
             "_export".h).toLowerCase
         val header_file = Constants.FILE_NAME_TYPES.h
         val cpp_file = Constants.FILE_NAME_TYPES.cpp
@@ -81,7 +79,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
 
     def private String generateHFileCommons(ModuleDeclaration module, String export_header)
     {
-        val file_content = new CommonsGenerator(typeResolver, param_bundle.build, idl).generateHeaderFileBody(module,
+        val file_content = new CommonsGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(module,
             export_header)
         generateHeader(file_content.toString, Optional.of(export_header))
     }
@@ -90,7 +88,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
     {
         reinitializeFile
 
-        val file_content = new CommonsGenerator(typeResolver, param_bundle.build, idl).generateImplFileBody(module,
+        val file_content = new CommonsGenerator(typeResolver, param_bundle, idl).generateImplFileBody(module,
             export_header)
         generateSource(file_content.toString, Optional.empty)
     }

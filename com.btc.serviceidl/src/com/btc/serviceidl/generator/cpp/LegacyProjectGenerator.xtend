@@ -15,15 +15,13 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
-
 @Accessors
 class LegacyProjectGenerator extends ProjectGeneratorBase
 {
     def override String generateProjectSource(InterfaceDeclaration interface_declaration)
     {
         reinitializeFile
-        val project_type = param_bundle.projectType
+        val project_type = param_bundle.projectType.get
 
         val file_content = switch (project_type)
         {
@@ -58,7 +56,7 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
     {
         reinitializeFile
 
-        val file_content = switch (param_bundle.projectType)
+        val file_content = switch (param_bundle.projectType.get)
         {
             case SERVICE_API:
                 generateInterface(interface_declaration)
@@ -78,33 +76,33 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
 
     def private generateCppServiceAPI(InterfaceDeclaration interface_declaration)
     {
-        new ServiceAPIGenerator(typeResolver, param_bundle.build, idl).generateImplFileBody(interface_declaration)
+        new ServiceAPIGenerator(typeResolver, param_bundle, idl).generateImplFileBody(interface_declaration)
     }
 
     def private String generateCppProxy(InterfaceDeclaration interface_declaration)
     {
-        new ProxyGenerator(typeResolver, param_bundle.build, idl).generateImplementationFileBody(interface_declaration).
+        new ProxyGenerator(typeResolver, param_bundle, idl).generateImplementationFileBody(interface_declaration).
             toString
     }
 
     def private generateCppTest(InterfaceDeclaration interface_declaration)
     {
-        new TestGenerator(typeResolver, param_bundle.build, idl).generateCppTest(interface_declaration)
+        new TestGenerator(typeResolver, param_bundle, idl).generateCppTest(interface_declaration)
     }
 
     def private generateCppDispatcher(InterfaceDeclaration interface_declaration)
     {
-        new DispatcherGenerator(typeResolver, param_bundle.build, idl).generateImplementationFileBody(interface_declaration)
+        new DispatcherGenerator(typeResolver, param_bundle, idl).generateImplementationFileBody(interface_declaration)
     }
 
     def private generateHFileDispatcher(InterfaceDeclaration interface_declaration)
     {
-        new DispatcherGenerator(typeResolver, param_bundle.build, idl).generateHeaderFileBody(interface_declaration)
+        new DispatcherGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(interface_declaration)
     }
 
     def private generateCppReflection(InterfaceDeclaration interface_declaration)
     {
-        new ReflectionGenerator(typeResolver, param_bundle.build, idl).generateImplFileBody(interface_declaration)
+        new ReflectionGenerator(typeResolver, param_bundle, idl).generateImplFileBody(interface_declaration)
     }
 
 }

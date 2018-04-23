@@ -13,8 +13,6 @@ package com.btc.serviceidl.generator.cpp
 import com.btc.serviceidl.generator.common.ProjectType
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
-
 @Accessors
 class DependenciesGenerator extends BasicCppGenerator
 {

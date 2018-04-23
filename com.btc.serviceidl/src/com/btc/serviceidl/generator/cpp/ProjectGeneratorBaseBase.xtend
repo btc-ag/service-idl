@@ -30,7 +30,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
@@ -47,9 +46,8 @@ class ProjectGeneratorBaseBase
     private val Map<String, HashMap<String, String>> protobuf_project_references
     private val Map<EObject, Collection<EObject>> smart_pointer_map
 
-    // TODO change this to ParameterBundle
-    val ParameterBundle.Builder param_bundle
-    val ModuleDeclaration module
+    private var ParameterBundle param_bundle
+    private val ModuleDeclaration module
 
     // per-project global variables
     private val cab_libs = new HashSet<String>
@@ -75,10 +73,11 @@ class ProjectGeneratorBaseBase
         this.smart_pointer_map = smart_pointer_map
         this.module = module
 
-        this.param_bundle = new ParameterBundle.Builder
-        this.param_bundle.reset(ArtifactNature.CPP)
-        this.param_bundle.reset(type)
-        this.param_bundle.reset(module.moduleStack)
+        val param_bundle_builder = new ParameterBundle.Builder
+        param_bundle_builder.reset(ArtifactNature.CPP)
+        param_bundle_builder.reset(type)
+        param_bundle_builder.reset(module.moduleStack)
+        this.param_bundle = param_bundle_builder.build
     }
 
     // per-file variables
@@ -89,7 +88,7 @@ class ProjectGeneratorBaseBase
     {
         typeResolver = new TypeResolver(qualified_name_provider, param_bundle, vsSolution, project_references, cab_libs,
             smart_pointer_map)
-        basicCppGenerator = new BasicCppGenerator(typeResolver, param_bundle.build, idl)
+        basicCppGenerator = new BasicCppGenerator(typeResolver, param_bundle, idl)
     }
 
     def protected void generateVSProjectFiles(ProjectType project_type, String project_path, String project_name)
@@ -160,12 +159,12 @@ class ProjectGeneratorBaseBase
 
     def protected generateDependencies()
     {
-        new DependenciesGenerator(typeResolver, param_bundle.build, idl).generate()
+        new DependenciesGenerator(typeResolver, param_bundle, idl).generate()
     }
 
     def protected generateExportHeader()
     {
-        new ExportHeaderGenerator(param_bundle.build).generateExportHeader()
+        new ExportHeaderGenerator(param_bundle).generateExportHeader()
     }
 
     def protected String generateHeader(String file_content, Optional<String> export_header)
@@ -177,9 +176,9 @@ class ProjectGeneratorBaseBase
             «IF export_header.present»#include "«export_header.get»"«ENDIF»
             «basicCppGenerator.generateIncludes(true)»
             
-            «param_bundle.build.openNamespaces»
+            «param_bundle.openNamespaces»
                «file_content»
-            «param_bundle.build.closeNamespaces»
+            «param_bundle.closeNamespaces»
             #include "modules/Commons/include/EndPrinsModulesInclude.h"
         '''
     }
@@ -188,9 +187,9 @@ class ProjectGeneratorBaseBase
     {
         '''
             «basicCppGenerator.generateIncludes(false)»
-            «param_bundle.build.openNamespaces»
+            «param_bundle.openNamespaces»
                «file_content»
-            «param_bundle.build.closeNamespaces»
+            «param_bundle.closeNamespaces»
             «IF file_tail.present»«file_tail.get»«ENDIF»
         '''
     }
@@ -198,6 +197,13 @@ class ProjectGeneratorBaseBase
     def protected getProjectPath()
     {
         param_bundle.artifactNature.label + Constants.SEPARATOR_FILE +
-            GeneratorUtil.transform(param_bundle.build, TransformType.FILE_SYSTEM) + Constants.SEPARATOR_FILE
+            GeneratorUtil.transform(param_bundle, TransformType.FILE_SYSTEM) + Constants.SEPARATOR_FILE
     }
+    
+    @Deprecated
+    def protected setParam_bundle(ParameterBundle param_bundle)
+    {
+        this.param_bundle = param_bundle
+    }
+    
 }

@@ -41,18 +41,18 @@ class GeneratorUtil
     def public static String transform(ParameterBundle param_bundle, TransformType transform_type)
     {
         var result = ""
-        for (module : param_bundle.module_stack)
+        for (module : param_bundle.getModuleStack)
         {
             if (!module.virtual)
             {
                 result += getEffectiveModuleName(module, param_bundle, transform_type) +
-                    (if (module != param_bundle.module_stack.last) transform_type.getSeparator else "")
+                    (if (module != param_bundle.getModuleStack.last) transform_type.getSeparator else "")
             }
             else
             {
                 if (transform_type.useVirtual || param_bundle.getArtifactNature == ArtifactNature.JAVA)
                     result += getEffectiveModuleName(module, param_bundle, transform_type) +
-                        if (module != param_bundle.module_stack.last)
+                        if (module != param_bundle.getModuleStack.last)
                             transform_type.getSeparator
                         else
                             ""
@@ -221,7 +221,7 @@ class GeneratorUtil
     def public static String getRelativePathsUpwards(ParameterBundle param_bundle)
     {
         var paths = ""
-        for (module : param_bundle.module_stack)
+        for (module : param_bundle.getModuleStack)
         {
             if (!module.virtual) // = non-virtual
                 paths += ".." + TransformType.FILE_SYSTEM.separator

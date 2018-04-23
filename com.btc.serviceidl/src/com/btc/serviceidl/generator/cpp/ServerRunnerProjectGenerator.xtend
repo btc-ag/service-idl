@@ -43,15 +43,13 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
 
     def generate()
     {
-        param_bundle.reset(com.btc.serviceidl.util.Util.getModuleStack(module))
-
         // paths
         val include_path = projectPath + "include" + Constants.SEPARATOR_FILE
         val source_path = projectPath + "source" + Constants.SEPARATOR_FILE
         val etc_path = projectPath + "etc" + Constants.SEPARATOR_FILE
 
         // sub-folder "./include"
-        val export_header_file_name = (GeneratorUtil.transform(param_bundle.build, TransformType.EXPORT_HEADER) +
+        val export_header_file_name = (GeneratorUtil.transform(param_bundle, TransformType.EXPORT_HEADER) +
             "_export".h).toLowerCase
         file_system_access.generateFile(include_path + export_header_file_name, generateExportHeader())
         header_files.add(export_header_file_name)
@@ -59,7 +57,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         // sub-folder "./source"
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
-            val cpp_file = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name).cpp
+            val cpp_file = GeneratorUtil.getClassName(param_bundle, interface_declaration.name).cpp
             file_system_access.generateFile(source_path + cpp_file, generateCppServerRunner(interface_declaration))
             cpp_files.add(cpp_file)
         }
@@ -72,9 +70,9 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
             cpp_files.clear
-            val project_name = GeneratorUtil.transform(param_bundle.build, TransformType.PACKAGE) +
+            val project_name = GeneratorUtil.transform(param_bundle, TransformType.PACKAGE) +
                 TransformType.PACKAGE.separator + interface_declaration.name
-            val cpp_file = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name).cpp
+            val cpp_file = GeneratorUtil.getClassName(param_bundle, interface_declaration.name).cpp
             cpp_files.add(cpp_file)
             generateVSProjectFiles(ProjectType.SERVER_RUNNER, projectPath, project_name)
         }
@@ -88,7 +86,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
     {
         reinitializeFile
 
-        val file_content = new ServerRunnerGenerator(typeResolver, param_bundle.build, idl).generateImplFileBody(
+        val file_content = new ServerRunnerGenerator(typeResolver, param_bundle, idl).generateImplFileBody(
             interface_declaration)
 
         '''
@@ -99,7 +97,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
 
     def private generateIoCServerRunner()
     {
-        new ServerRunnerGenerator(typeResolver, param_bundle.build, idl).generateIoC()
+        new ServerRunnerGenerator(typeResolver, param_bundle, idl).generateIoC()
     }
 
 }

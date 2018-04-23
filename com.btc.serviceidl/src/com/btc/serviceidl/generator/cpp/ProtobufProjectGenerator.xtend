@@ -50,7 +50,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
         val source_path = projectPath + "source" + Constants.SEPARATOR_FILE
 
         // file names
-        var export_header_file_name = (GeneratorUtil.transform(param_bundle.build, TransformType.EXPORT_HEADER) +
+        var export_header_file_name = (GeneratorUtil.transform(param_bundle, TransformType.EXPORT_HEADER) +
             "_export".h).toLowerCase
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES + ".cpp"
 
@@ -94,7 +94,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
     def private String generateHCodec(EObject owner)
     {
         reinitializeFile
-        val file_content = new CodecGenerator(typeResolver, param_bundle.build, idl).generateHeaderFileBody(owner)
+        val file_content = new CodecGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(owner)
         generateHeader(file_content.toString, Optional.empty)
     }
 
