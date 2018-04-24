@@ -22,7 +22,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
     public Set<ArtifactNature> languages;
     public Set<ProjectType> projectTypes;
 
-    def DefaultGenerationSettingsProvider()
+    new()
     {
         reset();
     }
