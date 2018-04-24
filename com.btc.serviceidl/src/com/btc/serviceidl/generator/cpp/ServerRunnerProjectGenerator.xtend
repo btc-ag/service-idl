@@ -28,6 +28,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
+import com.btc.serviceidl.generator.common.ArtifactNature
 
 @Accessors(PROTECTED_GETTER)
 class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
@@ -57,7 +58,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         // sub-folder "./source"
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
-            val cpp_file = GeneratorUtil.getClassName(param_bundle, interface_declaration.name).cpp
+            val cpp_file = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name).cpp
             file_system_access.generateFile(source_path + cpp_file, generateCppServerRunner(interface_declaration))
             cpp_files.add(cpp_file)
         }
@@ -72,7 +73,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
             cpp_files.clear
             val project_name = GeneratorUtil.transform(param_bundle, TransformType.PACKAGE) +
                 TransformType.PACKAGE.separator + interface_declaration.name
-            val cpp_file = GeneratorUtil.getClassName(param_bundle, interface_declaration.name).cpp
+            val cpp_file = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name).cpp
             cpp_files.add(cpp_file)
             generateVSProjectFiles(ProjectType.SERVER_RUNNER, projectPath, project_name)
         }

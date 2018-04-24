@@ -1,5 +1,6 @@
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
@@ -116,7 +117,7 @@ class TypeResolver
                     com.btc.serviceidl.util.Util.getScopeDeterminant(object))).with(project_type).build,
                 TransformType.NAMESPACE)
             result += Constants.SEPARATOR_NAMESPACE + if (object instanceof InterfaceDeclaration)
-                project_type.getClassName(param_bundle.artifactNature, qualified_name.lastSegment)
+                project_type.getClassName(ArtifactNature.CPP, qualified_name.lastSegment)
             else
                 qualified_name.lastSegment
             modules_includes.add(object.getIncludeFilePath(project_type))
@@ -132,7 +133,7 @@ class TypeResolver
         val module_stack = com.btc.serviceidl.util.Util.getModuleStack(referenced_object)
 
         val temp_param = new ParameterBundle.Builder()
-        temp_param.reset(param_bundle.artifactNature)
+        temp_param.reset(ArtifactNature.CPP)
         temp_param.reset(module_stack)
         temp_param.reset(project_type)
 

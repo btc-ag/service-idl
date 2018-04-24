@@ -41,6 +41,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import com.btc.serviceidl.generator.common.ArtifactNature
 
 @Accessors
 class BasicCppGenerator
@@ -51,7 +52,7 @@ class BasicCppGenerator
 
     def String generateCppDestructor(InterfaceDeclaration interface_declaration)
     {
-        val class_name = GeneratorUtil.getClassName(param_bundle, interface_declaration.name)
+        val class_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name)
 
         '''
             «class_name»::~«class_name»()
@@ -319,7 +320,7 @@ resolveCAB
 
     def String generateHDestructor(InterfaceDeclaration interface_declaration)
     {
-        val class_name = GeneratorUtil.getClassName(param_bundle, interface_declaration.name)
+        val class_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name)
 
         '''
             /**

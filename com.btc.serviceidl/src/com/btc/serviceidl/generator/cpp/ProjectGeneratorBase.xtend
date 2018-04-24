@@ -21,6 +21,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.generator.common.ArtifactNature
 
 @Accessors(PROTECTED_GETTER)
 abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
@@ -65,8 +66,8 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         val source_path = project_path + "source" + Constants.SEPARATOR_FILE
 
         // file names
-        val main_header_file_name = GeneratorUtil.getClassName(param_bundle, interface_declaration.name).h
-        val main_cpp_file_name = GeneratorUtil.getClassName(param_bundle, interface_declaration.name).cpp
+        val main_header_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name).h
+        val main_cpp_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name).cpp
 
         // sub-folder "./include"
         if (pt != ProjectType.TEST)

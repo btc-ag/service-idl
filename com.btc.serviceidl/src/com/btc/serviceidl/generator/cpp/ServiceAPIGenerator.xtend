@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.generator.common.Names
@@ -167,7 +168,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
       val is_proxy = param_bundle.projectType == ProjectType.PROXY
       val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)
       
-      '''«GeneratorUtil.getClassName(param_bundle, interface_declaration.name)» : 
+      '''«GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name)» : 
       «IF is_api»
          virtual public «resolveCAB("BTC::Commons::Core::Object")»
          «IF anonymous_event !== null», public «resolveCAB("BTC::Commons::CoreExtras::IObservableRegistration")»<«resolve(anonymous_event.data)»>«ENDIF»

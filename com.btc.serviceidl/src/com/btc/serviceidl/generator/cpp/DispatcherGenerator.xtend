@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
@@ -91,7 +92,7 @@ class DispatcherGenerator extends BasicCppGenerator
                       // decode request -->
                       auto const& concreteRequest( request->«protobuf_request_method»() );
                       «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
-                          «IF GeneratorUtil.useCodec(param.paramType, param_bundle.artifactNature)»
+                          «IF GeneratorUtil.useCodec(param.paramType, ArtifactNature.CPP)»
                               «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
                                   «val ulimate_type = com.btc.serviceidl.util.Util.getUltimateType(param.paramType)»
                                   «val is_uuid = com.btc.serviceidl.util.Util.isUUIDType(ulimate_type)»
@@ -215,7 +216,7 @@ class DispatcherGenerator extends BasicCppGenerator
     {
         val api_input = if (output_param.present) output_param.get else "result"
         '''
-            «IF GeneratorUtil.useCodec(type, param_bundle.artifactNature) && !(com.btc.serviceidl.util.Util.isByte(type) || com.btc.serviceidl.util.Util.isInt16(type) || com.btc.serviceidl.util.Util.isChar(type))»
+            «IF GeneratorUtil.useCodec(type, ArtifactNature.CPP) && !(com.btc.serviceidl.util.Util.isByte(type) || com.btc.serviceidl.util.Util.isInt16(type) || com.btc.serviceidl.util.Util.isChar(type))»
                 «IF com.btc.serviceidl.util.Util.isSequenceType(type)»
                     «val ulimate_type = com.btc.serviceidl.util.Util.getUltimateType(type)»
                     «val is_failable = com.btc.serviceidl.util.Util.isFailable(type)»
@@ -235,7 +236,7 @@ class DispatcherGenerator extends BasicCppGenerator
 
     def generateHeaderFileBody(InterfaceDeclaration interface_declaration)
     {
-        val class_name = GeneratorUtil.getClassName(param_bundle, interface_declaration.name)
+        val class_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name)
 
         val cab_message_ptr = resolveCAB("BTC::ServiceComm::Commons::MessagePtr")
         

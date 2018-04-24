@@ -36,6 +36,7 @@ import static com.btc.serviceidl.generator.cpp.Util.*
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
+import com.btc.serviceidl.generator.common.ArtifactNature
 
 @Accessors
 class OdbProjectGenerator extends ProjectGeneratorBase {
@@ -92,7 +93,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       
       for ( interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
       {
-         val basic_file_name = GeneratorUtil.getClassName(param_bundle, interface_declaration.name)
+         val basic_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name)
          header_files.add(basic_file_name.h)
          cpp_files.add(basic_file_name.cpp)
       }
