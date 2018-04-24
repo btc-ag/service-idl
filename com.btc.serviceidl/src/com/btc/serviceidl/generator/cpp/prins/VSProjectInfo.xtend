@@ -14,7 +14,7 @@
  * \brief      Represents some Visual Studio related project information,
  *             e.g. project GUID, name, etc.
  */
-package com.btc.serviceidl.generator.common
+package com.btc.serviceidl.generator.cpp.prins
 
 import org.eclipse.xtend.lib.annotations.Accessors
 
