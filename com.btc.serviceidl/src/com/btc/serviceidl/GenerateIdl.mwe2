@@ -39,6 +39,9 @@ Workflow {
 				composedCheck = "org.eclipse.xtext.validation.ImportUriValidator"
 				composedCheck = "org.eclipse.xtext.validation.NamesAreUniqueValidator"
 			}
+			generator = {
+			    generateJavaMain = true
+			}
 
 			fragment = formatting.Formatter2Fragment2 {}
 		}
