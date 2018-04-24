@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
@@ -529,7 +530,7 @@ class CodecGenerator extends BasicCppGenerator
 
     def private String makeDecodeMember(MemberElementWrapper element, EObject container)
     {
-        val use_codec = GeneratorUtil.useCodec(element.type, param_bundle.artifactNature)
+        val use_codec = GeneratorUtil.useCodec(element.type, ArtifactNature.CPP)
         val is_pointer = useSmartPointer(element.container, element.type)
         val is_optional = element.optional
         val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(element.type)
@@ -581,7 +582,7 @@ class CodecGenerator extends BasicCppGenerator
 
     def private String makeEncodeMember(MemberElementWrapper element)
     {
-        val use_codec = GeneratorUtil.useCodec(element.type, param_bundle.artifactNature)
+        val use_codec = GeneratorUtil.useCodec(element.type, ArtifactNature.CPP)
         val optional = element.optional
         val is_enum = com.btc.serviceidl.util.Util.isEnumType(element.type)
         val is_pointer = useSmartPointer(element.container, element.type)
@@ -613,11 +614,10 @@ class CodecGenerator extends BasicCppGenerator
         return '''«typeResolver.resolveCodecNS(element)»::Encode'''
     }
 
-    def private boolean isMutableField(EObject type)
+    def private static boolean isMutableField(EObject type)
     {
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(type)
-        // TODO isn't param_bundle.artifactNature always CPP here? Then the method could be made static
-        val use_codec = GeneratorUtil.useCodec(ultimate_type, param_bundle.artifactNature)
+        val use_codec = GeneratorUtil.useCodec(ultimate_type, ArtifactNature.CPP)
         val is_enum = com.btc.serviceidl.util.Util.isEnumType(ultimate_type)
 
         return ( use_codec &&

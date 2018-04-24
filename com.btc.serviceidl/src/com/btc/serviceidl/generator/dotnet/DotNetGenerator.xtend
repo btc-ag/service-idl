@@ -263,7 +263,7 @@ class DotNetGenerator
    
    def private void generateImpl(String src_root_path, InterfaceDeclaration interface_declaration)
    {
-      val impl_class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
+      val impl_class_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)
       
       cs_files.add(impl_class_name)
       file_system_access.generateFile(
@@ -279,7 +279,7 @@ class DotNetGenerator
    {
       reinitializeFile
 
-      val dispatcher_class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
+      val dispatcher_class_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)
       cs_files.add(dispatcher_class_name)
       file_system_access.generateFile(
          src_root_path + dispatcher_class_name.cs,
@@ -518,7 +518,7 @@ class DotNetGenerator
          generateSourceFile(generateProxyData(proxy_data_name, interface_declaration))
       )
 
-      val proxy_class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
+      val proxy_class_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)
       cs_files.add(proxy_class_name)
       file_system_access.generateFile(
          project_root_path + proxy_class_name.cs,
@@ -602,7 +602,7 @@ class DotNetGenerator
       ))
       
       reinitializeFile
-      file_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
+      file_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)
       cs_files.add(file_name)
       file_system_access.generateFile(project_root_path + file_name.cs,
         generateSourceFile(

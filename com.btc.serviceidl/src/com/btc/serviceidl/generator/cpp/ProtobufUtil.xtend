@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
@@ -26,7 +27,6 @@ import com.btc.serviceidl.util.Constants
 import java.util.Optional
 import org.eclipse.emf.ecore.EObject
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 
 class ProtobufUtil
@@ -145,7 +145,7 @@ class ProtobufUtil
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
 
         val temp_param = new ParameterBundle.Builder
-        temp_param.reset(param_bundle.artifactNature)
+        temp_param.reset(ArtifactNature.CPP)
         temp_param.reset(
             if (is_failable) param_bundle.moduleStack else com.btc.serviceidl.util.Util.getModuleStack(ultimate_type)) // failable wrappers always local!
         temp_param.reset(ProjectType.PROTOBUF)

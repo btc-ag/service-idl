@@ -137,7 +137,7 @@ class ProjectGeneratorBaseBase
 
     def protected getProjectPath()
     {
-        param_bundle.artifactNature.label + Constants.SEPARATOR_FILE +
+        ArtifactNature.CPP.label + Constants.SEPARATOR_FILE +
             GeneratorUtil.transform(param_bundle, TransformType.FILE_SYSTEM) + Constants.SEPARATOR_FILE
     }
 

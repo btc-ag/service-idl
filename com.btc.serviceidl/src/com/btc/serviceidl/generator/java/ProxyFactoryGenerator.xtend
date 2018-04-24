@@ -10,8 +10,8 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.java
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
-import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -20,7 +20,6 @@ import org.eclipse.xtend.lib.annotations.Accessors
 class ProxyFactoryGenerator
 {
     private val BasicJavaSourceGenerator basicJavaSourceGenerator
-    private val ParameterBundle.Builder param_bundle
 
     def private getTypeResolver()
     {
@@ -36,7 +35,7 @@ class ProxyFactoryGenerator
            
            public static «api_type» createDirectProtobufProxy(«typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» endpoint) throws Exception
            {
-              return new «GeneratorUtil.getClassName(param_bundle.build, ProjectType.PROXY, interface_declaration.name)»(endpoint);
+              return new «GeneratorUtil.getClassName(ArtifactNature.JAVA, ProjectType.PROXY, interface_declaration.name)»(endpoint);
            }
         }
         '''

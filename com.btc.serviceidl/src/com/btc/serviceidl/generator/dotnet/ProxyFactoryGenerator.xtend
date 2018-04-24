@@ -14,6 +14,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.common.ArtifactNature
 
 @Accessors(NONE)
 class ProxyFactoryGenerator extends GeneratorBase
@@ -26,7 +27,7 @@ class ProxyFactoryGenerator extends GeneratorBase
             {
                public static «resolve(interface_declaration).shortName» CreateProtobufProxy(«resolve("BTC.CAB.ServiceComm.NET.API.IClientEndpoint")» endpoint)
                {
-                  return new «GeneratorUtil.getClassName(param_bundle.build, ProjectType.PROXY, interface_declaration.name)»(endpoint);
+                  return new «GeneratorUtil.getClassName(ArtifactNature.DOTNET, ProjectType.PROXY, interface_declaration.name)»(endpoint);
                }
             }
         '''

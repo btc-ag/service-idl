@@ -393,7 +393,7 @@ class JavaGenerator
    {
       val proxy_factory_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name) + "Factory"
       generateJavaFile(src_root_path + proxy_factory_name.java,
-         interface_declaration, [basicJavaSourceGenerator|new ProxyFactoryGenerator(basicJavaSourceGenerator, param_bundle).generateProxyFactory(proxy_factory_name, interface_declaration).toString]
+         interface_declaration, [basicJavaSourceGenerator|new ProxyFactoryGenerator(basicJavaSourceGenerator).generateProxyFactory(proxy_factory_name, interface_declaration).toString]
       )
 
       val proxy_class_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)

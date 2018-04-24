@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
@@ -117,7 +118,7 @@ class ProxyGenerator extends BasicCppGenerator {
            // encode request -->
            auto * const concreteRequest( request->mutable_«com.btc.serviceidl.util.Util.makeProtobufMethodName(function.name, Constants.PROTOBUF_REQUEST)»() );
            «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
-              «IF GeneratorUtil.useCodec(param.paramType, param_bundle.artifactNature) && !(com.btc.serviceidl.util.Util.isByte(param.paramType) || com.btc.serviceidl.util.Util.isInt16(param.paramType) || com.btc.serviceidl.util.Util.isChar(param.paramType))»
+              «IF GeneratorUtil.useCodec(param.paramType, ArtifactNature.CPP) && !(com.btc.serviceidl.util.Util.isByte(param.paramType) || com.btc.serviceidl.util.Util.isInt16(param.paramType) || com.btc.serviceidl.util.Util.isChar(param.paramType))»
                  «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
                     «val ulimate_type = com.btc.serviceidl.util.Util.getUltimateType(param.paramType)»
                     «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
@@ -162,7 +163,7 @@ class ProxyGenerator extends BasicCppGenerator {
 
    def private String makeDecodeResponse(EObject type, EObject container, String protobuf_name)
    {
-      val use_codec = GeneratorUtil.useCodec(type, param_bundle.artifactNature)
+      val use_codec = GeneratorUtil.useCodec(type, ArtifactNature.CPP)
       '''«IF use_codec»«typeResolver.resolveDecode(type, container)»( «ENDIF»concreteResponse.«protobuf_name»()«IF use_codec» )«ENDIF»;'''
    }
    

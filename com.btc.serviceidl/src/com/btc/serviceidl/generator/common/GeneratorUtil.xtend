@@ -153,14 +153,9 @@ class GeneratorUtil
         return nested_types.sortBy[e|Names.plain(e)]
     }
 
-    def public static String getClassName(ParameterBundle param_bundle, String basic_name)
+    def static String getClassName(ArtifactNature artifactNature, ProjectType project_type, String basic_name)
     {
-        return getClassName(param_bundle, param_bundle.getProjectType, basic_name)
-    }
-
-    def static String getClassName(ParameterBundle param_bundle, ProjectType project_type, String basic_name)
-    {
-        return project_type.getClassName(param_bundle.getArtifactNature, basic_name)
+        return project_type.getClassName(artifactNature, basic_name)
     }
 
     def static boolean useCodec(EObject element, ArtifactNature artifact_nature)
