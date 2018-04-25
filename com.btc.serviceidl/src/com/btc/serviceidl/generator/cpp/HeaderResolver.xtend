@@ -194,7 +194,7 @@ class HeaderResolver
         "BTC::PRINS::Commons::Utilities::GUIDHelper" -> "modules/Commons/Utilities/include/GUIDHelper.h"
     }
 
-    private static val headerMap = makeHeaderMap
+    private val headerMap = makeHeaderMap
 
     private static def makeHeaderMap()
     {
@@ -224,8 +224,7 @@ class HeaderResolver
         String path
     }
 
-    // TODO make non-static
-    def static GroupedHeader getHeader(String className)
+    def GroupedHeader getHeader(String className)
     {
         val res = headerMap.get(className)
         if (res === null)
@@ -234,7 +233,7 @@ class HeaderResolver
             res
     }
 
-    def static String getCABImpl(String class_name)
+    def String getCABImpl(String class_name)
     {
         val header = cab_impl_header_mapper.get(class_name)
 
@@ -245,7 +244,7 @@ class HeaderResolver
     }
 
     @Deprecated
-    def static boolean isCAB(String class_name)
+    def boolean isCAB(String class_name)
     {
         val key = GeneratorUtil.switchSeparator(class_name, TransformType.PACKAGE, TransformType.NAMESPACE)
 
@@ -259,7 +258,7 @@ class HeaderResolver
     }
 
     @Deprecated
-    def static boolean isBoost(String class_name)
+    def boolean isBoost(String class_name)
     {
         return class_name.startsWith("boost")
     }

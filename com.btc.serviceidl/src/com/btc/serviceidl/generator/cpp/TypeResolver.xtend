@@ -75,10 +75,12 @@ class TypeResolver
     // PRINS-specific, TODO move to PRINS-package
     public static val MODULES_INCLUDE_GROUP = new IncludeGroup("BTC.PRINS.Modules")
     public static val ODB_INCLUDE_GROUP = new IncludeGroup("ODB")
+    
+    private val headerResolver = new HeaderResolver
 
     def String resolveClass(String className)
     {
-        val header = HeaderResolver.getHeader(className)
+        val header = headerResolver.getHeader(className)
         addToGroup(header.includeGroup, header.path)
         // TODO resolve and add to libs generically
         if (header.includeGroup == CAB_INCLUDE_GROUP)
@@ -91,7 +93,7 @@ class TypeResolver
 
     def String resolveCABImpl(String class_name)
     {
-        val header = HeaderResolver.getCABImpl(class_name)
+        val header = headerResolver.getCABImpl(class_name)
         addToGroup(CAB_INCLUDE_GROUP, header)
         cab_libs.addAll(LibResolver.getCABLibs(header))
         return class_name
@@ -121,9 +123,9 @@ class TypeResolver
             return new ResolvedName(Names.plain(object), TransformType.NAMESPACE)
 
         val resolved_name = qualified_name.toString
-        if (HeaderResolver.isCAB(resolved_name))
+        if (headerResolver.isCAB(resolved_name))
             resolveClass(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
-        else if (HeaderResolver.isBoost(resolved_name))
+        else if (headerResolver.isBoost(resolved_name))
             resolveClass(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
         else
         {
