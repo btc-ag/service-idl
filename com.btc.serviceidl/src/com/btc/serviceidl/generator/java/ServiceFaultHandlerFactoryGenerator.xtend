@@ -49,6 +49,8 @@ class ServiceFaultHandlerFactoryGenerator
         '''
         public class «class_name»
         {
+           «// TODO the map should not use exception instances as values, but their types/Classes
+           »
            private static final «typeResolver.resolve("org.apache.commons.collections4.BidiMap")»<String, Exception> errorMap = new «typeResolver.resolve("org.apache.commons.collections4.bidimap.DualHashBidiMap")»<>();
            
            static
@@ -81,6 +83,10 @@ class ServiceFaultHandlerFactoryGenerator
                     return (Exception) constructor.newInstance( new Object[] {message} );
                  } catch (Exception ex)
                  {
+                    «// TODO this looks strange. What kind of Exception is intended to be caught here? Any exception is swallowed here.
+                     // one typical case might be that the exception type has no constructor accepting a String message. In that case
+                     // the element from the map is returned. However, this is certainly not thread-safe.
+                    »
                     return exception;
                  }
               }
