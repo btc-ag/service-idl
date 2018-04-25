@@ -21,7 +21,7 @@ class ImplementationStubGenerator extends BasicCppGenerator
 {
     def generateCppImpl(InterfaceDeclaration interface_declaration)
     {
-        val class_name = resolve(interface_declaration, param_bundle.projectType).shortName
+        val class_name = resolve(interface_declaration, paramBundle.projectType).shortName
 
         '''
             «class_name»::«class_name»

@@ -21,7 +21,7 @@ class DependenciesGenerator extends BasicCppGenerator
         // proxy and dispatcher include a *.impl.h file from the Protobuf project
         // for type-conversion routines; therefore some hidden dependencies
         // exist, which are explicitly resolved here
-        if (param_bundle.projectType == ProjectType.PROXY || param_bundle.projectType == ProjectType.DISPATCHER)
+        if (paramBundle.projectType == ProjectType.PROXY || paramBundle.projectType == ProjectType.DISPATCHER)
         {
             resolveCAB("BTC::Commons::FutureUtil::InsertableTraits")
         }
@@ -31,10 +31,10 @@ class DependenciesGenerator extends BasicCppGenerator
                 #pragma comment(lib, "«lib»")
             «ENDFOR»
             
-            «IF param_bundle.projectType == ProjectType.PROTOBUF
-         || param_bundle.projectType == ProjectType.DISPATCHER
-         || param_bundle.projectType == ProjectType.PROXY
-         || param_bundle.projectType == ProjectType.SERVER_RUNNER
+            «IF paramBundle.projectType == ProjectType.PROTOBUF
+         || paramBundle.projectType == ProjectType.DISPATCHER
+         || paramBundle.projectType == ProjectType.PROXY
+         || paramBundle.projectType == ProjectType.SERVER_RUNNER
          »
                 #pragma comment(lib, "libprotobuf.lib")
             «ENDIF»

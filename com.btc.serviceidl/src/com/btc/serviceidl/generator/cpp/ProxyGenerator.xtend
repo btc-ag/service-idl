@@ -32,7 +32,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 class ProxyGenerator extends BasicCppGenerator {
     
     def generateImplementationFileBody(InterfaceDeclaration interface_declaration) {
-      val class_name = resolve(interface_declaration, param_bundle.projectType)
+      val class_name = resolve(interface_declaration, paramBundle.projectType)
       val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
       
       // the class name is not used explicitly in the following code, but
@@ -53,7 +53,7 @@ class ProxyGenerator extends BasicCppGenerator {
       «FOR event : interface_declaration.events»
       , «event.observableRegistrationName»(context, localEndpoint.GetEventRegistry(), «event.eventParamsName»())
       «ENDFOR»
-      { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(new ParameterBundle.Builder(param_bundle).with(ProjectType.SERVICE_API).build, ArtifactNature.CPP, TransformType.NAMESPACE)))»( GetClientServiceReference().GetServiceFaultHandlerManager() ); }
+      { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.transform(new ParameterBundle.Builder(paramBundle).with(ProjectType.SERVICE_API).build, ArtifactNature.CPP, TransformType.NAMESPACE)))»( GetClientServiceReference().GetServiceFaultHandlerManager() ); }
       
       «generateCppDestructor(interface_declaration)»
       
