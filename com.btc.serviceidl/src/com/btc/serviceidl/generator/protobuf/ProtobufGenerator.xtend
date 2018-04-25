@@ -53,6 +53,7 @@ import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufGenerator
 {
@@ -580,14 +581,18 @@ class ProtobufGenerator
    }
    
    def private String makeImportPath(ArtifactNature artifact_nature, EObject container, String file_name)
-   {
-      val temp_bundle = ParameterBundle.createBuilder(Util.getModuleStack(container)).with(ProjectType.PROTOBUF).build
-      val root_path = GeneratorUtil.transform(temp_bundle, artifact_nature, TransformType.FILE_SYSTEM)
-      var String import_path
-      if (artifact_nature == ArtifactNature.JAVA)
-         import_path = getJavaProtoLocation(container) + file_name.proto
-      else
-         import_path = (if (artifact_nature == ArtifactNature.CPP) "modules/" else "") + root_path + "/gen/" + file_name.proto
-      return import_path
-   }
+    {
+        if (artifact_nature == ArtifactNature.JAVA)
+        {
+            getJavaProtoLocation(container) + file_name.proto
+        }
+        else
+        {
+            val temp_bundle = ParameterBundle.createBuilder(container.moduleStack).with(ProjectType.PROTOBUF).
+                build
+            val root_path = GeneratorUtil.transform(temp_bundle, artifact_nature, TransformType.FILE_SYSTEM)
+
+            (if (artifact_nature == ArtifactNature.CPP) "modules/" else "") + root_path + "/gen/" + file_name.proto
+        }
+    }
 }
