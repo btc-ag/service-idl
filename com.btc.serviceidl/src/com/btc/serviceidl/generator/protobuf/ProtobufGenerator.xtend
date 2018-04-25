@@ -519,16 +519,16 @@ class ProtobufGenerator
          return plain_name
       else
       {
-         val builder = ParameterBundle.createBuilder(Util.getModuleStack(object_root)).with(ProjectType.PROTOBUF)
+         val temp_bundle = ParameterBundle.createBuilder(Util.getModuleStack(object_root)).with(ProjectType.PROTOBUF).build
 
-         val root_path = GeneratorUtil.transform(builder.build, artifactNature, TransformType.FILE_SYSTEM)
+         val root_path = GeneratorUtil.transform(temp_bundle, artifactNature, TransformType.FILE_SYSTEM)
          
          var String referenced_project
          var String current_project
          
          if (artifactNature != ArtifactNature.JAVA)
          {
-            referenced_project = GeneratorUtil.transform(builder.with(ProjectType.PROTOBUF).build, artifactNature, TransformType.PACKAGE)
+            referenced_project = GeneratorUtil.transform(temp_bundle, artifactNature, TransformType.PACKAGE)
             current_project = GeneratorUtil.transform(param_bundle.with(ProjectType.PROTOBUF).build, artifactNature, TransformType.PACKAGE)
          }
          else
@@ -581,8 +581,8 @@ class ProtobufGenerator
    
    def private String makeImportPath(ArtifactNature artifact_nature, EObject container, String file_name)
    {
-      val builder = ParameterBundle.createBuilder(Util.getModuleStack(container)).with(ProjectType.PROTOBUF)
-      val root_path = GeneratorUtil.transform(builder.build, artifact_nature, TransformType.FILE_SYSTEM)
+      val temp_bundle = ParameterBundle.createBuilder(Util.getModuleStack(container)).with(ProjectType.PROTOBUF).build
+      val root_path = GeneratorUtil.transform(temp_bundle, artifact_nature, TransformType.FILE_SYSTEM)
       var String import_path
       if (artifact_nature == ArtifactNature.JAVA)
          import_path = getJavaProtoLocation(container) + file_name.proto
