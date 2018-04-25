@@ -101,14 +101,8 @@ class GeneratorUtil
         // interfaces: special handling due to inheritance
         if (container instanceof InterfaceDeclaration)
         {
-            // function parameters
-            val parameter_types = container.functions.map[parameters].flatten.filter[isFailable(paramType)].toSet
-
-            // function return types
-            val return_types = container.functions.map[returnedType].filter[isFailable].toSet
-
-            objects.addAll(parameter_types)
-            objects.addAll(return_types)
+            objects.addAll(container.functions.map[parameters].flatten.filter[isFailable(paramType)])
+            objects.addAll(container.functions.map[returnedType].filter[isFailable])
         }
 
         val contents = container.eAllContents.toList
