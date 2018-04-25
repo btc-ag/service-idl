@@ -104,7 +104,7 @@ class TypeResolver
                 com.btc.serviceidl.util.Util.getModuleStack(com.btc.serviceidl.util.Util.getScopeDeterminant(element))).
                 reset(ArtifactNature.DOTNET).with(project_type).build, TransformType.PACKAGE)
         result += Constants.SEPARATOR_PACKAGE + if (element instanceof InterfaceDeclaration)
-            project_type.getClassName(param_bundle.artifactNature, name.lastSegment)
+            project_type.getClassName(ArtifactNature.DOTNET, name.lastSegment)
         else
             name.lastSegment
 
@@ -143,7 +143,7 @@ class TypeResolver
         var project_path = ""
 
         val temp_param = new ParameterBundle.Builder()
-        temp_param.reset(param_bundle.artifactNature)
+        temp_param.reset(ArtifactNature.DOTNET)
         temp_param.reset(module_stack)
         temp_param.reset(project_type)
 

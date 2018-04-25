@@ -10,7 +10,6 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.java
 
-import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import org.eclipse.xtend.lib.annotations.Accessors
 

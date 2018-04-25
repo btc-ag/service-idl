@@ -665,7 +665,7 @@ class DotNetGenerator
       
    def private String getProjectRootPath()
    {
-      param_bundle.artifactNature.label
+      ArtifactNature.DOTNET.label
          + Constants.SEPARATOR_FILE
          + GeneratorUtil.transform(param_bundle.build, TransformType.FILE_SYSTEM)
          + Constants.SEPARATOR_FILE

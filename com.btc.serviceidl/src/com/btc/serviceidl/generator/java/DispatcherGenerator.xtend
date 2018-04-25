@@ -10,8 +10,8 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.java
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
-import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.idl.InterfaceDeclaration
@@ -19,7 +19,6 @@ import com.btc.serviceidl.idl.ParameterDirection
 import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.java.BasicJavaSourceGenerator.*
 import static extension com.btc.serviceidl.generator.java.ProtobufUtil.*
 import static extension com.btc.serviceidl.util.Extensions.*
@@ -29,7 +28,6 @@ import static extension com.btc.serviceidl.util.Util.*
 class DispatcherGenerator
 {
     private val BasicJavaSourceGenerator basicJavaSourceGenerator
-    private val ParameterBundle.Builder param_bundle
 
     def private getTypeResolver()
     {
@@ -81,7 +79,7 @@ class DispatcherGenerator
                       «val result_type = typeResolver.resolve(function.returnedType)»
                       «val result_is_sequence = function.returnedType.isSequenceType»
                       «val result_is_failable = result_is_sequence && function.returnedType.isFailable»
-                      «val result_use_codec = GeneratorUtil.useCodec(function.returnedType, param_bundle.artifactNature) || result_is_failable»
+                      «val result_use_codec = GeneratorUtil.useCodec(function.returnedType, ArtifactNature.JAVA) || result_is_failable»
                       «var result_codec = resolveCodec(function.returnedType)»
                       «val request_method_name = function.name.asProtobufName + "Request"»
                       «val response_method_name = '''«protobuf_response».«function.name.asResponse»'''»
@@ -105,7 +103,7 @@ class DispatcherGenerator
                 «val is_short = param.paramType.isInt16»
                 «val is_char = param.paramType.isChar»
                 «val is_input = (param.direction == ParameterDirection.PARAM_IN)»
-                «val use_codec = GeneratorUtil.useCodec(param.paramType, param_bundle.artifactNature)»
+                «val use_codec = GeneratorUtil.useCodec(param.paramType, ArtifactNature.JAVA)»
                 «var codec = resolveCodec(param.paramType)»
                 «val is_sequence = param.paramType.isSequenceType»
                «IF is_input»«IF use_codec»«IF !is_sequence»(«plain_type») «ENDIF»«codec».decode(«ENDIF»«IF is_byte || is_short || is_char»(«IF is_byte»byte«ELSEIF is_char»char«ELSE»short«ENDIF») «ENDIF»request.get«request_method_name»().get«param.paramName.asProtobufName»«IF is_sequence»List«ENDIF»()«IF use_codec»)«ENDIF»«ELSE»«param.paramName.asParameter»«ENDIF»
@@ -119,7 +117,7 @@ class DispatcherGenerator
                «FOR out_param : function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
                 «val is_sequence = out_param.paramType.isSequenceType»
                 «val is_failable = is_sequence && out_param.paramType.isFailable»
-                «val use_codec = GeneratorUtil.useCodec(out_param.paramType, param_bundle.artifactNature) || is_failable»
+                «val use_codec = GeneratorUtil.useCodec(out_param.paramType, ArtifactNature.JAVA) || is_failable»
                 «val codec = resolveCodec(out_param.paramType)»
                 .«IF is_sequence»addAll«out_param.paramName.asProtobufName»«ELSE»set«out_param.paramName.asProtobufName»«ENDIF»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(basicJavaSourceGenerator, out_param.paramType, Optional.empty)») «ENDIF»«codec».encode«IF is_failable»Failable«ENDIF»(«ENDIF»«out_param.paramName.asParameter»«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, out_param.paramType, interface_declaration)».class«ENDIF»«IF use_codec»)«ENDIF»)
                «ENDFOR»

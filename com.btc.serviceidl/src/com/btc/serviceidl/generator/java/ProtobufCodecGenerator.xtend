@@ -10,8 +10,8 @@
 **********************************************************************/
 package com.btc.serviceidl.generator.java
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
-import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
@@ -35,7 +35,6 @@ import static extension com.btc.serviceidl.util.Util.*
 class ProtobufCodecGenerator
 {
     private val BasicJavaSourceGenerator basicJavaSourceGenerator
-    private val ParameterBundle.Builder param_bundle
 
     def private getTypeResolver()
     {
@@ -341,7 +340,7 @@ class ProtobufCodecGenerator
                 «val is_byte = member.type.isByte»
                 «val is_short = member.type.isInt16»
                 «val is_char = member.type.isChar»
-                «val use_codec = GeneratorUtil.useCodec(member.type, param_bundle.artifactNature)»
+                «val use_codec = GeneratorUtil.useCodec(member.type, ArtifactNature.JAVA)»
                 «val is_optional = member.optional»
                 «val api_type = basicJavaSourceGenerator.toText(member.type)»
                 «val member_name = member.name.asParameter»
@@ -399,7 +398,7 @@ class ProtobufCodecGenerator
             «protobuf_type».Builder builder
                = «protobuf_type».newBuilder();
             «FOR member : members»
-                «val use_codec = GeneratorUtil.useCodec(member.type, param_bundle.artifactNature)»
+                «val use_codec = GeneratorUtil.useCodec(member.type, ArtifactNature.JAVA)»
                 «val is_sequence = member.type.isSequenceType»
                 «val is_failable = is_sequence && member.type.isFailable»
                 «val method_name = '''«IF is_sequence»addAll«ELSE»set«ENDIF»«member.name.asProtobufName»'''»
