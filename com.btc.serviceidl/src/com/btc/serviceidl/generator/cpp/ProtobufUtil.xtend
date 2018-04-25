@@ -63,7 +63,7 @@ class ProtobufUtil
 
         var header_path = GeneratorUtil.getTransformedModuleName(builder.build, ArtifactNature.CPP, TransformType.FILE_SYSTEM)
         var header_file = GeneratorUtil.getPbFileName(object)
-        modules_includes.add("modules/" + header_path + "/gen/" + header_file.pb.h)
+        getModulesIncludes.add("modules/" + header_path + "/gen/" + header_file.pb.h)
         object.resolveProjectFilePath(ProjectType.PROTOBUF)
         return new ResolvedName(result, TransformType.NAMESPACE)
     }
@@ -155,7 +155,7 @@ class ProtobufUtil
                 GeneratorUtil.getCodecName(ultimate_type)
 
         var header_path = GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.CPP, TransformType.FILE_SYSTEM)
-        modules_includes.add("modules/" + header_path + "/include/" + codec_name.h)
+        getModulesIncludes.add("modules/" + header_path + "/include/" + codec_name.h)
         resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
         GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.CPP, TransformType.NAMESPACE) +

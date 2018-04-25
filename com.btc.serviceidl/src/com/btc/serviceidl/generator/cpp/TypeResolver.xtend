@@ -34,16 +34,16 @@ class TypeResolver
     private val Collection<String> cab_libs
     private val Map<EObject, Collection<EObject>> smart_pointer_map
 
-    private val modules_includes = new HashSet<String>
-    private val cab_includes = new HashSet<String>
-    private val boost_includes = new HashSet<String>
-    private val stl_includes = new HashSet<String>
-    private val odb_includes = new HashSet<String>
-
+    private val modulesIncludes = new HashSet<String>
+    private val cabIncludes = new HashSet<String>
+    private val boostIncludes = new HashSet<String>
+    private val stlIncludes = new HashSet<String>
+    private val odbIncludes = new HashSet<String>
+    
     def String resolveCAB(String class_name)
     {
         val header = HeaderResolver.getCABHeader(class_name)
-        cab_includes.add(header)
+        cabIncludes.add(header)
         cab_libs.addAll(LibResolver.getCABLibs(header))
         return class_name
     }
@@ -51,32 +51,32 @@ class TypeResolver
     def String resolveCABImpl(String class_name)
     {
         val header = HeaderResolver.getCABImpl(class_name)
-        cab_includes.add(header)
+        cabIncludes.add(header)
         cab_libs.addAll(LibResolver.getCABLibs(header))
         return class_name
     }
 
     def String resolveSTL(String class_name)
     {
-        stl_includes.add(HeaderResolver.getSTLHeader(class_name))
+        stlIncludes.add(HeaderResolver.getSTLHeader(class_name))
         return class_name
     }
 
     def String resolveBoost(String class_name)
     {
-        boost_includes.add(HeaderResolver.getBoostHeader(class_name))
+        boostIncludes.add(HeaderResolver.getBoostHeader(class_name))
         return class_name
     }
 
     def String resolveODB(String class_name)
     {
-        odb_includes.add(HeaderResolver.getODBHeader(class_name))
+        odbIncludes.add(HeaderResolver.getODBHeader(class_name))
         return class_name
     }
 
     def String resolveModules(String class_name)
     {
-        modules_includes.add(HeaderResolver.getModulesHeader(class_name))
+        modulesIncludes.add(HeaderResolver.getModulesHeader(class_name))
         project_references.add(vsSolution.resolveClass(class_name))
         return class_name
     }
@@ -119,7 +119,7 @@ class TypeResolver
                 project_type.getClassName(ArtifactNature.CPP, qualified_name.lastSegment)
             else
                 qualified_name.lastSegment
-            modules_includes.add(object.getIncludeFilePath(project_type))
+            modulesIncludes.add(object.getIncludeFilePath(project_type))
             object.resolveProjectFilePath(project_type)
             return new ResolvedName(result, TransformType.NAMESPACE)
         }
