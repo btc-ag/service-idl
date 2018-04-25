@@ -152,7 +152,7 @@ class ProtobufGenerator
       if (an == ArtifactNature.JAVA) // special directory structure according to Maven conventions
          project_path += getJavaProtoLocation(container)
       else
-         project_path += GeneratorUtil.transform(param_bundle.build, an, TransformType.FILE_SYSTEM)
+         project_path += GeneratorUtil.getTransformedModuleName(param_bundle.build, an, TransformType.FILE_SYSTEM)
          + Constants.SEPARATOR_FILE
          + "gen"
          + Constants.SEPARATOR_FILE
@@ -273,7 +273,7 @@ class ProtobufGenerator
       «IF artifact_nature == ArtifactNature.JAVA»
          package «MavenResolver.resolvePackage(container, Optional.of(ProjectType.PROTOBUF))»;         
       «ELSE»
-         package «GeneratorUtil.transform(param_bundle.build, artifact_nature, TransformType.PACKAGE)»;
+         package «GeneratorUtil.getTransformedModuleName(param_bundle.build, artifact_nature, TransformType.PACKAGE)»;
       «ENDIF»
       '''
    }
@@ -522,15 +522,15 @@ class ProtobufGenerator
       {
          val temp_bundle = ParameterBundle.createBuilder(Util.getModuleStack(object_root)).with(ProjectType.PROTOBUF).build
 
-         val root_path = GeneratorUtil.transform(temp_bundle, artifactNature, TransformType.FILE_SYSTEM)
+         val root_path = GeneratorUtil.getTransformedModuleName(temp_bundle, artifactNature, TransformType.FILE_SYSTEM)
          
          var String referenced_project
          var String current_project
          
          if (artifactNature != ArtifactNature.JAVA)
          {
-            referenced_project = GeneratorUtil.transform(temp_bundle, artifactNature, TransformType.PACKAGE)
-            current_project = GeneratorUtil.transform(param_bundle.with(ProjectType.PROTOBUF).build, artifactNature, TransformType.PACKAGE)
+            referenced_project = GeneratorUtil.getTransformedModuleName(temp_bundle, artifactNature, TransformType.PACKAGE)
+            current_project = GeneratorUtil.getTransformedModuleName(param_bundle.with(ProjectType.PROTOBUF).build, artifactNature, TransformType.PACKAGE)
          }
          else
          {
@@ -590,7 +590,7 @@ class ProtobufGenerator
         {
             val temp_bundle = ParameterBundle.createBuilder(container.moduleStack).with(ProjectType.PROTOBUF).
                 build
-            val root_path = GeneratorUtil.transform(temp_bundle, artifact_nature, TransformType.FILE_SYSTEM)
+            val root_path = GeneratorUtil.getTransformedModuleName(temp_bundle, artifact_nature, TransformType.FILE_SYSTEM)
 
             (if (artifact_nature == ArtifactNature.CPP) "modules/" else "") + root_path + "/gen/" + file_name.proto
         }

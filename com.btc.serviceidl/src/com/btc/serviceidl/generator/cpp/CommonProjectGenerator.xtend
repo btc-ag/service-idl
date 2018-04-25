@@ -50,7 +50,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
         val source_path = projectPath + "source" + Constants.SEPARATOR_FILE
 
         // file names
-        val export_header_file_name = (GeneratorUtil.transform(param_bundle, ArtifactNature.CPP,
+        val export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
         val header_file = Constants.FILE_NAME_TYPES.h
         val cpp_file = Constants.FILE_NAME_TYPES.cpp

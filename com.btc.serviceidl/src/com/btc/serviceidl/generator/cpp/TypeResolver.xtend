@@ -112,7 +112,7 @@ class TypeResolver
             resolveBoost(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
         else
         {
-            var result = GeneratorUtil.transform(
+            var result = GeneratorUtil.getTransformedModuleName(
                 ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(
                     com.btc.serviceidl.util.Util.getScopeDeterminant(object))).with(project_type).build,
                 ArtifactNature.CPP, TransformType.NAMESPACE)

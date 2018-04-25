@@ -32,7 +32,7 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
     def protected String getProtobufRequestClassName(InterfaceDeclaration interface_declaration)
     {
         resolve(interface_declaration, ProjectType.PROTOBUF)
-        return GeneratorUtil.transform(new ParameterBundle.Builder(param_bundle).with(ProjectType.PROTOBUF).build,
+        return GeneratorUtil.getTransformedModuleName(new ParameterBundle.Builder(param_bundle).with(ProjectType.PROTOBUF).build,
             ArtifactNature.DOTNET, TransformType.PACKAGE) + Constants.SEPARATOR_PACKAGE +
             com.btc.serviceidl.util.Util.asRequest(interface_declaration.name)
     }
@@ -40,7 +40,7 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
     def protected String getProtobufResponseClassName(InterfaceDeclaration interface_declaration)
     {
         resolve(interface_declaration, ProjectType.PROTOBUF)
-        return GeneratorUtil.transform(new ParameterBundle.Builder(param_bundle).with(ProjectType.PROTOBUF).build,
+        return GeneratorUtil.getTransformedModuleName(new ParameterBundle.Builder(param_bundle).with(ProjectType.PROTOBUF).build,
             ArtifactNature.DOTNET, TransformType.PACKAGE) + Constants.SEPARATOR_PACKAGE +
             com.btc.serviceidl.util.Util.asResponse(interface_declaration.name)
     }

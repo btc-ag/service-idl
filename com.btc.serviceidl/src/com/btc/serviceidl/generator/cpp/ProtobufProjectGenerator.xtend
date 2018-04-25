@@ -51,7 +51,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
         val source_path = projectPath + "source" + Constants.SEPARATOR_FILE
 
         // file names
-        var export_header_file_name = (GeneratorUtil.transform(param_bundle, ArtifactNature.CPP,
+        var export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES + ".cpp"
 

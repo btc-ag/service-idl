@@ -50,7 +50,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         val etc_path = projectPath + "etc" + Constants.SEPARATOR_FILE
 
         // sub-folder "./include"
-        val export_header_file_name = (GeneratorUtil.transform(param_bundle, ArtifactNature.CPP,
+        val export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
         file_system_access.generateFile(include_path + export_header_file_name, generateExportHeader())
         header_files.add(export_header_file_name)
@@ -72,7 +72,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
             cpp_files.clear
-            val project_name = GeneratorUtil.transform(param_bundle, ArtifactNature.CPP, TransformType.PACKAGE) +
+            val project_name = GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.PACKAGE) +
                 TransformType.PACKAGE.separator + interface_declaration.name
             val cpp_file = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType,
                 interface_declaration.name).cpp

@@ -51,7 +51,7 @@ class ProtobufUtil
         val builder = ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(scope_determinant))
         builder.reset(ProjectType.PROTOBUF)
 
-        var result = GeneratorUtil.transform(builder.build, ArtifactNature.CPP, TransformType.NAMESPACE)
+        var result = GeneratorUtil.getTransformedModuleName(builder.build, ArtifactNature.CPP, TransformType.NAMESPACE)
         result += Constants.SEPARATOR_NAMESPACE
         if (is_interface)
             result += Names.plain(object) + "_" + protobuf_type.getName
@@ -61,7 +61,7 @@ class ProtobufUtil
         else
             result += Names.plain(object)
 
-        var header_path = GeneratorUtil.transform(builder.build, ArtifactNature.CPP, TransformType.FILE_SYSTEM)
+        var header_path = GeneratorUtil.getTransformedModuleName(builder.build, ArtifactNature.CPP, TransformType.FILE_SYSTEM)
         var header_file = GeneratorUtil.getPbFileName(object)
         modules_includes.add("modules/" + header_path + "/gen/" + header_file.pb.h)
         object.resolveProjectFilePath(ProjectType.PROTOBUF)
@@ -154,11 +154,11 @@ class ProtobufUtil
             else
                 GeneratorUtil.getCodecName(ultimate_type)
 
-        var header_path = GeneratorUtil.transform(temp_param.build, ArtifactNature.CPP, TransformType.FILE_SYSTEM)
+        var header_path = GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.CPP, TransformType.FILE_SYSTEM)
         modules_includes.add("modules/" + header_path + "/include/" + codec_name.h)
         resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
-        GeneratorUtil.transform(temp_param.build, ArtifactNature.CPP, TransformType.NAMESPACE) +
+        GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.CPP, TransformType.NAMESPACE) +
             TransformType.NAMESPACE.separator + codec_name
     }
 
@@ -168,7 +168,7 @@ class ProtobufUtil
         // explicitly include some essential dependencies
         cab_libs.add("BTC.CAB.ServiceComm.Default.lib")
 
-        var namespace = GeneratorUtil.transform(
+        var namespace = GeneratorUtil.getTransformedModuleName(
             ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(
                 com.btc.serviceidl.util.Util.getScopeDeterminant(container))).with(ProjectType.PROTOBUF).build,
             ArtifactNature.CPP,

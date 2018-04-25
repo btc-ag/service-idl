@@ -646,7 +646,7 @@ class CodecGenerator extends BasicCppGenerator
         
         // always include corresponding *.pb.h file due to local failable types definitions
         val include_path = "modules" + Constants.SEPARATOR_FILE +
-            GeneratorUtil.transform(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM) + Constants.SEPARATOR_FILE +
+            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM) + Constants.SEPARATOR_FILE +
             "gen" + Constants.SEPARATOR_FILE + GeneratorUtil.getPbFileName(owner).pb.h
         modules_includes.add(include_path)
         

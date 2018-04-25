@@ -38,7 +38,8 @@ class VSSolution implements IProjectSet
 
     override String getVcxprojName(ParameterBundle paramBundle)
     {
-        var project_name = GeneratorUtil.transform(paramBundle, ArtifactNature.CPP, TransformType.PACKAGE)
+        var project_name = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP,
+            TransformType.PACKAGE)
         val projectPath = makeProjectPath(paramBundle, project_name)
         ensureEntryExists(project_name, projectPath)
         return project_name
@@ -78,8 +79,10 @@ class VSSolution implements IProjectSet
     def resolve(String projectName, String projectPath)
     {
         var effectiveProjectPath = projectPath.replace("cpp/", "")
-        effectiveProjectPath = if (effectiveProjectPath.endsWith("/")) effectiveProjectPath.substring(0,
-            effectiveProjectPath.length - 1) else effectiveProjectPath
+        effectiveProjectPath = if (effectiveProjectPath.endsWith("/"))
+            effectiveProjectPath.substring(0, effectiveProjectPath.length - 1)
+        else
+            effectiveProjectPath
         ensureEntryExists(projectName, makeProjectPath(effectiveProjectPath, projectName))
         new ProjectReference(projectName)
     }
@@ -108,7 +111,9 @@ class VSSolution implements IProjectSet
 
     private static def String makeProjectPath(ParameterBundle paramBundle, String project_name)
     {
-        makeProjectPath(GeneratorUtil.transform(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM), project_name)
+        makeProjectPath(
+            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM),
+            project_name)
     }
 
     private static def String makeProjectPath(String projectPath, String project_name)
