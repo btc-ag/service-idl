@@ -213,10 +213,10 @@ class GeneratorUtil
      * \details If at least one relative parent path is there, the string ALWAYS
      * ends with the path separator!
      */
-    def public static String getRelativePathsUpwards(ParameterBundle param_bundle)
+    def public static String getRelativePathsUpwards(Iterable<ModuleDeclaration> moduleStack)
     {
         var paths = ""
-        for (module : param_bundle.getModuleStack)
+        for (module : moduleStack)
         {
             if (!module.virtual) // = non-virtual
                 paths += ".." + TransformType.FILE_SYSTEM.separator
