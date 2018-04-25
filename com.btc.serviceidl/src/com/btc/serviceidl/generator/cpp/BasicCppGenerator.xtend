@@ -335,7 +335,7 @@ resolveCAB
     def String generateIncludes(boolean is_header)
     {
         '''
-            «FOR module_header : modules_includes.sort»
+            «FOR module_header : getModulesIncludes.sort»
                 #include "«module_header»"
             «ENDFOR»
             
@@ -346,22 +346,22 @@ resolveCAB
                 #endif
                 
             «ENDIF»
-            «FOR cab_header : cab_includes.sort BEFORE '''#include "modules/Commons/include/BeginCabInclude.h"     // CAB -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndCabInclude.h"       // <-- CAB
+            «FOR cab_header : getCabIncludes.sort BEFORE '''#include "modules/Commons/include/BeginCabInclude.h"     // CAB -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndCabInclude.h"       // <-- CAB
 
          '''»
                 #include "«cab_header»"
             «ENDFOR»
-            «FOR boost_header : boost_includes.sort BEFORE '''#include "modules/Commons/include/BeginBoostInclude.h"   // BOOST -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndBoostInclude.h"     // <-- BOOST
+            «FOR boost_header : getBoostIncludes.sort BEFORE '''#include "modules/Commons/include/BeginBoostInclude.h"   // BOOST -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndBoostInclude.h"     // <-- BOOST
 
          '''»
                 #include <«boost_header»>
             «ENDFOR»
-            «FOR odb_header : odb_includes.sort BEFORE "// ODB" + System.lineSeparator AFTER '''
+            «FOR odb_header : getOdbIncludes.sort BEFORE "// ODB" + System.lineSeparator AFTER '''
 
          '''»
                 #include <«odb_header»>
             «ENDFOR»
-            «FOR stl_header : stl_includes.sort BEFORE '''#include "modules/Commons/include/BeginStdInclude.h"     // STD -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndStdInclude.h"       // <-- STD
+            «FOR stl_header : getStlIncludes.sort BEFORE '''#include "modules/Commons/include/BeginStdInclude.h"     // STD -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndStdInclude.h"       // <-- STD
 
          '''»
                 #include <«stl_header»>

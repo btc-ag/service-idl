@@ -648,7 +648,7 @@ class CodecGenerator extends BasicCppGenerator
         val include_path = "modules" + Constants.SEPARATOR_FILE +
             GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM) + Constants.SEPARATOR_FILE +
             "gen" + Constants.SEPARATOR_FILE + GeneratorUtil.getPbFileName(owner).pb.h
-        modules_includes.add(include_path)
+        getModulesIncludes.add(include_path)
         
 
         '''
