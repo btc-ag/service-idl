@@ -127,7 +127,7 @@ class TestGenerator extends BasicCppGenerator
                        «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
                            «val ulimate_type = toText(com.btc.serviceidl.util.Util.getUltimateType(param.paramType), param)»
                            «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
-                           «val inner_type = if (is_failable) '''«getCabIncludes.add("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h").alias(resolveCAB("BTC::Commons::CoreExtras::FailableHandle"))»< «ulimate_type» >''' else ulimate_type»
+                           «val inner_type = if (is_failable) '''«addCabInclude("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h").alias(resolveCAB("BTC::Commons::CoreExtras::FailableHandle"))»< «ulimate_type» >''' else ulimate_type»
                            «resolveCAB("BTC::Commons::CoreExtras::InsertableTraits")»< «inner_type» >::AutoPtrType «param.paramName.asParameter»( «resolveCAB("BTC::Commons::FutureUtil::CreateDefaultAsyncInsertable")»< «inner_type» >() );
                        «ELSE»
                            «val type_name = toText(param.paramType, param)»
