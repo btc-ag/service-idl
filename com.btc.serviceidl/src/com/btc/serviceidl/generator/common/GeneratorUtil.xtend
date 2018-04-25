@@ -15,26 +15,28 @@
  */
 package com.btc.serviceidl.generator.common
 
-import com.btc.serviceidl.util.Constants
-import java.util.regex.Pattern
-import com.btc.serviceidl.idl.ModuleDeclaration
+import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AliasDeclaration
+import com.btc.serviceidl.idl.EnumDeclaration
+import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
-import org.eclipse.emf.ecore.EObject
-import java.util.HashSet
 import com.btc.serviceidl.idl.InterfaceDeclaration
-import org.eclipse.xtext.naming.IQualifiedNameProvider
+import com.btc.serviceidl.idl.ModuleDeclaration
+import com.btc.serviceidl.idl.ParameterElement
+import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.idl.SequenceDeclaration
+import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
+import java.util.Collection
+import java.util.HashSet
+import java.util.regex.Pattern
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtext.naming.IQualifiedNameProvider
+
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.AliasDeclaration
-import com.btc.serviceidl.idl.StructDeclaration
-import java.util.Collection
-import com.btc.serviceidl.idl.ExceptionDeclaration
-import com.btc.serviceidl.idl.EnumDeclaration
-import com.btc.serviceidl.idl.SequenceDeclaration
-import com.btc.serviceidl.idl.AbstractType
-import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.ParameterElement
+import java.util.Arrays
 
 class GeneratorUtil
 {
@@ -121,20 +123,21 @@ class GeneratorUtil
         return objects.map[getUltimateType].map[UniqueWrapper.from(it)].toSet.map[type].sortBy[e|Names.plain(e)]
     }
 
+    static val FAILABLE_SEPARATOR = "_"
+
     def static String asFailable(EObject element, EObject container, IQualifiedNameProvider qualifiedNameProvider)
     {
-        val type = Util.getUltimateType(element)
-        var String type_name
+        Arrays.asList(Arrays.asList("Failable"), qualifiedNameProvider.getFullyQualifiedName(container).segments,
+            getTypeName(Util.getUltimateType(element), qualifiedNameProvider).map[toFirstUpper]).flatten.join(
+            FAILABLE_SEPARATOR)
+    }
+
+    private def static getTypeName(EObject type, IQualifiedNameProvider qualifiedNameProvider)
+    {
         if (type.isPrimitive)
-        {
-            type_name = Names.plain(type)
-        }
+            Arrays.asList(Names.plain(type))
         else
-        {
-            type_name = qualifiedNameProvider.getFullyQualifiedName(type).segments.join("_")
-        }
-        val container_fqn = qualifiedNameProvider.getFullyQualifiedName(container)
-        return '''Failable_«container_fqn.segments.join("_")»_«type_name.toFirstUpper»'''
+            qualifiedNameProvider.getFullyQualifiedName(type).segments
     }
 
     def static Collection<EObject> getEncodableTypes(EObject owner)
