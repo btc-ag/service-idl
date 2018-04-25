@@ -12,7 +12,7 @@ import static extension com.btc.serviceidl.generator.common.Extensions.*
 @Accessors
 class AssemblyInfoGenerator
 {
-    private val ParameterBundle.Builder param_bundle
+    private val ParameterBundle param_bundle
 
     def generate(String project_name)
     {

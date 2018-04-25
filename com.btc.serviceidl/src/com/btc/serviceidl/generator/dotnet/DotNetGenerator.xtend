@@ -204,7 +204,7 @@ class DotNetGenerator
    
    def private void generateVSProjectFiles(String project_root_path)
    {
-      val project_name = vsSolution.getCsprojName(param_bundle)
+      val project_name = vsSolution.getCsprojName(param_bundle.build)
       
       // generate project file
       file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + project_name.csproj, generateCsproj(cs_files))
@@ -235,7 +235,7 @@ class DotNetGenerator
    
    def private String generateAssemblyInfo(String project_name)
    {
-       new AssemblyInfoGenerator(param_bundle).generate(project_name).toString
+       new AssemblyInfoGenerator(param_bundle.build).generate(project_name).toString
    }
    
    def private void reinitializeFile()
@@ -425,7 +425,7 @@ class DotNetGenerator
    
    def private String generateLog4NetConfig(ModuleDeclaration module)
    {
-       new Log4NetConfigGenerator(param_bundle).generate().toString
+       new Log4NetConfigGenerator(param_bundle.build).generate().toString
    }
    
    def private String generateCsServerRunnerProgram(String class_name, ModuleDeclaration module)
@@ -627,7 +627,7 @@ class DotNetGenerator
       // may look misplaced) unless you are fully aware of what you are doing!!!
       // Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
       
-      val project_name = vsSolution.getCsprojName(param_bundle)
+      val project_name = vsSolution.getCsprojName(param_bundle.build)
       
       val is_protobuf = param_bundle.projectType == ProjectType.PROTOBUF
       

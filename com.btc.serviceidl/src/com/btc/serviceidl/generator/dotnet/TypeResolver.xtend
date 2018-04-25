@@ -147,7 +147,7 @@ class TypeResolver
         temp_param.reset(module_stack)
         temp_param.reset(project_type)
 
-        val project_name = vsSolution.getCsprojName(temp_param)
+        val project_name = vsSolution.getCsprojName(temp_param.build)
 
         if (module_stack.elementsEqual(param_bundle.moduleStack))
         {
