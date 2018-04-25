@@ -26,6 +26,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.generator.cpp.HeaderResolver.GroupedHeader
 
 @Accessors(PACKAGE_GETTER)
 class TypeResolver
@@ -37,12 +38,11 @@ class TypeResolver
     private val Collection<String> cab_libs
     private val Map<EObject, Collection<EObject>> smart_pointer_map
 
-    @Accessors(NONE)
-    private val Map<IncludeGroup, Set<String>> includes = new HashMap<IncludeGroup, Set<String>>
-    
+    @Accessors(NONE) private val Map<IncludeGroup, Set<String>> includes = new HashMap<IncludeGroup, Set<String>>
+
     def getIncludes()
     {
-       includes.immutableCopy
+        includes.immutableCopy
     }
 
     def addTargetInclude(String path)
@@ -50,9 +50,12 @@ class TypeResolver
 
     @Deprecated
     def addCabInclude(String path)
-    { addToGroup(CAB_INCLUDE_GROUP, path) }
+    {
+        addToGroup(CAB_INCLUDE_GROUP, path)
+        path
+    }
 
-    private def addToGroup(IncludeGroup includeGroup, String path)
+    private def void addToGroup(IncludeGroup includeGroup, String path)
     {
         if (!includes.containsKey(includeGroup)) includes.put(includeGroup, new HashSet<String>)
         includes.get(includeGroup).add(path)
@@ -73,6 +76,20 @@ class TypeResolver
     public static val MODULES_INCLUDE_GROUP = new IncludeGroup("BTC.PRINS.Modules")
     public static val ODB_INCLUDE_GROUP = new IncludeGroup("ODB")
 
+    def String resolveClass(String className)
+    {
+        val header = HeaderResolver.getHeader(className)
+        addToGroup(header.includeGroup, header.path)
+        // TODO resolve and add to libs generically
+        if (header.includeGroup == CAB_INCLUDE_GROUP)
+            cab_libs.addAll(LibResolver.getCABLibs(header.path))
+        if (header.includeGroup == MODULES_INCLUDE_GROUP || header.includeGroup == TARGET_INCLUDE_GROUP)
+            project_references.add(vsSolution.resolveClass(className))
+
+        return className
+    }
+
+    @Deprecated
     def String resolveCAB(String class_name)
     {
         val header = HeaderResolver.getCABHeader(class_name)
@@ -89,24 +106,28 @@ class TypeResolver
         return class_name
     }
 
+    @Deprecated
     def String resolveSTL(String class_name)
     {
         addToGroup(STL_INCLUDE_GROUP, HeaderResolver.getSTLHeader(class_name))
         return class_name
     }
 
+    @Deprecated
     def String resolveBoost(String class_name)
     {
         addToGroup(BOOST_INCLUDE_GROUP, HeaderResolver.getBoostHeader(class_name))
         return class_name
     }
 
+    @Deprecated
     def String resolveODB(String class_name)
     {
         addToGroup(ODB_INCLUDE_GROUP, HeaderResolver.getODBHeader(class_name))
         return class_name
     }
 
+    @Deprecated
     def String resolveModules(String class_name)
     {
         addToGroup(MODULES_INCLUDE_GROUP, HeaderResolver.getModulesHeader(class_name))
