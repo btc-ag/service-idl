@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.generator.common.Names
@@ -36,12 +37,12 @@ import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.idl.TupleDeclaration
 import com.btc.serviceidl.util.Constants
+import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
-import com.btc.serviceidl.generator.common.ArtifactNature
 
 @Accessors
 class BasicCppGenerator
@@ -331,9 +332,29 @@ resolveCAB
             virtual ~«class_name»();
         '''
     }
+    
+    private def getModulesIncludes()
+    {
+        val res = new HashSet<String>(includes.getOrDefault(TypeResolver.MODULES_INCLUDE_GROUP, #{}))
+        res.addAll(includes.getOrDefault(TypeResolver.TARGET_INCLUDE_GROUP, #{}))
+        res.immutableCopy
+    }
+
+    private def getCabIncludes()
+    { includes.getOrDefault(TypeResolver.CAB_INCLUDE_GROUP, #{}).immutableCopy }
+
+    private def getBoostIncludes()
+    { includes.getOrDefault(TypeResolver.BOOST_INCLUDE_GROUP, #{}).immutableCopy }
+
+    private def getStlIncludes()
+    { includes.getOrDefault(TypeResolver.STL_INCLUDE_GROUP, #{}).immutableCopy }
+
+    private def getOdbIncludes()
+    { includes.getOrDefault(TypeResolver.ODB_INCLUDE_GROUP, #{}).immutableCopy }    
 
     def String generateIncludes(boolean is_header)
     {
+        // TODO ensure that no other include groups than the expected ones exist, or handle them in a sensible way
         '''
             «FOR module_header : getModulesIncludes.sort»
                 #include "«module_header»"
