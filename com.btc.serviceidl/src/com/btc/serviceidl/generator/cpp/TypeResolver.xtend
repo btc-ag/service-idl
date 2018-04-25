@@ -133,7 +133,6 @@ class TypeResolver
         val module_stack = com.btc.serviceidl.util.Util.getModuleStack(referenced_object)
 
         val temp_param = new ParameterBundle.Builder()
-        temp_param.reset(ArtifactNature.CPP)
         temp_param.reset(module_stack)
         temp_param.reset(project_type)
 

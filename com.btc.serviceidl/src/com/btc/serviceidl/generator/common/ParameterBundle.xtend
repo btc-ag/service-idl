@@ -24,7 +24,6 @@ import org.eclipse.xtend.lib.annotations.Accessors
 class ParameterBundle
 {
     private Deque<ModuleDeclaration> moduleStack
-    private ArtifactNature artifactNature
     private ProjectType projectType
 
     // TODO redesign this, the role of "master_data" is unclear and confusing
@@ -37,17 +36,10 @@ class ParameterBundle
         
         new(ParameterBundle bundle) { 
             this.master_data.moduleStack = bundle.moduleStack
-            this.master_data.artifactNature = bundle.artifactNature
             
             // TODO check if handling of projectType is correct
             this.master_data.projectType = bundle.projectType
             this.project_type = Optional.of(bundle.projectType)
-        }
-
-        def Builder reset(ArtifactNature element)
-        {
-            master_data.artifactNature = element
-            return this
         }
 
         def void reset(Deque<ModuleDeclaration> element)
@@ -93,7 +85,6 @@ class ParameterBundle
     private new(Builder builder)
     {
         moduleStack = builder.master_data.moduleStack
-        artifactNature = builder.master_data.artifactNature
         projectType = builder.master_data.projectType
     }
     

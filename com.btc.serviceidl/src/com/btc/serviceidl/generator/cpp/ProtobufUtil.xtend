@@ -145,7 +145,6 @@ class ProtobufUtil
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
 
         val temp_param = new ParameterBundle.Builder
-        temp_param.reset(ArtifactNature.CPP)
         temp_param.reset(
             if (is_failable) param_bundle.moduleStack else com.btc.serviceidl.util.Util.getModuleStack(ultimate_type)) // failable wrappers always local!
         temp_param.reset(ProjectType.PROTOBUF)

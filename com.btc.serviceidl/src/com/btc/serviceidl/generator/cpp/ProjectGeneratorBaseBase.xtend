@@ -74,7 +74,6 @@ class ProjectGeneratorBaseBase
         this.module = module
 
         val param_bundle_builder = new ParameterBundle.Builder
-        param_bundle_builder.reset(ArtifactNature.CPP)
         param_bundle_builder.reset(type)
         param_bundle_builder.reset(module.moduleStack)
         this.param_bundle = param_bundle_builder.build

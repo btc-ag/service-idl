@@ -102,7 +102,7 @@ class TypeResolver
         var result = GeneratorUtil.transform(
             ParameterBundle.createBuilder(
                 com.btc.serviceidl.util.Util.getModuleStack(com.btc.serviceidl.util.Util.getScopeDeterminant(element))).
-                reset(ArtifactNature.DOTNET).with(project_type).build, ArtifactNature.DOTNET, TransformType.PACKAGE)
+                with(project_type).build, ArtifactNature.DOTNET, TransformType.PACKAGE)
         result += Constants.SEPARATOR_PACKAGE + if (element instanceof InterfaceDeclaration)
             project_type.getClassName(ArtifactNature.DOTNET, name.lastSegment)
         else
@@ -134,7 +134,8 @@ class TypeResolver
 
     def private boolean isSameProject(QualifiedName referenced_package)
     {
-        GeneratorUtil.transform(param_bundle.build, ArtifactNature.DOTNET, TransformType.PACKAGE) == referenced_package.toString
+        GeneratorUtil.transform(param_bundle.build, ArtifactNature.DOTNET, TransformType.PACKAGE) ==
+            referenced_package.toString
     }
 
     def void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
@@ -143,7 +144,6 @@ class TypeResolver
         var project_path = ""
 
         val temp_param = new ParameterBundle.Builder()
-        temp_param.reset(ArtifactNature.DOTNET)
         temp_param.reset(module_stack)
         temp_param.reset(project_type)
 
@@ -156,7 +156,8 @@ class TypeResolver
         else
         {
             project_path = "../" + GeneratorUtil.getRelativePathsUpwards(param_bundle.build) +
-                GeneratorUtil.transform(temp_param.build, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM) + "/" + project_name
+                GeneratorUtil.transform(temp_param.build, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM) + "/" +
+                project_name
         }
 
         project_references.put(project_name, project_path)

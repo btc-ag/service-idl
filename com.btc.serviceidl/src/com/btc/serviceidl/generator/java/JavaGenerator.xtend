@@ -96,7 +96,6 @@ class JavaGenerator
    def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
       param_bundle = ParameterBundle.createBuilder(Util.getModuleStack(module))
-      param_bundle.reset(ArtifactNature.JAVA)
       
       if (!module.virtual)
       {
@@ -184,7 +183,6 @@ class JavaGenerator
    def private String makeProjectSourcePath(EObject container, ProjectType project_type, MavenArtifactType maven_type, PathType path_type)
    {
       val temp_param = new ParameterBundle.Builder()
-      temp_param.reset(ArtifactNature.JAVA)
       temp_param.reset(Util.getModuleStack(container))
       
       var result = new StringBuilder
