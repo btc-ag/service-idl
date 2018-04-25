@@ -192,7 +192,7 @@ class JavaGenerator
       
       if (path_type == PathType.FULL)
       {
-         result.append(GeneratorUtil.transform(temp_param.build, ArtifactNature.JAVA, TransformType.FILE_SYSTEM))
+         result.append(GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.JAVA, TransformType.FILE_SYSTEM))
          result.append((if (container instanceof InterfaceDeclaration) "/" + container.name.toLowerCase else ""))
          result.append(Constants.SEPARATOR_FILE)
          result.append(project_type.getName.toLowerCase)

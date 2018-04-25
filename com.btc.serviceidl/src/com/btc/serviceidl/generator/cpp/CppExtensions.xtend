@@ -63,7 +63,7 @@ class CppExtensions
         val file_extension = if (project_type == ProjectType.PROTOBUF) ".pb.h" else ".h"
 
         "modules/" +
-            GeneratorUtil.transform(param_bundle.with(project_type).build, ArtifactNature.CPP,
+            GeneratorUtil.getTransformedModuleName(param_bundle.with(project_type).build, ArtifactNature.CPP,
                 TransformType.FILE_SYSTEM) + "/" + include_folder + "/" + file_name + file_extension
     }
 

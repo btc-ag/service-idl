@@ -202,7 +202,7 @@ class Util
 
     def static String getLog4NetConfigFile(ParameterBundle param_bundle)
     {
-        GeneratorUtil.transform(param_bundle, ArtifactNature.DOTNET, TransformType.PACKAGE).toLowerCase +
+        GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.DOTNET, TransformType.PACKAGE).toLowerCase +
             ".log4net".config
 
     }
@@ -263,7 +263,7 @@ class Util
 
         typeResolver.resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
-        GeneratorUtil.transform(temp_param.build, ArtifactNature.DOTNET, TransformType.PACKAGE) +
+        GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.DOTNET, TransformType.PACKAGE) +
             TransformType.PACKAGE.separator + codec_name
     }
 

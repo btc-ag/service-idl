@@ -23,7 +23,7 @@ class ExportHeaderGenerator
     
     def generateExportHeader()
     {
-        val prefix = GeneratorUtil.transform(param_bundle, ArtifactNature.CPP, TransformType.EXPORT_HEADER).toUpperCase
+        val prefix = GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.EXPORT_HEADER).toUpperCase
 
         '''
             #ifndef «prefix»_EXPORT_H

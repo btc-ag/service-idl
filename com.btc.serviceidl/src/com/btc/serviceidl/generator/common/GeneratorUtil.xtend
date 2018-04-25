@@ -39,7 +39,7 @@ import static extension com.btc.serviceidl.util.Util.*
 
 class GeneratorUtil
 {
-    def public static String transform(ParameterBundle parameterBundle, ArtifactNature artifactNature,
+    def public static String getTransformedModuleName(ParameterBundle parameterBundle, ArtifactNature artifactNature,
         TransformType transformType)
     {
         var result = ""

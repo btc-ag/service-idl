@@ -99,7 +99,7 @@ class TypeResolver
             return new ResolvedName(Names.plain(element), TransformType.PACKAGE, fully_qualified)
         }
 
-        var result = GeneratorUtil.transform(
+        var result = GeneratorUtil.getTransformedModuleName(
             ParameterBundle.createBuilder(
                 com.btc.serviceidl.util.Util.getModuleStack(com.btc.serviceidl.util.Util.getScopeDeterminant(element))).
                 with(project_type).build, ArtifactNature.DOTNET, TransformType.PACKAGE)
@@ -134,7 +134,7 @@ class TypeResolver
 
     def private boolean isSameProject(QualifiedName referenced_package)
     {
-        GeneratorUtil.transform(param_bundle, ArtifactNature.DOTNET, TransformType.PACKAGE) ==
+        GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.DOTNET, TransformType.PACKAGE) ==
             referenced_package.toString
     }
 
@@ -156,7 +156,7 @@ class TypeResolver
         else
         {
             project_path = "../" + GeneratorUtil.getRelativePathsUpwards(param_bundle.moduleStack) +
-                GeneratorUtil.transform(temp_param.build, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM) + "/" +
+                GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM) + "/" +
                 project_name
         }
 
