@@ -42,6 +42,7 @@ public class Main {
     private static final String OPTION_OUTPUT_PATH = "outputPath";
 
     public static void main(String[] args) {
+        assert (args != null);
         if (args.length == 0) {
             new HelpFormatter().printHelp("Generator", createOptions());
             System.err.println("Aborting: no path to EMF resource provided!");
