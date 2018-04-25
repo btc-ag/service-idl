@@ -45,30 +45,6 @@ class TypeResolver
        includes.immutableCopy
     }
 
-    @Deprecated
-    def getModulesIncludes()
-    {
-        val res = new HashSet<String>(includes.getOrDefault(MODULES_INCLUDE_GROUP, #{}))
-        res.addAll(includes.getOrDefault(TARGET_INCLUDE_GROUP, #{}))
-        res.immutableCopy
-    }
-
-    @Deprecated
-    def getCabIncludes()
-    { includes.getOrDefault(CAB_INCLUDE_GROUP, #{}).immutableCopy }
-
-    @Deprecated
-    def getBoostIncludes()
-    { includes.getOrDefault(BOOST_INCLUDE_GROUP, #{}).immutableCopy }
-
-    @Deprecated
-    def getStlIncludes()
-    { includes.getOrDefault(STL_INCLUDE_GROUP, #{}).immutableCopy }
-
-    @Deprecated
-    def getOdbIncludes()
-    { includes.getOrDefault(ODB_INCLUDE_GROUP, #{}).immutableCopy }
-
     def addTargetInclude(String path)
     { addToGroup(TARGET_INCLUDE_GROUP, path) }
 
