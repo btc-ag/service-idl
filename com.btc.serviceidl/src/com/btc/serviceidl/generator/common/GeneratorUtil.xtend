@@ -42,39 +42,39 @@ class GeneratorUtil
     def public static String getTransformedModuleName(ParameterBundle parameterBundle, ArtifactNature artifactNature,
         TransformType transformType)
     {
-        var result = ""
-        for (module : parameterBundle.getModuleStack)
-        {
+        val parts = parameterBundle.getModuleStack.map [ module |
             if (!module.virtual || transformType.useVirtual || artifactNature == ArtifactNature.JAVA)
-            {
-                result += getEffectiveModuleName(module, artifactNature, transformType) +
-                    (if (module != parameterBundle.getModuleStack.last) transformType.getSeparator else "")
-            }            
-        }
+                getEffectiveModuleName(module, artifactNature)
+            else
+                Arrays.asList()
+        ].flatten + if (parameterBundle.projectType !== null)
+            Arrays.asList(parameterBundle.projectType.getName)
+        else
+            Arrays.asList()
+        val result = parts.join(transformType.separator)
 
-        if (parameterBundle.projectType !== null)
-            result += transformType.getSeparator + parameterBundle.projectType.getName
         if (artifactNature == ArtifactNature.JAVA)
-            result = result.toLowerCase
-        return result
+            result.toLowerCase
+        else
+            result
     }
 
-    def private static String getEffectiveModuleName(ModuleDeclaration module, ArtifactNature artifactNature,
-        TransformType transformType)
+    def private static Iterable<String> getEffectiveModuleName(ModuleDeclaration module, ArtifactNature artifactNature)
     {
         if (artifactNature == ArtifactNature.DOTNET && module.main)
         {
-            if (module.main) module.name + ".NET" else module.name
+            // TODO shouldn't this return two parts instead of a single one containg "."?
+            if (module.main) Arrays.asList(module.name + ".NET") else Arrays.asList(module.name)
         }
         else if (artifactNature == ArtifactNature.JAVA)
         {
             if (module.eContainer === null || (module.eContainer instanceof IDLSpecification))
-                "com" + transformType.separator + module.name
+                Arrays.asList("com", module.name)
             else
-                module.name
+                Arrays.asList(module.name)
         }
         else
-            module.name
+            Arrays.asList(module.name)
     }
 
     def public static String switchPackageSeperator(String name, TransformType targetTransformType)
