@@ -138,7 +138,8 @@ class ProjectGeneratorBaseBase
     def protected getProjectPath()
     {
         ArtifactNature.CPP.label + Constants.SEPARATOR_FILE +
-            GeneratorUtil.transform(param_bundle, TransformType.FILE_SYSTEM) + Constants.SEPARATOR_FILE
+            GeneratorUtil.transform(param_bundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM) +
+            Constants.SEPARATOR_FILE
     }
 
     @Deprecated

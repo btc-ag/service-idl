@@ -30,8 +30,8 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         // TODO check how to reflect this special handling of EXTERNAL_DB_IMPL
 //        if (project_type != ProjectType.EXTERNAL_DB_IMPL) // for ExternalDBImpl, keep both C++ and ODB artifacts
 //            reinitializeProject(project_type)
-        val export_header_file_name = (GeneratorUtil.transform(param_bundle, TransformType.EXPORT_HEADER) +
-            "_export".h).toLowerCase
+        val export_header_file_name = (GeneratorUtil.transform(param_bundle, ArtifactNature.CPP,
+            TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
         file_system_access.generateFile(projectPath + "include" + Constants.SEPARATOR_FILE + export_header_file_name,
             generateExportHeader())
         header_files.add(export_header_file_name)
@@ -65,8 +65,10 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         val source_path = project_path + "source" + Constants.SEPARATOR_FILE
 
         // file names
-        val main_header_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name).h
-        val main_cpp_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name).cpp
+        val main_header_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType,
+            interface_declaration.name).h
+        val main_cpp_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType,
+            interface_declaration.name).cpp
 
         // sub-folder "./include"
         if (pt != ProjectType.TEST)

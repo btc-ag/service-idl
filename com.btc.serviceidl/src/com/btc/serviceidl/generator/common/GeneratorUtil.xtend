@@ -38,20 +38,21 @@ import com.btc.serviceidl.idl.ParameterElement
 
 class GeneratorUtil
 {
-    def public static String transform(ParameterBundle param_bundle, TransformType transform_type)
+    def public static String transform(ParameterBundle param_bundle, ArtifactNature artifactNature,
+        TransformType transform_type)
     {
         var result = ""
         for (module : param_bundle.getModuleStack)
         {
             if (!module.virtual)
             {
-                result += getEffectiveModuleName(module, param_bundle, transform_type) +
+                result += getEffectiveModuleName(module, artifactNature, transform_type) +
                     (if (module != param_bundle.getModuleStack.last) transform_type.getSeparator else "")
             }
             else
             {
-                if (transform_type.useVirtual || param_bundle.getArtifactNature == ArtifactNature.JAVA)
-                    result += getEffectiveModuleName(module, param_bundle, transform_type) +
+                if (transform_type.useVirtual || artifactNature == ArtifactNature.JAVA)
+                    result += getEffectiveModuleName(module, artifactNature, transform_type) +
                         if (module != param_bundle.getModuleStack.last)
                             transform_type.getSeparator
                         else
@@ -61,16 +62,14 @@ class GeneratorUtil
 
         if (param_bundle.projectType !== null)
             result += transform_type.getSeparator + param_bundle.projectType.getName
-        if (param_bundle.artifactNature == ArtifactNature.JAVA)
+        if (artifactNature == ArtifactNature.JAVA)
             result = result.toLowerCase
         return result
     }
 
-    def private static String getEffectiveModuleName(ModuleDeclaration module, ParameterBundle param_bundle,
+    def private static String getEffectiveModuleName(ModuleDeclaration module, ArtifactNature artifact_nature,
         TransformType transform_type)
     {
-        val artifact_nature = param_bundle.getArtifactNature
-
         if (artifact_nature == ArtifactNature.DOTNET)
         {
             if (module.main) return module.name + ".NET" else module.name

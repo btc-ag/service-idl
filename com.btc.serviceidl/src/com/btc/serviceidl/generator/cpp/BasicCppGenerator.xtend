@@ -285,7 +285,7 @@ resolveCAB
 
     def String makeExportMacro()
     {
-        GeneratorUtil.transform(param_bundle, TransformType.EXPORT_HEADER).toUpperCase +
+        GeneratorUtil.transform(param_bundle, ArtifactNature.CPP, TransformType.EXPORT_HEADER).toUpperCase +
             Constants.SEPARATOR_CPP_HEADER + "EXPORT"
     }
 

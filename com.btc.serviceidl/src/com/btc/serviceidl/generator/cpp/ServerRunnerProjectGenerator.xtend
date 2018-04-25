@@ -50,15 +50,16 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         val etc_path = projectPath + "etc" + Constants.SEPARATOR_FILE
 
         // sub-folder "./include"
-        val export_header_file_name = (GeneratorUtil.transform(param_bundle, TransformType.EXPORT_HEADER) +
-            "_export".h).toLowerCase
+        val export_header_file_name = (GeneratorUtil.transform(param_bundle, ArtifactNature.CPP,
+            TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
         file_system_access.generateFile(include_path + export_header_file_name, generateExportHeader())
         header_files.add(export_header_file_name)
 
         // sub-folder "./source"
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
-            val cpp_file = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name).cpp
+            val cpp_file = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType,
+                interface_declaration.name).cpp
             file_system_access.generateFile(source_path + cpp_file, generateCppServerRunner(interface_declaration))
             cpp_files.add(cpp_file)
         }
@@ -71,9 +72,10 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
             cpp_files.clear
-            val project_name = GeneratorUtil.transform(param_bundle, TransformType.PACKAGE) +
+            val project_name = GeneratorUtil.transform(param_bundle, ArtifactNature.CPP, TransformType.PACKAGE) +
                 TransformType.PACKAGE.separator + interface_declaration.name
-            val cpp_file = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name).cpp
+            val cpp_file = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType,
+                interface_declaration.name).cpp
             cpp_files.add(cpp_file)
             generateVSProjectFiles(ProjectType.SERVER_RUNNER, projectPath, project_name)
         }

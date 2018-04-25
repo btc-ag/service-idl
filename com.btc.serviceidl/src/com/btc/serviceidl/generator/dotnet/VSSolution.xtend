@@ -5,6 +5,7 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.TransformType
 import java.util.UUID
 import java.util.HashMap
+import com.btc.serviceidl.generator.common.ArtifactNature
 
 class VSSolution
 {
@@ -12,7 +13,7 @@ class VSSolution
 
     def public String getCsprojName(ParameterBundle.Builder builder)
     {
-        val project_name = GeneratorUtil.transform(builder.build, TransformType.PACKAGE)
+        val project_name = GeneratorUtil.transform(builder.build, ArtifactNature.DOTNET, TransformType.PACKAGE)
         getCsprojGUID(project_name)
         return project_name
     }

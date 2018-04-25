@@ -10,6 +10,7 @@
  */
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
@@ -49,8 +50,8 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
         val source_path = projectPath + "source" + Constants.SEPARATOR_FILE
 
         // file names
-        val export_header_file_name = (GeneratorUtil.transform(param_bundle, TransformType.EXPORT_HEADER) +
-            "_export".h).toLowerCase
+        val export_header_file_name = (GeneratorUtil.transform(param_bundle, ArtifactNature.CPP,
+            TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
         val header_file = Constants.FILE_NAME_TYPES.h
         val cpp_file = Constants.FILE_NAME_TYPES.cpp
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp

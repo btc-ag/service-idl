@@ -51,7 +51,7 @@ class ProtobufUtil
         val builder = ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(scope_determinant))
         builder.reset(ProjectType.PROTOBUF)
 
-        var result = GeneratorUtil.transform(builder.build, TransformType.NAMESPACE)
+        var result = GeneratorUtil.transform(builder.build, ArtifactNature.CPP, TransformType.NAMESPACE)
         result += Constants.SEPARATOR_NAMESPACE
         if (is_interface)
             result += Names.plain(object) + "_" + protobuf_type.getName
@@ -61,7 +61,7 @@ class ProtobufUtil
         else
             result += Names.plain(object)
 
-        var header_path = GeneratorUtil.transform(builder.build, TransformType.FILE_SYSTEM)
+        var header_path = GeneratorUtil.transform(builder.build, ArtifactNature.CPP, TransformType.FILE_SYSTEM)
         var header_file = GeneratorUtil.getPbFileName(object)
         modules_includes.add("modules/" + header_path + "/gen/" + header_file.pb.h)
         object.resolveProjectFilePath(ProjectType.PROTOBUF)
@@ -155,12 +155,12 @@ class ProtobufUtil
             else
                 GeneratorUtil.getCodecName(ultimate_type)
 
-        var header_path = GeneratorUtil.transform(temp_param.build, TransformType.FILE_SYSTEM)
+        var header_path = GeneratorUtil.transform(temp_param.build, ArtifactNature.CPP, TransformType.FILE_SYSTEM)
         modules_includes.add("modules/" + header_path + "/include/" + codec_name.h)
         resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
-        GeneratorUtil.transform(temp_param.build, TransformType.NAMESPACE) + TransformType.NAMESPACE.separator +
-            codec_name
+        GeneratorUtil.transform(temp_param.build, ArtifactNature.CPP, TransformType.NAMESPACE) +
+            TransformType.NAMESPACE.separator + codec_name
     }
 
     def static String resolveFailableProtobufType(extension TypeResolver typeResolver, EObject element,
@@ -172,6 +172,7 @@ class ProtobufUtil
         var namespace = GeneratorUtil.transform(
             ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(
                 com.btc.serviceidl.util.Util.getScopeDeterminant(container))).with(ProjectType.PROTOBUF).build,
+            ArtifactNature.CPP,
             TransformType.NAMESPACE
         )
         return namespace + Constants.SEPARATOR_NAMESPACE +
