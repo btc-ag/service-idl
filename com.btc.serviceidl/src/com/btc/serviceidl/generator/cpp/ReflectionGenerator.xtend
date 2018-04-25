@@ -25,18 +25,18 @@ class ReflectionGenerator extends BasicCppGenerator
         '''
             extern "C" 
             {
-               «makeExportMacro()» void Reflect_«class_name.shortName»( «resolveCAB("BTC::Commons::CoreExtras::ReflectedClass")» &ci )
+               «makeExportMacro()» void Reflect_«class_name.shortName»( «resolveClass("BTC::Commons::CoreExtras::ReflectedClass")» &ci )
                {  
                   ci.Set< «class_name» >().AddConstructor
                   (
                       ci.CContextRef()
-                     ,ci.CArgRefNotNull< «resolveCAB("BTC::Logging::API::LoggerFactory")» >( "loggerFactory" )
+                     ,ci.CArgRefNotNull< «resolveClass("BTC::Logging::API::LoggerFactory")» >( "loggerFactory" )
                      «IF paramBundle.projectType == ProjectType.PROXY»
-                         ,ci.CArgRefNotNull< «resolveCAB("BTC::ServiceComm::API::IClientEndpoint")» >( "localEndpoint" )
-                         ,ci.CArgRefOptional< «resolveCAB("BTC::Commons::CoreExtras::UUID")» >( "serverServiceInstanceGuid" )
+                         ,ci.CArgRefNotNull< «resolveClass("BTC::ServiceComm::API::IClientEndpoint")» >( "localEndpoint" )
+                         ,ci.CArgRefOptional< «resolveClass("BTC::Commons::CoreExtras::UUID")» >( "serverServiceInstanceGuid" )
                      «ELSEIF paramBundle.projectType == ProjectType.DISPATCHER»
-                         ,ci.CArgRefNotNull< «resolveCAB("BTC::ServiceComm::API::IServerEndpoint")» >( "serviceEndpoint" )
-                         ,ci.CArgRef< «resolveCAB("BTC::Commons::Core::AutoPtr")»<«resolve(interface_declaration, ProjectType.SERVICE_API)»> >( "dispatchee" )
+                         ,ci.CArgRefNotNull< «resolveClass("BTC::ServiceComm::API::IServerEndpoint")» >( "serviceEndpoint" )
+                         ,ci.CArgRef< «resolveClass("BTC::Commons::Core::AutoPtr")»<«resolve(interface_declaration, ProjectType.SERVICE_API)»> >( "dispatchee" )
                      «ENDIF»
                   );
                }

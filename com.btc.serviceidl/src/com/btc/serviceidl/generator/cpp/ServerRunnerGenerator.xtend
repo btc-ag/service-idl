@@ -21,16 +21,16 @@ class ServerRunnerGenerator extends BasicCppGenerator
     def generateImplFileBody(InterfaceDeclaration interface_declaration)
     {
         // explicitly resolve some *.lib dependencies
-        resolveCAB("BTC::Commons::CoreExtras::IObserver") // IObserverBase used indirectly in dispatcher
+        resolveClass("BTC::Commons::CoreExtras::IObserver") // IObserverBase used indirectly in dispatcher
         val dispatcher = resolve(interface_declaration, ProjectType.DISPATCHER)
 
         '''
-            «resolveCAB("BTC::Commons::Core::UniquePtr")»<«resolveCAB("BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder")»> RegisterMessageTypes()
+            «resolveClass("BTC::Commons::Core::UniquePtr")»<«resolveClass("BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder")»> RegisterMessageTypes()
             {
-               auto decoder(«resolveCAB("BTC::Commons::Core::CreateUnique")»<«resolveCAB("BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder")»>());
-               «resolveCAB("BTC::ServiceComm::Default::RegisterBaseMessageTypes")»(*decoder);
+               auto decoder(«resolveClass("BTC::Commons::Core::CreateUnique")»<«resolveClass("BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder")»>());
+               «resolveClass("BTC::ServiceComm::Default::RegisterBaseMessageTypes")»(*decoder);
                «dispatcher»::RegisterMessageTypes(*decoder);
-               return «resolveSTL("std::move")»(decoder);
+               return «resolveClass("std::move")»(decoder);
             }
             
             BOOL WINAPI MyCtrlHandler(_In_  DWORD dwCtrlType)
@@ -43,24 +43,24 @@ class ServerRunnerGenerator extends BasicCppGenerator
             
                SetConsoleCtrlHandler(&MyCtrlHandler, true);
             
-               «resolveCAB("BTC::Commons::CoreYacl::Context")» context;
-               «resolveCAB("BTC::Commons::Core::BlockStackTraceSettings")» settings(BTC::Commons::Core::BlockStackTraceSettings::BlockStackTraceSettings_OnDefault, BTC::Commons::Core::ConcurrencyScope_Process);
+               «resolveClass("BTC::Commons::CoreYacl::Context")» context;
+               «resolveClass("BTC::Commons::Core::BlockStackTraceSettings")» settings(BTC::Commons::Core::BlockStackTraceSettings::BlockStackTraceSettings_OnDefault, BTC::Commons::Core::ConcurrencyScope_Process);
             
                try
                {
-                  «resolveCAB("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")»().GetLogger("")->SetLevel(«resolveCAB("BTC::Logging::API::Logger")»::LWarning);
-                  «resolveCAB("BTC::ServiceComm::PerformanceBase::PerformanceTestServer")» server(context,
-                     «resolveCAB("BTC::Commons::Core::CreateAuto")»<«resolve(interface_declaration, ProjectType.IMPL)»>(context, «resolveCAB("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")»()),
+                  «resolveClass("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")»().GetLogger("")->SetLevel(«resolveClass("BTC::Logging::API::Logger")»::LWarning);
+                  «resolveClass("BTC::ServiceComm::PerformanceBase::PerformanceTestServer")» server(context,
+                     «resolveClass("BTC::Commons::Core::CreateAuto")»<«resolve(interface_declaration, ProjectType.IMPL)»>(context, «resolveClass("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")»()),
                      &RegisterMessageTypes,
-                     «resolveSTL("std::bind")»(&«dispatcher»::CreateDispatcherAutoRegistrationFactory,
+                     «resolveClass("std::bind")»(&«dispatcher»::CreateDispatcherAutoRegistrationFactory,
                      std::placeholders::_1, std::placeholders::_2,
-                     «resolveCAB("BTC::ServiceComm::PerformanceBase::PerformanceTestServerBase")»::PERFORMANCE_INSTANCE_GUID(),
-                     «resolveCAB("BTC::Commons::Core::String")»()));
+                     «resolveClass("BTC::ServiceComm::PerformanceBase::PerformanceTestServerBase")»::PERFORMANCE_INSTANCE_GUID(),
+                     «resolveClass("BTC::Commons::Core::String")»()));
                   return server.Run(argc, argv);
                }
-               catch («resolveCAB("BTC::Commons::Core::Exception")» const *e)
+               catch («resolveClass("BTC::Commons::Core::Exception")» const *e)
                {
-                  «resolveCAB("BTC::Commons::Core::DelException")» _(e);
+                  «resolveClass("BTC::Commons::Core::DelException")» _(e);
                   context.GetStdOut() << e->ToString();
                   return 1;
                }

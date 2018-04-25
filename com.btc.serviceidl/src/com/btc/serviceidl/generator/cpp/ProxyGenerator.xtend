@@ -42,13 +42,13 @@ class ProxyGenerator extends BasicCppGenerator {
       '''
       «class_name.shortName»::«class_name.shortName»
       (
-         «resolveCAB("BTC::Commons::Core::Context")» &context
-         ,«resolveCAB("BTC::Logging::API::LoggerFactory")» &loggerFactory
-         ,«resolveCAB("BTC::ServiceComm::API::IClientEndpoint")» &localEndpoint
-         ,«resolveCABImpl("BTC::Commons::CoreExtras::Optional")»<«resolveCAB("BTC::Commons::CoreExtras::UUID")»> const &serverServiceInstanceGuid
+         «resolveClass("BTC::Commons::Core::Context")» &context
+         ,«resolveClass("BTC::Logging::API::LoggerFactory")» &loggerFactory
+         ,«resolveClass("BTC::ServiceComm::API::IClientEndpoint")» &localEndpoint
+         ,«resolveCABImpl("BTC::Commons::CoreExtras::Optional")»<«resolveClass("BTC::Commons::CoreExtras::UUID")»> const &serverServiceInstanceGuid
       ) :
       m_context(context)
-      , «resolveCAB("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
+      , «resolveClass("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
       , «interface_declaration.asBaseName»(context, localEndpoint, «api_class_name»::TYPE_GUID(), serverServiceInstanceGuid)
       «FOR event : interface_declaration.events»
       , «event.observableRegistrationName»(context, localEndpoint.GetEventRegistry(), «event.eventParamsName»())
@@ -66,40 +66,40 @@ class ProxyGenerator extends BasicCppGenerator {
          
          namespace // anonymous namespace to avoid naming collisions
          {
-            «event_type» const Unmarshal«event_name»( «resolveCAB("BTC::ServiceComm::API::IEventSubscriberManager")»::ObserverType::OnNextParamType event )
+            «event_type» const Unmarshal«event_name»( «resolveClass("BTC::ServiceComm::API::IEventSubscriberManager")»::ObserverType::OnNextParamType event )
             {
                «resolve(event.data, ProjectType.PROTOBUF)» eventProtobuf;
                if (!(event->GetNumElements() == 1))
-                  «resolveCAB("CABTHROW_V2")»(«resolveCAB("BTC::ServiceComm::API::InvalidMessageReceivedException")»("Event message has not exactly one part"));
-               «resolveCAB("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ParseMessageOrThrow<«resolveCAB("BTC::ServiceComm::API::InvalidMessageReceivedException")»>(eventProtobuf, (*event)[0]);
+                  «resolveClass("CABTHROW_V2")»(«resolveClass("BTC::ServiceComm::API::InvalidMessageReceivedException")»("Event message has not exactly one part"));
+               «resolveClass("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ParseMessageOrThrow<«resolveClass("BTC::ServiceComm::API::InvalidMessageReceivedException")»>(eventProtobuf, (*event)[0]);
 
                return «typeResolver.resolveCodecNS(event.data)»::Decode( eventProtobuf );
             }
          }
          
-         «resolveCAB("BTC::Commons::CoreExtras::UUID")» «class_name.shortName»::«event_params_name»::GetEventTypeGuid()
+         «resolveClass("BTC::Commons::CoreExtras::UUID")» «class_name.shortName»::«event_params_name»::GetEventTypeGuid()
          {
            /** this uses a global event type, i.e. if there are multiple instances of the service (dispatcher), these will all be subscribed;
            *  alternatively, an instance-specific type guid must be registered by the dispatcher and queried by the proxy */
            return «event_type»::EVENT_TYPE_GUID();
          }
          
-         «resolveCAB("BTC::ServiceComm::API::EventKind")» «class_name.shortName»::«event_params_name»::GetEventKind()
+         «resolveClass("BTC::ServiceComm::API::EventKind")» «class_name.shortName»::«event_params_name»::GetEventKind()
          {
-           return «resolveCAB("BTC::ServiceComm::API::EventKind")»::EventKind_PublishSubscribe;
+           return «resolveClass("BTC::ServiceComm::API::EventKind")»::EventKind_PublishSubscribe;
          }
          
-         «resolveCAB("BTC::Commons::Core::String")» «class_name.shortName»::«event_params_name»::GetEventTypeDescription()
+         «resolveClass("BTC::Commons::Core::String")» «class_name.shortName»::«event_params_name»::GetEventTypeDescription()
          {
-           return «resolveCAB("CABTYPENAME")»(«event_type»);
+           return «resolveClass("CABTYPENAME")»(«event_type»);
          }
          
-         «resolveSTL("std::function")»<«class_name.shortName»::«event_params_name»::EventDataType const ( «resolveCAB("BTC::ServiceComm::Commons::ConstSharedMessageSharedPtr")» const & )> «class_name»::«event_params_name»::GetUnmarshalFunction( )
+         «resolveClass("std::function")»<«class_name.shortName»::«event_params_name»::EventDataType const ( «resolveClass("BTC::ServiceComm::Commons::ConstSharedMessageSharedPtr")» const & )> «class_name»::«event_params_name»::GetUnmarshalFunction( )
          {
            return &Unmarshal«event_name»;
          }
          
-         «resolveCAB("BTC::Commons::Core::UniquePtr")»<«resolveCAB("BTC::Commons::Core::Disposable")»> «class_name.shortName»::Subscribe( «resolveCAB("BTC::Commons::CoreExtras::IObserver")»<«event_type»> &observer )
+         «resolveClass("BTC::Commons::Core::UniquePtr")»<«resolveClass("BTC::Commons::Core::Disposable")»> «class_name.shortName»::Subscribe( «resolveClass("BTC::Commons::CoreExtras::IObserver")»<«event_type»> &observer )
          {
            return «event.observableRegistrationName».Subscribe(observer);
          }
@@ -113,7 +113,7 @@ class ProxyGenerator extends BasicCppGenerator {
         val protobuf_response_message= typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
         
         '''
-           «resolveCAB("BTC::Commons::Core::UniquePtr")»< «protobuf_request_message» > request( BorrowRequestMessage() );
+           «resolveClass("BTC::Commons::Core::UniquePtr")»< «protobuf_request_message» > request( BorrowRequestMessage() );
 
            // encode request -->
            auto * const concreteRequest( request->mutable_«com.btc.serviceidl.util.Util.makeProtobufMethodName(function.name, Constants.PROTOBUF_REQUEST)»() );
@@ -124,7 +124,7 @@ class ProxyGenerator extends BasicCppGenerator {
                     «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
                     «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.RESPONSE).fullyQualifiedName»
                     «typeResolver.resolveCodecNS(ulimate_type, is_failable, Optional.of(interface_declaration))»::Encode«IF is_failable»Failable«ENDIF»< «resolve(ulimate_type)», «IF is_failable»«typeResolver.resolveFailableProtobufType(param.paramType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF» >
-                       ( «resolveSTL("std::move")»(«param.paramName»), concreteRequest->mutable_«param.paramName.toLowerCase»() );
+                       ( «resolveClass("std::move")»(«param.paramName»), concreteRequest->mutable_«param.paramName.toLowerCase»() );
                  «ELSEIF com.btc.serviceidl.util.Util.isEnumType(param.paramType)»
                     concreteRequest->set_«param.paramName.toLowerCase»( «typeResolver.resolveCodecNS(param.paramType)»::Encode(«param.paramName») );
                  «ELSE»
@@ -139,7 +139,7 @@ class ProxyGenerator extends BasicCppGenerator {
            «IF function.returnedType.isVoid»
               return Request«IF function.isSync»Sync«ELSE»Async«ENDIF»UnmarshalVoid( *request );
            «ELSE»
-              return RequestAsyncUnmarshal< «toText(function.returnedType, interface_declaration)» >( *request, [&]( «resolveCAB("BTC::Commons::Core::UniquePtr")»< «protobuf_response_message» > response )
+              return RequestAsyncUnmarshal< «toText(function.returnedType, interface_declaration)» >( *request, [&]( «resolveClass("BTC::Commons::Core::UniquePtr")»< «protobuf_response_message» > response )
               {
                  // decode response -->
                  auto const& concreteResponse( response->«com.btc.serviceidl.util.Util.makeProtobufMethodName(function.name, Constants.PROTOBUF_RESPONSE)»() );

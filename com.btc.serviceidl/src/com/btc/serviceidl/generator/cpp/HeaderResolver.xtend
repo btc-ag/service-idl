@@ -234,17 +234,6 @@ class HeaderResolver
             res
     }
 
-    @Deprecated
-    def static String getCABHeader(String class_name)
-    {
-        val header = cab_header_mapper.get(class_name)
-
-        if (header !== null)
-            return header
-        else
-            throw new IllegalArgumentException("Could not find CAB *.h mapping: " + class_name)
-    }
-
     def static String getCABImpl(String class_name)
     {
         val header = cab_impl_header_mapper.get(class_name)
@@ -253,50 +242,6 @@ class HeaderResolver
             return header
         else
             throw new IllegalArgumentException("Could not find CAB *.impl.h mapping: " + class_name)
-    }
-
-    @Deprecated
-    def static String getSTLHeader(String class_name)
-    {
-        val header = stl_header_mapper.get(class_name)
-
-        if (header !== null)
-            return header
-        else
-            throw new IllegalArgumentException("Could not find STL *.h mapping: " + class_name)
-    }
-
-    @Deprecated
-    def static String getBoostHeader(String class_name)
-    {
-        val header = boost_header_mapper.get(class_name)
-
-        if (header !== null)
-            return header
-        else
-            throw new IllegalArgumentException("Could not find Boost *.h mapping: " + class_name)
-    }
-
-    @Deprecated
-    def static String getODBHeader(String class_name)
-    {
-        val header = odb_header_mapper.get(class_name)
-
-        if (header !== null)
-            return header
-        else
-            throw new IllegalArgumentException("Could not find ODB *.h mapping: " + class_name)
-    }
-
-    @Deprecated
-    def static String getModulesHeader(String class_name)
-    {
-        val header = modules_header_mapper.get(class_name)
-
-        if (header !== null)
-            return header
-        else
-            throw new IllegalArgumentException("Could not find modules *.h mapping: " + class_name)
     }
 
     @Deprecated
