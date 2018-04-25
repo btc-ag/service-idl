@@ -155,7 +155,7 @@ class TypeResolver
         }
         else
         {
-            project_path = "../" + GeneratorUtil.getRelativePathsUpwards(param_bundle) +
+            project_path = "../" + GeneratorUtil.getRelativePathsUpwards(param_bundle.moduleStack) +
                 GeneratorUtil.transform(temp_param.build, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM) + "/" +
                 project_name
         }
