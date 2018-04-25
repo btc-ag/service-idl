@@ -200,9 +200,9 @@ class Util
         element.primitiveType !== null && isNullable(element.primitiveType)
     }
 
-    def static String getLog4NetConfigFile(ParameterBundle.Builder param_bundle)
+    def static String getLog4NetConfigFile(ParameterBundle param_bundle)
     {
-        GeneratorUtil.transform(param_bundle.build, ArtifactNature.DOTNET, TransformType.PACKAGE).toLowerCase +
+        GeneratorUtil.transform(param_bundle, ArtifactNature.DOTNET, TransformType.PACKAGE).toLowerCase +
             ".log4net".config
 
     }
@@ -251,7 +251,7 @@ class Util
         '''«IF is_void»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»«ELSE»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»<«ENDIF»«effective_type»«IF !is_sync»>«ENDIF»«ENDIF»'''
     }
 
-    def static String resolveCodec(TypeResolver typeResolver, ParameterBundle.Builder param_bundle, EObject object)
+    def static String resolveCodec(TypeResolver typeResolver, ParameterBundle param_bundle, EObject object)
     {
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
 

@@ -93,7 +93,7 @@ class ServiceAPIGenerator extends GeneratorBase
                 «FOR comment : interface_declaration.docComments»«toText(comment, comment)»«ENDFOR»
                 /// </summary>
             «ENDIF»
-            public interface «GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.build.projectType, interface_declaration.name)»«IF anonymous_event !== null» : «resolve("System.IObservable")»<«toText(anonymous_event.data, anonymous_event)»>«ENDIF»
+            public interface «GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)»«IF anonymous_event !== null» : «resolve("System.IObservable")»<«toText(anonymous_event.data, anonymous_event)»>«ENDIF»
             {
                
                «FOR function : interface_declaration.functions SEPARATOR System.lineSeparator»

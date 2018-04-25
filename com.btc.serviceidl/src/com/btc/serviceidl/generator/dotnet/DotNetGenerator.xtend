@@ -254,7 +254,7 @@ class DotNetGenerator
       cs_files.clear
       
       typeResolver = new TypeResolver(DOTNET_FRAMEWORK_VERSION, qualified_name_provider, 
-          namespace_references, referenced_assemblies, project_references, vsSolution, param_bundle
+          namespace_references, referenced_assemblies, project_references, vsSolution, param_bundle.build
       )
       basicCSharpSourceGenerator = new BasicCSharpSourceGenerator(typeResolver, typedef_table, idl)      
    }
@@ -644,7 +644,7 @@ class DotNetGenerator
          }
       }
 
-      CSProjGenerator.generateCSProj(project_name, vsSolution, param_bundle, referenced_assemblies, nuget_packages.resolvedPackages, project_references, cs_files, if (is_protobuf) protobuf_files else null
+      CSProjGenerator.generateCSProj(project_name, vsSolution, param_bundle.build, referenced_assemblies, nuget_packages.resolvedPackages, project_references, cs_files, if (is_protobuf) protobuf_files else null
       )      
    }
    
@@ -671,7 +671,7 @@ class DotNetGenerator
    
    def private String getLog4NetConfigFile()
    {
-      param_bundle.log4NetConfigFile
+      param_bundle.build.log4NetConfigFile
    }
          
 }
