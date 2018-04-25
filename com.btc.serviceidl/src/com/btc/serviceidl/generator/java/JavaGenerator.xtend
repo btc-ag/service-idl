@@ -278,7 +278,7 @@ class JavaGenerator
       {
          val file_name = Names.plain(abstract_type)
          generateJavaFile(src_root_path + file_name.java, interface_declaration, 
-             [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator, param_bundle).generateContainedType(abstract_type)]
+             [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator, param_bundle.build).generateContainedType(abstract_type)]
          )
       }
       
@@ -287,14 +287,14 @@ class JavaGenerator
       {
           // TODO do not use basicJavaSourceGenerator/typeResolver to generate the file name!
           generateJavaFile(src_root_path + basicJavaSourceGenerator.toText(event).java, interface_declaration,
-             [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator, param_bundle).generateEvent(event).toString]   
+             [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator, param_bundle.build).generateEvent(event).toString]   
           )
       }
       
       generateJavaFile(src_root_path + param_bundle.projectType.getClassName(ArtifactNature.JAVA, interface_declaration.name).java,
           interface_declaration,
           [basicJavaSourceGenerator|          
-          new ServiceAPIGenerator(basicJavaSourceGenerator, param_bundle).generateMain(interface_declaration).toString])
+          new ServiceAPIGenerator(basicJavaSourceGenerator, param_bundle.build).generateMain(interface_declaration).toString])
       
       // common service fault handler factory
       // TODO the service fault handler factory is ServiceComm-specific and should therefore not be generated to the service API package
@@ -431,7 +431,7 @@ class JavaGenerator
    // TODO remove this function
    def private void reinitializeFile()
    {
-      val typeResolver = new TypeResolver(qualified_name_provider, param_bundle, dependencies)
+      val typeResolver = new TypeResolver(qualified_name_provider, param_bundle.build, dependencies)
       basicJavaSourceGenerator = new BasicJavaSourceGenerator(qualified_name_provider, typeResolver, idl, typedef_table)
    }
    

@@ -45,12 +45,12 @@ class TypeResolver
     private val referenced_types = new HashSet<String>
 
     private val IQualifiedNameProvider qualified_name_provider
-    private val ParameterBundle.Builder param_bundle
+    private val ParameterBundle param_bundle
     private val Set<MavenDependency> dependencies
 
     private val fully_qualified = false // we want the toString method show short names by default!
 
-    new(IQualifiedNameProvider qualified_name_provider, ParameterBundle.Builder param_bundle,
+    new(IQualifiedNameProvider qualified_name_provider, ParameterBundle param_bundle,
         Set<MavenDependency> dependencies)
     {
         this.qualified_name_provider = qualified_name_provider

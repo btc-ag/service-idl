@@ -19,7 +19,6 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import java.util.ArrayList
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
@@ -27,7 +26,7 @@ import static extension com.btc.serviceidl.util.Util.*
 class ServiceAPIGenerator
 {
     private val BasicJavaSourceGenerator basicJavaSourceGenerator
-    private val ParameterBundle.Builder param_bundle
+    private val ParameterBundle param_bundle
 
     def private getTypeResolver()
     {
