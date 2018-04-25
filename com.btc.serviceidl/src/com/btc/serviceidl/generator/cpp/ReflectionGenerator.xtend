@@ -20,7 +20,7 @@ class ReflectionGenerator extends BasicCppGenerator
 
     def generateImplFileBody(InterfaceDeclaration interface_declaration)
     {
-        val class_name = resolve(interface_declaration, param_bundle.projectType)
+        val class_name = resolve(interface_declaration, paramBundle.projectType)
 
         '''
             extern "C" 
@@ -31,10 +31,10 @@ class ReflectionGenerator extends BasicCppGenerator
                   (
                       ci.CContextRef()
                      ,ci.CArgRefNotNull< «resolveCAB("BTC::Logging::API::LoggerFactory")» >( "loggerFactory" )
-                     «IF param_bundle.projectType == ProjectType.PROXY»
+                     «IF paramBundle.projectType == ProjectType.PROXY»
                          ,ci.CArgRefNotNull< «resolveCAB("BTC::ServiceComm::API::IClientEndpoint")» >( "localEndpoint" )
                          ,ci.CArgRefOptional< «resolveCAB("BTC::Commons::CoreExtras::UUID")» >( "serverServiceInstanceGuid" )
-                     «ELSEIF param_bundle.projectType == ProjectType.DISPATCHER»
+                     «ELSEIF paramBundle.projectType == ProjectType.DISPATCHER»
                          ,ci.CArgRefNotNull< «resolveCAB("BTC::ServiceComm::API::IServerEndpoint")» >( "serviceEndpoint" )
                          ,ci.CArgRef< «resolveCAB("BTC::Commons::Core::AutoPtr")»<«resolve(interface_declaration, ProjectType.SERVICE_API)»> >( "dispatchee" )
                      «ENDIF»

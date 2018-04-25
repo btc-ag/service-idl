@@ -42,9 +42,9 @@ class ServiceAPIGenerator extends BasicCppGenerator {
       
       // API requires some specific conditions (GUID, pure virtual functions, etc.)
       // non-API also (e.g. override keyword etc.)
-      val is_api = param_bundle.projectType == ProjectType.SERVICE_API
-      val is_proxy = param_bundle.projectType == ProjectType.PROXY
-      val is_impl = param_bundle.projectType == ProjectType.IMPL
+      val is_api = paramBundle.projectType == ProjectType.SERVICE_API
+      val is_proxy = paramBundle.projectType == ProjectType.PROXY
+      val is_impl = paramBundle.projectType == ProjectType.IMPL
       val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)
       val export_macro = makeExportMacro
       
@@ -164,11 +164,11 @@ class ServiceAPIGenerator extends BasicCppGenerator {
    
    def private String generateHClassSignature(InterfaceDeclaration interface_declaration)
    {
-      val is_api = param_bundle.projectType == ProjectType.SERVICE_API
-      val is_proxy = param_bundle.projectType == ProjectType.PROXY
+      val is_api = paramBundle.projectType == ProjectType.SERVICE_API
+      val is_proxy = paramBundle.projectType == ProjectType.PROXY
       val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)
       
-      '''«GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name)» : 
+      '''«GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType, interface_declaration.name)» : 
       «IF is_api»
          virtual public «resolveCAB("BTC::Commons::Core::Object")»
          «IF anonymous_event !== null», public «resolveCAB("BTC::Commons::CoreExtras::IObservableRegistration")»<«resolve(anonymous_event.data)»>«ENDIF»
@@ -183,7 +183,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
    }
     
     def generateImplFileBody(InterfaceDeclaration interface_declaration) {
-      val class_name = resolve(interface_declaration, param_bundle.projectType)
+      val class_name = resolve(interface_declaration, paramBundle.projectType)
       
       // prepare for re-use
       val register_service_fault = resolveCAB("BTC::ServiceComm::Base::RegisterServiceFault")

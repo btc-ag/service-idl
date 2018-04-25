@@ -47,12 +47,13 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 class BasicCppGenerator
 {
     protected val extension TypeResolver typeResolver
-    protected val ParameterBundle param_bundle
+    protected val ParameterBundle paramBundle
     protected val IDLSpecification idl
 
     def String generateCppDestructor(InterfaceDeclaration interface_declaration)
     {
-        val class_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name)
+        val class_name = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType,
+            interface_declaration.name)
 
         '''
             «class_name»::~«class_name»()
@@ -62,7 +63,7 @@ class BasicCppGenerator
 
     def String generateInheritedInterfaceMethods(InterfaceDeclaration interface_declaration)
     {
-        val class_name = resolve(interface_declaration, param_bundle.projectType)
+        val class_name = resolve(interface_declaration, paramBundle.projectType)
 
         '''
             «FOR function : interface_declaration.functions»
@@ -79,7 +80,7 @@ class BasicCppGenerator
     {
         // TODO make this function abstract and move implementation to subclass
         '''
-            «IF param_bundle.projectType == ProjectType.IMPL || param_bundle.projectType == ProjectType.EXTERNAL_DB_IMPL»
+            «IF paramBundle.projectType == ProjectType.IMPL || paramBundle.projectType == ProjectType.EXTERNAL_DB_IMPL»
                 // \todo Auto-generated method stub! Implement actual business logic!
                 «resolveCAB("CABTHROW_V2")»(«resolveCAB("BTC::Commons::Core::UnsupportedOperationException")»( "«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»" ));
             «ENDIF»
@@ -285,7 +286,7 @@ resolveCAB
 
     def String makeExportMacro()
     {
-        GeneratorUtil.transform(param_bundle, ArtifactNature.CPP, TransformType.EXPORT_HEADER).toUpperCase +
+        GeneratorUtil.transform(paramBundle, ArtifactNature.CPP, TransformType.EXPORT_HEADER).toUpperCase +
             Constants.SEPARATOR_CPP_HEADER + "EXPORT"
     }
 
@@ -296,7 +297,7 @@ resolveCAB
 
     def String generateHConstructor(InterfaceDeclaration interface_declaration)
     {
-        val class_name = resolve(interface_declaration, param_bundle.projectType)
+        val class_name = resolve(interface_declaration, paramBundle.projectType)
 
         '''
             /**
@@ -306,11 +307,11 @@ resolveCAB
             (
                «resolveCAB("BTC::Commons::Core::Context")» &context
                ,«resolveCAB("BTC::Logging::API::LoggerFactory")» &loggerFactory
-               «IF param_bundle.projectType == ProjectType.PROXY»
+               «IF paramBundle.projectType == ProjectType.PROXY»
                    ,«resolveCAB("BTC::ServiceComm::API::IClientEndpoint")» &localEndpoint
                    ,«resolveCAB("BTC::Commons::CoreExtras::Optional")»<«resolveCAB("BTC::Commons::CoreExtras::UUID")»> const &serverServiceInstanceGuid 
                       = «resolveCAB("BTC::Commons::CoreExtras::Optional")»<«resolveCAB("BTC::Commons::CoreExtras::UUID")»>()
-               «ELSEIF param_bundle.projectType == ProjectType.DISPATCHER»
+               «ELSEIF paramBundle.projectType == ProjectType.DISPATCHER»
                    ,«resolveCAB("BTC::ServiceComm::API::IServerEndpoint")»& serviceEndpoint
                    ,«resolveCAB("BTC::Commons::Core::AutoPtr")»< «resolve(interface_declaration, ProjectType.SERVICE_API)» > dispatchee
                «ENDIF»
@@ -320,7 +321,8 @@ resolveCAB
 
     def String generateHDestructor(InterfaceDeclaration interface_declaration)
     {
-        val class_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name)
+        val class_name = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType,
+            interface_declaration.name)
 
         '''
             /**
