@@ -32,7 +32,7 @@ class CommandLineRunnerTest
     }
 
     @Test
-    def void testWithInvalidInput()
+    def void testWithNonExistentInputFile()
     {
         val process = Runtime.getRuntime().exec("java com.btc.serviceidl.generator.Main Z:\\foo.bar")
 
