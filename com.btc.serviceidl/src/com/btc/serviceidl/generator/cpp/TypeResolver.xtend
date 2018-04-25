@@ -76,7 +76,7 @@ class TypeResolver
     public static val MODULES_INCLUDE_GROUP = new IncludeGroup("BTC.PRINS.Modules")
     public static val ODB_INCLUDE_GROUP = new IncludeGroup("ODB")
     
-    private val headerResolver = new HeaderResolver
+    private val headerResolver = new HeaderResolver.Builder().withPrinsGroups.build
 
     def String resolveClass(String className)
     {

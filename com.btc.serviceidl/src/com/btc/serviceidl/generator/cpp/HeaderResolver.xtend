@@ -194,22 +194,40 @@ class HeaderResolver
         "BTC::PRINS::Commons::Utilities::GUIDHelper" -> "modules/Commons/Utilities/include/GUIDHelper.h"
     }
 
-    private val headerMap = makeHeaderMap
+    private val Map<String, GroupedHeader> headerMap
 
-    private static def makeHeaderMap()
+    private new(Map<String, GroupedHeader> headerMap)
     {
-        val res = new HashMap<String, GroupedHeader>
+        this.headerMap = headerMap.immutableCopy
+    }
 
-        res.putAll(transformHeaderMap(odb_header_mapper, TypeResolver.ODB_INCLUDE_GROUP).toMap([it.key], [it.value]))
-        res.putAll(transformHeaderMap(modules_header_mapper, TypeResolver.MODULES_INCLUDE_GROUP).toMap([it.key], [
-            it.value
-        ]))
-        res.putAll(transformHeaderMap(stl_header_mapper, TypeResolver.STL_INCLUDE_GROUP).toMap([it.key], [it.value]))
-        res.putAll(
-            transformHeaderMap(boost_header_mapper, TypeResolver.BOOST_INCLUDE_GROUP).toMap([it.key], [it.value]))
-        res.putAll(transformHeaderMap(cab_header_mapper, TypeResolver.CAB_INCLUDE_GROUP).toMap([it.key], [it.value]))
+    static class Builder
+    {
+        private val headerMap = new HashMap<String, GroupedHeader>
 
-        res
+        def withGroup(Map<String, String> classToHeaderMap, IncludeGroup group)
+        {
+            headerMap.putAll(transformHeaderMap(classToHeaderMap, group).toMap([it.key], [it.value]))
+            // TODO check for conflicts?
+            this
+        }
+
+        def build()
+        {
+            new HeaderResolver(headerMap)
+        }
+
+        def static withBasicGroups(Builder builder)
+        {
+            builder.withGroup(stl_header_mapper, TypeResolver.STL_INCLUDE_GROUP).withGroup(boost_header_mapper,
+                TypeResolver.BOOST_INCLUDE_GROUP).withGroup(cab_header_mapper, TypeResolver.CAB_INCLUDE_GROUP)
+        }
+
+        def static withPrinsGroups(Builder builder)
+        {
+            builder.withBasicGroups.withGroup(odb_header_mapper, TypeResolver.ODB_INCLUDE_GROUP).withGroup(
+                modules_header_mapper, TypeResolver.MODULES_INCLUDE_GROUP)
+        }              
     }
 
     def static Iterable<Pair<String, GroupedHeader>> transformHeaderMap(Map<String, String> map, IncludeGroup group)
