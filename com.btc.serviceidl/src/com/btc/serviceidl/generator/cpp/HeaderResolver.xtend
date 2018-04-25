@@ -17,6 +17,10 @@ package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.cpp.TypeResolver.IncludeGroup
+import org.eclipse.xtend.lib.annotations.Data
+import java.util.HashMap
+import java.util.Map
 
 class HeaderResolver
 {
@@ -190,6 +194,47 @@ class HeaderResolver
         "BTC::PRINS::Commons::Utilities::GUIDHelper" -> "modules/Commons/Utilities/include/GUIDHelper.h"
     }
 
+    private static val headerMap = makeHeaderMap
+
+    private static def makeHeaderMap()
+    {
+        val res = new HashMap<String, GroupedHeader>
+
+        res.putAll(transformHeaderMap(odb_header_mapper, TypeResolver.ODB_INCLUDE_GROUP).toMap([it.key], [it.value]))
+        res.putAll(transformHeaderMap(modules_header_mapper, TypeResolver.MODULES_INCLUDE_GROUP).toMap([it.key], [
+            it.value
+        ]))
+        res.putAll(transformHeaderMap(stl_header_mapper, TypeResolver.STL_INCLUDE_GROUP).toMap([it.key], [it.value]))
+        res.putAll(
+            transformHeaderMap(boost_header_mapper, TypeResolver.BOOST_INCLUDE_GROUP).toMap([it.key], [it.value]))
+        res.putAll(transformHeaderMap(cab_header_mapper, TypeResolver.CAB_INCLUDE_GROUP).toMap([it.key], [it.value]))
+
+        res
+    }
+
+    def static Iterable<Pair<String, GroupedHeader>> transformHeaderMap(Map<String, String> map, IncludeGroup group)
+    {
+        map.entrySet.map[new Pair(it.key, new GroupedHeader(group, it.value))]
+    }
+
+    @Data
+    static class GroupedHeader
+    {
+        IncludeGroup includeGroup
+        String path
+    }
+
+    // TODO make non-static
+    def static GroupedHeader getHeader(String className)
+    {
+        val res = headerMap.get(className)
+        if (res === null)
+            throw new IllegalArgumentException("Could not find *.h mapping: " + className)
+        else
+            res
+    }
+
+    @Deprecated
     def static String getCABHeader(String class_name)
     {
         val header = cab_header_mapper.get(class_name)
@@ -210,6 +255,7 @@ class HeaderResolver
             throw new IllegalArgumentException("Could not find CAB *.impl.h mapping: " + class_name)
     }
 
+    @Deprecated
     def static String getSTLHeader(String class_name)
     {
         val header = stl_header_mapper.get(class_name)
@@ -220,6 +266,7 @@ class HeaderResolver
             throw new IllegalArgumentException("Could not find STL *.h mapping: " + class_name)
     }
 
+    @Deprecated
     def static String getBoostHeader(String class_name)
     {
         val header = boost_header_mapper.get(class_name)
@@ -230,6 +277,7 @@ class HeaderResolver
             throw new IllegalArgumentException("Could not find Boost *.h mapping: " + class_name)
     }
 
+    @Deprecated
     def static String getODBHeader(String class_name)
     {
         val header = odb_header_mapper.get(class_name)
@@ -240,6 +288,7 @@ class HeaderResolver
             throw new IllegalArgumentException("Could not find ODB *.h mapping: " + class_name)
     }
 
+    @Deprecated
     def static String getModulesHeader(String class_name)
     {
         val header = modules_header_mapper.get(class_name)
@@ -250,6 +299,7 @@ class HeaderResolver
             throw new IllegalArgumentException("Could not find modules *.h mapping: " + class_name)
     }
 
+    @Deprecated
     def static boolean isCAB(String class_name)
     {
         val key = GeneratorUtil.switchSeparator(class_name, TransformType.PACKAGE, TransformType.NAMESPACE)
@@ -263,6 +313,7 @@ class HeaderResolver
         return false
     }
 
+    @Deprecated
     def static boolean isBoost(String class_name)
     {
         return class_name.startsWith("boost")
