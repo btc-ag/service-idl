@@ -89,49 +89,11 @@ class TypeResolver
         return className
     }
 
-    @Deprecated
-    def String resolveCAB(String class_name)
-    {
-        val header = HeaderResolver.getCABHeader(class_name)
-        addToGroup(CAB_INCLUDE_GROUP, header)
-        cab_libs.addAll(LibResolver.getCABLibs(header))
-        return class_name
-    }
-
     def String resolveCABImpl(String class_name)
     {
         val header = HeaderResolver.getCABImpl(class_name)
         addToGroup(CAB_INCLUDE_GROUP, header)
         cab_libs.addAll(LibResolver.getCABLibs(header))
-        return class_name
-    }
-
-    @Deprecated
-    def String resolveSTL(String class_name)
-    {
-        addToGroup(STL_INCLUDE_GROUP, HeaderResolver.getSTLHeader(class_name))
-        return class_name
-    }
-
-    @Deprecated
-    def String resolveBoost(String class_name)
-    {
-        addToGroup(BOOST_INCLUDE_GROUP, HeaderResolver.getBoostHeader(class_name))
-        return class_name
-    }
-
-    @Deprecated
-    def String resolveODB(String class_name)
-    {
-        addToGroup(ODB_INCLUDE_GROUP, HeaderResolver.getODBHeader(class_name))
-        return class_name
-    }
-
-    @Deprecated
-    def String resolveModules(String class_name)
-    {
-        addToGroup(MODULES_INCLUDE_GROUP, HeaderResolver.getModulesHeader(class_name))
-        project_references.add(vsSolution.resolveClass(class_name))
         return class_name
     }
 
@@ -145,7 +107,7 @@ class TypeResolver
         if (com.btc.serviceidl.util.Util.isUUIDType(object))
         {
             if (project_type == ProjectType.PROTOBUF)
-                return new ResolvedName(resolveSTL("std::string"), TransformType.NAMESPACE)
+                return new ResolvedName(resolveClass("std::string"), TransformType.NAMESPACE)
             else
                 return new ResolvedName("BTC::Commons::CoreExtras::UUID", TransformType.NAMESPACE)
         }
@@ -160,9 +122,9 @@ class TypeResolver
 
         val resolved_name = qualified_name.toString
         if (HeaderResolver.isCAB(resolved_name))
-            resolveCAB(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
+            resolveClass(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
         else if (HeaderResolver.isBoost(resolved_name))
-            resolveBoost(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
+            resolveClass(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
         else
         {
             var result = GeneratorUtil.getTransformedModuleName(
@@ -199,23 +161,23 @@ class TypeResolver
             switch item.integerType
             {
                 case "int64":
-                    return resolveSTL("int64_t")
+                    return resolveClass("int64_t")
                 case "int32":
-                    return resolveSTL("int32_t")
+                    return resolveClass("int32_t")
                 case "int16":
-                    return resolveSTL("int16_t")
+                    return resolveClass("int16_t")
                 case "byte":
-                    return resolveSTL("int8_t")
+                    return resolveClass("int8_t")
                 default:
                     return item.integerType
             }
         }
         else if (item.stringType !== null)
-            return resolveSTL("std::string")
+            return resolveClass("std::string")
         else if (item.floatingPointType !== null)
             return item.floatingPointType
         else if (item.uuidType !== null)
-            return resolveCAB("BTC::Commons::CoreExtras::UUID")
+            return resolveClass("BTC::Commons::CoreExtras::UUID")
         else if (item.booleanType !== null)
             return "bool"
         else if (item.charType !== null)

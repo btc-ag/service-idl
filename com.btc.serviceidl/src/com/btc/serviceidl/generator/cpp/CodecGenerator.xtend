@@ -35,20 +35,20 @@ class CodecGenerator extends BasicCppGenerator
 {
     def private generateHCodecInline(EObject owner, Iterable<EObject> nested_types)
     {
-        val cab_uuid = resolveCAB("BTC::Commons::CoreExtras::UUID")
-        val forward_const_iterator = resolveCAB("BTC::Commons::Core::ForwardConstIterator")
-        val std_vector = resolveSTL("std::vector")
-        val std_string = resolveSTL("std::string")
-        val std_for_each = resolveSTL("std::for_each")
-        val create_default_async_insertable = resolveCAB("BTC::Commons::FutureUtil::CreateDefaultAsyncInsertable")
-        val insertable_traits = resolveCAB("BTC::Commons::CoreExtras::InsertableTraits")
-        val failable_handle = resolveCAB("BTC::Commons::CoreExtras::FailableHandle")
-        val cab_exception = resolveCAB("BTC::Commons::Core::Exception")
-        val cab_vector = resolveCAB("BTC::Commons::Core::Vector")
-        val cab_del_exception = resolveCAB("BTC::Commons::Core::DelException")
-        val cab_string = resolveCAB("BTC::Commons::Core::String")
-        val cab_create_unique = resolveCAB("BTC::Commons::Core::CreateUnique")
-        val std_find_if = resolveSTL("std::find_if")
+        val cab_uuid = resolveClass("BTC::Commons::CoreExtras::UUID")
+        val forward_const_iterator = resolveClass("BTC::Commons::Core::ForwardConstIterator")
+        val std_vector = resolveClass("std::vector")
+        val std_string = resolveClass("std::string")
+        val std_for_each = resolveClass("std::for_each")
+        val create_default_async_insertable = resolveClass("BTC::Commons::FutureUtil::CreateDefaultAsyncInsertable")
+        val insertable_traits = resolveClass("BTC::Commons::CoreExtras::InsertableTraits")
+        val failable_handle = resolveClass("BTC::Commons::CoreExtras::FailableHandle")
+        val cab_exception = resolveClass("BTC::Commons::Core::Exception")
+        val cab_vector = resolveClass("BTC::Commons::Core::Vector")
+        val cab_del_exception = resolveClass("BTC::Commons::Core::DelException")
+        val cab_string = resolveClass("BTC::Commons::Core::String")
+        val cab_create_unique = resolveClass("BTC::Commons::Core::CreateUnique")
+        val std_find_if = resolveClass("std::find_if")
 
         val failable_types = GeneratorUtil.getFailableTypes(owner)
 
@@ -103,7 +103,7 @@ class CodecGenerator extends BasicCppGenerator
             
             inline void EnsureFailableHandlers()
             {
-               «resolveSTL("std::call_once")»(register_fault_handlers, [&]()
+               «resolveClass("std::call_once")»(register_fault_handlers, [&]()
                {
                   «FOR exception : com.btc.serviceidl.util.Util.getFailableExceptions(owner)»
                       «val exception_type = resolve(exception)»
@@ -120,7 +120,7 @@ class CodecGenerator extends BasicCppGenerator
             }
             
             template<typename PROTOBUF_TYPE>
-            inline «resolveCAB("BTC::Commons::Core::AutoPtr")»<«cab_exception»> MakeException
+            inline «resolveClass("BTC::Commons::Core::AutoPtr")»<«cab_exception»> MakeException
             (
                PROTOBUF_TYPE const& protobuf_entry
             )
@@ -145,7 +145,7 @@ class CodecGenerator extends BasicCppGenerator
             {
                EnsureFailableHandlers();
             
-               auto match = «std_find_if»(fault_handlers.begin(), fault_handlers.end(), [&](const «resolveSTL("std::pair")»<const «std_string», «resolveSTL("std::function")»<«resolveCAB("BTC::Commons::Core::AutoPtr")»<«cab_exception»>(«cab_string» const&)>> &item) -> bool
+               auto match = «std_find_if»(fault_handlers.begin(), fault_handlers.end(), [&](const «resolveClass("std::pair")»<const «std_string», «resolveClass("std::function")»<«resolveClass("BTC::Commons::Core::AutoPtr")»<«cab_exception»>(«cab_string» const&)>> &item) -> bool
                {
                auto sample_exception = item.second(""); // fetch sample exception to use it for type comparison!
                return ( typeid(*sample_exception) == typeid(exception) );
@@ -156,7 +156,7 @@ class CodecGenerator extends BasicCppGenerator
                }
                else
                {
-                  protobuf_item->set_exception( «resolveCAB("CABTYPENAME")»(exception).GetChar() );
+                  protobuf_item->set_exception( «resolveClass("CABTYPENAME")»(exception).GetChar() );
                }
                
                protobuf_item->set_message( exception.GetMessageWithType().GetChar() );
@@ -194,7 +194,7 @@ class CodecGenerator extends BasicCppGenerator
             {
                typedef «failable_handle»<API_TYPE> ResultType;
             
-               «resolveCAB("BTC::Commons::Core::AutoPtr")»< «cab_vector»< ResultType > > result( new «cab_vector»< ResultType >() );
+               «resolveClass("BTC::Commons::Core::AutoPtr")»< «cab_vector»< ResultType > > result( new «cab_vector»< ResultType >() );
                «std_for_each»( protobuf_input.begin(), protobuf_input.end(), [ &result ]( PROTOBUF_TYPE const& protobuf_entry )
                {
                if (protobuf_entry.has_exception())
@@ -206,7 +206,7 @@ class CodecGenerator extends BasicCppGenerator
                   result->Add( ResultType( DecodeFailable(protobuf_entry) ) );
                }
                } );
-               return «resolveCAB("BTC::Commons::CoreExtras::MakeOwningForwardConstIterator")»< ResultType >( result.Move() );
+               return «resolveClass("BTC::Commons::CoreExtras::MakeOwningForwardConstIterator")»< ResultType >( result.Move() );
             }
             
             template<typename API_TYPE, typename PROTOBUF_TYPE>
@@ -228,7 +228,7 @@ class CodecGenerator extends BasicCppGenerator
                   «failable_handle»< API_TYPE > item(failable_item);
                   item.Get();
                }
-               catch («resolveCAB("BTC::Commons::Core::Exception")» const * e)
+               catch («resolveClass("BTC::Commons::Core::Exception")» const * e)
                {
                   «cab_del_exception» _(e);
                   SerializeException(*e, protobuf_item);
@@ -331,7 +331,7 @@ class CodecGenerator extends BasicCppGenerator
             }
             
             template<typename PROTOBUF_TYPE, typename API_TYPE>
-            inline void Decode(google::protobuf::RepeatedPtrField< PROTOBUF_TYPE > const& protobuf_input, typename «resolveCAB("BTC::Commons::CoreExtras::InsertableTraits")»< API_TYPE >::Type &api_output)
+            inline void Decode(google::protobuf::RepeatedPtrField< PROTOBUF_TYPE > const& protobuf_input, typename «resolveClass("BTC::Commons::CoreExtras::InsertableTraits")»< API_TYPE >::Type &api_output)
             {
                «std_for_each»( protobuf_input.begin(), protobuf_input.end(), [&]( PROTOBUF_TYPE const& protobuf_entry )
                {  api_output.OnNext( Decode(protobuf_entry) ); } );
@@ -340,7 +340,7 @@ class CodecGenerator extends BasicCppGenerator
             }
             
             template<typename PROTOBUF_TYPE, typename API_TYPE>
-            inline void Decode(google::protobuf::RepeatedField< PROTOBUF_TYPE > const& protobuf_input, typename «resolveCAB("BTC::Commons::CoreExtras::InsertableTraits")»< API_TYPE >::Type &api_output)
+            inline void Decode(google::protobuf::RepeatedField< PROTOBUF_TYPE > const& protobuf_input, typename «resolveClass("BTC::Commons::CoreExtras::InsertableTraits")»< API_TYPE >::Type &api_output)
             {
                «std_for_each»( protobuf_input.begin(), protobuf_input.end(), [&]( PROTOBUF_TYPE const& protobuf_entry )
                {  api_output.OnNext( Decode(protobuf_entry) ); } );
@@ -411,16 +411,16 @@ class CodecGenerator extends BasicCppGenerator
             
             inline void Encode(«cab_uuid» const& api_input, «std_string» * const protobuf_output)
             {
-               «resolveCAB("BTC::Commons::Core::UInt32")» param1 = 0;
-               «resolveCAB("BTC::Commons::Core::UInt16")» param2 = 0;
+               «resolveClass("BTC::Commons::Core::UInt32")» param1 = 0;
+               «resolveClass("BTC::Commons::Core::UInt16")» param2 = 0;
                BTC::Commons::Core::UInt16 param3 = 0;
-               «resolveSTL("std::array")»<«resolveCAB("BTC::Commons::Core::UInt8")», 8> param4 = {0};
+               «resolveClass("std::array")»<«resolveClass("BTC::Commons::Core::UInt8")», 8> param4 = {0};
             
                api_input.ExtractComponents(&param1, &param2, &param3, param4.data());
             
                protobuf_output->resize(16); // UUID is exactly 16 bytes long
             
-               «resolveSTL("std::copy")»(static_cast<const char*>(static_cast<const void*>(&param1)),
+               «resolveClass("std::copy")»(static_cast<const char*>(static_cast<const void*>(&param1)),
                static_cast<const char*>(static_cast<const void*>(&param1)) + 4,
                protobuf_output->begin());
             
@@ -437,16 +437,16 @@ class CodecGenerator extends BasicCppGenerator
             
             inline «cab_uuid» DecodeUUID(«std_string» const& protobuf_input)
             {
-               «resolveSTL("assert")»( protobuf_input.size() == 16 ); // lower half + upper half = 16 bytes!
+               «resolveClass("assert")»( protobuf_input.size() == 16 ); // lower half + upper half = 16 bytes!
                
-               «resolveSTL("std::array")»<unsigned char, 16> raw_bytes = {0};
-               «resolveSTL("std::copy")»( protobuf_input.begin(), protobuf_input.end(), raw_bytes.begin() );
+               «resolveClass("std::array")»<unsigned char, 16> raw_bytes = {0};
+               «resolveClass("std::copy")»( protobuf_input.begin(), protobuf_input.end(), raw_bytes.begin() );
             
-               «resolveCAB("BTC::Commons::Core::UInt32")» param1 = (raw_bytes[0] << 0 | raw_bytes[1] << 8 | raw_bytes[2] << 16 | raw_bytes[3] << 24);
-               «resolveCAB("BTC::Commons::Core::UInt16")» param2 = (raw_bytes[4] << 0 | raw_bytes[5] << 8);
+               «resolveClass("BTC::Commons::Core::UInt32")» param1 = (raw_bytes[0] << 0 | raw_bytes[1] << 8 | raw_bytes[2] << 16 | raw_bytes[3] << 24);
+               «resolveClass("BTC::Commons::Core::UInt16")» param2 = (raw_bytes[4] << 0 | raw_bytes[5] << 8);
                BTC::Commons::Core::UInt16 param3 = (raw_bytes[6] << 0 | raw_bytes[7] << 8);
             
-               std::array<«resolveCAB("BTC::Commons::Core::UInt8")», 8> param4 = {0};
+               std::array<«resolveClass("BTC::Commons::Core::UInt8")», 8> param4 = {0};
                std::copy(raw_bytes.begin() + 8, raw_bytes.end(), param4.begin());
             
                return «cab_uuid»::MakeFromComponents(param1, param2, param3, param4.data());
@@ -524,7 +524,7 @@ class CodecGenerator extends BasicCppGenerator
                    return «resolve(element)»::«enum_value»;
             «ENDFOR»
             
-            «resolveCAB("CABTHROW_V2")»(«resolveCAB("BTC::Commons::Core::InvalidArgumentException")»("Unknown enum value!"));
+            «resolveClass("CABTHROW_V2")»(«resolveClass("BTC::Commons::Core::InvalidArgumentException")»("Unknown enum value!"));
         '''
     }
 
@@ -540,7 +540,7 @@ class CodecGenerator extends BasicCppGenerator
 
         '''
             «IF is_optional && !is_sequence»if (protobuf_input.has_«protobuf_name»())«ENDIF»
-            «IF is_optional && !is_sequence»   «ENDIF»api_output.«element.name.asMember» = «IF is_pointer»«resolveSTL("std::make_shared")»< «toText(element.type, null)» >( «ENDIF»«IF use_codec»«codec_name»( «ENDIF»protobuf_input.«protobuf_name»()«IF use_codec» )«ENDIF»«IF is_pointer» )«ENDIF»;
+            «IF is_optional && !is_sequence»   «ENDIF»api_output.«element.name.asMember» = «IF is_pointer»«resolveClass("std::make_shared")»< «toText(element.type, null)» >( «ENDIF»«IF use_codec»«codec_name»( «ENDIF»protobuf_input.«protobuf_name»()«IF use_codec» )«ENDIF»«IF is_pointer» )«ENDIF»;
         '''
     }
 
@@ -576,7 +576,7 @@ class CodecGenerator extends BasicCppGenerator
                    return «typeResolver.resolveProtobuf(element, ProtobufType.RESPONSE)»::«enum_value»;
             «ENDFOR»
             
-            «resolveCAB("CABTHROW_V2")»(«resolveCAB("BTC::Commons::Core::InvalidArgumentException")»("Unknown enum value!"));
+            «resolveClass("CABTHROW_V2")»(«resolveClass("BTC::Commons::Core::InvalidArgumentException")»("Unknown enum value!"));
         '''
     }
 
@@ -631,16 +631,16 @@ class CodecGenerator extends BasicCppGenerator
         // collect all contained distinct types which need conversion
         val nested_types = GeneratorUtil.getEncodableTypes(owner)
 
-        val cab_uuid = resolveCAB("BTC::Commons::CoreExtras::UUID")
-        val forward_const_iterator = resolveCAB("BTC::Commons::Core::ForwardConstIterator")
-        val std_vector = resolveSTL("std::vector")
-        val insertable_traits = resolveCAB("BTC::Commons::CoreExtras::InsertableTraits")
-        val std_string = resolveSTL("std::string")
-        val std_function = resolveSTL("std::function")
-        val failable_handle = resolveCAB("BTC::Commons::CoreExtras::FailableHandle")
-        val cab_exception = resolveCAB("BTC::Commons::Core::Exception")
-        val cab_auto_ptr = resolveCAB("BTC::Commons::Core::AutoPtr")
-        val cab_string = resolveCAB("BTC::Commons::Core::String")
+        val cab_uuid = resolveClass("BTC::Commons::CoreExtras::UUID")
+        val forward_const_iterator = resolveClass("BTC::Commons::Core::ForwardConstIterator")
+        val std_vector = resolveClass("std::vector")
+        val insertable_traits = resolveClass("BTC::Commons::CoreExtras::InsertableTraits")
+        val std_string = resolveClass("std::string")
+        val std_function = resolveClass("std::function")
+        val failable_handle = resolveClass("BTC::Commons::CoreExtras::FailableHandle")
+        val cab_exception = resolveClass("BTC::Commons::Core::Exception")
+        val cab_auto_ptr = resolveClass("BTC::Commons::Core::AutoPtr")
+        val cab_string = resolveClass("BTC::Commons::Core::String")
 
         val failable_types = GeneratorUtil.getFailableTypes(owner)
         
@@ -653,8 +653,8 @@ class CodecGenerator extends BasicCppGenerator
         '''
             namespace «GeneratorUtil.getCodecName(owner)»
             {
-               static «resolveSTL("std::once_flag")» register_fault_handlers;
-               static «resolveSTL("std::map")»<«std_string», «std_function»< «cab_auto_ptr»<«cab_exception»>(«cab_string» const&)> > fault_handlers;
+               static «resolveClass("std::once_flag")» register_fault_handlers;
+               static «resolveClass("std::map")»<«std_string», «std_function»< «cab_auto_ptr»<«cab_exception»>(«cab_string» const&)> > fault_handlers;
                
                // forward declarations
                template<typename PROTOBUF_TYPE, typename API_TYPE>
@@ -672,7 +672,7 @@ class CodecGenerator extends BasicCppGenerator
                void EnsureFailableHandlers();
                
                template<typename PROTOBUF_TYPE>
-               «resolveCAB("BTC::Commons::Core::AutoPtr")»<«cab_exception»> MakeException
+               «resolveClass("BTC::Commons::Core::AutoPtr")»<«cab_exception»> MakeException
                (
                PROTOBUF_TYPE const& protobuf_entry
                );

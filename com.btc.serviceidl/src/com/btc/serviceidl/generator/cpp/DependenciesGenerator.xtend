@@ -23,7 +23,7 @@ class DependenciesGenerator extends BasicCppGenerator
         // exist, which are explicitly resolved here
         if (paramBundle.projectType == ProjectType.PROXY || paramBundle.projectType == ProjectType.DISPATCHER)
         {
-            resolveCAB("BTC::Commons::FutureUtil::InsertableTraits")
+            resolveClass("BTC::Commons::FutureUtil::InsertableTraits")
         }
 
         '''

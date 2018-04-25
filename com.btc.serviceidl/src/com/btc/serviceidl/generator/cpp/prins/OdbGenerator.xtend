@@ -41,9 +41,9 @@ class OdbGenerator
                namespace mssql
                {
                   template<>
-                  struct default_type_traits<«resolveModules("BTC::PRINS::Commons::GUID")»>
+                  struct default_type_traits<«resolveClass("BTC::PRINS::Commons::GUID")»>
                   {
-                     static const database_type_id db_type_id = «resolveODB("id_uniqueidentifier")»;
+                     static const database_type_id db_type_id = «resolveClass("id_uniqueidentifier")»;
                   };
             
                   template<>
@@ -58,10 +58,10 @@ class OdbGenerator
                      {
                         if (!is_null)
                         {
-                           «resolveCAB("BTC::Commons::CoreExtras::UUID")» uuid;
-                           «resolveSTL("std::array")»<char, 16> db_data;
-                           «resolveSTL("std::memcpy")»(db_data.data(), &img, 16);
-                           «resolveModules("BTC::PRINS::Commons::Utilities::GUIDHelper")»::guidEncode(db_data.data(), uuid);
+                           «resolveClass("BTC::Commons::CoreExtras::UUID")» uuid;
+                           «resolveClass("std::array")»<char, 16> db_data;
+                           «resolveClass("std::memcpy")»(db_data.data(), &img, 16);
+                           «resolveClass("BTC::PRINS::Commons::Utilities::GUIDHelper")»::guidEncode(db_data.data(), uuid);
                            val = BTC::PRINS::Commons::GUID::FromStringSafe("{" + uuid.ToString() + "}");
                         }
                         else
@@ -83,9 +83,9 @@ class OdbGenerator
                namespace oracle
                {
                   template<>
-                  struct default_type_traits<«resolveModules("BTC::PRINS::Commons::GUID")»>
+                  struct default_type_traits<«resolveClass("BTC::PRINS::Commons::GUID")»>
                   {
-                     static const database_type_id db_type_id = «resolveODB("id_raw")»;
+                     static const database_type_id db_type_id = «resolveClass("id_raw")»;
                   };
             
                   template<>
@@ -98,11 +98,11 @@ class OdbGenerator
             
                      static void set_value(value_type& val, const image_type img, std::size_t n, bool is_null)
                      {
-                        «resolveCAB("BTC::Commons::CoreExtras::UUID")» uuid;
-                        «resolveSTL("std::vector")»<char> db_data;
+                        «resolveClass("BTC::Commons::CoreExtras::UUID")» uuid;
+                        «resolveClass("std::vector")»<char> db_data;
                         db_data.reserve(n);
-                        «resolveSTL("std::memcpy")»(db_data.data(), img, n);
-                        «resolveModules("BTC::PRINS::Commons::Utilities::GUIDHelper")»::guidEncode(db_data.data(), uuid);
+                        «resolveClass("std::memcpy")»(db_data.data(), img, n);
+                        «resolveClass("BTC::PRINS::Commons::Utilities::GUIDHelper")»::guidEncode(db_data.data(), uuid);
                         val = BTC::PRINS::Commons::GUID::FromStringSafe("{" + uuid.ToString() + "}");
                      }
             
@@ -142,11 +142,11 @@ class OdbGenerator
             }
         }
         else if (element.stringType !== null)
-            return resolveSTL("std::string")
+            return resolveClass("std::string")
         else if (element.floatingPointType !== null)
             return element.floatingPointType
         else if (element.uuidType !== null)
-            return resolveModules("BTC::PRINS::Commons::GUID")
+            return resolveClass("BTC::PRINS::Commons::GUID")
         else if (element.booleanType !== null)
             return "bool"
         else if (element.charType !== null)
@@ -167,7 +167,7 @@ class OdbGenerator
 
     def private dispatch String resolveODBType(SequenceDeclaration element)
     {
-        '''«resolveSTL("std::vector")»<«resolveODBType(element.ultimateType)»>'''
+        '''«resolveClass("std::vector")»<«resolveODBType(element.ultimateType)»>'''
     }
 
     def private dispatch String resolveODBType(EnumDeclaration element)
@@ -226,7 +226,7 @@ class OdbGenerator
 
         '''
             #pragma db «IF is_uuid && column_name == "ID"»id «ENDIF»column("«normalized_column_name»")«IF is_uuid» oracle:type("RAW(16)") mssql:type("UNIQUEIDENTIFIER")«ENDIF»
-            «IF is_optional»«resolveODB("odb::nullable")»<«ENDIF»«resolveODBType(member.type)»«IF is_optional»>«ENDIF» «column_name»;
+            «IF is_optional»«resolveClass("odb::nullable")»<«ENDIF»«resolveODBType(member.type)»«IF is_optional»>«ENDIF» «column_name»;
         '''
     }
 

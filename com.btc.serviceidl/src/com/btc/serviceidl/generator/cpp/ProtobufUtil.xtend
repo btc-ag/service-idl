@@ -35,7 +35,7 @@ class ProtobufUtil
         ProtobufType protobuf_type)
     {
         if (com.btc.serviceidl.util.Util.isUUIDType(object))
-            return new ResolvedName(resolveSTL("std::string"), TransformType.NAMESPACE)
+            return new ResolvedName(resolveClass("std::string"), TransformType.NAMESPACE)
         else if (com.btc.serviceidl.util.Util.isInt16(object) || com.btc.serviceidl.util.Util.isByte(object) ||
             com.btc.serviceidl.util.Util.isChar(object))
             return new ResolvedName("::google::protobuf::int32", TransformType.NAMESPACE)
@@ -123,10 +123,10 @@ class ProtobufUtil
             return '''«typeResolver.resolveCodecNS(element)»::DecodeUUID'''
 
         if (com.btc.serviceidl.util.Util.isByte(element))
-            return '''static_cast<«resolveSTL("int8_t")»>'''
+            return '''static_cast<«resolveClass("int8_t")»>'''
 
         if (com.btc.serviceidl.util.Util.isInt16(element))
-            return '''static_cast<«resolveSTL("int16_t")»>'''
+            return '''static_cast<«resolveClass("int16_t")»>'''
 
         if (com.btc.serviceidl.util.Util.isChar(element))
             return '''static_cast<char>'''

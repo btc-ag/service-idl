@@ -68,7 +68,7 @@ class BasicCppGenerator
 
         '''
             «FOR function : interface_declaration.functions»
-                «IF !function.isSync»«resolveCAB("BTC::Commons::CoreExtras::Future")»<«ENDIF»«toText(function.returnedType, interface_declaration)»«IF !function.isSync»>«ENDIF» «class_name.shortName»::«function.name»(«generateParameters(function)»)«IF function.isQuery» const«ENDIF»
+                «IF !function.isSync»«resolveClass("BTC::Commons::CoreExtras::Future")»<«ENDIF»«toText(function.returnedType, interface_declaration)»«IF !function.isSync»>«ENDIF» «class_name.shortName»::«function.name»(«generateParameters(function)»)«IF function.isQuery» const«ENDIF»
                 {
                    «generateFunctionBody(interface_declaration, function)»
                 }
@@ -83,7 +83,7 @@ class BasicCppGenerator
         '''
             «IF paramBundle.projectType == ProjectType.IMPL || paramBundle.projectType == ProjectType.EXTERNAL_DB_IMPL»
                 // \todo Auto-generated method stub! Implement actual business logic!
-                «resolveCAB("CABTHROW_V2")»(«resolveCAB("BTC::Commons::Core::UnsupportedOperationException")»( "«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»" ));
+                «resolveClass("CABTHROW_V2")»(«resolveClass("BTC::Commons::Core::UnsupportedOperationException")»( "«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»" ));
             «ENDIF»
         '''
     }
@@ -171,12 +171,12 @@ class BasicCppGenerator
                    «FOR member : item.members»
                        «val is_pointer = useSmartPointer(item, member.type)»
                        «val is_optional = member.isOptional»
-                       «IF is_optional && !is_pointer»«resolveCAB("BTC::Commons::CoreExtras::Optional")»< «ENDIF»«IF is_pointer»«resolveSTL("std::shared_ptr")»< «ENDIF»«toText(member.type, item)»«IF is_pointer» >«ENDIF»«IF is_optional && !is_pointer» >«ENDIF» «member.name.asMember»;
+                       «IF is_optional && !is_pointer»«resolveClass("BTC::Commons::CoreExtras::Optional")»< «ENDIF»«IF is_pointer»«resolveClass("std::shared_ptr")»< «ENDIF»«toText(member.type, item)»«IF is_pointer» >«ENDIF»«IF is_optional && !is_pointer» >«ENDIF» «member.name.asMember»;
                    «ENDFOR»
                    
                    «IF related_event !== null»
                        /** \return {«GuidMapper.get(related_event)»} */
-                       static «resolveCAB("BTC::Commons::CoreExtras::UUID")» EVENT_TYPE_GUID();
+                       static «resolveClass("BTC::Commons::CoreExtras::UUID")» EVENT_TYPE_GUID();
                        
                    «ENDIF»
                    
@@ -204,7 +204,7 @@ class BasicCppGenerator
         {
             if (item.members.empty)
                 '''
-                    «resolveCAB("CAB_SIMPLE_EXCEPTION_DEFINITION")»( «item.name», «IF item.supertype !== null»«resolve(item.supertype)»«ELSE»«resolveCAB("BTC::Commons::Core::Exception")»«ENDIF», «makeExportMacro()» )
+                    «resolveClass("CAB_SIMPLE_EXCEPTION_DEFINITION")»( «item.name», «IF item.supertype !== null»«resolve(item.supertype)»«ELSE»«resolveClass("BTC::Commons::Core::Exception")»«ENDIF», «makeExportMacro()» )
                 '''
             else
             {
@@ -217,7 +217,7 @@ class BasicCppGenerator
                        typedef «base_class_name» BASE;
                        
                        «class_name»();
-                       explicit «class_name»(«resolveCAB("BTC::Commons::Core::String")» const &msg);
+                       explicit «class_name»(«resolveClass("BTC::Commons::Core::String")» const &msg);
                        «class_name»( «FOR member : item.members SEPARATOR ", "»«toText(member.type, item)» const& «member.name.asMember»«ENDFOR» );
                        
                        virtual ~«class_name»();
@@ -229,7 +229,7 @@ class BasicCppGenerator
                        «ENDFOR»
                        
                        protected:
-                          virtual «resolveCAB("BTC::Commons::Core::Exception")» *IntClone() const;
+                          virtual «resolveClass("BTC::Commons::Core::Exception")» *IntClone() const;
                     };
                 '''
             }
@@ -247,22 +247,22 @@ class BasicCppGenerator
     {
         val inner_type = '''«IF item.failable»«
 
-resolveCAB
+resolveClass
 ("BTC::Commons::CoreExtras::FailableHandle")»< «ENDIF»«toText
 (item.type, item)»«IF item
 .failable» >«ENDIF»'''
 
         if (item.isOutputParameter)
-            '''«resolveCAB("BTC::Commons::CoreExtras::InsertableTraits")»< «inner_type» >::Type'''
+            '''«resolveClass("BTC::Commons::CoreExtras::InsertableTraits")»< «inner_type» >::Type'''
         else if (context.eContainer instanceof MemberElement)
-            '''«resolveSTL("std::vector")»< «inner_type» >'''
+            '''«resolveClass("std::vector")»< «inner_type» >'''
         else
-            '''«resolveCAB("BTC::Commons::Core::ForwardConstIterator")»< «inner_type» >'''
+            '''«resolveClass("BTC::Commons::Core::ForwardConstIterator")»< «inner_type» >'''
     }
 
     def dispatch String toText(TupleDeclaration item, EObject context)
     {
-        '''«resolveSTL("std::tuple")»<«FOR type : item.types»«toText(type, item)»«IF type != item.types.last», «ENDIF»«ENDFOR»>'''
+        '''«resolveClass("std::tuple")»<«FOR type : item.types»«toText(type, item)»«IF type != item.types.last», «ENDIF»«ENDFOR»>'''
     }
 
     def dispatch String toText(EventDeclaration item, EObject context)
@@ -293,7 +293,7 @@ resolveCAB
 
     def private String makeBaseExceptionType(ExceptionDeclaration exception)
     {
-        '''«IF exception.supertype === null»«resolveCAB("BTC::Commons::Core::Exception")»«ELSE»«resolve(exception.supertype)»«ENDIF»'''
+        '''«IF exception.supertype === null»«resolveClass("BTC::Commons::Core::Exception")»«ELSE»«resolve(exception.supertype)»«ENDIF»'''
     }
 
     def String generateHConstructor(InterfaceDeclaration interface_declaration)
@@ -306,15 +306,15 @@ resolveCAB
             */
             «class_name.shortName»
             (
-               «resolveCAB("BTC::Commons::Core::Context")» &context
-               ,«resolveCAB("BTC::Logging::API::LoggerFactory")» &loggerFactory
+               «resolveClass("BTC::Commons::Core::Context")» &context
+               ,«resolveClass("BTC::Logging::API::LoggerFactory")» &loggerFactory
                «IF paramBundle.projectType == ProjectType.PROXY»
-                   ,«resolveCAB("BTC::ServiceComm::API::IClientEndpoint")» &localEndpoint
-                   ,«resolveCAB("BTC::Commons::CoreExtras::Optional")»<«resolveCAB("BTC::Commons::CoreExtras::UUID")»> const &serverServiceInstanceGuid 
-                      = «resolveCAB("BTC::Commons::CoreExtras::Optional")»<«resolveCAB("BTC::Commons::CoreExtras::UUID")»>()
+                   ,«resolveClass("BTC::ServiceComm::API::IClientEndpoint")» &localEndpoint
+                   ,«resolveClass("BTC::Commons::CoreExtras::Optional")»<«resolveClass("BTC::Commons::CoreExtras::UUID")»> const &serverServiceInstanceGuid 
+                      = «resolveClass("BTC::Commons::CoreExtras::Optional")»<«resolveClass("BTC::Commons::CoreExtras::UUID")»>()
                «ELSEIF paramBundle.projectType == ProjectType.DISPATCHER»
-                   ,«resolveCAB("BTC::ServiceComm::API::IServerEndpoint")»& serviceEndpoint
-                   ,«resolveCAB("BTC::Commons::Core::AutoPtr")»< «resolve(interface_declaration, ProjectType.SERVICE_API)» > dispatchee
+                   ,«resolveClass("BTC::ServiceComm::API::IServerEndpoint")»& serviceEndpoint
+                   ,«resolveClass("BTC::Commons::Core::AutoPtr")»< «resolve(interface_declaration, ProjectType.SERVICE_API)» > dispatchee
                «ENDIF»
             );
         '''
@@ -401,14 +401,14 @@ resolveCAB
     {
         '''
             «IF exception.members.empty»
-                «resolveCAB("CAB_SIMPLE_EXCEPTION_IMPLEMENTATION")»( «resolve(exception).shortName» )
+                «resolveClass("CAB_SIMPLE_EXCEPTION_IMPLEMENTATION")»( «resolve(exception).shortName» )
             «ELSE»
                 «val class_name = exception.name»
                 // based on CAB macro CAB_SIMPLE_EXCEPTION_IMPLEMENTATION_DEFAULT_MSG from Exception.h
                 «class_name»::«class_name»() : BASE("")
                 {}
                 
-                «class_name»::«class_name»(«resolveCAB("BTC::Commons::Core::String")» const &msg) : BASE("")
+                «class_name»::«class_name»(«resolveClass("BTC::Commons::Core::String")» const &msg) : BASE("")
                 {}
                 
                 «class_name»::«class_name»(
@@ -430,7 +430,7 @@ resolveCAB
                    throw this;
                 }
                 
-                «resolveCAB("BTC::Commons::Core::Exception")» *«class_name»::IntClone() const
+                «resolveClass("BTC::Commons::Core::Exception")» *«class_name»::IntClone() const
                 {
                    return new «class_name»(GetSingleMsg());
                 }
