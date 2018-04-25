@@ -28,6 +28,7 @@ class ParameterBundle
     private ArtifactNature artifact_nature
     private Optional<ProjectType> project_type = Optional.empty
 
+    // TODO redesign this, the role of "master_data" is unclear and confusing
     static class Builder
     {
         private Optional<TransformType> transform_type = Optional.empty
@@ -100,7 +101,7 @@ class ParameterBundle
         transform_type = builder.master_data.transform_type
         project_type = builder.master_data.project_type
     }
-
+    
     def static Builder createBuilder(Deque<ModuleDeclaration> module_stack)
     {
         val builder = new Builder

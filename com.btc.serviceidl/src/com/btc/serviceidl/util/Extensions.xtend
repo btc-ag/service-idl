@@ -158,6 +158,7 @@ class Extensions
      * Allows to print the given text for any object: useful, when we need
      * to resolve a type, but do not want/may not print the resulting string.
      */
+    @Deprecated
     def static String alias(Object object, String text)
     {
         text
@@ -362,5 +363,12 @@ class Extensions
     def private static dispatch MemberElementWrapper wrapMember(EnumDeclaration enum_declaration)
     {
         return new MemberElementWrapper(enum_declaration)
+    }
+
+    def static namedEvents(InterfaceDeclaration interfaceDeclaration)
+    {
+        // TODO the events function also includes inherited events, check whether these 
+        // should be included here as well. Adjust naming of the methods. 
+        interfaceDeclaration.contains.filter(EventDeclaration).filter[name !== null]
     }
 }
