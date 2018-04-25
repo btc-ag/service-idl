@@ -1,3 +1,13 @@
+/*********************************************************************
+ * \author see AUTHORS file
+ * \copyright 2015-2018 BTC Business Technology Consulting AG and others
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
+ **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.ArtifactNature
@@ -27,6 +37,7 @@ import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
 import com.btc.serviceidl.generator.cpp.HeaderResolver.GroupedHeader
+import com.btc.serviceidl.generator.cpp.prins.PrinsHeaderResolver
 
 @Accessors(PACKAGE_GETTER)
 class TypeResolver
@@ -76,7 +87,8 @@ class TypeResolver
     public static val MODULES_INCLUDE_GROUP = new IncludeGroup("BTC.PRINS.Modules")
     public static val ODB_INCLUDE_GROUP = new IncludeGroup("ODB")
     
-    private val headerResolver = new HeaderResolver.Builder().withPrinsGroups.build
+    // TODO inject this
+    private val headerResolver = PrinsHeaderResolver.create
 
     def String resolveClass(String className)
     {
