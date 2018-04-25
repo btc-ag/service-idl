@@ -24,11 +24,6 @@ class Extensions
         param.read.getProjectType
     }
 
-    def static Deque<ModuleDeclaration> getModuleStack(Builder param)
-    {
-        param.read.getModuleStack
-    }
-
     def static ProjectType getMainProjectType(EObject item)
     {
         val scope_determinant = Util.getScopeDeterminant(item)
