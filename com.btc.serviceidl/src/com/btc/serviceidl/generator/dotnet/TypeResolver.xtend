@@ -40,7 +40,7 @@ class TypeResolver
     private val Set<String> referenced_assemblies
     private val Map<String, String> project_references
     private val VSSolution vsSolution
-    private val ParameterBundle.Builder param_bundle
+    private val ParameterBundle param_bundle
 
     def ResolvedName resolve(String name)
     {
@@ -134,7 +134,7 @@ class TypeResolver
 
     def private boolean isSameProject(QualifiedName referenced_package)
     {
-        GeneratorUtil.transform(param_bundle.build, ArtifactNature.DOTNET, TransformType.PACKAGE) ==
+        GeneratorUtil.transform(param_bundle, ArtifactNature.DOTNET, TransformType.PACKAGE) ==
             referenced_package.toString
     }
 
@@ -155,7 +155,7 @@ class TypeResolver
         }
         else
         {
-            project_path = "../" + GeneratorUtil.getRelativePathsUpwards(param_bundle.build) +
+            project_path = "../" + GeneratorUtil.getRelativePathsUpwards(param_bundle) +
                 GeneratorUtil.transform(temp_param.build, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM) + "/" +
                 project_name
         }
