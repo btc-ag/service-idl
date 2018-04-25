@@ -71,18 +71,19 @@ class GeneratorUtil
     def private static String getEffectiveModuleName(ModuleDeclaration module, ArtifactNature artifactNature,
         TransformType transformType)
     {
-        if (artifactNature == ArtifactNature.DOTNET)
+        if (artifactNature == ArtifactNature.DOTNET && module.main)
         {
-            if (module.main) return module.name + ".NET" else module.name
+            if (module.main) module.name + ".NET" else module.name
         }
         else if (artifactNature == ArtifactNature.JAVA)
         {
             if (module.eContainer === null || (module.eContainer instanceof IDLSpecification))
-                return "com" + transformType.separator + module.name
+                "com" + transformType.separator + module.name
             else
-                return module.name
+                module.name
         }
-        return module.name
+        else
+            module.name
     }
 
     def public static String switchPackageSeperator(String name, TransformType targetTransformType)
