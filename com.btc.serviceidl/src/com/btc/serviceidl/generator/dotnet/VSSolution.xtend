@@ -11,9 +11,9 @@ class VSSolution
 {
     private val vs_projects = new HashMap<String, UUID>
 
-    def public String getCsprojName(ParameterBundle.Builder builder)
+    def public String getCsprojName(ParameterBundle builder)
     {
-        val project_name = GeneratorUtil.transform(builder.build, ArtifactNature.DOTNET, TransformType.PACKAGE)
+        val project_name = GeneratorUtil.transform(builder, ArtifactNature.DOTNET, TransformType.PACKAGE)
         getCsprojGUID(project_name)
         return project_name
     }
