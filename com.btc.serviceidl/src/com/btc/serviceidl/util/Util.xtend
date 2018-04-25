@@ -36,7 +36,10 @@ import java.util.ArrayDeque
 import java.util.Deque
 import java.util.HashSet
 import java.util.Optional
+import java.util.function.Function
 import java.util.regex.Pattern
+import java.util.stream.Stream
+import java.util.stream.StreamSupport
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -515,4 +518,15 @@ class Util
         return exceptions.sortBy[name]
     }
 
+    static def <T> stream(Iterable<T> iterable)
+    {
+        StreamSupport.stream(iterable.spliterator, false)
+    }
+
+    static def <T> flatten(Stream<Stream<T>> stream)
+    {
+        stream.flatMap(
+            Function.identity
+        );
+    }
 }

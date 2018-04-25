@@ -15,15 +15,14 @@ import com.btc.serviceidl.util.Constants
 import java.util.Collection
 import java.util.HashSet
 import java.util.LinkedHashSet
-import java.util.List
 import java.util.Map
-import java.util.stream.Collectors
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(PACKAGE_GETTER)
 class TypeResolver
@@ -189,12 +188,10 @@ class TypeResolver
             return false
     }
 
-    def List<EObject> resolveForwardDeclarations(Collection<TypeWrapper> sorted_types)
+    def Iterable<EObject> resolveForwardDeclarations(Iterable<TypeWrapper> types)
     {
-        val forward_declarations = sorted_types.filter[!forwardDeclarations.empty].map[forwardDeclarations].flatten.
-            toList.stream.distinct.collect(Collectors.toList)
-
-        for (wrapper : sorted_types)
+        // TODO does this really need to iterate twice through types? 
+        for (wrapper : types)
         {
             var dependencies = smart_pointer_map.get(wrapper.type)
             if (dependencies === null)
@@ -205,6 +202,8 @@ class TypeResolver
             dependencies.addAll(wrapper.forwardDeclarations)
         }
 
-        return forward_declarations
+        return types.stream.filter[!it.forwardDeclarations.empty].flatMap[forwardDeclarations.stream].distinct.iterator.
+            toIterable
     }
+
 }
