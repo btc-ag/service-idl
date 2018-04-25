@@ -45,20 +45,11 @@ class GeneratorUtil
         var result = ""
         for (module : parameterBundle.getModuleStack)
         {
-            if (!module.virtual)
+            if (!module.virtual || transformType.useVirtual || artifactNature == ArtifactNature.JAVA)
             {
                 result += getEffectiveModuleName(module, artifactNature, transformType) +
                     (if (module != parameterBundle.getModuleStack.last) transformType.getSeparator else "")
-            }
-            else
-            {
-                if (transformType.useVirtual || artifactNature == ArtifactNature.JAVA)
-                    result += getEffectiveModuleName(module, artifactNature, transformType) +
-                        if (module != parameterBundle.getModuleStack.last)
-                            transformType.getSeparator
-                        else
-                            ""
-            }
+            }            
         }
 
         if (parameterBundle.projectType !== null)
