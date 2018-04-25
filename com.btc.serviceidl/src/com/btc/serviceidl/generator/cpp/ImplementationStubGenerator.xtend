@@ -13,7 +13,6 @@ package com.btc.serviceidl.generator.cpp
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
