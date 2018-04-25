@@ -28,7 +28,7 @@ import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
-import java.util.Collection
+import java.util.Arrays
 import java.util.HashSet
 import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EObject
@@ -36,7 +36,6 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import java.util.Arrays
 
 class GeneratorUtil
 {
@@ -127,12 +126,12 @@ class GeneratorUtil
 
     def static String asFailable(EObject element, EObject container, IQualifiedNameProvider qualifiedNameProvider)
     {
-        Arrays.asList(Arrays.asList("Failable"), qualifiedNameProvider.getFullyQualifiedName(container).segments,
-            getTypeName(Util.getUltimateType(element), qualifiedNameProvider).map[toFirstUpper]).flatten.join(
-            FAILABLE_SEPARATOR)
+        Arrays.asList(Arrays.asList("Failable"),
+            qualifiedNameProvider.getFullyQualifiedName(container).segments, getTypeName(Util.getUltimateType(element),
+                qualifiedNameProvider).map[toFirstUpper]).flatten.join(FAILABLE_SEPARATOR)
     }
 
-    private def static getTypeName(EObject type, IQualifiedNameProvider qualifiedNameProvider)
+    private def static Iterable<String> getTypeName(EObject type, IQualifiedNameProvider qualifiedNameProvider)
     {
         if (type.isPrimitive)
             Arrays.asList(Names.plain(type))
@@ -140,7 +139,7 @@ class GeneratorUtil
             qualifiedNameProvider.getFullyQualifiedName(type).segments
     }
 
-    def static Collection<EObject> getEncodableTypes(EObject owner)
+    def static Iterable<EObject> getEncodableTypes(EObject owner)
     {
         val nestedTypes = new HashSet<EObject>
         nestedTypes.addAll(owner.eContents.filter(StructDeclaration))
@@ -151,7 +150,7 @@ class GeneratorUtil
 
     def static String getClassName(ArtifactNature artifactNature, ProjectType projectType, String basicName)
     {
-        return projectType.getClassName(artifactNature, basicName)
+        projectType.getClassName(artifactNature, basicName)
     }
 
     def static boolean useCodec(EObject element, ArtifactNature artifactNature)
