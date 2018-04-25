@@ -181,19 +181,6 @@ class HeaderResolver
         "boost::bimap" -> "boost/bimap.hpp"
     }
 
-    // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val odb_header_mapper = #{
-        "id_raw" -> "odb/oracle/traits.hxx",
-        "id_uniqueidentifier" -> "odb/mssql/traits.hxx",
-        "odb::nullable" -> "odb/nullable.hxx"
-    }
-
-    // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val modules_header_mapper = #{
-        "BTC::PRINS::Commons::GUID" -> "modules/Commons/include/GUID.h",
-        "BTC::PRINS::Commons::Utilities::GUIDHelper" -> "modules/Commons/Utilities/include/GUIDHelper.h"
-    }
-
     private val Map<String, GroupedHeader> headerMap
 
     private new(Map<String, GroupedHeader> headerMap)
@@ -223,11 +210,6 @@ class HeaderResolver
                 TypeResolver.BOOST_INCLUDE_GROUP).withGroup(cab_header_mapper, TypeResolver.CAB_INCLUDE_GROUP)
         }
 
-        def static withPrinsGroups(Builder builder)
-        {
-            builder.withBasicGroups.withGroup(odb_header_mapper, TypeResolver.ODB_INCLUDE_GROUP).withGroup(
-                modules_header_mapper, TypeResolver.MODULES_INCLUDE_GROUP)
-        }              
     }
 
     def static Iterable<Pair<String, GroupedHeader>> transformHeaderMap(Map<String, String> map, IncludeGroup group)
