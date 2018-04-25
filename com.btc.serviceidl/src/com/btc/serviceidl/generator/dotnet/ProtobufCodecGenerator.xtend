@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.dotnet
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.AbstractType
@@ -212,7 +213,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
             var builder = «protobuf_type_name».CreateBuilder();
             «FOR member : members»
                 «val codec = resolveCodec(typeResolver, param_bundle, member.type)»
-                «val useCodec = GeneratorUtil.useCodec(member.type, param_bundle.artifactNature)»
+                «val useCodec = GeneratorUtil.useCodec(member.type, ArtifactNature.DOTNET)»
                 «val encodeMethod = getEncodeMethod(member.type)»
                 «val method_name = if (com.btc.serviceidl.util.Util.isSequenceType(member.type)) "AddRange" + member.name.toLowerCase.toFirstUpper else "Set" + member.name.toLowerCase.toFirstUpper»
                 «IF com.btc.serviceidl.util.Util.isAbstractCrossReferenceType(member.type) && !(com.btc.serviceidl.util.Util.isEnumType(member.type))»
@@ -283,7 +284,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
             return new «api_type_name» (
                «FOR member : members SEPARATOR ","»
                    «val codec = resolveCodec(typeResolver, param_bundle, member.type)»
-                   «val useCodec = GeneratorUtil.useCodec(member.type, param_bundle.artifactNature)»
+                   «val useCodec = GeneratorUtil.useCodec(member.type, ArtifactNature.DOTNET)»
                    «val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(member.type)»
                    «val is_optional = member.optional»
                    «IF com.btc.serviceidl.util.Util.isByte(member.type) || com.btc.serviceidl.util.Util.isInt16(member.type) || com.btc.serviceidl.util.Util.isChar(member.type)»

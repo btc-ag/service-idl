@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.java
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
@@ -152,7 +153,7 @@ class TypeResolver
 
         val effective_name = MavenResolver.resolvePackage(element, Optional.of(project_type)) +
             TransformType.PACKAGE.separator + if (element instanceof InterfaceDeclaration)
-                project_type.getClassName(param_bundle.artifactNature, name.lastSegment)
+                project_type.getClassName(ArtifactNature.JAVA, name.lastSegment)
             else if (element instanceof EventDeclaration) getObservableName(element) else name.lastSegment
         val fully_qualified_name = QualifiedName.create(
             effective_name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))

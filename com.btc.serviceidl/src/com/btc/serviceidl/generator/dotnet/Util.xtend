@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.dotnet
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
@@ -27,7 +28,6 @@ import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
 import org.eclipse.emf.ecore.EObject
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
@@ -255,7 +255,7 @@ class Util
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
 
         val temp_param = new ParameterBundle.Builder
-        temp_param.reset(param_bundle.artifactNature)
+        temp_param.reset(ArtifactNature.DOTNET)
         temp_param.reset(com.btc.serviceidl.util.Util.getModuleStack(ultimate_type))
         temp_param.reset(ProjectType.PROTOBUF)
 

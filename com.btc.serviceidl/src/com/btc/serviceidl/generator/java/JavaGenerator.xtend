@@ -21,6 +21,7 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
@@ -31,6 +32,7 @@ import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
 import com.google.common.collect.Sets
 import java.util.Arrays
+import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
 import java.util.Optional
@@ -45,8 +47,6 @@ import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.java.BasicJavaSourceGenerator.*
 import static extension com.btc.serviceidl.util.Extensions.*
-import java.util.HashMap
-import com.btc.serviceidl.generator.common.ResolvedName
 
 class JavaGenerator
 {
@@ -175,7 +175,7 @@ class JavaGenerator
    def private String makeProjectRootPath(EObject container)
    {
       // TODO change return type to Path or something similar
-      param_bundle.artifactNature.label
+      ArtifactNature.JAVA.label
          + Constants.SEPARATOR_FILE
          + qualified_name_provider.getFullyQualifiedName(container).toLowerCase
          + Constants.SEPARATOR_FILE
@@ -184,7 +184,7 @@ class JavaGenerator
    def private String makeProjectSourcePath(EObject container, ProjectType project_type, MavenArtifactType maven_type, PathType path_type)
    {
       val temp_param = new ParameterBundle.Builder()
-      temp_param.reset(param_bundle.artifactNature)
+      temp_param.reset(ArtifactNature.JAVA)
       temp_param.reset(Util.getModuleStack(container))
       
       var result = new StringBuilder
@@ -268,7 +268,7 @@ class JavaGenerator
       // TODO the service fault handler factory is ServiceComm-specific and should therefore not be generated to the service API package
       // TODO the "common" service fault handler factory is also generated as part of the ServiceAPI!?      
       val service_fault_handler_factory_name = module.asServiceFaultHandlerFactory
-      generateJavaFile(src_root_path + param_bundle.projectType.getClassName(param_bundle.artifactNature, service_fault_handler_factory_name).java,
+      generateJavaFile(src_root_path + param_bundle.projectType.getClassName(ArtifactNature.JAVA, service_fault_handler_factory_name).java,
           module, [basicJavaSourceGenerator|new ServiceFaultHandlerFactoryGenerator(basicJavaSourceGenerator).generateServiceFaultHandlerFactory(service_fault_handler_factory_name, module ).toString]
       )
    }
@@ -293,7 +293,7 @@ class JavaGenerator
           )
       }
       
-      generateJavaFile(src_root_path + param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name).java,
+      generateJavaFile(src_root_path + param_bundle.projectType.getClassName(ArtifactNature.JAVA, interface_declaration.name).java,
           interface_declaration,
           [basicJavaSourceGenerator|          
           new ServiceAPIGenerator(basicJavaSourceGenerator, param_bundle).generateMain(interface_declaration).toString])
@@ -301,7 +301,7 @@ class JavaGenerator
       // common service fault handler factory
       // TODO the service fault handler factory is ServiceComm-specific and should therefore not be generated to the service API package
       val service_fault_handler_factory_name = interface_declaration.asServiceFaultHandlerFactory
-      generateJavaFile(src_root_path + param_bundle.projectType.getClassName(param_bundle.artifactNature, service_fault_handler_factory_name).java,
+      generateJavaFile(src_root_path + param_bundle.projectType.getClassName(ArtifactNature.JAVA, service_fault_handler_factory_name).java,
           interface_declaration, [basicJavaSourceGenerator|new ServiceFaultHandlerFactoryGenerator(basicJavaSourceGenerator).generateServiceFaultHandlerFactory(service_fault_handler_factory_name, interface_declaration ).toString]
       )
    }   
@@ -310,7 +310,7 @@ class JavaGenerator
    {
       val log4j_name = "log4j.Test".properties
       
-      val test_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)
+      val test_name = param_bundle.projectType.getClassName(ArtifactNature.JAVA, interface_declaration.name)
       generateJavaFile(src_root_path + test_name.java, interface_declaration, 
           [basicJavaSourceGenerator|new TestGenerator(basicJavaSourceGenerator).generateTestStub(test_name, src_root_path, interface_declaration).toString])
       
@@ -337,11 +337,11 @@ class JavaGenerator
       // TODO param_bundle should also be converted into a local
       param_bundle.reset(ProjectType.PROTOBUF)      
       
-      val codec_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, if (container instanceof InterfaceDeclaration) container.name else Constants.FILE_NAME_TYPES) + "Codec"
+      val codec_name = param_bundle.projectType.getClassName(ArtifactNature.JAVA, if (container instanceof InterfaceDeclaration) container.name else Constants.FILE_NAME_TYPES) + "Codec"
       // TODO most of the generated file is reusable, and should be moved to com.btc.cab.commons (UUID utilities) or something similar
       
       generateJavaFile(src_root_path + codec_name.java, container,
-          [basicJavaSourceGenerator|new ProtobufCodecGenerator(basicJavaSourceGenerator, param_bundle).generateProtobufCodecBody(container, codec_name).toString]          
+          [basicJavaSourceGenerator|new ProtobufCodecGenerator(basicJavaSourceGenerator).generateProtobufCodecBody(container, codec_name).toString]          
       )  
    }
    
@@ -364,7 +364,7 @@ class JavaGenerator
    def private void generateServerRunner(String src_root_path, InterfaceDeclaration interface_declaration)
    {
       val program_name = "Program"
-      val server_runner_name = ProjectType.SERVER_RUNNER.getClassName(param_bundle.artifactNature, interface_declaration.name)
+      val server_runner_name = ProjectType.SERVER_RUNNER.getClassName(ArtifactNature.JAVA, interface_declaration.name)
       val beans_name = "ServerRunnerBeans".xml
       val log4j_name = "log4j.ServerRunner".properties
       
@@ -391,29 +391,29 @@ class JavaGenerator
    
    def private void generateProxy(String src_root_path, InterfaceDeclaration interface_declaration)
    {
-      val proxy_factory_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name) + "Factory"
+      val proxy_factory_name = param_bundle.projectType.getClassName(ArtifactNature.JAVA, interface_declaration.name) + "Factory"
       generateJavaFile(src_root_path + proxy_factory_name.java,
          interface_declaration, [basicJavaSourceGenerator|new ProxyFactoryGenerator(basicJavaSourceGenerator).generateProxyFactory(proxy_factory_name, interface_declaration).toString]
       )
 
-      val proxy_class_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)
+      val proxy_class_name = param_bundle.projectType.getClassName(ArtifactNature.JAVA, interface_declaration.name)
       generateJavaFile(
          src_root_path + proxy_class_name.java,
          interface_declaration, 
-         [basicJavaSourceGenerator|new ProxyGenerator(basicJavaSourceGenerator, param_bundle).generateProxyImplementation(proxy_class_name, interface_declaration)]
+         [basicJavaSourceGenerator|new ProxyGenerator(basicJavaSourceGenerator).generateProxyImplementation(proxy_class_name, interface_declaration)]
       )
    }
       
    def private void generateDispatcher(String src_root_path, InterfaceDeclaration interface_declaration)
    {
-      val dispatcher_class_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)
+      val dispatcher_class_name = param_bundle.projectType.getClassName(ArtifactNature.JAVA, interface_declaration.name)
       
-      generateJavaFile(src_root_path + dispatcher_class_name.java, interface_declaration, [basicJavaSourceGenerator|new DispatcherGenerator(basicJavaSourceGenerator, param_bundle).generateDispatcherBody(dispatcher_class_name, interface_declaration).toString])
+      generateJavaFile(src_root_path + dispatcher_class_name.java, interface_declaration, [basicJavaSourceGenerator|new DispatcherGenerator(basicJavaSourceGenerator).generateDispatcherBody(dispatcher_class_name, interface_declaration).toString])
    }
    
    def private void generateImplementationStub(String src_root_path, InterfaceDeclaration interface_declaration)
    {
-      val impl_name = param_bundle.projectType.getClassName(param_bundle.artifactNature, interface_declaration.name)
+      val impl_name = param_bundle.projectType.getClassName(ArtifactNature.JAVA, interface_declaration.name)
 
       generateJavaFile(src_root_path + impl_name.java, interface_declaration, [basicJavaSourceGenerator|new ImplementationStubGenerator(basicJavaSourceGenerator).generateImplementationStubBody(impl_name, interface_declaration).toString])   
    }
