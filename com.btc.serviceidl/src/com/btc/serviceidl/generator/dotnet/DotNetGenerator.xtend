@@ -84,7 +84,6 @@ class DotNetGenerator
       qualified_name_provider = qnp
       scope_provider = sp
       protobuf_project_references = pr
-      param_bundle.reset(ArtifactNature.DOTNET)
       
       idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
             
@@ -98,7 +97,6 @@ class DotNetGenerator
    def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
       param_bundle = ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(module))
-      param_bundle.reset(ArtifactNature.DOTNET)
       
       if (!module.virtual)
       {

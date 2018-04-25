@@ -256,7 +256,6 @@ class Util
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
 
         val temp_param = new ParameterBundle.Builder
-        temp_param.reset(ArtifactNature.DOTNET)
         temp_param.reset(com.btc.serviceidl.util.Util.getModuleStack(ultimate_type))
         temp_param.reset(ProjectType.PROTOBUF)
 

@@ -57,7 +57,6 @@ class CppExtensions
         val module_stack = Util.getModuleStack(referenced_object)
 
         val param_bundle = new ParameterBundle.Builder()
-        param_bundle.reset(CPP_NATURE)
         param_bundle.reset(module_stack)
 
         val include_folder = if (project_type == ProjectType.PROTOBUF) "gen" else "include"
