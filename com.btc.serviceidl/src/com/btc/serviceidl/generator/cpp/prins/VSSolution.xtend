@@ -20,6 +20,7 @@ import com.btc.serviceidl.util.Constants
 import java.util.HashMap
 import java.util.UUID
 import org.eclipse.xtend.lib.annotations.Data
+import com.btc.serviceidl.generator.common.ArtifactNature
 
 class VSSolution implements IProjectSet
 {
@@ -37,7 +38,7 @@ class VSSolution implements IProjectSet
 
     override String getVcxprojName(ParameterBundle paramBundle)
     {
-        var project_name = GeneratorUtil.transform(paramBundle, TransformType.PACKAGE)
+        var project_name = GeneratorUtil.transform(paramBundle, ArtifactNature.CPP, TransformType.PACKAGE)
         val projectPath = makeProjectPath(paramBundle, project_name)
         ensureEntryExists(project_name, projectPath)
         return project_name
@@ -107,7 +108,7 @@ class VSSolution implements IProjectSet
 
     private static def String makeProjectPath(ParameterBundle paramBundle, String project_name)
     {
-        makeProjectPath(GeneratorUtil.transform(paramBundle, TransformType.FILE_SYSTEM), project_name)
+        makeProjectPath(GeneratorUtil.transform(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM), project_name)
     }
 
     private static def String makeProjectPath(String projectPath, String project_name)

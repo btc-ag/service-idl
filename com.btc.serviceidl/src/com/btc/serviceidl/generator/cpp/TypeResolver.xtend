@@ -77,7 +77,7 @@ class TypeResolver
 
     def String resolveModules(String class_name)
     {
-        modules_includes.add(HeaderResolver.getModulesHeader(class_name))        
+        modules_includes.add(HeaderResolver.getModulesHeader(class_name))
         project_references.add(vsSolution.resolveClass(class_name))
         return class_name
     }
@@ -115,7 +115,7 @@ class TypeResolver
             var result = GeneratorUtil.transform(
                 ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(
                     com.btc.serviceidl.util.Util.getScopeDeterminant(object))).with(project_type).build,
-                TransformType.NAMESPACE)
+                ArtifactNature.CPP, TransformType.NAMESPACE)
             result += Constants.SEPARATOR_NAMESPACE + if (object instanceof InterfaceDeclaration)
                 project_type.getClassName(ArtifactNature.CPP, qualified_name.lastSegment)
             else

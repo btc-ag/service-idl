@@ -29,11 +29,6 @@ class Extensions
         param.read.getModuleStack
     }
 
-    def static ArtifactNature getArtifactNature(Builder param)
-    {
-        param.read.getArtifactNature
-    }
-
     def static ProjectType getMainProjectType(EObject item)
     {
         val scope_determinant = Util.getScopeDeterminant(item)

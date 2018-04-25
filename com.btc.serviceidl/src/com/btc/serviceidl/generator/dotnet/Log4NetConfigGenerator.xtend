@@ -4,6 +4,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.common.ArtifactNature
 
 @Accessors
 class Log4NetConfigGenerator
@@ -15,7 +16,7 @@ class Log4NetConfigGenerator
         '''
             <log4net>
                <appender name="RollingLogFileAppender" type="log4net.Appender.RollingFileAppender">
-                  <file value="log_«GeneratorUtil.transform(param_bundle.build, TransformType.PACKAGE).toLowerCase».txt"/>
+                  <file value="log_«GeneratorUtil.transform(param_bundle.build, ArtifactNature.DOTNET, TransformType.PACKAGE).toLowerCase».txt"/>
                   <appendToFile value="true"/>
                   <datePattern value="yyyyMMdd"/>
                   <rollingStyle value="Date"/>
