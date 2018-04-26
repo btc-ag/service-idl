@@ -18,6 +18,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.common.TypeWrapper
+import com.btc.serviceidl.generator.cpp.prins.PrinsHeaderResolver
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
@@ -36,15 +37,13 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.generator.cpp.HeaderResolver.GroupedHeader
-import com.btc.serviceidl.generator.cpp.prins.PrinsHeaderResolver
 
 @Accessors(PACKAGE_GETTER)
 class TypeResolver
 {
     private val IQualifiedNameProvider qualified_name_provider
     private val ParameterBundle param_bundle
-    private val extension IProjectSet vsSolution
+    private val IProjectSet projectSet
     private val Collection<IProjectReference> project_references
     private val Collection<String> cab_libs
     private val Map<EObject, Collection<EObject>> smart_pointer_map
@@ -97,7 +96,7 @@ class TypeResolver
         if (header.includeGroup == CAB_INCLUDE_GROUP)
             cab_libs.addAll(LibResolver.getCABLibs(header.path))
         if (header.includeGroup == MODULES_INCLUDE_GROUP || header.includeGroup == TARGET_INCLUDE_GROUP)
-            project_references.add(vsSolution.resolveClass(className))
+            project_references.add(projectSet.resolveClass(className))
 
         return className
     }
@@ -164,7 +163,7 @@ class TypeResolver
         temp_param.reset(module_stack)
         temp_param.reset(project_type)
 
-        project_references.add(vsSolution.resolve(temp_param.build))
+        project_references.add(projectSet.resolve(temp_param.build))
     }
 
     def getPrimitiveTypeName(PrimitiveType item)
