@@ -25,6 +25,16 @@ class TypeWrapper
 {
     private EObject type
     private Collection<EObject> forwardDeclarations = new LinkedHashSet<EObject>
+        
+    def void addForwardDeclaration(EObject object)
+    {
+        forwardDeclarations.add(object)
+    }
+
+    def Iterable<EObject> getForwardDeclarations()
+    {
+        forwardDeclarations.unmodifiableView
+    }
 
     new(EObject type)
     {

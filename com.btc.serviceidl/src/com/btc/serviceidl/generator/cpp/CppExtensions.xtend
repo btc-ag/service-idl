@@ -76,6 +76,7 @@ class CppExtensions
     def static Collection<TypeWrapper> getTopologicallySortedTypes(EObject owner)
     {
         // aggregate enums, typedefs, structs and exceptions into the same collection
+        // TODO change metamodel such that these types have a common supertype (besides EObject)
         val all_elements = new HashSet<EObject>
         all_elements.addAll(owner.eContents.filter(EnumDeclaration))
         all_elements.addAll(owner.eContents.filter(AliasDeclaration))
@@ -172,7 +173,7 @@ class CppExtensions
 
                 if (index_dependency >= index || index_dependency < 0)
                 {
-                    type_wrapper.forwardDeclarations.add(dependency_wrapper.type)
+                    type_wrapper.addForwardDeclaration(dependency_wrapper.type)
                 }
 
                 graph.remove(edge)
