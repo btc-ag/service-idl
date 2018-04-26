@@ -26,11 +26,11 @@ class ImplementationStubGenerator extends BasicCppGenerator
         '''
             «class_name»::«class_name»
             (
-               «resolveClass("BTC::Commons::Core::Context")»& context
-               ,«resolveClass("BTC::Logging::API::LoggerFactory")»& loggerFactory
+               «resolveSymbol("BTC::Commons::Core::Context")»& context
+               ,«resolveSymbol("BTC::Logging::API::LoggerFactory")»& loggerFactory
             ) :
             m_context(context)
-            , «resolveClass("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
+            , «resolveSymbol("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
             «FOR event : interface_declaration.events»
                 , «event.observableName»(context)
             «ENDFOR»
@@ -41,7 +41,7 @@ class ImplementationStubGenerator extends BasicCppGenerator
             «generateInheritedInterfaceMethods(interface_declaration)»
             
             «FOR event : interface_declaration.events»
-                «resolveClass("BTC::Commons::Core::UniquePtr")»<«resolveClass("BTC::Commons::Core::Disposable")»> «class_name»::Subscribe( «resolveClass("BTC::Commons::CoreExtras::IObserver")»<«toText(event.data, event)»> &observer )
+                «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> «class_name»::Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«toText(event.data, event)»> &observer )
                 {
                    return «event.observableName».Subscribe(observer);
                 }

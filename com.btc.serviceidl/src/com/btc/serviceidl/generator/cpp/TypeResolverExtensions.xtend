@@ -16,10 +16,10 @@ class TypeResolverExtensions {
          «IF related_event !== null»
             «val event_uuid = GuidMapper.get(event_data)»
             // {«event_uuid»}
-            static const «resolveClass("BTC::Commons::CoreExtras::UUID")» s«event_data.name»TypeGuid = 
-               «resolveClass("BTC::Commons::CoreExtras::UUID")»::ParseString("«event_uuid»");
+            static const «resolveSymbol("BTC::Commons::CoreExtras::UUID")» s«event_data.name»TypeGuid = 
+               «resolveSymbol("BTC::Commons::CoreExtras::UUID")»::ParseString("«event_uuid»");
 
-            «resolveClass("BTC::Commons::CoreExtras::UUID")» «resolve(event_data)»::EVENT_TYPE_GUID()
+            «resolveSymbol("BTC::Commons::CoreExtras::UUID")» «resolve(event_data)»::EVENT_TYPE_GUID()
             {
                return s«event_data.name»TypeGuid;
             }
@@ -32,8 +32,8 @@ class TypeResolverExtensions {
    {
       // TODO these must not be registered, the default must be empty
       #{
-          Constants.INVALID_ARGUMENT_EXCEPTION_FAULT_HANDLER         -> resolveClass("BTC::Commons::Core::InvalidArgumentException")
-         ,Constants.UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER    -> resolveClass("BTC::Commons::Core::UnsupportedOperationException")
+          Constants.INVALID_ARGUMENT_EXCEPTION_FAULT_HANDLER         -> resolveSymbol("BTC::Commons::Core::InvalidArgumentException")
+         ,Constants.UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER    -> resolveSymbol("BTC::Commons::Core::UnsupportedOperationException")
       }
    }
       

@@ -88,7 +88,7 @@ class TypeResolver
     // TODO inject this
     private val headerResolver = PrinsHeaderResolver.create
 
-    def String resolveClass(String className)
+    def String resolveSymbol(String className)
     {
         val header = headerResolver.getHeader(className)
         addToGroup(header.includeGroup, header.path)
@@ -119,7 +119,7 @@ class TypeResolver
         if (com.btc.serviceidl.util.Util.isUUIDType(object))
         {
             if (project_type == ProjectType.PROTOBUF)
-                return new ResolvedName(resolveClass("std::string"), TransformType.NAMESPACE)
+                return new ResolvedName(resolveSymbol("std::string"), TransformType.NAMESPACE)
             else
                 return new ResolvedName("BTC::Commons::CoreExtras::UUID", TransformType.NAMESPACE)
         }
@@ -134,9 +134,9 @@ class TypeResolver
 
         val resolved_name = qualified_name.toString
         if (headerResolver.isCAB(resolved_name))
-            resolveClass(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
+            resolveSymbol(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
         else if (headerResolver.isBoost(resolved_name))
-            resolveClass(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
+            resolveSymbol(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
         else
         {
             var result = GeneratorUtil.getTransformedModuleName(
@@ -173,23 +173,23 @@ class TypeResolver
             switch item.integerType
             {
                 case "int64":
-                    return resolveClass("int64_t")
+                    return resolveSymbol("int64_t")
                 case "int32":
-                    return resolveClass("int32_t")
+                    return resolveSymbol("int32_t")
                 case "int16":
-                    return resolveClass("int16_t")
+                    return resolveSymbol("int16_t")
                 case "byte":
-                    return resolveClass("int8_t")
+                    return resolveSymbol("int8_t")
                 default:
                     return item.integerType
             }
         }
         else if (item.stringType !== null)
-            return resolveClass("std::string")
+            return resolveSymbol("std::string")
         else if (item.floatingPointType !== null)
             return item.floatingPointType
         else if (item.uuidType !== null)
-            return resolveClass("BTC::Commons::CoreExtras::UUID")
+            return resolveSymbol("BTC::Commons::CoreExtras::UUID")
         else if (item.booleanType !== null)
             return "bool"
         else if (item.charType !== null)
