@@ -10,8 +10,10 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp.prins
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.BasicCppGenerator
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ProjectGeneratorBase
@@ -36,7 +38,6 @@ import static com.btc.serviceidl.generator.cpp.Util.*
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
-import com.btc.serviceidl.generator.common.ArtifactNature
 
 @Accessors
 class OdbProjectGenerator extends ProjectGeneratorBase {
@@ -103,31 +104,31 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
 
    def private String generateCommonHxx(Iterable<StructDeclaration> common_types)
    {
-      reinitializeFile
+      val basicCppGenerator = createBasicCppGenerator
       
-      val file_content = new OdbGenerator(typeResolver).generateCommonHxx(common_types).toString      
-      makeHxx(file_content, false)
+      val file_content = new OdbGenerator(basicCppGenerator.typeResolver).generateCommonHxx(common_types).toString      
+      makeHxx(basicCppGenerator, file_content, false)
    }
    
    def private String generateHxx(StructDeclaration struct)
    {
-      reinitializeFile
+      val basicCppGenerator = createBasicCppGenerator
       
-      val file_content = new OdbGenerator(typeResolver).generateHxx(struct).toString
+      val file_content = new OdbGenerator(basicCppGenerator.typeResolver).generateHxx(struct).toString
       var underlying_types = getUnderlyingTypes(struct)
-      makeHxx(file_content, !underlying_types.empty)
+      makeHxx(basicCppGenerator, file_content, !underlying_types.empty)
    }
    
    def private String generateODBTraits()
    {
-      reinitializeFile
+      val basicCppGenerator = createBasicCppGenerator
       
-      val file_content = new OdbGenerator(typeResolver).generateODBTraitsBody()
+      val file_content = new OdbGenerator(basicCppGenerator.typeResolver).generateODBTraitsBody()
       
-      makeHxx(file_content.toString, false)
+      makeHxx(basicCppGenerator, file_content.toString, false)
    }
    
-   def private String makeHxx(String file_content, boolean use_common_types)
+   def private String makeHxx(BasicCppGenerator basicCppGenerator, String file_content, boolean use_common_types)
    {
       '''
       #pragma once
@@ -144,20 +145,18 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
    
    def override String generateProjectSource(InterfaceDeclaration interface_declaration)
    {
-        reinitializeFile
+        val basicCppGenerator = createBasicCppGenerator
         
-        val file_content = generateCppImpl(interface_declaration)
+        val file_content = generateCppImpl(basicCppGenerator.typeResolver, interface_declaration)
         
-        generateSource(file_content.toString, Optional.empty)
+        generateSource(basicCppGenerator, file_content.toString, Optional.empty)
     }
  
-     def override String generateProjectHeader(String export_header, InterfaceDeclaration interface_declaration)
+     def override String generateProjectHeader(BasicCppGenerator basicCppGenerator, String export_header, InterfaceDeclaration interface_declaration)
     {
-        reinitializeFile
+        val file_content = generateInterface(basicCppGenerator.typeResolver, interface_declaration)
 
-        val file_content = generateInterface(interface_declaration)
-
-        generateHeader(file_content.toString, Optional.of(export_header))
+        generateHeader(basicCppGenerator, file_content.toString, Optional.of(export_header))
     }
     
 }

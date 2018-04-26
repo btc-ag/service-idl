@@ -20,21 +20,21 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
 {
     def override String generateProjectSource(InterfaceDeclaration interface_declaration)
     {
-        reinitializeFile
+        val basicCppGenerator = createBasicCppGenerator
         val project_type = param_bundle.projectType
 
         val file_content = switch (project_type)
         {
             case SERVICE_API:
-                generateCppServiceAPI(interface_declaration)
+                generateCppServiceAPI(basicCppGenerator.typeResolver, interface_declaration)
             case DISPATCHER:
-                generateCppDispatcher(interface_declaration)
+                generateCppDispatcher(basicCppGenerator.typeResolver, interface_declaration)
             case IMPL:
-                generateCppImpl(interface_declaration)
+                generateCppImpl(basicCppGenerator.typeResolver, interface_declaration)
             case PROXY:
-                generateCppProxy(interface_declaration)
+                generateCppProxy(basicCppGenerator.typeResolver, interface_declaration)
             case TEST:
-                generateCppTest(interface_declaration)
+                generateCppTest(basicCppGenerator.typeResolver, interface_declaration)
             // TODO check that this is generated otherwise
 //            case SERVER_RUNNER:
 //                generateCppServerRunner(interface_declaration)
@@ -45,62 +45,61 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
 
         val file_tail = '''
             «IF project_type == ProjectType.PROXY || project_type == ProjectType.DISPATCHER || project_type == ProjectType.IMPL»
-                «generateCppReflection(interface_declaration)»
+                «generateCppReflection(basicCppGenerator.typeResolver, interface_declaration)»
             «ENDIF»
         '''
 
-        generateSource(file_content.toString, if (file_tail.trim.empty) Optional.empty else Optional.of(file_tail))
+        generateSource(basicCppGenerator, file_content.toString,
+            if (file_tail.trim.empty) Optional.empty else Optional.of(file_tail))
     }
 
-    def override String generateProjectHeader(String export_header, InterfaceDeclaration interface_declaration)
+    def override String generateProjectHeader(BasicCppGenerator basicCppGenerator, String export_header,
+        InterfaceDeclaration interface_declaration)
     {
-        reinitializeFile
-
         val file_content = switch (param_bundle.projectType)
         {
             case SERVICE_API:
-                generateInterface(interface_declaration)
+                generateInterface(basicCppGenerator.typeResolver, interface_declaration)
             case DISPATCHER:
-                generateHFileDispatcher(interface_declaration)
+                generateHFileDispatcher(basicCppGenerator.typeResolver, interface_declaration)
             case IMPL:
-                generateInterface(interface_declaration)
+                generateInterface(basicCppGenerator.typeResolver, interface_declaration)
             case PROXY:
-                generateInterface(interface_declaration)
+                generateInterface(basicCppGenerator.typeResolver, interface_declaration)
             default:
                 /* nothing to do for other project types */
                 throw new IllegalArgumentException("Inapplicable project type:" + param_bundle.projectType)
         }
 
-        generateHeader(file_content.toString, Optional.of(export_header))
+        generateHeader(basicCppGenerator, file_content.toString, Optional.of(export_header))
     }
 
-    def private generateCppServiceAPI(InterfaceDeclaration interface_declaration)
+    def private generateCppServiceAPI(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
     {
         new ServiceAPIGenerator(typeResolver, param_bundle, idl).generateImplFileBody(interface_declaration)
     }
 
-    def private String generateCppProxy(InterfaceDeclaration interface_declaration)
+    def private generateCppProxy(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
     {
-        new ProxyGenerator(typeResolver, param_bundle, idl).generateImplementationFileBody(interface_declaration).
-            toString
+        new ProxyGenerator(typeResolver, param_bundle, idl).generateImplementationFileBody(interface_declaration)
     }
 
-    def private generateCppTest(InterfaceDeclaration interface_declaration)
+    def private generateCppTest(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
     {
         new TestGenerator(typeResolver, param_bundle, idl).generateCppTest(interface_declaration)
     }
 
-    def private generateCppDispatcher(InterfaceDeclaration interface_declaration)
+    def private generateCppDispatcher(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
     {
         new DispatcherGenerator(typeResolver, param_bundle, idl).generateImplementationFileBody(interface_declaration)
     }
 
-    def private generateHFileDispatcher(InterfaceDeclaration interface_declaration)
+    def private generateHFileDispatcher(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
     {
         new DispatcherGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(interface_declaration)
     }
 
-    def private generateCppReflection(InterfaceDeclaration interface_declaration)
+    def private generateCppReflection(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
     {
         new ReflectionGenerator(typeResolver, param_bundle, idl).generateImplFileBody(interface_declaration)
     }

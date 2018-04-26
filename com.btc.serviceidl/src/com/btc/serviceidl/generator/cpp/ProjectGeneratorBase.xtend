@@ -74,7 +74,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         if (pt != ProjectType.TEST)
         {
             file_system_access.generateFile(include_path + Constants.SEPARATOR_FILE + main_header_file_name,
-                generateProjectHeader(export_header_file_name, interface_declaration))
+                generateProjectHeader(createBasicCppGenerator, export_header_file_name, interface_declaration))
             header_files.add(main_header_file_name)
         }
 
@@ -85,17 +85,17 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
 
     def protected abstract String generateProjectSource(InterfaceDeclaration interface_declaration)
 
-    def protected abstract String generateProjectHeader(String export_header,
+    def protected abstract String generateProjectHeader(BasicCppGenerator basicCppGenerator, String export_header,
         InterfaceDeclaration interface_declaration)
 
     // TODO move this somewhere else
-    def protected generateCppImpl(InterfaceDeclaration interface_declaration)
+    def protected generateCppImpl(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
     {
         new ImplementationStubGenerator(typeResolver, param_bundle, idl).generateCppImpl(interface_declaration)
     }
 
     // TODO move this somewhere else
-    def protected generateInterface(InterfaceDeclaration interface_declaration)
+    def protected generateInterface(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
     {
         new ServiceAPIGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(interface_declaration)
     }

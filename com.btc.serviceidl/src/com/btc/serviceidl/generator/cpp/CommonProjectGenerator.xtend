@@ -57,21 +57,17 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
 
         // sub-folder "./include"
-        reinitializeFile()
         file_system_access.generateFile(include_path + export_header_file_name, generateExportHeader())
         header_files.add(export_header_file_name)
 
-        reinitializeFile()
         file_system_access.generateFile(include_path + header_file,
             generateHFileCommons(module, export_header_file_name))
         header_files.add(header_file)
 
         // sub-folder "./source"
-        reinitializeFile()
         file_system_access.generateFile(source_path + cpp_file, generateCppCommons(module, export_header_file_name))
         cpp_files.add(cpp_file)
 
-        reinitializeFile()
         file_system_access.generateFile(source_path + dependency_file_name, generateDependencies)
         dependency_files.add(dependency_file_name)
 
@@ -80,18 +76,18 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
 
     def private String generateHFileCommons(ModuleDeclaration module, String export_header)
     {
-        val file_content = new CommonsGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(module,
+        val basicCppGenerator = createBasicCppGenerator
+        val file_content = new CommonsGenerator(basicCppGenerator.typeResolver, param_bundle, idl).generateHeaderFileBody(module,
             export_header)
-        generateHeader(file_content.toString, Optional.of(export_header))
+        generateHeader(basicCppGenerator, file_content.toString, Optional.of(export_header))
     }
 
     def private String generateCppCommons(ModuleDeclaration module, String export_header)
     {
-        reinitializeFile
-
-        val file_content = new CommonsGenerator(typeResolver, param_bundle, idl).generateImplFileBody(module,
+        val basicCppGenerator = createBasicCppGenerator
+        val file_content = new CommonsGenerator(basicCppGenerator.typeResolver, param_bundle, idl).generateImplFileBody(module,
             export_header)
-        generateSource(file_content.toString, Optional.empty)
+        generateSource(basicCppGenerator, file_content.toString, Optional.empty)
     }
 
 }

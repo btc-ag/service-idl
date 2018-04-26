@@ -10,12 +10,16 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import org.eclipse.xtend.lib.annotations.Accessors
 
-@Accessors
-class DependenciesGenerator extends BasicCppGenerator
+@Accessors(NONE)
+class DependenciesGenerator
 {
+    val extension TypeResolver typeResolver
+    val ParameterBundle paramBundle
+
     def generate()
     {
         // proxy and dispatcher include a *.impl.h file from the Protobuf project
@@ -23,6 +27,7 @@ class DependenciesGenerator extends BasicCppGenerator
         // exist, which are explicitly resolved here
         if (paramBundle.projectType == ProjectType.PROXY || paramBundle.projectType == ProjectType.DISPATCHER)
         {
+            // TODO some other function should be used here, this is not used to add an include dependency, but only a link dependency
             resolveSymbol("BTC::Commons::FutureUtil::InsertableTraits")
         }
 
