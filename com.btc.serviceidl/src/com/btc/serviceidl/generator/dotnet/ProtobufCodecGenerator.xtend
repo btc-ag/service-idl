@@ -20,12 +20,10 @@ import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
-import java.util.Collection
-import java.util.Optional
+import java.util.Arrays
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
@@ -188,12 +186,12 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
 
     def private dispatch String makeEncode(StructDeclaration element, EObject owner)
     {
-        makeEncodeStructOrException(element, element.allMembers, Optional.of(element.typeDecls))
+        makeEncodeStructOrException(element, element.allMembers, element.typeDecls)
     }
 
     def private dispatch String makeEncode(ExceptionDeclaration element, EObject owner)
     {
-        makeEncodeStructOrException(element, element.allMembers, Optional.empty)
+        makeEncodeStructOrException(element, element.allMembers, Arrays.asList)
     }
 
     def private dispatch String makeEncode(AbstractType element, EObject owner)
@@ -203,7 +201,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
     }
 
     def private String makeEncodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
-        Optional<Collection<AbstractTypeDeclaration>> type_declarations)
+        Iterable<AbstractTypeDeclaration> type_declarations)
     {
         val api_type_name = resolve(element)
         val protobuf_type_name = resolve(element, ProjectType.PROTOBUF)
@@ -231,18 +229,16 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                     «ENDIF»
                 «ENDIF»
             «ENDFOR»
-            «IF type_declarations.present»
-                «FOR struct_decl : type_declarations.get.filter(StructDeclaration).filter[declarator !== null]»
-                    «val codec = resolveCodec(typeResolver, param_bundle, struct_decl)»
-                    «val member_name = struct_decl.declarator»
-                    builder.Set«member_name.toLowerCase.toFirstUpper»((«protobuf_type_name».Types.«struct_decl.name») «codec».encode(typedData.«member_name.asProperty»));
+                «FOR struct_decl : type_declarations.filter(StructDeclaration).filter[declarator !== null]»
+                «val codec = resolveCodec(typeResolver, param_bundle, struct_decl)»
+                «val member_name = struct_decl.declarator»
+                builder.Set«member_name.toLowerCase.toFirstUpper»((«protobuf_type_name».Types.«struct_decl.name») «codec».encode(typedData.«member_name.asProperty»));
                 «ENDFOR»
-                «FOR enum_decl : type_declarations.get.filter(EnumDeclaration).filter[declarator !== null]»
-                    «val codec = resolveCodec(typeResolver, param_bundle, enum_decl)»
-                    «val member_name = enum_decl.declarator»
-                    builder.Set«member_name.toLowerCase.toFirstUpper»((«protobuf_type_name».Types.«enum_decl.name») «codec».encode(typedData.«member_name»));
+                «FOR enum_decl : type_declarations.filter(EnumDeclaration).filter[declarator !== null]»
+                «val codec = resolveCodec(typeResolver, param_bundle, enum_decl)»
+                «val member_name = enum_decl.declarator»
+                builder.Set«member_name.toLowerCase.toFirstUpper»((«protobuf_type_name».Types.«enum_decl.name») «codec».encode(typedData.«member_name»));
                 «ENDFOR»
-            «ENDIF»
             return builder.BuildPartial();
         '''
     }
@@ -265,16 +261,16 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
 
     def private dispatch String makeDecode(StructDeclaration element, EObject owner)
     {
-        makeDecodeStructOrException(element, element.allMembers, Optional.of(element.typeDecls))
+        makeDecodeStructOrException(element, element.allMembers, element.typeDecls)
     }
 
     def private dispatch String makeDecode(ExceptionDeclaration element, EObject owner)
     {
-        makeDecodeStructOrException(element, element.allMembers, Optional.empty)
+        makeDecodeStructOrException(element, element.allMembers, Arrays.asList)
     }
 
     def private String makeDecodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
-        Optional<Collection<AbstractTypeDeclaration>> type_declarations)
+        Iterable<AbstractTypeDeclaration> type_declarations)
     {
         val api_type_name = resolve(element)
         val protobuf_type_name = resolve(element, ProjectType.PROTOBUF)
@@ -294,18 +290,16 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                    «member.name.asParameter»: «IF is_optional»(typedData.«hasField(member)») ? «ENDIF»«IF useCodec»(«resolveDecode(member.type)») «codec».«decode_method»(«ENDIF»typedData.«member.name.toLowerCase.toFirstUpper»«IF is_sequence»List«ENDIF»«IF useCodec»)«ENDIF»«IF is_optional» : «IF member.type.isNullable»(«toText(member.type, null)»?) «ENDIF»null«ENDIF»
                «ENDIF»
                «ENDFOR»
-               «IF type_declarations.present»
-                «FOR struct_decl : type_declarations.get.filter(StructDeclaration).filter[declarator !== null] SEPARATOR ","»
+                «FOR struct_decl : type_declarations.filter(StructDeclaration).filter[declarator !== null] SEPARATOR ","»
                     «val codec = resolveCodec(typeResolver, param_bundle, struct_decl)»
                     «val member_name = struct_decl.declarator»
                     «member_name.asParameter»: («resolve(struct_decl)») «codec».decode(typedData.«member_name.toLowerCase.toFirstUpper»)
                 «ENDFOR»
-                «FOR enum_decl : type_declarations.get.filter(EnumDeclaration).filter[declarator !== null] SEPARATOR ","»
+                «FOR enum_decl : type_declarations.filter(EnumDeclaration).filter[declarator !== null] SEPARATOR ","»
                     «val codec = resolveCodec(typeResolver, param_bundle, enum_decl)»
                     «val member_name = enum_decl.declarator»
                     «member_name.asParameter»: («api_type_name + Constants.SEPARATOR_PACKAGE + enum_decl.name») «codec».decode(typedData.«member_name.toLowerCase.toFirstUpper»)
                 «ENDFOR»
-               «ENDIF»
                );
         '''
     }
