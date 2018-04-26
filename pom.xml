@@ -304,4 +304,12 @@
 
 	<dependencies>
 	</dependencies>
+	
+	<distributionManagement>
+		<snapshotRepository>
+			<id>jcenter</id>
+			<name>JCenter Snapshots</name>
+			<url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>

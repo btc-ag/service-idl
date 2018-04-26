@@ -9,4 +9,10 @@ after_success:
   - find -name '*.zip' #DEBUG
   - bash <(curl -s https://codecov.io/bash)
 
-
+# based on https://blog.travis-ci.com/2017-03-30-deploy-maven-travis-ci-packagecloud/
+deploy:
+  provider: script
+  script: "cp .travis.settings.xml $HOME/.m2/settings.xml && mvn deploy"
+  skip_cleanup: true
+  # on:
+    # tags: true
