@@ -185,13 +185,15 @@ class HeaderResolver
     }
 
     private val Map<String, GroupedHeader> headerMap
-    
-    @Accessors
-    private val Iterable<OutputConfigurationItem> outputConfiguration
+    private val Map<String, GroupedHeader> implementationHeaderMap
 
-    private new(Map<String, GroupedHeader> headerMap, Iterable<OutputConfigurationItem> outputConfiguration)
+    @Accessors private val Iterable<OutputConfigurationItem> outputConfiguration
+
+    private new(Map<String, GroupedHeader> headerMap, Map<String, GroupedHeader> implementationHeaderMap,
+        Iterable<OutputConfigurationItem> outputConfiguration)
     {
         this.headerMap = headerMap.immutableCopy
+        this.implementationHeaderMap = implementationHeaderMap.immutableCopy
         this.outputConfiguration = outputConfiguration.sortBy[precedence].immutableCopy
     }
 
@@ -208,24 +210,38 @@ class HeaderResolver
     static class Builder
     {
         private val headerMap = new HashMap<String, GroupedHeader>
+        private val implementationHeaderMap = new HashMap<String, GroupedHeader>
         private val outputConfiguration = new ArrayList<OutputConfigurationItem>
 
         def withGroup(Map<String, String> classToHeaderMap, IncludeGroup group)
         {
+            withGroup(headerMap, classToHeaderMap, group)
+            this
+        }
+
+        private static def withGroup(Map<String, GroupedHeader> headerMap, Map<String, String> classToHeaderMap,
+            IncludeGroup group)
+        {
             headerMap.putAll(transformHeaderMap(classToHeaderMap, group).toMap([it.key], [it.value]))
-            // TODO check for conflicts?
+        // TODO check for conflicts?            
+        }
+
+        def withImplementationGroup(Map<String, String> classToHeaderMap, IncludeGroup group)
+        {
+            withGroup(implementationHeaderMap, classToHeaderMap, group)
             this
         }
 
         def build()
         {
-            new HeaderResolver(headerMap, outputConfiguration)
+            new HeaderResolver(headerMap, implementationHeaderMap, outputConfiguration)
         }
 
         def static withBasicGroups(Builder builder)
         {
             builder.withGroup(stl_header_mapper, TypeResolver.STL_INCLUDE_GROUP).withGroup(boost_header_mapper,
-                TypeResolver.BOOST_INCLUDE_GROUP).withGroup(cab_header_mapper, TypeResolver.CAB_INCLUDE_GROUP)
+                TypeResolver.BOOST_INCLUDE_GROUP).withGroup(cab_header_mapper, TypeResolver.CAB_INCLUDE_GROUP).
+                withImplementationGroup(cab_impl_header_mapper, TypeResolver.CAB_INCLUDE_GROUP)
         }
 
         def configureGroup(Iterable<TypeResolver.IncludeGroup> includeGroups, int precedence, String prefix,
@@ -267,14 +283,13 @@ class HeaderResolver
             res
     }
 
-    def String getCABImpl(String class_name)
+    def GroupedHeader getImplementationHeader(String className)
     {
-        val header = cab_impl_header_mapper.get(class_name)
-
-        if (header !== null)
-            return header
+        val res = implementationHeaderMap.get(className)
+        if (res === null)
+            getHeader(className)
         else
-            throw new IllegalArgumentException("Could not find CAB *.impl.h mapping: " + class_name)
+            res
     }
 
     @Deprecated

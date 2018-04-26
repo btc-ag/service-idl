@@ -205,7 +205,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
          || !interface_declaration.eAllContents.filter(SequenceDeclaration).filter[failable].empty
       )
       {
-         resolveCABImpl("BTC::Commons::CoreExtras::Optional")
+         resolveSymbolWithImplementation("BTC::Commons::CoreExtras::Optional")
       }
       
       '''
