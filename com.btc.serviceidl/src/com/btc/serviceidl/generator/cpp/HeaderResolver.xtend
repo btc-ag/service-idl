@@ -15,12 +15,15 @@
  */
 package com.btc.serviceidl.generator.cpp
 
-import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.TypeResolver.IncludeGroup
-import org.eclipse.xtend.lib.annotations.Data
+import java.util.ArrayList
+import java.util.Arrays
 import java.util.HashMap
 import java.util.Map
+import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtend.lib.annotations.Data
 
 class HeaderResolver
 {
@@ -182,15 +185,30 @@ class HeaderResolver
     }
 
     private val Map<String, GroupedHeader> headerMap
+    
+    @Accessors
+    private val Iterable<OutputConfigurationItem> outputConfiguration
 
-    private new(Map<String, GroupedHeader> headerMap)
+    private new(Map<String, GroupedHeader> headerMap, Iterable<OutputConfigurationItem> outputConfiguration)
     {
         this.headerMap = headerMap.immutableCopy
+        this.outputConfiguration = outputConfiguration.sortBy[precedence].immutableCopy
+    }
+
+    @Data
+    static class OutputConfigurationItem
+    {
+        Iterable<TypeResolver.IncludeGroup> includeGroups
+        int precedence
+        String prefix
+        String suffix
+        boolean systemIncludeStyle
     }
 
     static class Builder
     {
         private val headerMap = new HashMap<String, GroupedHeader>
+        private val outputConfiguration = new ArrayList<OutputConfigurationItem>
 
         def withGroup(Map<String, String> classToHeaderMap, IncludeGroup group)
         {
@@ -201,13 +219,29 @@ class HeaderResolver
 
         def build()
         {
-            new HeaderResolver(headerMap)
+            new HeaderResolver(headerMap, outputConfiguration)
         }
 
         def static withBasicGroups(Builder builder)
         {
             builder.withGroup(stl_header_mapper, TypeResolver.STL_INCLUDE_GROUP).withGroup(boost_header_mapper,
                 TypeResolver.BOOST_INCLUDE_GROUP).withGroup(cab_header_mapper, TypeResolver.CAB_INCLUDE_GROUP)
+        }
+
+        def configureGroup(Iterable<TypeResolver.IncludeGroup> includeGroups, int precedence, String prefix,
+            String suffix, boolean systemIncludeStyle)
+        {
+            outputConfiguration.add(
+                new OutputConfigurationItem(includeGroups.toList.immutableCopy, precedence, prefix, suffix,
+                    systemIncludeStyle))
+            this
+        }
+
+        def configureGroup(TypeResolver.IncludeGroup includeGroup, int precedence, String prefix, String suffix,
+            boolean systemIncludeStyle)
+        {
+            configureGroup(Arrays.asList(includeGroup), precedence, prefix, suffix, systemIncludeStyle)
+            this
         }
 
     }

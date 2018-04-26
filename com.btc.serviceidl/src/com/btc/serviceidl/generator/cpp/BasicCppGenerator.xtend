@@ -37,7 +37,8 @@ import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.idl.TupleDeclaration
 import com.btc.serviceidl.util.Constants
-import java.util.HashSet
+import java.util.ArrayList
+import java.util.Map
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -287,8 +288,8 @@ resolveClass
 
     def String makeExportMacro()
     {
-        GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.EXPORT_HEADER).toUpperCase +
-            Constants.SEPARATOR_CPP_HEADER + "EXPORT"
+        GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.EXPORT_HEADER).
+            toUpperCase + Constants.SEPARATOR_CPP_HEADER + "EXPORT"
     }
 
     def private String makeBaseExceptionType(ExceptionDeclaration exception)
@@ -332,61 +333,68 @@ resolveClass
             virtual ~«class_name»();
         '''
     }
-    
-    private def getModulesIncludes()
+
+    private static def <K, V> Iterable<V> extractAllExcludeNull(Map<K, V> map, Iterable<K> keys)
     {
-        val res = new HashSet<String>(includes.getOrDefault(TypeResolver.MODULES_INCLUDE_GROUP, #{}))
-        res.addAll(includes.getOrDefault(TypeResolver.TARGET_INCLUDE_GROUP, #{}))
-        res.immutableCopy
+        val result = new ArrayList<V>
+        for (key : keys)
+        {
+            if (map.containsKey(key))
+            {
+                result.add(map.get(key))
+                map.remove(key)
+
+            }
+        }
+        result
     }
 
-    private def getCabIncludes()
-    { includes.getOrDefault(TypeResolver.CAB_INCLUDE_GROUP, #{}).immutableCopy }
-
-    private def getBoostIncludes()
-    { includes.getOrDefault(TypeResolver.BOOST_INCLUDE_GROUP, #{}).immutableCopy }
-
-    private def getStlIncludes()
-    { includes.getOrDefault(TypeResolver.STL_INCLUDE_GROUP, #{}).immutableCopy }
-
-    private def getOdbIncludes()
-    { includes.getOrDefault(TypeResolver.ODB_INCLUDE_GROUP, #{}).immutableCopy }    
-
-    def String generateIncludes(boolean is_header)
+    def CharSequence generateIncludes(boolean is_header)
     {
-        // TODO ensure that no other include groups than the expected ones exist, or handle them in a sensible way
-        '''
-            «FOR module_header : getModulesIncludes.sort»
-                #include "«module_header»"
-            «ENDFOR»
-            
-            «IF is_header && typeResolver.param_bundle.projectType == ProjectType.PROXY»
-                // resolve naming conflict between Windows' API function InitiateShutdown and CAB's AServiceProxyBase::InitiateShutdown
-                #ifdef InitiateShutdown
-                #undef InitiateShutdown
-                #endif
-                
-            «ENDIF»
-            «FOR cab_header : getCabIncludes.sort BEFORE '''#include "modules/Commons/include/BeginCabInclude.h"     // CAB -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndCabInclude.h"       // <-- CAB
+        val includes = typeResolver.includes
+        val outputConfiguration = headerResolver.outputConfiguration
 
-         '''»
-                #include "«cab_header»"
-            «ENDFOR»
-            «FOR boost_header : getBoostIncludes.sort BEFORE '''#include "modules/Commons/include/BeginBoostInclude.h"   // BOOST -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndBoostInclude.h"     // <-- BOOST
+        val result = new StringBuilder()
 
-         '''»
-                #include <«boost_header»>
-            «ENDFOR»
-            «FOR odb_header : getOdbIncludes.sort BEFORE "// ODB" + System.lineSeparator AFTER '''
+        for (outputConfigurationItem : outputConfiguration)
+        {
+            val sortedElements = includes.extractAllExcludeNull(outputConfigurationItem.includeGroups).flatten.sort
+            if (!sortedElements.empty)
+            {
+                result.append(outputConfigurationItem.prefix)
+                for (element : sortedElements)
+                {
+                    result.append("#include ")
+                    result.append(if (outputConfigurationItem.systemIncludeStyle) "<" else "\"")
+                    result.append(element)
+                    result.append(if (outputConfigurationItem.systemIncludeStyle) ">" else "\"")
+                    result.append(System.lineSeparator)
+                }
+                result.append(outputConfigurationItem.suffix)
+                result.append(System.lineSeparator)
+            }
 
-         '''»
-                #include <«odb_header»>
-            «ENDFOR»
-            «FOR stl_header : getStlIncludes.sort BEFORE '''#include "modules/Commons/include/BeginStdInclude.h"     // STD -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndStdInclude.h"       // <-- STD
+            // TODO remove this
+            if (outputConfigurationItem.precedence == 0 && is_header &&
+                typeResolver.param_bundle.projectType == ProjectType.PROXY)
+            {
+                result.append('''
+                    // resolve naming conflict between Windows' API function InitiateShutdown and CAB's AServiceProxyBase::InitiateShutdown
+                    #ifdef InitiateShutdown
+                    #undef InitiateShutdown
+                    #endif
+                                    
+                ''')
+            }
+        }
 
-         '''»
-                #include <«stl_header»>
-            «ENDFOR»
+        if (!includes.empty)
+        {
+            throw new IllegalArgumentException("Unconfigured include groups: " + includes.keySet.join(", "))
+        }
+
+        result.append(    
+        '''            
             «IF !is_header && typeResolver.param_bundle.projectType == ProjectType.SERVER_RUNNER»
                 
                 #ifndef NOMINMAX
@@ -394,7 +402,9 @@ resolveClass
                 #endif
                 #include <windows.h>
             «ENDIF»
-        '''
+        ''')
+
+        return result
     }
 
     def String makeExceptionImplementation(ExceptionDeclaration exception)

@@ -53,7 +53,7 @@ class TypeResolver
 
     def getIncludes()
     {
-        includes.immutableCopy
+        includes.entrySet.map[new Pair(it.key, it.value.immutableCopy)].toMap([it.key], [value])
     }
 
     def addTargetInclude(String path)
@@ -85,8 +85,7 @@ class TypeResolver
 
     // PRINS-specific, TODO move to PRINS-package
     public static val MODULES_INCLUDE_GROUP = new IncludeGroup("BTC.PRINS.Modules")
-    public static val ODB_INCLUDE_GROUP = new IncludeGroup("ODB")
-    
+
     // TODO inject this
     private val headerResolver = PrinsHeaderResolver.create
 
