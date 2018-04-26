@@ -19,6 +19,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors
 class TestGenerator extends BasicCppGenerator
@@ -115,35 +116,35 @@ class TestGenerator extends BasicCppGenerator
                    «api_type»& «subject_name»( container.GetSubject() );
                    
                    «FOR param : func.parameters.filter[direction == ParameterDirection.PARAM_IN]»
-                       «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
-                           «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
-                           «resolveSymbol("BTC::Commons::Core::Vector")»< «IF is_failable»«resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»<«ENDIF»«toText(com.btc.serviceidl.util.Util.getUltimateType(param.paramType), param)»«IF is_failable»>«ENDIF» > «param.paramName.asParameter»;
+                       «IF param.paramType.isSequenceType»
+                           «val is_failable = param.paramType.isFailable»
+                           «resolveSymbol("BTC::Commons::Core::Vector")»< «IF is_failable»«resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»<«ENDIF»«toText(param.paramType.ultimateType, param)»«IF is_failable»>«ENDIF» > «param.paramName.asParameter»;
                        «ELSE»
                            «val type_name = toText(param.paramType, param)»
-                           «type_name» «param.paramName.asParameter»«IF com.btc.serviceidl.util.Util.isEnumType(param.paramType)» = «type_name»::«(com.btc.serviceidl.util.Util.getUltimateType(param.paramType) as EnumDeclaration).containedIdentifiers.head»«ELSEIF com.btc.serviceidl.util.Util.isStruct(param.paramType)» = {}«ENDIF»;
+                           «type_name» «param.paramName.asParameter»«IF param.paramType.isEnumType» = «type_name»::«(param.paramType.ultimateType as EnumDeclaration).containedIdentifiers.head»«ELSEIF param.paramType.isStruct» = {}«ENDIF»;
                        «ENDIF»
                    «ENDFOR»
                    «FOR param : func.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
-                       «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
-                           «val ulimate_type = toText(com.btc.serviceidl.util.Util.getUltimateType(param.paramType), param)»
-                           «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
+                       «IF param.paramType.isSequenceType»
+                           «val ulimate_type = toText(param.paramType.ultimateType, param)»
+                           «val is_failable = param.paramType.isFailable»
                            «val inner_type = if (is_failable) '''«addCabInclude("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h").alias(resolveSymbol("BTC::Commons::CoreExtras::FailableHandle"))»< «ulimate_type» >''' else ulimate_type»
                            «resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «inner_type» >::AutoPtrType «param.paramName.asParameter»( «resolveSymbol("BTC::Commons::FutureUtil::CreateDefaultAsyncInsertable")»< «inner_type» >() );
                        «ELSE»
                            «val type_name = toText(param.paramType, param)»
-                           «type_name» «param.paramName.asParameter»«IF com.btc.serviceidl.util.Util.isEnumType(param.paramType)» = «type_name»::«(com.btc.serviceidl.util.Util.getUltimateType(param.paramType) as EnumDeclaration).containedIdentifiers.head»«ENDIF»;
+                           «type_name» «param.paramName.asParameter»«IF param.paramType.isEnumType» = «type_name»::«(param.paramType.ultimateType as EnumDeclaration).containedIdentifiers.head»«ENDIF»;
                        «ENDIF»
                    «ENDFOR»
                    «FOR param : func.parameters»
-                       «val param_type = com.btc.serviceidl.util.Util.getUltimateType(param.paramType)»
+                       «val param_type = param.paramType.ultimateType»
                        «IF param_type instanceof StructDeclaration»
-                           «FOR member : param_type.allMembers.filter[!optional].filter[com.btc.serviceidl.util.Util.isEnumType(it.type)]»
-                               «val enum_type = com.btc.serviceidl.util.Util.getUltimateType(member.type)»
+                           «FOR member : param_type.allMembers.filter[!optional].filter[type.isEnumType]»
+                               «val enum_type = member.type.ultimateType»
                                «param.paramName.asParameter».«member.name.asMember» = «toText(enum_type, enum_type)»::«(enum_type as EnumDeclaration).containedIdentifiers.head»;
                            «ENDFOR»
                        «ENDIF»
                    «ENDFOR»
-                   «resolveSymbol("UTTHROWS")»( «resolveSymbol("BTC::Commons::Core::UnsupportedOperationException")», «subject_name».«func.name»(«func.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT && com.btc.serviceidl.util.Util.isSequenceType(paramType)) "*" else "") + paramName.asParameter + if (direction == ParameterDirection.PARAM_IN && com.btc.serviceidl.util.Util.isSequenceType(paramType)) ".GetBeginForward()" else ""].join(", ")»)«IF !func.isSync».Get()«ENDIF» );
+                   «resolveSymbol("UTTHROWS")»( «resolveSymbol("BTC::Commons::Core::UnsupportedOperationException")», «subject_name».«func.name»(«func.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT && paramType.isSequenceType) "*" else "") + paramName.asParameter + if (direction == ParameterDirection.PARAM_IN && paramType.isSequenceType) ".GetBeginForward()" else ""].join(", ")»)«IF !func.isSync».Get()«ENDIF» );
                 }
             «ENDFOR»
             
