@@ -51,7 +51,7 @@ class CommonsGenerator extends BasicCppGenerator
          || !module.eAllContents.filter(SequenceDeclaration).filter[failable].empty
       )
       {
-         resolveCABImpl("BTC::Commons::CoreExtras::Optional")
+         resolveSymbolWithImplementation("BTC::Commons::CoreExtras::Optional")
       }
            
       // resolve any type to include the header: important for *.lib file

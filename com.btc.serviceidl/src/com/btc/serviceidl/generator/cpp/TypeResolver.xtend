@@ -101,11 +101,12 @@ class TypeResolver
         return className
     }
 
-    def String resolveCABImpl(String class_name)
+    def String resolveSymbolWithImplementation(String class_name)
     {
-        val header = headerResolver.getCABImpl(class_name)
-        addToGroup(CAB_INCLUDE_GROUP, header)
-        cab_libs.addAll(LibResolver.getCABLibs(header))
+        val header = headerResolver.getImplementationHeader(class_name)
+        addToGroup(header.includeGroup, header.path)
+        // TODO resolve and add to libs generically
+        cab_libs.addAll(LibResolver.getCABLibs(header.path))
         return class_name
     }
 

@@ -34,7 +34,7 @@ class TestGenerator extends BasicCppGenerator
 
         // explicitly resolve some necessary includes, because they are needed
         // for the linker due to some classes we use, but not directly referenced
-        resolveCABImpl("BTC::Commons::CoreExtras::Optional")
+        resolveSymbolWithImplementation("BTC::Commons::CoreExtras::Optional")
 
         '''
             typedef «resolveSymbol("BTC::ServiceComm::Util::DefaultCreateDispatcherWithContextAndEndpoint")»<

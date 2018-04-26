@@ -37,7 +37,7 @@ class ProxyGenerator extends BasicCppGenerator {
       
       // the class name is not used explicitly in the following code, but
       // we need to include this *.impl.h file to avoid linker errors
-      resolveCABImpl("BTC::ServiceComm::Util::CDefaultObservableRegistrationProxy")
+      resolveSymbolWithImplementation("BTC::ServiceComm::Util::CDefaultObservableRegistrationProxy")
       
       '''
       «class_name.shortName»::«class_name.shortName»
@@ -45,7 +45,7 @@ class ProxyGenerator extends BasicCppGenerator {
          «resolveSymbol("BTC::Commons::Core::Context")» &context
          ,«resolveSymbol("BTC::Logging::API::LoggerFactory")» &loggerFactory
          ,«resolveSymbol("BTC::ServiceComm::API::IClientEndpoint")» &localEndpoint
-         ,«resolveCABImpl("BTC::Commons::CoreExtras::Optional")»<«resolveSymbol("BTC::Commons::CoreExtras::UUID")»> const &serverServiceInstanceGuid
+         ,«resolveSymbolWithImplementation("BTC::Commons::CoreExtras::Optional")»<«resolveSymbol("BTC::Commons::CoreExtras::UUID")»> const &serverServiceInstanceGuid
       ) :
       m_context(context)
       , «resolveSymbol("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
