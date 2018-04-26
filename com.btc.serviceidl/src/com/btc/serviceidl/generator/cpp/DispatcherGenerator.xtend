@@ -37,28 +37,28 @@ class DispatcherGenerator extends BasicCppGenerator
         val protobuf_request_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
         val protobuf_response_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
 
-        val cab_message_ptr = resolveClass("BTC::ServiceComm::Commons::MessagePtr")
+        val cab_message_ptr = resolveSymbol("BTC::ServiceComm::Commons::MessagePtr")
 
         '''
             «class_name.shortName»::«class_name.shortName»
             (
-               «resolveClass("BTC::Commons::Core::Context")»& context
-               ,«resolveClass("BTC::Logging::API::LoggerFactory")»& loggerFactory
-               ,«resolveClass("BTC::ServiceComm::API::IServerEndpoint")»& serviceEndpoint
-               ,«resolveClass("BTC::Commons::Core::AutoPtr")»< «api_class_name» > dispatchee
+               «resolveSymbol("BTC::Commons::Core::Context")»& context
+               ,«resolveSymbol("BTC::Logging::API::LoggerFactory")»& loggerFactory
+               ,«resolveSymbol("BTC::ServiceComm::API::IServerEndpoint")»& serviceEndpoint
+               ,«resolveSymbol("BTC::Commons::Core::AutoPtr")»< «api_class_name» > dispatchee
             ) :
-            «resolveClass("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
-            , «interface_declaration.asBaseName»( serviceEndpoint.GetServiceFaultHandlerManagerFactory(), «resolveClass("std::move")»(dispatchee) )
+            «resolveSymbol("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
+            , «interface_declaration.asBaseName»( serviceEndpoint.GetServiceFaultHandlerManagerFactory(), «resolveSymbol("std::move")»(dispatchee) )
             { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.getTransformedModuleName(new ParameterBundle.Builder(paramBundle).with(ProjectType.SERVICE_API).build, ArtifactNature.CPP, TransformType.NAMESPACE)))»( GetServiceFaultHandlerManager() ); }
             
             «class_name.shortName»::«class_name.shortName»
             (
-               «resolveClass("BTC::Logging::API::LoggerFactory")»& loggerFactory
-               ,«resolveClass("BTC::ServiceComm::API::IServiceFaultHandlerManagerFactory")» &serviceFaultHandlerManagerFactory
-               ,«resolveClass("BTC::Commons::Core::AutoPtr")»< «api_class_name» > dispatchee
+               «resolveSymbol("BTC::Logging::API::LoggerFactory")»& loggerFactory
+               ,«resolveSymbol("BTC::ServiceComm::API::IServiceFaultHandlerManagerFactory")» &serviceFaultHandlerManagerFactory
+               ,«resolveSymbol("BTC::Commons::Core::AutoPtr")»< «api_class_name» > dispatchee
             ) :
-            «resolveClass("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
-            , «interface_declaration.asBaseName»( serviceFaultHandlerManagerFactory, «resolveClass("std::move")»(dispatchee) )
+            «resolveSymbol("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
+            , «interface_declaration.asBaseName»( serviceFaultHandlerManagerFactory, «resolveSymbol("std::move")»(dispatchee) )
             { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.getTransformedModuleName(new ParameterBundle.Builder(paramBundle).with(ProjectType.SERVICE_API).build, ArtifactNature.CPP, TransformType.NAMESPACE)))»( GetServiceFaultHandlerManager() ); }
             
             «generateCppDestructor(interface_declaration)»
@@ -66,19 +66,19 @@ class DispatcherGenerator extends BasicCppGenerator
             «cab_message_ptr» «class_name.shortName»::ProcessRequest
             (
                «cab_message_ptr» requestBuffer
-               , «resolveClass("BTC::ServiceComm::Commons::CMessage")» const& clientIdentity
+               , «resolveSymbol("BTC::ServiceComm::Commons::CMessage")» const& clientIdentity
             )
             {
                // check whether request has exactly one part (other dispatchers could use more than one part)
                if (requestBuffer->GetNumElements() != 1) 
                {
-                  «resolveClass("CABLOG_ERROR")»("Received invalid request (wrong message part count): " << requestBuffer->ToString());
-                  «resolveClass("CABTHROW_V2")»( «resolveClass("BTC::ServiceComm::API::InvalidRequestReceivedException")»( «resolveClass("BTC::Commons::CoreExtras::StringBuilder")»() 
+                  «resolveSymbol("CABLOG_ERROR")»("Received invalid request (wrong message part count): " << requestBuffer->ToString());
+                  «resolveSymbol("CABTHROW_V2")»( «resolveSymbol("BTC::ServiceComm::API::InvalidRequestReceivedException")»( «resolveSymbol("BTC::Commons::CoreExtras::StringBuilder")»() 
                      << "Expected exactly 1 message part, but received " << requestBuffer->GetNumElements() ) );
                }
                
                // parse raw message into Protocol Buffers message object
-               «resolveClass("BTC::Commons::Core::AutoPtr")»< «protobuf_request_message» > request( BorrowRequestMessage() );
+               «resolveSymbol("BTC::Commons::Core::AutoPtr")»< «protobuf_request_message» > request( BorrowRequestMessage() );
                ParseRequestOrLogAndThrow( «class_name.shortName»::GetLogger(), *request, (*requestBuffer)[0] );
                
                «FOR function : interface_declaration.functions»
@@ -119,9 +119,9 @@ class DispatcherGenerator extends BasicCppGenerator
                                   «val type_name = resolve(com.btc.serviceidl.util.Util.getUltimateType(param.paramType))»
                                   «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
                                   «if (is_failable) addCabInclude("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h").alias("") /* necessary to use InsertableTraits with FailableHandle */»
-                                  «val effective_typename = if (is_failable) '''«resolveClass("BTC::Commons::CoreExtras::FailableHandle")»< «type_name» >''' else type_name»
-                                  «resolveClass("BTC::Commons::CoreExtras::InsertableTraits")»< «effective_typename» >::AutoPtrType «param.paramName»(
-                                     «resolveClass("BTC::Commons::FutureUtil::GetOrCreateDefaultInsertable")»(«resolveClass("BTC::Commons::CoreExtras::InsertableTraits")»< «effective_typename» >::MakeEmptyInsertablePtr()) );
+                                  «val effective_typename = if (is_failable) '''«resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»< «type_name» >''' else type_name»
+                                  «resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «effective_typename» >::AutoPtrType «param.paramName»(
+                                     «resolveSymbol("BTC::Commons::FutureUtil::GetOrCreateDefaultInsertable")»(«resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «effective_typename» >::MakeEmptyInsertablePtr()) );
                                   auto «param.paramName»Future = «param.paramName»->GetFuture();
                               «ELSE»
                                   «toText(param.paramType, param)» «param.paramName»;
@@ -130,10 +130,10 @@ class DispatcherGenerator extends BasicCppGenerator
                       «ENDIF»
                       
                       // call actual method
-               «IF !is_void»auto result( «ENDIF»GetDispatchee().«function.name»(«FOR p : function.parameters SEPARATOR ", "»«IF p.direction == ParameterDirection.PARAM_OUT && com.btc.serviceidl.util.Util.isSequenceType(p.paramType)»*«ENDIF»«IF p.direction == ParameterDirection.PARAM_IN && com.btc.serviceidl.util.Util.isSequenceType(p.paramType)»«resolveClass("std::move")»(«ENDIF»«p.paramName»«IF p.direction == ParameterDirection.PARAM_IN && com.btc.serviceidl.util.Util.isSequenceType(p.paramType)»)«ENDIF»«ENDFOR»)«IF !is_sync».Get()«ENDIF»«IF !is_void» )«ENDIF»;
+               «IF !is_void»auto result( «ENDIF»GetDispatchee().«function.name»(«FOR p : function.parameters SEPARATOR ", "»«IF p.direction == ParameterDirection.PARAM_OUT && com.btc.serviceidl.util.Util.isSequenceType(p.paramType)»*«ENDIF»«IF p.direction == ParameterDirection.PARAM_IN && com.btc.serviceidl.util.Util.isSequenceType(p.paramType)»«resolveSymbol("std::move")»(«ENDIF»«p.paramName»«IF p.direction == ParameterDirection.PARAM_IN && com.btc.serviceidl.util.Util.isSequenceType(p.paramType)»)«ENDIF»«ENDFOR»)«IF !is_sync».Get()«ENDIF»«IF !is_void» )«ENDIF»;
                
                // prepare response
-               «resolveClass("BTC::Commons::Core::AutoPtr")»< «protobuf_response_message» > response( BorrowReplyMessage() );
+               «resolveSymbol("BTC::Commons::Core::AutoPtr")»< «protobuf_response_message» > response( BorrowReplyMessage() );
                
                «IF !is_void || !output_parameters.empty»
                    // encode response -->
@@ -149,15 +149,15 @@ class DispatcherGenerator extends BasicCppGenerator
                «ENDIF»
                
                // send return message
-               return «resolveClass("BTC::ServiceComm::CommonsUtil::MakeSinglePartMessage")»(
-                   GetMessagePool(), «resolveClass("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ProtobufToMessagePart(
+               return «resolveSymbol("BTC::ServiceComm::CommonsUtil::MakeSinglePartMessage")»(
+                   GetMessagePool(), «resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ProtobufToMessagePart(
                      GetMessagePartPool()
                     ,*response ) );
                    }
                «ENDFOR»
                
-               «resolveClass("CABLOG_ERROR")»("Invalid request: " << request->DebugString().c_str());
-               «resolveClass("CABTHROW_V2")»( «resolveClass("BTC::ServiceComm::API::InvalidRequestReceivedException")»(«resolveClass("BTC::Commons::Core::String")»("«interface_declaration.name»_Request is invalid, unknown request type")));
+               «resolveSymbol("CABLOG_ERROR")»("Invalid request: " << request->DebugString().c_str());
+               «resolveSymbol("CABTHROW_V2")»( «resolveSymbol("BTC::ServiceComm::API::InvalidRequestReceivedException")»(«resolveSymbol("BTC::Commons::Core::String")»("«interface_declaration.name»_Request is invalid, unknown request type")));
             }
             
             void «class_name.shortName»::AttachEndpoint(BTC::ServiceComm::API::IServerEndpoint &endpoint)
@@ -176,11 +176,11 @@ class DispatcherGenerator extends BasicCppGenerator
                «interface_declaration.asBaseName»::DetachEndpoint(endpoint);
             }
             
-            void «class_name.shortName»::RegisterMessageTypes(«resolveClass("BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder")» &decoder)
+            void «class_name.shortName»::RegisterMessageTypes(«resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder")» &decoder)
             {
-               «resolveClass("BTC::ServiceComm::Commons::CMessagePartPool")» pool;
-               «resolveClass("BTC::ServiceComm::Commons::CMessage")» buffer;
-               «resolveClass("BTC::ServiceComm::ProtobufUtil::ExportDescriptors")»< «protobuf_request_message» >(buffer, pool);
+               «resolveSymbol("BTC::ServiceComm::Commons::CMessagePartPool")» pool;
+               «resolveSymbol("BTC::ServiceComm::Commons::CMessage")» buffer;
+               «resolveSymbol("BTC::ServiceComm::ProtobufUtil::ExportDescriptors")»< «protobuf_request_message» >(buffer, pool);
                decoder.RegisterMessageTypes( 
                   «api_class_name»::TYPE_GUID()
                  ,buffer
@@ -188,24 +188,24 @@ class DispatcherGenerator extends BasicCppGenerator
                  ,"«GeneratorUtil.switchSeparator(protobuf_response_message.toString, TransformType.NAMESPACE, TransformType.PACKAGE)»" );
             }
             
-            «resolveClass("BTC::Commons::Core::UniquePtr")»<«resolveClass("BTC::ServiceComm::Util::IDispatcherAutoRegistrationFactory")»> «class_name.shortName»::CreateDispatcherAutoRegistrationFactory
+            «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::ServiceComm::Util::IDispatcherAutoRegistrationFactory")»> «class_name.shortName»::CreateDispatcherAutoRegistrationFactory
             (
-               «resolveClass("BTC::Logging::API::LoggerFactory")» &loggerFactory
-               , «resolveClass("BTC::ServiceComm::API::IServerEndpoint")» &serverEndpoint
-               , «resolveClass("BTC::Commons::CoreExtras::UUID")» const &instanceGuid /*= Commons::CoreExtras::UUID()*/
-               , «resolveClass("BTC::Commons::Core::String")» const &instanceName /*= BTC::Commons::Core::String ()*/
+               «resolveSymbol("BTC::Logging::API::LoggerFactory")» &loggerFactory
+               , «resolveSymbol("BTC::ServiceComm::API::IServerEndpoint")» &serverEndpoint
+               , «resolveSymbol("BTC::Commons::CoreExtras::UUID")» const &instanceGuid /*= Commons::CoreExtras::UUID()*/
+               , «resolveSymbol("BTC::Commons::Core::String")» const &instanceName /*= BTC::Commons::Core::String ()*/
             )
             {
-               using «resolveClass("BTC::ServiceComm::Util::CDispatcherAutoRegistrationFactory")»;
-               using «resolveClass("BTC::ServiceComm::Util::DefaultCreateDispatcherWithContext")»;
+               using «resolveSymbol("BTC::ServiceComm::Util::CDispatcherAutoRegistrationFactory")»;
+               using «resolveSymbol("BTC::ServiceComm::Util::DefaultCreateDispatcherWithContext")»;
             
-               return «resolveClass("BTC::Commons::Core::CreateUnique")»<CDispatcherAutoRegistrationFactory<«api_class_name», «class_name.shortName»>>
+               return «resolveSymbol("BTC::Commons::Core::CreateUnique")»<CDispatcherAutoRegistrationFactory<«api_class_name», «class_name.shortName»>>
                (
                loggerFactory
                , serverEndpoint
                , instanceGuid
-               , «resolveClass("CABTYPENAME")»(«api_class_name»)
-               , instanceName.IsNotEmpty() ? instanceName : («resolveClass("CABTYPENAME")»(«api_class_name») + " default instance")
+               , «resolveSymbol("CABTYPENAME")»(«api_class_name»)
+               , instanceName.IsNotEmpty() ? instanceName : («resolveSymbol("CABTYPENAME")»(«api_class_name») + " default instance")
                );
             }
         '''
@@ -222,7 +222,7 @@ class DispatcherGenerator extends BasicCppGenerator
                     «val is_failable = com.btc.serviceidl.util.Util.isFailable(type)»
                     «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.RESPONSE).fullyQualifiedName»
                     «typeResolver.resolveCodecNS(ulimate_type, is_failable, Optional.of(container))»::Encode«IF is_failable»Failable«ENDIF»< «resolve(ulimate_type)», «IF is_failable»«typeResolver.resolveFailableProtobufType(type, container)»«ELSE»«protobuf_type»«ENDIF» >
-                       ( «resolveClass("std::move")»(«api_input»«IF output_param.present»Future.Get()«ENDIF»), concreteResponse->mutable_«protobuf_name»() );
+                       ( «resolveSymbol("std::move")»(«api_input»«IF output_param.present»Future.Get()«ENDIF»), concreteResponse->mutable_«protobuf_name»() );
                 «ELSEIF com.btc.serviceidl.util.Util.isEnumType(type)»
                     concreteResponse->set_«protobuf_name»( «typeResolver.resolveCodecNS(type)»::Encode(«api_input») );
                 «ELSE»
@@ -238,7 +238,7 @@ class DispatcherGenerator extends BasicCppGenerator
     {
         val class_name = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType, interface_declaration.name)
 
-        val cab_message_ptr = resolveClass("BTC::ServiceComm::Commons::MessagePtr")
+        val cab_message_ptr = resolveSymbol("BTC::ServiceComm::Commons::MessagePtr")
         
         // TODO do not use anonymous namespaces in a header file!
         '''
@@ -249,7 +249,7 @@ class DispatcherGenerator extends BasicCppGenerator
             }
             
             class «makeExportMacro()» «class_name» :
-            virtual private «resolveClass("BTC::Logging::API::LoggerAware")»
+            virtual private «resolveSymbol("BTC::Logging::API::LoggerAware")»
             , public «interface_declaration.asBaseName»
             {
             public:
@@ -257,9 +257,9 @@ class DispatcherGenerator extends BasicCppGenerator
                
                «class_name»
                (
-                  «resolveClass("BTC::Logging::API::LoggerFactory")» &loggerFactory
-                  ,«resolveClass("BTC::ServiceComm::API::IServiceFaultHandlerManagerFactory")» &serviceFaultHandlerManagerFactory
-                  ,«resolveClass("BTC::Commons::Core::AutoPtr")»< «resolve(interface_declaration)» > dispatchee
+                  «resolveSymbol("BTC::Logging::API::LoggerFactory")» &loggerFactory
+                  ,«resolveSymbol("BTC::ServiceComm::API::IServiceFaultHandlerManagerFactory")» &serviceFaultHandlerManagerFactory
+                  ,«resolveSymbol("BTC::Commons::Core::AutoPtr")»< «resolve(interface_declaration)» > dispatchee
                );
                
                «generateHDestructor(interface_declaration)»
@@ -270,28 +270,28 @@ class DispatcherGenerator extends BasicCppGenerator
                virtual «cab_message_ptr» ProcessRequest
                (
                   «cab_message_ptr» request,
-                  «resolveClass("BTC::ServiceComm::Commons::CMessage")» const& clientIdentity
+                  «resolveSymbol("BTC::ServiceComm::Commons::CMessage")» const& clientIdentity
                ) override;
                
                /**
                   \see BTC::ServiceComm::API::IRequestDispatcher::AttachEndpoint
                */
-               virtual void AttachEndpoint( «resolveClass("BTC::ServiceComm::API::IServerEndpoint")» &endpoint ) override;
+               virtual void AttachEndpoint( «resolveSymbol("BTC::ServiceComm::API::IServerEndpoint")» &endpoint ) override;
                
                /**
                   \see BTC::ServiceComm::API::IRequestDispatcher::DetachEndpoint
                */
-               virtual void DetachEndpoint( «resolveClass("BTC::ServiceComm::API::IServerEndpoint")» &endpoint ) override;
+               virtual void DetachEndpoint( «resolveSymbol("BTC::ServiceComm::API::IServerEndpoint")» &endpoint ) override;
                
-               static void RegisterMessageTypes( «resolveClass("BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder")» &decoder );
+               static void RegisterMessageTypes( «resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder")» &decoder );
                
                // for server runner
-               static «resolveClass("BTC::Commons::Core::UniquePtr")»<«resolveClass("BTC::ServiceComm::Util::IDispatcherAutoRegistrationFactory")»> CreateDispatcherAutoRegistrationFactory
+               static «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::ServiceComm::Util::IDispatcherAutoRegistrationFactory")»> CreateDispatcherAutoRegistrationFactory
                (
-                  «resolveClass("BTC::Logging::API::LoggerFactory")» &loggerFactory
-                  ,«resolveClass("BTC::ServiceComm::API::IServerEndpoint")» &serverEndpoint
-                  ,«resolveClass("BTC::Commons::CoreExtras::UUID")» const &instanceGuid = BTC::Commons::CoreExtras::UUID()
-                  ,«resolveClass("BTC::Commons::Core::String")» const &instanceName = BTC::Commons::Core::String()
+                  «resolveSymbol("BTC::Logging::API::LoggerFactory")» &loggerFactory
+                  ,«resolveSymbol("BTC::ServiceComm::API::IServerEndpoint")» &serverEndpoint
+                  ,«resolveSymbol("BTC::Commons::CoreExtras::UUID")» const &instanceGuid = BTC::Commons::CoreExtras::UUID()
+                  ,«resolveSymbol("BTC::Commons::Core::String")» const &instanceName = BTC::Commons::Core::String()
                );
             };
         '''
@@ -304,7 +304,7 @@ class DispatcherGenerator extends BasicCppGenerator
         val protobuf_response = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
 
         '''
-            typedef «resolveClass("BTC::ServiceComm::ProtobufBase::AProtobufServiceDispatcherBaseTemplate")»<
+            typedef «resolveSymbol("BTC::ServiceComm::ProtobufBase::AProtobufServiceDispatcherBaseTemplate")»<
                «api_class_name»
                , «protobuf_request»
                , «protobuf_response» > «interface_declaration.asBaseName»;

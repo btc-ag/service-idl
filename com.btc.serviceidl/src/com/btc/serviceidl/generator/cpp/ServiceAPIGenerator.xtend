@@ -66,7 +66,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
          // anonymous namespace for internally used typedef
          namespace
          {
-            typedef «resolveClass("BTC::ServiceComm::ProtobufBase::AProtobufServiceProxyBaseTemplate")»<
+            typedef «resolveSymbol("BTC::ServiceComm::ProtobufBase::AProtobufServiceProxyBaseTemplate")»<
                «typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)»
                ,«typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)» > «interface_declaration.asBaseName»;
          }
@@ -82,7 +82,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
       public:
          «IF is_api»
             /** \return {«GuidMapper.get(interface_declaration)»} */
-            static «resolveClass("BTC::Commons::CoreExtras::UUID")» TYPE_GUID();
+            static «resolveSymbol("BTC::Commons::CoreExtras::UUID")» TYPE_GUID();
          «ELSE»
             «generateHConstructor(interface_declaration)»
             
@@ -107,7 +107,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
                \see «resolve(interface_declaration, ProjectType.SERVICE_API)»::«function.name»
             «ENDIF»
          */
-         virtual «IF !function.isSync»«resolveClass("BTC::Commons::CoreExtras::Future")»<«ENDIF»«toText(function.returnedType, interface_declaration)»«IF !function.isSync»>«ENDIF» «function.name»(«generateParameters(function)»)«IF function.isQuery» const«ENDIF»«IF is_api» = 0«ELSE» override«ENDIF»;
+         virtual «IF !function.isSync»«resolveSymbol("BTC::Commons::CoreExtras::Future")»<«ENDIF»«toText(function.returnedType, interface_declaration)»«IF !function.isSync»>«ENDIF» «function.name»(«generateParameters(function)»)«IF function.isQuery» const«ENDIF»«IF is_api» = 0«ELSE» override«ENDIF»;
          «ENDFOR»
          «IF is_proxy»
             
@@ -121,7 +121,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
             /**
                \brief Subscribe for event of type «event_type»
             */
-            virtual «resolveClass("BTC::Commons::Core::UniquePtr")»<«resolveClass("BTC::Commons::Core::Disposable")»> Subscribe( «resolveClass("BTC::Commons::CoreExtras::IObserver")»<«event_type»> &observer )«IF is_api» = 0«ENDIF»;
+            virtual «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«event_type»> &observer )«IF is_api» = 0«ENDIF»;
          «ENDFOR»
          
          «IF !is_api»
@@ -129,10 +129,10 @@ class ServiceAPIGenerator extends BasicCppGenerator {
                /**
                   \see BTC::Commons::CoreExtras::IObservableRegistration::Subscribe
                */
-               virtual «resolveClass("BTC::Commons::Core::UniquePtr")»<«resolveClass("BTC::Commons::Core::Disposable")»> Subscribe( «resolveClass("BTC::Commons::CoreExtras::IObserver")»<«toText(anonymous_event.data, anonymous_event)»> &observer ) override;
+               virtual «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«toText(anonymous_event.data, anonymous_event)»> &observer ) override;
             «ENDIF»
             private:
-               «resolveClass("BTC::Commons::Core::Context")» &m_context;
+               «resolveSymbol("BTC::Commons::Core::Context")» &m_context;
             «IF is_proxy»
                «FOR event : interface_declaration.events»
                   «var event_params_name = event.eventParamsName»
@@ -140,24 +140,24 @@ class ServiceAPIGenerator extends BasicCppGenerator {
                   {
                      typedef «resolve(event.data)» EventDataType;
                      
-                     static «resolveClass("BTC::Commons::CoreExtras::UUID")» GetEventTypeGuid();
-                     static «resolveClass("BTC::ServiceComm::API::EventKind")» GetEventKind();
-                     static «resolveClass("BTC::Commons::Core::String")» GetEventTypeDescription();
-                     static «resolveClass("std::function")»<EventDataType const ( «resolveClass("BTC::ServiceComm::Commons::ConstSharedMessageSharedPtr")» const & )> GetUnmarshalFunction();
+                     static «resolveSymbol("BTC::Commons::CoreExtras::UUID")» GetEventTypeGuid();
+                     static «resolveSymbol("BTC::ServiceComm::API::EventKind")» GetEventKind();
+                     static «resolveSymbol("BTC::Commons::Core::String")» GetEventTypeDescription();
+                     static «resolveSymbol("std::function")»<EventDataType const ( «resolveSymbol("BTC::ServiceComm::Commons::ConstSharedMessageSharedPtr")» const & )> GetUnmarshalFunction();
                   };
-                  «resolveClass("BTC::ServiceComm::Util::CDefaultObservableRegistrationProxy")»<«event_params_name»> «event.observableRegistrationName»;
+                  «resolveSymbol("BTC::ServiceComm::Util::CDefaultObservableRegistrationProxy")»<«event_params_name»> «event.observableRegistrationName»;
                «ENDFOR»
             «ENDIF»
             «IF is_impl»
                «FOR event : interface_declaration.events»
-                  «resolveClass("BTC::Commons::CoreExtras::CDefaultObservable")»<«resolve(event.data)»> «event.observableName»;
+                  «resolveSymbol("BTC::Commons::CoreExtras::CDefaultObservable")»<«resolve(event.data)»> «event.observableName»;
                «ENDFOR»
             «ENDIF»
          «ENDIF»
       };
       «IF is_api»
          void «export_macro»
-         «getRegisterServerFaults(interface_declaration, Optional.empty)»(«resolveClass("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager);
+         «getRegisterServerFaults(interface_declaration, Optional.empty)»(«resolveSymbol("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager);
       «ENDIF»
       '''
    }
@@ -170,11 +170,11 @@ class ServiceAPIGenerator extends BasicCppGenerator {
       
       '''«GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType, interface_declaration.name)» : 
       «IF is_api»
-         virtual public «resolveClass("BTC::Commons::Core::Object")»
-         «IF anonymous_event !== null», public «resolveClass("BTC::Commons::CoreExtras::IObservableRegistration")»<«resolve(anonymous_event.data)»>«ENDIF»
+         virtual public «resolveSymbol("BTC::Commons::Core::Object")»
+         «IF anonymous_event !== null», public «resolveSymbol("BTC::Commons::CoreExtras::IObservableRegistration")»<«resolve(anonymous_event.data)»>«ENDIF»
       «ELSE»
          virtual public «resolve(interface_declaration, ProjectType.SERVICE_API)»
-         , private «resolveClass("BTC::Logging::API::LoggerAware")»
+         , private «resolveSymbol("BTC::Logging::API::LoggerAware")»
       «ENDIF»
       «IF is_proxy»
          , private «interface_declaration.asBaseName»
@@ -186,8 +186,8 @@ class ServiceAPIGenerator extends BasicCppGenerator {
       val class_name = resolve(interface_declaration, paramBundle.projectType)
       
       // prepare for re-use
-      val register_service_fault = resolveClass("BTC::ServiceComm::Base::RegisterServiceFault")
-      val cab_string = resolveClass("BTC::Commons::Core::String")
+      val register_service_fault = resolveSymbol("BTC::ServiceComm::Base::RegisterServiceFault")
+      val cab_string = resolveSymbol("BTC::Commons::Core::String")
       
       // collect exceptions thrown by interface methods
       val thrown_exceptions = new HashSet<AbstractException>
@@ -214,17 +214,17 @@ class ServiceAPIGenerator extends BasicCppGenerator {
       «ENDFOR»
       
       // {«GuidMapper.get(interface_declaration)»}
-      static const «resolveClass("BTC::Commons::CoreExtras::UUID")» s«interface_declaration.name»TypeGuid = 
-         «resolveClass("BTC::Commons::CoreExtras::UUID")»::ParseString("«GuidMapper.get(interface_declaration)»");
+      static const «resolveSymbol("BTC::Commons::CoreExtras::UUID")» s«interface_declaration.name»TypeGuid = 
+         «resolveSymbol("BTC::Commons::CoreExtras::UUID")»::ParseString("«GuidMapper.get(interface_declaration)»");
 
-      «resolveClass("BTC::Commons::CoreExtras::UUID")» «class_name.shortName»::TYPE_GUID()
+      «resolveSymbol("BTC::Commons::CoreExtras::UUID")» «class_name.shortName»::TYPE_GUID()
       {
          return s«interface_declaration.name»TypeGuid;
       }
 
       «makeEventGUIDImplementations(typeResolver, idl, interface_declaration.contains.filter(StructDeclaration))»
       
-      void «getRegisterServerFaults(interface_declaration, Optional.empty)»(«resolveClass("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager)
+      void «getRegisterServerFaults(interface_declaration, Optional.empty)»(«resolveSymbol("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager)
       {
          «IF !thrown_exceptions.empty»// register exceptions thrown by service methods«ENDIF»
          «FOR exception : thrown_exceptions.sortBy[name]»
