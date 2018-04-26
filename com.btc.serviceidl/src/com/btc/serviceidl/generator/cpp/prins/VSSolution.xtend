@@ -21,6 +21,7 @@ import java.util.HashMap
 import java.util.UUID
 import org.eclipse.xtend.lib.annotations.Data
 import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.cpp.HeaderResolver
 
 class VSSolution implements IProjectSet
 {
@@ -68,9 +69,9 @@ class VSSolution implements IProjectSet
         return vs_projects.get(projectReference.projectName).uuid.toString.toUpperCase
     }
 
-    override ProjectReference resolveClass(String className)
+    override ProjectReference resolveHeader(HeaderResolver.GroupedHeader header)
     {
-        val project_reference = ReferenceResolver.getProjectReference(className)
+        val project_reference = ReferenceResolver.getProjectReference(header)
         add(project_reference.project_name, UUID.fromString(project_reference.project_guid),
             project_reference.project_path)
     }

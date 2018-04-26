@@ -15,7 +15,11 @@
  */
 package com.btc.serviceidl.generator.cpp.prins
 
-import com.btc.serviceidl.util.Constants
+import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.HeaderResolver
+import com.btc.serviceidl.generator.cpp.TypeResolver
+
+import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 
 class ReferenceResolver
 {
@@ -30,16 +34,37 @@ class ReferenceResolver
                 setPath('''$(SolutionDir)\Commons\Utilities\BTC.PRINS.Commons.Utilities''').build
     }
 
-    def static VSProjectInfo getProjectReference(String class_name)
+    static val MODULES_HEADER_PATH_PREFIX = "modules/"
+    static val MODULES_HEADER_INCLUDE_FRAGMENT = "/include/"
+    static val MODULES_MODULE_NAME_PREFIX = "BTC.PRINS."
+
+    def static VSProjectInfo getProjectReference(HeaderResolver.GroupedHeader header)
     {
-        // remove last component (which is the class name), leave only namespace
-        var key = class_name.substring(0, class_name.lastIndexOf(Constants.SEPARATOR_NAMESPACE))
-        key = key.replaceAll(Constants.SEPARATOR_NAMESPACE, Constants.SEPARATOR_PACKAGE)
+        if (header.includeGroup == TypeResolver.MODULES_INCLUDE_GROUP)
+        {
+            val moduleName = header.path.modulesHeaderPathToModuleName
+            val project_reference = vs_projects_mapper.get(moduleName)
 
-        val project_reference = vs_projects_mapper.get(key)
+            if (project_reference !== null) return project_reference
 
-        if (project_reference !== null) return project_reference
+        }
 
-        throw new IllegalArgumentException("Could not find project reference mapping: " + key)
+        throw new IllegalArgumentException("Could not find project reference mapping for header: " + header.toString)
+    }
+
+    public def static String modulesHeaderPathToModuleName(String headerPath)
+    {
+        if (!headerPath.startsWith(MODULES_HEADER_PATH_PREFIX))
+            throw new IllegalArgumentException(
+            '''Modules header path must start with '«MODULES_HEADER_PATH_PREFIX»': «headerPath»''')
+
+        val includePosition = headerPath.indexOf(MODULES_HEADER_INCLUDE_FRAGMENT)
+        if (includePosition == -1)
+            throw new IllegalArgumentException(
+            '''Modules header path must contain '«MODULES_HEADER_INCLUDE_FRAGMENT»': «headerPath»''')
+
+        MODULES_MODULE_NAME_PREFIX +
+            headerPath.substring(0, includePosition).replaceFirst(MODULES_HEADER_PATH_PREFIX, "").switchSeparator(
+                TransformType.FILE_SYSTEM, TransformType.PACKAGE)
     }
 }
