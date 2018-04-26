@@ -165,8 +165,9 @@ class ProtobufUtil
     def static String resolveFailableProtobufType(extension TypeResolver typeResolver, EObject element,
         EObject container)
     {
+        // TODO isn't there a specific type that is used from that library? Is it really required?
         // explicitly include some essential dependencies
-        cab_libs.add("BTC.CAB.ServiceComm.Default.lib")
+        typeResolver.addLibraryDependency("BTC.CAB.ServiceComm.Default.lib")
 
         var namespace = GeneratorUtil.getTransformedModuleName(
             ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(

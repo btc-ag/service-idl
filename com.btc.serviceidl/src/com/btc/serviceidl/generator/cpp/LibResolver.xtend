@@ -16,7 +16,6 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.util.Constants
-import java.util.Collection
 import java.util.HashSet
 
 class LibResolver
@@ -71,7 +70,7 @@ class LibResolver
                 "BTC.CAB.ServiceComm.SQ.Default.lib", "BTC.CAB.ServiceComm.SQ.ImportAPI.lib"]
     }
 
-    def static Collection<String> getCABLibs(String header_file)
+    def static Iterable<String> getCABLibs(String header_file)
     {
         val result = new HashSet<String>
 
