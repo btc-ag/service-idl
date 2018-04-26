@@ -1,12 +1,12 @@
-<Settings Xmlns="Http://Maven.Apache.Org/SETTINGS/1.0.0"
-          Xmlns:Xsi="Http://Www.W3.Org/2001/XMLSchema-Instance"
-          Xsi:SchemaLocation="Http://Maven.Apache.Org/SETTINGS/1.0.0
-                      Http://Maven.Apache.Org/Xsd/Settings-1.0.0.Xsd">
-  <Servers>
-    <Server>
-      <Id>jcenter</Id>
-	  <Username>sigiesec</Username>
-      <Password>${env.JCENTER_TOKEN}</Password>
-    </Server>
-  </Servers>
-</Settings>
+<settings xmlns="http://Maven.Apache.Org/SETTINGS/1.0.0"
+          xmlns:xsi="http://Www.W3.Org/2001/XMLSchema-Instance"
+          xsi:SchemaLocation="http://Maven.Apache.Org/SETTINGS/1.0.0
+                      http://Maven.Apache.Org/xsd/settings-1.0.0.xsd">
+  <servers>
+    <server>
+      <id>jcenter</id>
+	  <username>sigiesec</username>
+      <password>${env.JCENTER_TOKEN}</password>
+    </server>
+  </servers>
+</settings>
