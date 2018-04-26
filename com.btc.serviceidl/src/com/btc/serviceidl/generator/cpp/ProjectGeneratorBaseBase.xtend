@@ -79,15 +79,15 @@ class ProjectGeneratorBaseBase
         this.param_bundle = param_bundle_builder.build
     }
 
-    // per-file variables
-    protected var TypeResolver typeResolver = null
-    protected var BasicCppGenerator basicCppGenerator = null
-
-    def protected void reinitializeFile()
+    def protected createTypeResolver()
     {
-        typeResolver = new TypeResolver(qualified_name_provider, param_bundle, vsSolution, project_references, cab_libs,
+        new TypeResolver(qualified_name_provider, param_bundle, vsSolution, project_references, cab_libs,
             smart_pointer_map)
-        basicCppGenerator = new BasicCppGenerator(typeResolver, param_bundle, idl)
+    }
+
+    def protected createBasicCppGenerator()
+    {
+        new BasicCppGenerator(createTypeResolver, param_bundle, idl)
     }
 
     def protected void generateVSProjectFiles(ProjectType project_type, String project_path, String project_name)
@@ -99,7 +99,7 @@ class ProjectGeneratorBaseBase
 
     def protected generateDependencies()
     {
-        new DependenciesGenerator(typeResolver, param_bundle, idl).generate()
+        new DependenciesGenerator(createTypeResolver, param_bundle).generate()
     }
 
     def protected generateExportHeader()
@@ -107,7 +107,8 @@ class ProjectGeneratorBaseBase
         new ExportHeaderGenerator(param_bundle).generateExportHeader()
     }
 
-    def protected String generateHeader(String file_content, Optional<String> export_header)
+    def protected String generateHeader(BasicCppGenerator basicCppGenerator, String file_content,
+        Optional<String> export_header)
     {
         '''
             #pragma once
@@ -123,7 +124,8 @@ class ProjectGeneratorBaseBase
         '''
     }
 
-    def protected String generateSource(String file_content, Optional<String> file_tail)
+    def protected String generateSource(BasicCppGenerator basicCppGenerator, String file_content,
+        Optional<String> file_tail)
     {
         '''
             «basicCppGenerator.generateIncludes(false)»
