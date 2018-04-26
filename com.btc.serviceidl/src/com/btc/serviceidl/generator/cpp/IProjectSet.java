@@ -15,7 +15,7 @@ import com.btc.serviceidl.generator.common.ParameterBundle;
 public interface IProjectSet {
     String getVcxprojName(ParameterBundle builder);
 
-    IProjectReference resolveClass(String className);
+    IProjectReference resolveHeader(HeaderResolver.GroupedHeader header);
 
     IProjectReference resolve(ParameterBundle paramBundle);
 }

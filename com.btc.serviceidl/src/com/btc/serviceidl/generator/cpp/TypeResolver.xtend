@@ -88,26 +88,29 @@ class TypeResolver
     // TODO inject this
     private val headerResolver = PrinsHeaderResolver.create
 
-    def String resolveSymbol(String className)
+    def String resolveSymbol(String symbolName)
     {
-        val header = headerResolver.getHeader(className)
+        val header = headerResolver.getHeader(symbolName)
         addToGroup(header.includeGroup, header.path)
+        resolveLibrary(header)
+        return symbolName
+    }
+    
+    private def void resolveLibrary(HeaderResolver.GroupedHeader header)
+    {
         // TODO resolve and add to libs generically
         if (header.includeGroup == CAB_INCLUDE_GROUP)
             cab_libs.addAll(LibResolver.getCABLibs(header.path))
         if (header.includeGroup == MODULES_INCLUDE_GROUP || header.includeGroup == TARGET_INCLUDE_GROUP)
-            project_references.add(projectSet.resolveClass(className))
-
-        return className
+            project_references.add(projectSet.resolveHeader(header))        
     }
 
-    def String resolveSymbolWithImplementation(String class_name)
+    def String resolveSymbolWithImplementation(String symbolName)
     {
-        val header = headerResolver.getImplementationHeader(class_name)
+        val header = headerResolver.getImplementationHeader(symbolName)
         addToGroup(header.includeGroup, header.path)
-        // TODO resolve and add to libs generically
-        cab_libs.addAll(LibResolver.getCABLibs(header.path))
-        return class_name
+        resolveLibrary(header)
+        return symbolName
     }
 
     def ResolvedName resolve(EObject object)
