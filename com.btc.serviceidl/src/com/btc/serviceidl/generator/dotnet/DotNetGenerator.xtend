@@ -36,7 +36,6 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.google.common.collect.Sets
 import java.util.Arrays
-import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Set
@@ -621,7 +620,7 @@ class DotNetGenerator
       '''
    }
    
-   def private generateCsproj(Collection<String> cs_files)
+   def private generateCsproj(Iterable<String> cs_files)
    {
       // Please do NOT edit line indents in the code below (even though they
       // may look misplaced) unless you are fully aware of what you are doing!!!
