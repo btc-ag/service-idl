@@ -54,6 +54,22 @@ class TypeResolver
     {
         includes.entrySet.map[new Pair(it.key, it.value.immutableCopy)].toMap([it.key], [value])
     }
+    
+    def Iterable<IProjectReference> getProject_references()
+    {
+        project_references.unmodifiableView
+    }
+
+    def Iterable<String> getCab_libs()
+    {
+        cab_libs.unmodifiableView
+    }
+    
+    @Deprecated
+    def void addLibraryDependency(String libFile)
+    {
+        cab_libs.add(libFile)
+    }
 
     def addTargetInclude(String path)
     { addToGroup(TARGET_INCLUDE_GROUP, path) }
