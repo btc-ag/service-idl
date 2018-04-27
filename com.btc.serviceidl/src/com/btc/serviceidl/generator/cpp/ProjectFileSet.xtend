@@ -30,12 +30,6 @@ class ProjectFileSet
     private val Map<FileGroup, Collection<String>> files
 
     @Deprecated
-    def getCpp_files()
-    {
-        files.get(CPP_FILE_GROUP)
-    }
-
-    @Deprecated
     def getHeader_files()
     {
         files.get(HEADER_FILE_GROUP)

@@ -29,6 +29,8 @@ import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import com.btc.serviceidl.generator.common.ArtifactNature
+import java.util.Arrays
+import com.btc.serviceidl.generator.cpp.prins.OdbConstants
 
 @Accessors(PROTECTED_GETTER)
 class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
@@ -61,7 +63,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
             val cpp_file = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType,
                 interface_declaration.name).cpp
             file_system_access.generateFile(source_path + cpp_file, generateCppServerRunner(interface_declaration))
-            projectFileSet.cpp_files.add(cpp_file)
+            projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cpp_file)
         }
 
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
@@ -71,14 +73,23 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         // individual project files for every interface
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
-            // TODO this must be changed
-            projectFileSet.cpp_files.clear
-            val project_name = GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.PACKAGE) +
-                TransformType.PACKAGE.separator + interface_declaration.name
+            // TODO remove reference to OdbConstants here
+            val localProjectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP))
+            val project_name = GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
+                TransformType.PACKAGE) + TransformType.PACKAGE.separator + interface_declaration.name
             val cpp_file = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType,
                 interface_declaration.name).cpp
-            projectFileSet.cpp_files.add(cpp_file)
-            generateVSProjectFiles(ProjectType.SERVER_RUNNER, projectPath, project_name)
+            localProjectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cpp_file)
+
+            // TODO this is wrong somehow... all files must be generated separately for each interface if they are separate projects
+            projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP).forEach [
+                localProjectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, it)
+            ]
+            projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP).forEach [
+                localProjectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, it)
+            ]
+
+            generateVSProjectFiles(ProjectType.SERVER_RUNNER, projectPath, project_name, localProjectFileSet)
         }
 
         // sub-folder "./etc"

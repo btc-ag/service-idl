@@ -259,9 +259,9 @@ class VcxProjGenerator
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
-          «IF !(projectFileSet.cpp_files.empty && projectFileSet.dependency_files.empty && projectFileSet.protobuf_files.empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
+          «IF !(projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty && projectFileSet.dependency_files.empty && projectFileSet.protobuf_files.empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
               <ItemGroup>
-                «FOR cpp_file : projectFileSet.cpp_files»
+                «FOR cpp_file : projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP)»
                     <ClCompile Include="source\«cpp_file»" />
                 «ENDFOR»
                 «FOR dependency_file : projectFileSet.dependency_files»
@@ -345,7 +345,7 @@ class VcxProjGenerator
             <?xml version="1.0" encoding="utf-8"?>
             <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
               <ItemGroup>
-                 «IF !projectFileSet.cpp_files.empty || !projectFileSet.protobuf_files.empty»
+                 «IF !projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty || !projectFileSet.protobuf_files.empty»
                      <Filter Include="Source Files">
                        <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
                        <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
@@ -387,14 +387,14 @@ class VcxProjGenerator
                     «ENDFOR»
                   </ItemGroup>
               «ENDIF»
-              «IF !(projectFileSet.cpp_files.empty && projectFileSet.protobuf_files.empty)»
+              «IF !(projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty && projectFileSet.protobuf_files.empty)»
                   <ItemGroup>
                     «FOR pb_cc_file : projectFileSet.protobuf_files»
                         <ClCompile Include="gen\«pb_cc_file».pb.cc">
                           <Filter>Source Files</Filter>
                         </ClCompile>
                     «ENDFOR»
-                    «FOR cpp_file : projectFileSet.cpp_files»
+                    «FOR cpp_file : projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP)»
                         <ClCompile Include="source\«cpp_file»">
                           <Filter>Source Files</Filter>
                         </ClCompile>

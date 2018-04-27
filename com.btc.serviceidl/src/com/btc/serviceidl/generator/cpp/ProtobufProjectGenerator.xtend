@@ -88,7 +88,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
             projectFileSet.protobuf_files.add(file_name)
         }
 
-        generateVSProjectFiles(ProjectType.PROTOBUF, projectPath, vsSolution.getVcxprojName(param_bundle))
+        generateVSProjectFiles(ProjectType.PROTOBUF, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)
     }
 
     def private String generateHCodec(EObject owner)

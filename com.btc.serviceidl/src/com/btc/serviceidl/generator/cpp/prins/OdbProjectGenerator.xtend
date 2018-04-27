@@ -99,7 +99,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
          projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, basic_file_name.cpp)
       }
       
-      generateVSProjectFiles(ProjectType.EXTERNAL_DB_IMPL, projectPath, vsSolution.getVcxprojName(param_bundle))
+      generateVSProjectFiles(ProjectType.EXTERNAL_DB_IMPL, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)
    }
 
    def private String generateCommonHxx(Iterable<StructDeclaration> common_types)

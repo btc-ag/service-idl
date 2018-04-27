@@ -33,6 +33,7 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 @Accessors(PROTECTED_GETTER)
 class CommonProjectGenerator extends ProjectGeneratorBaseBase
 {
+    
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
         Map<String, Set<IProjectReference>> protobuf_project_references,
@@ -66,12 +67,12 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
 
         // sub-folder "./source"
         file_system_access.generateFile(source_path + cpp_file, generateCppCommons(module, export_header_file_name))
-        projectFileSet.cpp_files.add(cpp_file)
+        projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cpp_file)
 
         file_system_access.generateFile(source_path + dependency_file_name, generateDependencies)
         projectFileSet.dependency_files.add(dependency_file_name)
 
-        generateVSProjectFiles(ProjectType.COMMON, projectPath, vsSolution.getVcxprojName(param_bundle))
+        generateVSProjectFiles(ProjectType.COMMON, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)
     }
 
     def private String generateHFileCommons(ModuleDeclaration module, String export_header)
