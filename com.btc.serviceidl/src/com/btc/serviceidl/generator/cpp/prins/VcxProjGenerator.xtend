@@ -259,7 +259,7 @@ class VcxProjGenerator
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
-          «IF !(projectFileSet.cpp_files.empty && projectFileSet.dependency_files.empty && projectFileSet.protobuf_files.empty && projectFileSet.odb_files.empty)»
+          «IF !(projectFileSet.cpp_files.empty && projectFileSet.dependency_files.empty && projectFileSet.protobuf_files.empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
               <ItemGroup>
                 «FOR cpp_file : projectFileSet.cpp_files»
                     <ClCompile Include="source\«cpp_file»" />
@@ -270,14 +270,14 @@ class VcxProjGenerator
                 «FOR pb_cc_file : projectFileSet.protobuf_files»
                     <ClCompile Include="gen\«pb_cc_file».pb.cc" />
                 «ENDFOR»
-                «FOR cxx_file : projectFileSet.odb_files»
+                «FOR cxx_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
                     <ClCompile Include="odb\«cxx_file»-odb.cxx" />
                     <ClCompile Include="odb\«cxx_file»-odb-mssql.cxx" />
                     <ClCompile Include="odb\«cxx_file»-odb-oracle.cxx" />
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
-          «IF !(projectFileSet.header_files.empty && projectFileSet.protobuf_files.empty && projectFileSet.odb_files.empty)»
+          «IF !(projectFileSet.header_files.empty && projectFileSet.protobuf_files.empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
               <ItemGroup>
                 «FOR header_file : projectFileSet.header_files»
                     <ClInclude Include="include\«header_file»" />
@@ -285,13 +285,13 @@ class VcxProjGenerator
                 «FOR pb_h_file : projectFileSet.protobuf_files»
                     <ClInclude Include="gen\«pb_h_file.pb.h»" />
                 «ENDFOR»
-                «FOR hxx_file : projectFileSet.odb_files»
+                «FOR hxx_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
                     <ClInclude Include="odb\«hxx_file.hxx»" />
                     <ClInclude Include="odb\«hxx_file»-odb.hxx" />
                     <ClInclude Include="odb\«hxx_file»-odb-mssql.hxx" />
                     <ClInclude Include="odb\«hxx_file»-odb-oracle.hxx" />
                 «ENDFOR»
-                «FOR odb_file : projectFileSet.odb_files»
+                «FOR odb_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
                     <CustomBuild Include="odb\«odb_file.hxx»">
                       <Message>odb «odb_file.hxx»</Message>
                       <Command>"$(ODBExe)" --std c++11 -I $(SolutionDir).. -I $(CabInc) -I $(BoostInc) --multi-database dynamic --database common --database mssql --database oracle --generate-query --generate-prepared --generate-schema --schema-format embedded «ignoreGCCWarnings» --hxx-prologue "#include \"«Constants.FILE_NAME_ODB_TRAITS.hxx»\"" --output-dir .\odb odb\«odb_file.hxx»</Command>
@@ -300,9 +300,9 @@ class VcxProjGenerator
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
-          «IF !projectFileSet.odb_files.empty»
+          «IF !projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty»
               <ItemGroup>
-                «FOR odb_file : projectFileSet.odb_files»
+                «FOR odb_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
                     <None Include="odb\«odb_file»-odb.ixx" />
                     <None Include="odb\«odb_file»-odb-mssql.ixx" />
                     <None Include="odb\«odb_file»-odb-oracle.ixx" />
@@ -351,7 +351,7 @@ class VcxProjGenerator
                        <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
                      </Filter>
                  «ENDIF»
-                 «IF !(projectFileSet.header_files.empty && projectFileSet.odb_files.empty)»
+                 «IF !(projectFileSet.header_files.empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
                      <Filter Include="Header Files">
                        <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
                        <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
@@ -367,7 +367,7 @@ class VcxProjGenerator
                        <UniqueIdentifier>{6f3dd233-58fc-4467-a4cc-9ba5ef3b5517}</UniqueIdentifier>
                      </Filter>
                  «ENDIF»
-                 «IF !projectFileSet.odb_files.empty»
+                 «IF !projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty»
                      <Filter Include="ODB Files">
                        <UniqueIdentifier>{31ddc234-0d60-4695-be06-2c69510365ac}</UniqueIdentifier>
                      </Filter>
@@ -419,9 +419,9 @@ class VcxProjGenerator
                     «ENDFOR»
                   </ItemGroup>
               «ENDIF»
-              «IF !projectFileSet.odb_files.empty»
+              «IF !projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty»
                   <ItemGroup>
-                    «FOR odb_file : projectFileSet.odb_files»
+                    «FOR odb_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
                         <ClInclude Include="odb\«odb_file.hxx»">
                           <Filter>ODB Files</Filter>
                         </ClInclude>
@@ -437,7 +437,7 @@ class VcxProjGenerator
                     «ENDFOR»
                   </ItemGroup>
                   <ItemGroup>
-                    «FOR odb_file : projectFileSet.odb_files»
+                    «FOR odb_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
                         <ClCompile Include="odb\«odb_file»-odb.cxx">
                           <Filter>ODB Files</Filter>
                         </ClCompile>
@@ -450,7 +450,7 @@ class VcxProjGenerator
                     «ENDFOR»
                   </ItemGroup>
                   <ItemGroup>
-                    «FOR odb_file : projectFileSet.odb_files»
+                    «FOR odb_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
                         <None Include="odb\«odb_file»-odb.ixx">
                           <Filter>ODB Files</Filter>
                         </None>
@@ -463,7 +463,7 @@ class VcxProjGenerator
                     «ENDFOR»
                   </ItemGroup>
                   <ItemGroup>
-                    «FOR odb_file : projectFileSet.odb_files»
+                    «FOR odb_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
                         <CustomBuild Include="odb\«odb_file.hxx»">
                           <Filter>Header Files</Filter>
                         </CustomBuild>

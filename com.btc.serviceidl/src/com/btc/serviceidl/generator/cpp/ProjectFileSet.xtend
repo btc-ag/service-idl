@@ -23,11 +23,9 @@ class ProjectFileSet
     public static val HEADER_FILE_GROUP = new FileGroup("header")
     public static val DEPENDENCY_FILE_GROUP = new FileGroup("dependency")
     public static val PROTOBUF_FILE_GROUP = new FileGroup("protobuf")
-    public static val ODB_FILE_GROUP = new FileGroup("odb")
 
-    // TODO remove this here and move to prins package
     public static val DEFAULT_FILE_GROUPS = Arrays.asList(CPP_FILE_GROUP, HEADER_FILE_GROUP, DEPENDENCY_FILE_GROUP,
-        PROTOBUF_FILE_GROUP, ODB_FILE_GROUP)
+        PROTOBUF_FILE_GROUP)
 
     private val Map<FileGroup, Collection<String>> files
 
@@ -55,22 +53,26 @@ class ProjectFileSet
         files.get(PROTOBUF_FILE_GROUP)
     }
 
-    @Deprecated
-    def getOdb_files()
-    {
-        files.get(ODB_FILE_GROUP)
-    }
-
-    new()
+    new(Iterable<FileGroup> extraFileGroups)
     {
         this.files = new HashMap<FileGroup, Collection<String>>
-        for (group : DEFAULT_FILE_GROUPS)
+        for (group : DEFAULT_FILE_GROUPS + extraFileGroups)
             this.files.put(group, new HashSet<String>)
     }
 
     private new(ProjectFileSet base)
     {
         this.files = base.files.unmodifiableView
+    }
+    
+    def getGroup(FileGroup group)
+    {
+        this.files.get(group).unmodifiableView
+    }
+    
+    def void addToGroup(FileGroup group, String name)
+    {
+        this.files.get(group).add(name)
     }
 
     def unmodifiableView()

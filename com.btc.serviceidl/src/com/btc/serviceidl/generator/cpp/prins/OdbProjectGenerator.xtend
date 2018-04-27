@@ -16,6 +16,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.BasicCppGenerator
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
+import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import com.btc.serviceidl.generator.cpp.ProjectGeneratorBase
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
@@ -41,7 +42,6 @@ import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 
 @Accessors
 class OdbProjectGenerator extends ProjectGeneratorBase {
-     
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
         Map<String, Set<IProjectReference>> protobuf_project_references,
@@ -80,13 +80,13 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       {
          val basic_file_name = Constants.FILE_NAME_ODB_COMMON
          file_system_access.generateFile(odb_path + basic_file_name.hxx, generateCommonHxx(common_types))
-         projectFileSet.odb_files.add(basic_file_name);
+         projectFileSet.addToGroup(OdbConstants.ODB_FILE_GROUP, basic_file_name)
       }
       for ( struct : id_structs )
       {
          val basic_file_name = struct.name.toLowerCase
          file_system_access.generateFile(odb_path + basic_file_name.hxx, generateHxx(struct))
-         projectFileSet.odb_files.add(basic_file_name);
+         projectFileSet.addToGroup(OdbConstants.ODB_FILE_GROUP, basic_file_name)
       }
       file_system_access.generateFile(odb_path + Constants.FILE_NAME_ODB_TRAITS.hxx, generateODBTraits)
       
@@ -95,8 +95,8 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       for ( interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
       {
          val basic_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name)
-         projectFileSet.header_files.add(basic_file_name.h)
-         projectFileSet.cpp_files.add(basic_file_name.cpp)
+         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, basic_file_name.h)
+         projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, basic_file_name.cpp)
       }
       
       generateVSProjectFiles(ProjectType.EXTERNAL_DB_IMPL, projectPath, vsSolution.getVcxprojName(param_bundle))
