@@ -16,10 +16,12 @@
 
 package com.btc.serviceidl.util;
 
+import org.eclipse.core.runtime.IPath;
+
 public interface Constants {
 
     // diverse separators, e.g. for paths, packages, namespaces
-    public static final String SEPARATOR_FILE       = "/";
+    public static final String SEPARATOR_FILE       = String.valueOf(IPath.SEPARATOR);
     public static final String SEPARATOR_PACKAGE    = ".";
     public static final String SEPARATOR_NAMESPACE  = "::";
     public static final String SEPARATOR_CPP_HEADER = "_";

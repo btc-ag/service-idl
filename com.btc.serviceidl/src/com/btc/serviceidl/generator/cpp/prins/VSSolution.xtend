@@ -10,18 +10,18 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp.prins
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.HeaderResolver
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
-import com.btc.serviceidl.generator.cpp.prins.VSSolution.Entry
 import com.btc.serviceidl.util.Constants
 import java.util.HashMap
 import java.util.UUID
+import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Data
-import com.btc.serviceidl.generator.common.ArtifactNature
-import com.btc.serviceidl.generator.cpp.HeaderResolver
 
 class VSSolution implements IProjectSet
 {
@@ -77,13 +77,13 @@ class VSSolution implements IProjectSet
     }
 
     @Deprecated
-    def resolve(String projectName, String projectPath)
+    def resolve(String projectName, IPath projectPath)
     {
-        var effectiveProjectPath = projectPath.replace("cpp/", "")
-        effectiveProjectPath = if (effectiveProjectPath.endsWith("/"))
-            effectiveProjectPath.substring(0, effectiveProjectPath.length - 1)
-        else
-            effectiveProjectPath
+        // TODO check if the else branch is valid
+        var effectiveProjectPath = if (projectPath.segment(0) == "cpp")
+                projectPath.removeFirstSegments(1)
+            else
+                projectPath
         ensureEntryExists(projectName, makeProjectPath(effectiveProjectPath, projectName))
         new ProjectReference(projectName)
     }
@@ -112,13 +112,11 @@ class VSSolution implements IProjectSet
 
     private static def String makeProjectPath(ParameterBundle paramBundle, String project_name)
     {
-        makeProjectPath(
-            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM),
-            project_name)
+        makeProjectPath(GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP), project_name)
     }
 
-    private static def String makeProjectPath(String projectPath, String project_name)
+    private static def String makeProjectPath(IPath projectPath, String project_name)
     {
-        '''$(SolutionDir)\«projectPath.replace(Constants.SEPARATOR_FILE, Constants.SEPARATOR_BACKSLASH)»\«project_name»'''
+        '''$(SolutionDir)\«projectPath.toString.replace(Constants.SEPARATOR_FILE, Constants.SEPARATOR_BACKSLASH)»\«project_name»'''
     }
 }

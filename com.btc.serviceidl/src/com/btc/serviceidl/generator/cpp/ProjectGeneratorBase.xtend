@@ -21,6 +21,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import org.eclipse.core.runtime.IPath
 
 @Accessors(PROTECTED_GETTER)
 abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
@@ -44,7 +45,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
 //            reinitializeProject(project_type)
         val export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
-        file_system_access.generateFile(projectPath + "include" + Constants.SEPARATOR_FILE + export_header_file_name,
+        file_system_access.generateFile(projectPath.append("include").append(export_header_file_name).toString,
             generateExportHeader())
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
 
@@ -54,7 +55,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         }
 
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
-        file_system_access.generateFile(projectPath + "source" + Constants.SEPARATOR_FILE + dependency_file_name,
+        file_system_access.generateFile(projectPath.append("source").append(dependency_file_name).toString,
             generateDependencies())
         projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
 
@@ -65,7 +66,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         }
     }
 
-    def private void generateProject(ProjectType pt, InterfaceDeclaration interface_declaration, String project_path,
+    def private void generateProject(ProjectType pt, InterfaceDeclaration interface_declaration, IPath project_path,
         String export_header_file_name)
     {
         val builder = new ParameterBundle.Builder(param_bundle)
@@ -73,8 +74,8 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         val localParamBundle = builder.build
 
         // paths
-        val include_path = project_path + "include" + Constants.SEPARATOR_FILE
-        val source_path = project_path + "source" + Constants.SEPARATOR_FILE
+        val include_path = project_path.append("include")
+        val source_path = project_path.append("source")
 
         // file names
         val main_header_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, localParamBundle.projectType,
@@ -85,14 +86,14 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         // sub-folder "./include"
         if (pt != ProjectType.TEST)
         {
-            file_system_access.generateFile(include_path + Constants.SEPARATOR_FILE + main_header_file_name,
+            file_system_access.generateFile(include_path.append(main_header_file_name).toString,
                 sourceGenerationStrategy.generateProjectHeader(createBasicCppGenerator(localParamBundle),
                     interface_declaration, export_header_file_name))
             projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, main_header_file_name)
         }
 
         // sub-folder "./source"
-        file_system_access.generateFile(source_path + main_cpp_file_name,
+        file_system_access.generateFile(source_path.append(main_cpp_file_name).toString,
             sourceGenerationStrategy.generateProjectSource(createBasicCppGenerator(localParamBundle),
                 interface_declaration))
         projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, main_cpp_file_name)

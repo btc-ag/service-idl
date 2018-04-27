@@ -47,8 +47,8 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
     def generate()
     {
         // paths
-        val include_path = projectPath + "include" + Constants.SEPARATOR_FILE
-        val source_path = projectPath + "source" + Constants.SEPARATOR_FILE
+        val include_path = projectPath.append("include")
+        val source_path = projectPath.append("source")
 
         // file names
         var export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
@@ -56,24 +56,25 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES + ".cpp"
 
         // sub-folder "./include"
-        file_system_access.generateFile(include_path + export_header_file_name, generateExportHeader())
+        file_system_access.generateFile(include_path.append(export_header_file_name).toString, generateExportHeader())
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
 
         if (module.containsTypes)
         {
             val codec_header_name = GeneratorUtil.getCodecName(module).h
-            file_system_access.generateFile(include_path + codec_header_name, generateHCodec(module))
+            file_system_access.generateFile(include_path.append(codec_header_name).toString, generateHCodec(module))
             projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, codec_header_name)
         }
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
             val codec_header_name = GeneratorUtil.getCodecName(interface_declaration).h
-            file_system_access.generateFile(include_path + codec_header_name, generateHCodec(interface_declaration))
+            file_system_access.generateFile(include_path.append(codec_header_name).toString,
+                generateHCodec(interface_declaration))
             projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, codec_header_name)
         }
 
         // sub-folder "./source"
-        file_system_access.generateFile(source_path + dependency_file_name, generateDependencies)
+        file_system_access.generateFile(source_path.append(dependency_file_name).toString, generateDependencies)
         projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
 
         // sub-folder "./gen"
@@ -88,7 +89,8 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
             projectFileSet.addToGroup(ProjectFileSet.PROTOBUF_FILE_GROUP, file_name)
         }
 
-        generateVSProjectFiles(ProjectType.PROTOBUF, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)
+        generateVSProjectFiles(ProjectType.PROTOBUF, projectPath, vsSolution.getVcxprojName(param_bundle),
+            projectFileSet)
     }
 
     def private String generateHCodec(EObject owner)

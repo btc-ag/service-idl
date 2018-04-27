@@ -10,13 +10,16 @@
  */
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.prins.OdbConstants
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
+import java.util.Arrays
 import java.util.Collection
 import java.util.Map
 import java.util.Set
@@ -28,9 +31,6 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
-import com.btc.serviceidl.generator.common.ArtifactNature
-import java.util.Arrays
-import com.btc.serviceidl.generator.cpp.prins.OdbConstants
 
 @Accessors(PROTECTED_GETTER)
 class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
@@ -47,14 +47,14 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
     def generate()
     {
         // paths
-        val include_path = projectPath + "include" + Constants.SEPARATOR_FILE
-        val source_path = projectPath + "source" + Constants.SEPARATOR_FILE
-        val etc_path = projectPath + "etc" + Constants.SEPARATOR_FILE
+        val include_path = projectPath.append("include")
+        val source_path = projectPath.append("source")
+        val etc_path = projectPath.append("etc")
 
         // sub-folder "./include"
         val export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
-        file_system_access.generateFile(include_path + export_header_file_name, generateExportHeader())
+        file_system_access.generateFile(include_path.append(export_header_file_name).toString, generateExportHeader())
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
 
         // sub-folder "./source"
@@ -62,12 +62,13 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         {
             val cpp_file = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType,
                 interface_declaration.name).cpp
-            file_system_access.generateFile(source_path + cpp_file, generateCppServerRunner(interface_declaration))
+            file_system_access.generateFile(source_path.append(cpp_file).toString,
+                generateCppServerRunner(interface_declaration))
             projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cpp_file)
         }
 
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
-        file_system_access.generateFile(source_path + dependency_file_name, generateDependencies)
+        file_system_access.generateFile(source_path.append(dependency_file_name).toString, generateDependencies)
         projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
 
         // individual project files for every interface
@@ -94,7 +95,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
 
         // sub-folder "./etc"
         val ioc_file_name = "ServerFactory".xml
-        file_system_access.generateFile(etc_path + ioc_file_name, generateIoCServerRunner())
+        file_system_access.generateFile(etc_path.append(ioc_file_name).toString, generateIoCServerRunner())
     }
 
     def private String generateCppServerRunner(InterfaceDeclaration interface_declaration)
