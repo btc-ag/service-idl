@@ -60,7 +60,8 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
 
         if (param_bundle.projectType != ProjectType.EXTERNAL_DB_IMPL) // done separately for ExternalDBImpl to include ODB files also
         {
-            generateVSProjectFiles(param_bundle.projectType, projectPath, vsSolution.getVcxprojName(param_bundle))
+            generateVSProjectFiles(param_bundle.projectType, projectPath, vsSolution.getVcxprojName(param_bundle),
+                projectFileSet)
         }
     }
 
@@ -94,7 +95,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         file_system_access.generateFile(source_path + main_cpp_file_name,
             sourceGenerationStrategy.generateProjectSource(createBasicCppGenerator(localParamBundle),
                 interface_declaration))
-        projectFileSet.cpp_files.add(main_cpp_file_name)
+        projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, main_cpp_file_name)
     }
 
     // TODO move this somewhere else
