@@ -21,7 +21,6 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.IDLSpecification
 
 @Accessors(PROTECTED_GETTER)
 abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
@@ -102,16 +101,14 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
     def protected static generateCppImpl(TypeResolver typeResolver, ParameterBundle paramBundle,
         InterfaceDeclaration interface_declaration)
     {
-        new ImplementationStubGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
-            generateCppImpl(interface_declaration)
+        new ImplementationStubGenerator(typeResolver, paramBundle).generateCppImpl(interface_declaration)
     }
 
     // TODO move this somewhere else
     def protected static generateInterface(TypeResolver typeResolver, ParameterBundle paramBundle,
         InterfaceDeclaration interface_declaration)
     {
-        new ServiceAPIGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
-            generateHeaderFileBody(interface_declaration)
+        new ServiceAPIGenerator(typeResolver, paramBundle).generateHeaderFileBody(interface_declaration)
     }
 
 }

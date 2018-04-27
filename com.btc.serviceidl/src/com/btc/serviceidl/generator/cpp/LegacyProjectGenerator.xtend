@@ -21,14 +21,10 @@ import java.util.Optional
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
-import static extension com.btc.serviceidl.util.Util.*
-
-@Accessors
 class LegacyProjectGenerator extends ProjectGeneratorBase
 {
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
@@ -112,43 +108,37 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
         def private generateCppServiceAPI(TypeResolver typeResolver, ParameterBundle paramBundle,
             InterfaceDeclaration interface_declaration)
         {
-            new ServiceAPIGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
-                generateImplFileBody(interface_declaration)
+            new ServiceAPIGenerator(typeResolver, paramBundle).generateImplFileBody(interface_declaration)
         }
 
         def private generateCppProxy(TypeResolver typeResolver, ParameterBundle paramBundle,
             InterfaceDeclaration interface_declaration)
         {
-            new ProxyGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
-                generateImplementationFileBody(interface_declaration)
+            new ProxyGenerator(typeResolver, paramBundle).generateImplementationFileBody(interface_declaration)
         }
 
         def private generateCppTest(TypeResolver typeResolver, ParameterBundle paramBundle,
             InterfaceDeclaration interface_declaration)
         {
-            new TestGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
-                generateCppTest(interface_declaration)
+            new TestGenerator(typeResolver, paramBundle).generateCppTest(interface_declaration)
         }
 
         def private generateCppDispatcher(TypeResolver typeResolver, ParameterBundle paramBundle,
             InterfaceDeclaration interface_declaration)
         {
-            new DispatcherGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
-                generateImplementationFileBody(interface_declaration)
+            new DispatcherGenerator(typeResolver, paramBundle).generateImplementationFileBody(interface_declaration)
         }
 
         def private generateHFileDispatcher(TypeResolver typeResolver, ParameterBundle paramBundle,
             InterfaceDeclaration interface_declaration)
         {
-            new DispatcherGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
-                generateHeaderFileBody(interface_declaration)
+            new DispatcherGenerator(typeResolver, paramBundle).generateHeaderFileBody(interface_declaration)
         }
 
         def private generateCppReflection(TypeResolver typeResolver, ParameterBundle paramBundle,
             InterfaceDeclaration interface_declaration)
         {
-            new ReflectionGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
-                generateImplFileBody(interface_declaration)
+            new ReflectionGenerator(typeResolver, paramBundle).generateImplFileBody(interface_declaration)
         }
     }
 

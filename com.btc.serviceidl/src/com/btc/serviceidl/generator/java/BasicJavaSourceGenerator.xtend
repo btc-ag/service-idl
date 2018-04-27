@@ -205,7 +205,7 @@ class BasicJavaSourceGenerator
                         name, '''«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(member.type)»«IF member.optional»>«ENDIF»'''))
 
         val is_derived = ( element.supertype !== null )
-        val related_event = element.getRelatedEvent(idl)
+        val related_event = element.getRelatedEvent
 
         '''
             public class «element.name» «IF is_derived»extends «toText(element.supertype)» «ENDIF»{

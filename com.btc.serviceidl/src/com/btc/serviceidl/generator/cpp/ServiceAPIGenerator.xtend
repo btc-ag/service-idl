@@ -222,7 +222,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
          return s«interface_declaration.name»TypeGuid;
       }
 
-      «makeEventGUIDImplementations(typeResolver, idl, interface_declaration.contains.filter(StructDeclaration))»
+      «makeEventGUIDImplementations(typeResolver, interface_declaration.contains.filter(StructDeclaration))»
       
       void «getRegisterServerFaults(interface_declaration, Optional.empty)»(«resolveSymbol("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager)
       {

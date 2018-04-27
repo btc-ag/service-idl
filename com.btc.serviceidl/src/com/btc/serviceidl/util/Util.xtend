@@ -100,7 +100,7 @@ class Util
 
         return module_stack
     }
-    
+
     def public static <T> T getParent(EObject element, Class<T> t)
     {
         if (t.isAssignableFrom(element.class)) element as T else getParent(element.eContainer, t)
@@ -120,9 +120,9 @@ class Util
         return EcoreUtil.getRootContainer(element)
     }
 
-    def public static EventDeclaration getRelatedEvent(StructDeclaration object, IDLSpecification idl)
+    def public static EventDeclaration getRelatedEvent(StructDeclaration object)
     {
-        return idl.eAllContents.filter(EventDeclaration).findFirst[data === object]
+        return object.getParent(IDLSpecification).eAllContents.filter(EventDeclaration).findFirst[data === object]
     }
 
     def public static EventDeclaration getAnonymousEvent(InterfaceDeclaration interface_declaration)
