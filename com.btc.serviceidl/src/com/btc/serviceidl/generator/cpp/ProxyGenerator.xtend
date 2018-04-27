@@ -73,7 +73,7 @@ class ProxyGenerator extends BasicCppGenerator {
                   «resolveSymbol("CABTHROW_V2")»(«resolveSymbol("BTC::ServiceComm::API::InvalidMessageReceivedException")»("Event message has not exactly one part"));
                «resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ParseMessageOrThrow<«resolveSymbol("BTC::ServiceComm::API::InvalidMessageReceivedException")»>(eventProtobuf, (*event)[0]);
 
-               return «typeResolver.resolveCodecNS(event.data)»::Decode( eventProtobuf );
+               return «typeResolver.resolveCodecNS(paramBundle, event.data)»::Decode( eventProtobuf );
             }
          }
          
@@ -123,12 +123,12 @@ class ProxyGenerator extends BasicCppGenerator {
                     «val ulimate_type = com.btc.serviceidl.util.Util.getUltimateType(param.paramType)»
                     «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
                     «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.RESPONSE).fullyQualifiedName»
-                    «typeResolver.resolveCodecNS(ulimate_type, is_failable, Optional.of(interface_declaration))»::Encode«IF is_failable»Failable«ENDIF»< «resolve(ulimate_type)», «IF is_failable»«typeResolver.resolveFailableProtobufType(param.paramType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF» >
+                    «typeResolver.resolveCodecNS(paramBundle, ulimate_type, is_failable, Optional.of(interface_declaration))»::Encode«IF is_failable»Failable«ENDIF»< «resolve(ulimate_type)», «IF is_failable»«typeResolver.resolveFailableProtobufType(param.paramType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF» >
                        ( «resolveSymbol("std::move")»(«param.paramName»), concreteRequest->mutable_«param.paramName.toLowerCase»() );
                  «ELSEIF com.btc.serviceidl.util.Util.isEnumType(param.paramType)»
-                    concreteRequest->set_«param.paramName.toLowerCase»( «typeResolver.resolveCodecNS(param.paramType)»::Encode(«param.paramName») );
+                    concreteRequest->set_«param.paramName.toLowerCase»( «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Encode(«param.paramName») );
                  «ELSE»
-                    «typeResolver.resolveCodecNS(param.paramType)»::Encode( «param.paramName», concreteRequest->mutable_«param.paramName.toLowerCase»() );
+                    «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Encode( «param.paramName», concreteRequest->mutable_«param.paramName.toLowerCase»() );
                  «ENDIF»
               «ELSE»
                  concreteRequest->set_«param.paramName.toLowerCase»(«param.paramName»);
@@ -148,7 +148,7 @@ class ProxyGenerator extends BasicCppGenerator {
                     // handle [out] parameters
                     «FOR param : output_parameters»
                        «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
-                          «typeResolver.resolveDecode(param.paramType, interface_declaration)»( concreteResponse.«param.paramName.toLowerCase»(), «param.paramName» );
+                          «typeResolver.resolveDecode(paramBundle, param.paramType, interface_declaration)»( concreteResponse.«param.paramName.toLowerCase»(), «param.paramName» );
                        «ELSE»
                           «param.paramName» = «makeDecodeResponse(param.paramType, interface_declaration, param.paramName.toLowerCase)»
                        «ENDIF»
@@ -164,7 +164,7 @@ class ProxyGenerator extends BasicCppGenerator {
    def private String makeDecodeResponse(EObject type, EObject container, String protobuf_name)
    {
       val use_codec = GeneratorUtil.useCodec(type, ArtifactNature.CPP)
-      '''«IF use_codec»«typeResolver.resolveDecode(type, container)»( «ENDIF»concreteResponse.«protobuf_name»()«IF use_codec» )«ENDIF»;'''
+      '''«IF use_codec»«typeResolver.resolveDecode(paramBundle, type, container)»( «ENDIF»concreteResponse.«protobuf_name»()«IF use_codec» )«ENDIF»;'''
    }
    
     

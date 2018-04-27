@@ -476,7 +476,7 @@ class CodecGenerator extends BasicCppGenerator
                 «val proto_type_name = resolve(type, ProjectType.PROTOBUF)»
                 inline «api_type_name» DecodeFailable(«proto_failable_type_name» const& protobuf_entry)
                 {
-                   return «typeResolver.resolveDecode(type, owner)»(protobuf_entry.value());
+                   return «typeResolver.resolveDecode(paramBundle, type, owner)»(protobuf_entry.value());
                 }
                 
                 inline void EncodeFailable(«api_type_name» const& api_input, «proto_failable_type_name» * const protobuf_output)
@@ -536,7 +536,7 @@ class CodecGenerator extends BasicCppGenerator
         val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(element.type)
         val protobuf_name = element.name.toLowerCase
         val is_failable = com.btc.serviceidl.util.Util.isFailable(element.type)
-        val codec_name = if (use_codec) typeResolver.resolveDecode(element.type, container, !is_failable)
+        val codec_name = if (use_codec) typeResolver.resolveDecode(paramBundle, element.type, container, !is_failable)
 
         '''
             «IF is_optional && !is_sequence»if (protobuf_input.has_«protobuf_name»())«ENDIF»
@@ -611,7 +611,7 @@ class CodecGenerator extends BasicCppGenerator
         if (com.btc.serviceidl.util.Util.isUUIDType(element))
             return '''Encode'''
 
-        return '''«typeResolver.resolveCodecNS(element)»::Encode'''
+        return '''«typeResolver.resolveCodecNS(paramBundle, element)»::Encode'''
     }
 
     def private static boolean isMutableField(EObject type)
@@ -643,12 +643,12 @@ class CodecGenerator extends BasicCppGenerator
         val cab_string = resolveSymbol("BTC::Commons::Core::String")
 
         val failable_types = GeneratorUtil.getFailableTypes(owner)
-        
+
         // always include corresponding *.pb.h file due to local failable types definitions
         val include_path = "modules" + Constants.SEPARATOR_FILE +
-            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM) + Constants.SEPARATOR_FILE +
-            "gen" + Constants.SEPARATOR_FILE + GeneratorUtil.getPbFileName(owner).pb.h
-        addTargetInclude(include_path)        
+            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM) +
+            Constants.SEPARATOR_FILE + "gen" + Constants.SEPARATOR_FILE + GeneratorUtil.getPbFileName(owner).pb.h
+        addTargetInclude(include_path)
 
         '''
             namespace «GeneratorUtil.getCodecName(owner)»
@@ -752,23 +752,23 @@ class CodecGenerator extends BasicCppGenerator
                void Encode(«cab_uuid» const& api_input, «std_string» * const protobuf_output);
                
                «FOR type : nested_types»
-                «val api_type_name = resolve(type)»
-                «val proto_type_name = resolve(type, ProjectType.PROTOBUF)»
-                «api_type_name» Decode(«proto_type_name» const& protobuf_input);
-                
-                «IF type instanceof EnumDeclaration»
-                    «proto_type_name» Encode(«api_type_name» const& api_input);
-                «ELSE»
-                    void Encode(«api_type_name» const& api_input, «proto_type_name» * const protobuf_output);
-                «ENDIF»
+                   «val api_type_name = resolve(type)»
+                   «val proto_type_name = resolve(type, ProjectType.PROTOBUF)»
+                   «api_type_name» Decode(«proto_type_name» const& protobuf_input);
+                   
+                   «IF type instanceof EnumDeclaration»
+                       «proto_type_name» Encode(«api_type_name» const& api_input);
+                   «ELSE»
+                       void Encode(«api_type_name» const& api_input, «proto_type_name» * const protobuf_output);
+                   «ENDIF»
                «ENDFOR»
                
                «FOR type : failable_types»
-                «val api_type_name = resolve(type)»
-                «val proto_type_name = typeResolver.resolveFailableProtobufType(type, owner)»
-                «api_type_name» DecodeFailable(«proto_type_name» const& protobuf_input);
-                
-                void EncodeFailable(«api_type_name» const& api_input, «proto_type_name» * const protobuf_output);
+                   «val api_type_name = resolve(type)»
+                   «val proto_type_name = typeResolver.resolveFailableProtobufType(type, owner)»
+                   «api_type_name» DecodeFailable(«proto_type_name» const& protobuf_input);
+                   
+                   void EncodeFailable(«api_type_name» const& api_input, «proto_type_name» * const protobuf_output);
                «ENDFOR»
                
                // inline implementations

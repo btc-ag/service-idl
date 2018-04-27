@@ -49,7 +49,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 class BasicCppGenerator
 {
     protected val extension TypeResolver typeResolver
-    protected val ParameterBundle paramBundle // TODO remove this and access via typeResolver
+    protected val ParameterBundle paramBundle
     protected val IDLSpecification idl
 
     def String generateCppDestructor(InterfaceDeclaration interface_declaration)
@@ -375,8 +375,7 @@ resolveSymbol
             }
 
             // TODO remove this
-            if (outputConfigurationItem.precedence == 0 && is_header &&
-                typeResolver.param_bundle.projectType == ProjectType.PROXY)
+            if (outputConfigurationItem.precedence == 0 && is_header && paramBundle.projectType == ProjectType.PROXY)
             {
                 result.append('''
                     // resolve naming conflict between Windows' API function InitiateShutdown and CAB's AServiceProxyBase::InitiateShutdown
@@ -395,7 +394,7 @@ resolveSymbol
 
         result.append(    
         '''            
-            «IF !is_header && typeResolver.param_bundle.projectType == ProjectType.SERVER_RUNNER»
+            «IF !is_header && paramBundle.projectType == ProjectType.SERVER_RUNNER»
                 
                 #ifndef NOMINMAX
                 #define NOMINMAX

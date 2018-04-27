@@ -38,11 +38,12 @@ import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
-@Accessors(PACKAGE_GETTER)
+@Accessors(NONE)
 class TypeResolver
 {
+    @Accessors(PACKAGE_GETTER)
     private val IQualifiedNameProvider qualified_name_provider
-    private val ParameterBundle param_bundle
+    @Accessors(PACKAGE_GETTER)
     private val IProjectSet projectSet
     private val Collection<IProjectReference> project_references
     private val Collection<String> cab_libs
@@ -102,6 +103,7 @@ class TypeResolver
     public static val MODULES_INCLUDE_GROUP = new IncludeGroup("BTC.PRINS.Modules")
 
     // TODO inject this
+    @Accessors(PACKAGE_GETTER)
     private val headerResolver = PrinsHeaderResolver.create
 
     def String resolveSymbol(String symbolName)

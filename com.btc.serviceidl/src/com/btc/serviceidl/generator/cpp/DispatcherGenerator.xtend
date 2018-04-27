@@ -97,14 +97,14 @@ class DispatcherGenerator extends BasicCppGenerator
                                   «val ulimate_type = com.btc.serviceidl.util.Util.getUltimateType(param.paramType)»
                                   «val is_uuid = com.btc.serviceidl.util.Util.isUUIDType(ulimate_type)»
                                   «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
-                                  auto «param.paramName»( «typeResolver.resolveCodecNS(ulimate_type, is_failable, Optional.of(interface_declaration))»::Decode«IF is_failable»Failable«ELSEIF is_uuid»UUID«ENDIF»
+                                  auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, ulimate_type, is_failable, Optional.of(interface_declaration))»::Decode«IF is_failable»Failable«ELSEIF is_uuid»UUID«ENDIF»
                                      «IF !is_uuid || is_failable»
                                          «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.REQUEST).fullyQualifiedName»
                                          < «IF is_failable»«typeResolver.resolveFailableProtobufType(param.paramType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF», «resolve(ulimate_type)» >
                                      «ENDIF»
                                      (concreteRequest.«param.paramName.toLowerCase»()) );
                               «ELSE»
-                                  auto «param.paramName»( «typeResolver.resolveCodecNS(param.paramType)»::Decode«IF com.btc.serviceidl.util.Util.isUUIDType(param.paramType)»UUID«ENDIF»(concreteRequest.«param.paramName.toLowerCase»()) );
+                                  auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Decode«IF com.btc.serviceidl.util.Util.isUUIDType(param.paramType)»UUID«ENDIF»(concreteRequest.«param.paramName.toLowerCase»()) );
                               «ENDIF»
                           «ELSE»
                               auto «param.paramName»( concreteRequest.«param.paramName.toLowerCase»() );
@@ -221,12 +221,12 @@ class DispatcherGenerator extends BasicCppGenerator
                     «val ulimate_type = com.btc.serviceidl.util.Util.getUltimateType(type)»
                     «val is_failable = com.btc.serviceidl.util.Util.isFailable(type)»
                     «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.RESPONSE).fullyQualifiedName»
-                    «typeResolver.resolveCodecNS(ulimate_type, is_failable, Optional.of(container))»::Encode«IF is_failable»Failable«ENDIF»< «resolve(ulimate_type)», «IF is_failable»«typeResolver.resolveFailableProtobufType(type, container)»«ELSE»«protobuf_type»«ENDIF» >
+                    «typeResolver.resolveCodecNS(paramBundle, ulimate_type, is_failable, Optional.of(container))»::Encode«IF is_failable»Failable«ENDIF»< «resolve(ulimate_type)», «IF is_failable»«typeResolver.resolveFailableProtobufType(type, container)»«ELSE»«protobuf_type»«ENDIF» >
                        ( «resolveSymbol("std::move")»(«api_input»«IF output_param.present»Future.Get()«ENDIF»), concreteResponse->mutable_«protobuf_name»() );
                 «ELSEIF com.btc.serviceidl.util.Util.isEnumType(type)»
-                    concreteResponse->set_«protobuf_name»( «typeResolver.resolveCodecNS(type)»::Encode(«api_input») );
+                    concreteResponse->set_«protobuf_name»( «typeResolver.resolveCodecNS(paramBundle, type)»::Encode(«api_input») );
                 «ELSE»
-                    «typeResolver.resolveCodecNS(type)»::Encode( «api_input», concreteResponse->mutable_«protobuf_name»() );
+                    «typeResolver.resolveCodecNS(paramBundle, type)»::Encode( «api_input», concreteResponse->mutable_«protobuf_name»() );
                 «ENDIF»
             «ELSE»
                 concreteResponse->set_«protobuf_name»(«api_input»);
