@@ -49,7 +49,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 class BasicCppGenerator
 {
     protected val extension TypeResolver typeResolver
-    protected val ParameterBundle paramBundle
+    protected val ParameterBundle paramBundle // TODO remove this and access via typeResolver
     protected val IDLSpecification idl
 
     def String generateCppDestructor(InterfaceDeclaration interface_declaration)

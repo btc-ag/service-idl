@@ -71,13 +71,23 @@ class ProjectGeneratorBaseBase
 
     def protected createTypeResolver()
     {
+        createTypeResolver(this.param_bundle)
+    }
+
+    def protected createTypeResolver(ParameterBundle param_bundle)
+    {
         new TypeResolver(qualified_name_provider, param_bundle, vsSolution, project_references, cab_libs,
             smart_pointer_map)
     }
 
     def protected createBasicCppGenerator()
     {
-        new BasicCppGenerator(createTypeResolver, param_bundle, idl)
+        createBasicCppGenerator(this.param_bundle)
+    }
+
+    def protected createBasicCppGenerator(ParameterBundle param_bundle)
+    {
+        new BasicCppGenerator(createTypeResolver(param_bundle), param_bundle, idl)
     }
 
     def protected void generateVSProjectFiles(ProjectType project_type, String project_path, String project_name)
@@ -97,7 +107,7 @@ class ProjectGeneratorBaseBase
         new ExportHeaderGenerator(param_bundle).generateExportHeader()
     }
 
-    def protected String generateHeader(BasicCppGenerator basicCppGenerator, String file_content,
+    def static String generateHeader(BasicCppGenerator basicCppGenerator, String file_content,
         Optional<String> export_header)
     {
         '''
@@ -107,21 +117,21 @@ class ProjectGeneratorBaseBase
             «IF export_header.present»#include "«export_header.get»"«ENDIF»
             «basicCppGenerator.generateIncludes(true)»
             
-            «param_bundle.openNamespaces»
+            «basicCppGenerator.paramBundle.openNamespaces»
                «file_content»
-            «param_bundle.closeNamespaces»
+            «basicCppGenerator.paramBundle.closeNamespaces»
             #include "modules/Commons/include/EndPrinsModulesInclude.h"
         '''
     }
 
-    def protected String generateSource(BasicCppGenerator basicCppGenerator, String file_content,
+    def static String generateSource(BasicCppGenerator basicCppGenerator, String file_content,
         Optional<String> file_tail)
     {
         '''
             «basicCppGenerator.generateIncludes(false)»
-            «param_bundle.openNamespaces»
+            «basicCppGenerator.paramBundle.openNamespaces»
                «file_content»
-            «param_bundle.closeNamespaces»
+            «basicCppGenerator.paramBundle.closeNamespaces»
             «IF file_tail.present»«file_tail.get»«ENDIF»
         '''
     }
@@ -131,12 +141,6 @@ class ProjectGeneratorBaseBase
         ArtifactNature.CPP.label + Constants.SEPARATOR_FILE +
             GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM) +
             Constants.SEPARATOR_FILE
-    }
-
-    @Deprecated
-    def protected setParam_bundle(ParameterBundle param_bundle)
-    {
-        this.param_bundle = param_bundle
     }
 
 }

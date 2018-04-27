@@ -21,10 +21,23 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.idl.IDLSpecification
 
 @Accessors(PROTECTED_GETTER)
 abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
 {
+    // TODO align the method signatures: either both should be passed a BasicCppGenerator or none, the order of parameters should also be aligned
+    interface ISourceGenerationStrategy
+    {
+        def String generateProjectSource(BasicCppGenerator basicCppGenerator,
+            InterfaceDeclaration interface_declaration)
+
+        def String generateProjectHeader(BasicCppGenerator basicCppGenerator,
+            InterfaceDeclaration interface_declaration, String export_header)
+    }
+
+    val ISourceGenerationStrategy sourceGenerationStrategy
+
     def protected void generate()
     {
         // TODO check how to reflect this special handling of EXTERNAL_DB_IMPL
@@ -55,49 +68,48 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
     def private void generateProject(ProjectType pt, InterfaceDeclaration interface_declaration, String project_path,
         String export_header_file_name)
     {
-        // TODO change this such that modification of param_bundle is not necessary
         val builder = new ParameterBundle.Builder(param_bundle)
         builder.reset(interface_declaration.moduleStack)
-        param_bundle = builder.build
+        val localParamBundle = builder.build
 
         // paths
         val include_path = project_path + "include" + Constants.SEPARATOR_FILE
         val source_path = project_path + "source" + Constants.SEPARATOR_FILE
 
         // file names
-        val main_header_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType,
+        val main_header_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, localParamBundle.projectType,
             interface_declaration.name).h
-        val main_cpp_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType,
+        val main_cpp_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, localParamBundle.projectType,
             interface_declaration.name).cpp
 
         // sub-folder "./include"
         if (pt != ProjectType.TEST)
         {
             file_system_access.generateFile(include_path + Constants.SEPARATOR_FILE + main_header_file_name,
-                generateProjectHeader(createBasicCppGenerator, export_header_file_name, interface_declaration))
+                sourceGenerationStrategy.generateProjectHeader(createBasicCppGenerator(localParamBundle),
+                    interface_declaration, export_header_file_name))
             header_files.add(main_header_file_name)
         }
 
         // sub-folder "./source"
-        file_system_access.generateFile(source_path + main_cpp_file_name, generateProjectSource(interface_declaration))
+        file_system_access.generateFile(source_path + main_cpp_file_name,
+            sourceGenerationStrategy.generateProjectSource(createBasicCppGenerator(localParamBundle),
+                interface_declaration))
         cpp_files.add(main_cpp_file_name)
     }
 
-    def protected abstract String generateProjectSource(InterfaceDeclaration interface_declaration)
-
-    def protected abstract String generateProjectHeader(BasicCppGenerator basicCppGenerator, String export_header,
-        InterfaceDeclaration interface_declaration)
-
     // TODO move this somewhere else
-    def protected generateCppImpl(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
+    def protected static generateCppImpl(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
     {
-        new ImplementationStubGenerator(typeResolver, param_bundle, idl).generateCppImpl(interface_declaration)
+        new ImplementationStubGenerator(typeResolver, typeResolver.param_bundle,
+            interface_declaration.getParent(IDLSpecification)).generateCppImpl(interface_declaration)
     }
 
     // TODO move this somewhere else
-    def protected generateInterface(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
+    def protected static generateInterface(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
     {
-        new ServiceAPIGenerator(typeResolver, param_bundle, idl).generateHeaderFileBody(interface_declaration)
+        new ServiceAPIGenerator(typeResolver, typeResolver.param_bundle,
+            interface_declaration.getParent(IDLSpecification)).generateHeaderFileBody(interface_declaration)
     }
 
 }
