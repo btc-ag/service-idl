@@ -46,7 +46,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
         file_system_access.generateFile(projectPath + "include" + Constants.SEPARATOR_FILE + export_header_file_name,
             generateExportHeader())
-        header_files.add(export_header_file_name)
+        projectFileSet.header_files.add(export_header_file_name)
 
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
@@ -56,7 +56,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
         file_system_access.generateFile(projectPath + "source" + Constants.SEPARATOR_FILE + dependency_file_name,
             generateDependencies())
-        dependency_files.add(dependency_file_name)
+        projectFileSet.dependency_files.add(dependency_file_name)
 
         if (param_bundle.projectType != ProjectType.EXTERNAL_DB_IMPL) // done separately for ExternalDBImpl to include ODB files also
         {
@@ -87,14 +87,14 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
             file_system_access.generateFile(include_path + Constants.SEPARATOR_FILE + main_header_file_name,
                 sourceGenerationStrategy.generateProjectHeader(createBasicCppGenerator(localParamBundle),
                     interface_declaration, export_header_file_name))
-            header_files.add(main_header_file_name)
+            projectFileSet.header_files.add(main_header_file_name)
         }
 
         // sub-folder "./source"
         file_system_access.generateFile(source_path + main_cpp_file_name,
             sourceGenerationStrategy.generateProjectSource(createBasicCppGenerator(localParamBundle),
                 interface_declaration))
-        cpp_files.add(main_cpp_file_name)
+        projectFileSet.cpp_files.add(main_cpp_file_name)
     }
 
     // TODO move this somewhere else

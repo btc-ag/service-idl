@@ -14,14 +14,15 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
+import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import com.btc.serviceidl.util.Constants
+import java.util.HashMap
 import java.util.Map
 import java.util.Set
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
-import java.util.HashMap
 
 @Accessors
 class VSProjectFileGenerator
@@ -31,12 +32,8 @@ class VSProjectFileGenerator
     val IProjectSet projectSet
     val Map<String, Set<IProjectReference>> protobuf_project_references
     val Iterable<IProjectReference> project_references
-    
-    val Iterable<String> cpp_files
-    val Iterable<String> header_files
-    val Iterable<String> dependency_files
-    val Iterable<String> protobuf_files
-    val Iterable<String> odb_files
+
+    val ProjectFileSet projectFileSet
 
     val ProjectType project_type
     val String project_path
@@ -70,17 +67,14 @@ class VSProjectFileGenerator
             vsSolution,
             myProtobufProjectReferences,
             myProjectReferences,
-            cpp_files,
-            header_files,
-            dependency_files,
-            protobuf_files,
-            odb_files
+            projectFileSet.unmodifiableView
         ).generateVcxprojUser(project_type)
     }
-    
-    def getMyProtobufProjectReferences() {
+
+    def getMyProtobufProjectReferences()
+    {
         if (protobuf_project_references === null) return null
-        
+
         // TODO this should be possible to be simplified
         val res = new HashMap<String, Set<VSSolution.ProjectReference>>
         for (entry : protobuf_project_references.entrySet)
@@ -89,17 +83,19 @@ class VSProjectFileGenerator
         }
         return res
     }
-    
-    def getMyProjectReferences() {
+
+    def getMyProjectReferences()
+    {
         project_references.downcast
     }
-    
+
     def static private downcast(extension Iterable<IProjectReference> set)
     {
         set.map[it as VSSolution.ProjectReference].toSet
     }
-    
-    def getVsSolution() {
+
+    def getVsSolution()
+    {
         // TODO inject this such that no dynamic cast is necessary
         projectSet as VSSolution
     }
@@ -111,11 +107,7 @@ class VSProjectFileGenerator
             vsSolution,
             myProtobufProjectReferences,
             myProjectReferences,
-            cpp_files,
-            header_files,
-            dependency_files,
-            protobuf_files,
-            odb_files
+            projectFileSet.unmodifiableView
         ).generateVcxprojFilters()
     }
 
@@ -126,11 +118,7 @@ class VSProjectFileGenerator
             vsSolution,
             myProtobufProjectReferences,
             myProjectReferences,
-            cpp_files,
-            header_files,
-            dependency_files,
-            protobuf_files,
-            odb_files
+            projectFileSet.unmodifiableView
         ).generate(project_name, project_path).toString
     }
 

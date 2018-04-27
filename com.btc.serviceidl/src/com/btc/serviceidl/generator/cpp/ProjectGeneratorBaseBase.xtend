@@ -51,12 +51,8 @@ class ProjectGeneratorBaseBase
 
     // per-project global variables
     private val cab_libs = new HashSet<String>
-    private val cpp_files = new HashSet<String>
-    private val header_files = new HashSet<String>
-    private val dependency_files = new HashSet<String>
-    private val protobuf_files = new HashSet<String>
-    private val odb_files = new HashSet<String>
     private val project_references = new HashSet<IProjectReference>
+    private val projectFileSet = new ProjectFileSet
 
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
@@ -102,8 +98,7 @@ class ProjectGeneratorBaseBase
     def protected void generateVSProjectFiles(ProjectType project_type, String project_path, String project_name)
     {
         new VSProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
-            project_references, cpp_files, header_files, dependency_files, protobuf_files, odb_files, project_type,
-            project_path, project_name).generate()
+            project_references, projectFileSet.unmodifiableView, project_type, project_path, project_name).generate()
     }
 
     def protected generateDependencies()
