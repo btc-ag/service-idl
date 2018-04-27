@@ -252,14 +252,14 @@ class VcxProjGenerator
                 </PreBuildEvent>
             «ENDIF»
           </ItemDefinitionGroup>
-          «IF !projectFileSet.protobuf_files.empty»
+          «IF !projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty»
               <ItemGroup>
-                «FOR proto_file : projectFileSet.protobuf_files»
+                «FOR proto_file : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
                     <Google_Protocol_Buffers Include="gen\«proto_file».proto" />
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
-          «IF !(projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty && projectFileSet.dependency_files.empty && projectFileSet.protobuf_files.empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
+          «IF !(projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty && projectFileSet.dependency_files.empty && projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
               <ItemGroup>
                 «FOR cpp_file : projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP)»
                     <ClCompile Include="source\«cpp_file»" />
@@ -267,7 +267,7 @@ class VcxProjGenerator
                 «FOR dependency_file : projectFileSet.dependency_files»
                     <ClCompile Include="source\«dependency_file»" />
                 «ENDFOR»
-                «FOR pb_cc_file : projectFileSet.protobuf_files»
+                «FOR pb_cc_file : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
                     <ClCompile Include="gen\«pb_cc_file».pb.cc" />
                 «ENDFOR»
                 «FOR cxx_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
@@ -277,12 +277,12 @@ class VcxProjGenerator
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
-          «IF !(projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP).empty && projectFileSet.protobuf_files.empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
+          «IF !(projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP).empty && projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
               <ItemGroup>
                 «FOR header_file : projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP)»
                     <ClInclude Include="include\«header_file»" />
                 «ENDFOR»
-                «FOR pb_h_file : projectFileSet.protobuf_files»
+                «FOR pb_h_file : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
                     <ClInclude Include="gen\«pb_h_file.pb.h»" />
                 «ENDFOR»
                 «FOR hxx_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
@@ -345,7 +345,7 @@ class VcxProjGenerator
             <?xml version="1.0" encoding="utf-8"?>
             <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
               <ItemGroup>
-                 «IF !projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty || !projectFileSet.protobuf_files.empty»
+                 «IF !projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty || !projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty»
                      <Filter Include="Source Files">
                        <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
                        <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
@@ -362,7 +362,7 @@ class VcxProjGenerator
                        <UniqueIdentifier>{0e47593f-5119-4a3e-a4ac-b88dba5ffd81}</UniqueIdentifier>
                      </Filter>
                  «ENDIF»
-                 «IF !projectFileSet.protobuf_files.empty»
+                 «IF !projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty»
                      <Filter Include="Protobuf Files">
                        <UniqueIdentifier>{6f3dd233-58fc-4467-a4cc-9ba5ef3b5517}</UniqueIdentifier>
                      </Filter>
@@ -373,9 +373,9 @@ class VcxProjGenerator
                      </Filter>
                  «ENDIF»
               </ItemGroup>
-              «IF !(projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP).empty && projectFileSet.protobuf_files.empty)»
+              «IF !(projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP).empty && projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty)»
                   <ItemGroup>
-                    «FOR pb_h_file : projectFileSet.protobuf_files»
+                    «FOR pb_h_file : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
                         <ClCompile Include="gen\«pb_h_file.pb.h»">
                           <Filter>Header Files</Filter>
                         </ClCompile>
@@ -387,9 +387,9 @@ class VcxProjGenerator
                     «ENDFOR»
                   </ItemGroup>
               «ENDIF»
-              «IF !(projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty && projectFileSet.protobuf_files.empty)»
+              «IF !(projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty && projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty)»
                   <ItemGroup>
-                    «FOR pb_cc_file : projectFileSet.protobuf_files»
+                    «FOR pb_cc_file : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
                         <ClCompile Include="gen\«pb_cc_file».pb.cc">
                           <Filter>Source Files</Filter>
                         </ClCompile>
@@ -410,9 +410,9 @@ class VcxProjGenerator
                     «ENDFOR»
                   </ItemGroup>
               «ENDIF»
-              «IF !projectFileSet.protobuf_files.empty»
+              «IF !projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty»
                   <ItemGroup>
-                    «FOR proto_file : projectFileSet.protobuf_files»
+                    «FOR proto_file : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
                         <Google_Protocol_Buffers Include="gen\«proto_file».proto">
                           <Filter>Protobuf Files</Filter>
                         </Google_Protocol_Buffers>
