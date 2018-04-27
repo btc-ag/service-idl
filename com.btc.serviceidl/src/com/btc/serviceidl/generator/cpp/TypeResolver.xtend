@@ -42,10 +42,8 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(NONE)
 class TypeResolver
 {
-    @Accessors(PACKAGE_GETTER)
-    private val IQualifiedNameProvider qualified_name_provider
-    @Accessors(PACKAGE_GETTER)
-    private val IProjectSet projectSet
+    @Accessors(PACKAGE_GETTER) private val IQualifiedNameProvider qualified_name_provider
+    @Accessors(PACKAGE_GETTER) private val IProjectSet projectSet
     private val Collection<IProjectReference> project_references
     private val Collection<String> cab_libs
     private val Map<EObject, Collection<EObject>> smart_pointer_map
@@ -56,7 +54,7 @@ class TypeResolver
     {
         includes.entrySet.map[new Pair(it.key, it.value.immutableCopy)].toMap([it.key], [value])
     }
-    
+
     def Iterable<IProjectReference> getProject_references()
     {
         project_references.unmodifiableView
@@ -66,7 +64,7 @@ class TypeResolver
     {
         cab_libs.unmodifiableView
     }
-    
+
     @Deprecated
     def void addLibraryDependency(String libFile)
     {
@@ -104,8 +102,7 @@ class TypeResolver
     public static val MODULES_INCLUDE_GROUP = new IncludeGroup("BTC.PRINS.Modules")
 
     // TODO inject this, this is PRINS-specific
-    @Accessors(PACKAGE_GETTER)
-    private val headerResolver = PrinsHeaderResolver.create
+    @Accessors(PACKAGE_GETTER) private val headerResolver = PrinsHeaderResolver.create
 
     def String resolveSymbol(String symbolName)
     {
@@ -114,14 +111,14 @@ class TypeResolver
         resolveLibrary(header)
         return symbolName
     }
-    
+
     private def void resolveLibrary(HeaderResolver.GroupedHeader header)
     {
         // TODO resolve and add to libs generically
         if (header.includeGroup == CAB_INCLUDE_GROUP)
             cab_libs.addAll(LibResolver.getCABLibs(header.path))
         if (header.includeGroup == MODULES_INCLUDE_GROUP || header.includeGroup == TARGET_INCLUDE_GROUP)
-            project_references.add(projectSet.resolveHeader(header))        
+            project_references.add(projectSet.resolveHeader(header))
     }
 
     def String resolveSymbolWithImplementation(String symbolName)
@@ -230,13 +227,10 @@ class TypeResolver
         // sequences use forward-declared types as template parameters
         // and do not need the smart pointer wrapping
         if (com.btc.serviceidl.util.Util.isSequenceType(other_type))
-            return false;
+            return false
 
         val dependencies = smart_pointer_map.get(element)
-        if (dependencies !== null)
-            return dependencies.contains(com.btc.serviceidl.util.Util.getUltimateType(other_type))
-        else
-            return false
+        return dependencies !== null && dependencies.contains(other_type.ultimateType)
     }
 
     def Iterable<EObject> resolveForwardDeclarations(Iterable<TypeWrapper> types)
