@@ -14,17 +14,15 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
-import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.MemberElementWrapper
-import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
+import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.TypeResolverExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
@@ -645,9 +643,8 @@ class CodecGenerator extends BasicCppGenerator
         val failable_types = GeneratorUtil.getFailableTypes(owner)
 
         // always include corresponding *.pb.h file due to local failable types definitions
-        addTargetInclude(new Path("modules").append(
-            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM)).
-            append("gen").append(GeneratorUtil.getPbFileName(owner).pb.h))
+        addTargetInclude(
+            paramBundle.moduleStack.getIncludeFilePath(ProjectType.PROTOBUF, GeneratorUtil.getPbFileName(owner)))
 
         '''
             namespace «GeneratorUtil.getCodecName(owner)»

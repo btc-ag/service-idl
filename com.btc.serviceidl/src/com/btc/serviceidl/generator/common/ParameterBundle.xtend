@@ -15,15 +15,16 @@
  */
 package com.btc.serviceidl.generator.common
 
+import com.btc.serviceidl.idl.ModuleDeclaration
+import java.util.ArrayDeque
 import java.util.Deque
 import java.util.Optional
-import com.btc.serviceidl.idl.ModuleDeclaration
 import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors(PUBLIC_GETTER)
 class ParameterBundle
 {
-    private Deque<ModuleDeclaration> moduleStack
+    private Deque<ModuleDeclaration> moduleStack // TODO can't this be changed to Iterable?
     private ProjectType projectType
 
     // TODO redesign this, the role of "master_data" is unclear and confusing
@@ -31,20 +32,24 @@ class ParameterBundle
     {
         private Optional<ProjectType> project_type = Optional.empty
         private val master_data = new ParameterBundle
-        
-        new() {}
-        
-        new(ParameterBundle bundle) { 
+
+        new()
+        {
+        }
+
+        new(ParameterBundle bundle)
+        {
             this.master_data.moduleStack = bundle.moduleStack
-            
+
             // TODO check if handling of projectType is correct
             this.master_data.projectType = bundle.projectType
             this.project_type = Optional.of(bundle.projectType)
         }
 
-        def void reset(Deque<ModuleDeclaration> element)
+        def void reset(Iterable<ModuleDeclaration> element)
         {
-            master_data.moduleStack = element
+            master_data.moduleStack = new ArrayDeque<ModuleDeclaration>()
+            master_data.moduleStack.addAll(element)
         }
 
         def void reset(ProjectType element)
@@ -87,8 +92,8 @@ class ParameterBundle
         moduleStack = builder.master_data.moduleStack
         projectType = builder.master_data.projectType
     }
-    
-    def static Builder createBuilder(Deque<ModuleDeclaration> module_stack)
+
+    def static Builder createBuilder(Iterable<ModuleDeclaration> module_stack)
     {
         val builder = new Builder
         builder.reset(module_stack)

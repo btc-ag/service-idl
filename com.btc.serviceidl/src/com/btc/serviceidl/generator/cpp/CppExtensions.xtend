@@ -25,6 +25,7 @@ import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.StructDeclaration
 import java.util.ArrayList
@@ -37,33 +38,33 @@ import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 class CppExtensions
 {
-    private static val CPP_NATURE = ArtifactNature.CPP
-
     def static IPath getIncludeFilePath(EObject referenced_object, ProjectType project_type)
     {
         val scope_determinant = if (referenced_object instanceof InterfaceDeclaration)
                 referenced_object
             else
-                com.btc.serviceidl.util.Util.getScopeDeterminant(referenced_object)
-        val is_common = (scope_determinant instanceof InterfaceDeclaration)
+                referenced_object.scopeDeterminant
 
-        val file_name = if (is_common)
-                project_type.getClassName(CPP_NATURE, Names.plain(scope_determinant))
+        val file_name = if (scope_determinant instanceof InterfaceDeclaration)
+                project_type.getClassName(ArtifactNature.CPP, Names.plain(scope_determinant))
             else
                 "Types"
-        val module_stack = com.btc.serviceidl.util.Util.getModuleStack(referenced_object)
 
-        val param_bundle = new ParameterBundle.Builder()
-        param_bundle.reset(module_stack)
+        getIncludeFilePath(referenced_object.moduleStack, project_type, file_name)
+    }
 
-        val include_folder = if (project_type == ProjectType.PROTOBUF) "gen" else "include"
-        val file_extension = if (project_type == ProjectType.PROTOBUF) "pb.h" else "h"
-
-        new Path("modules").append(GeneratorUtil.asPath(param_bundle.with(project_type).build, ArtifactNature.CPP)).
-            append(include_folder).append(file_name).addFileExtension(file_extension)
+    def static IPath getIncludeFilePath(Iterable<ModuleDeclaration> module_stack, ProjectType project_type,
+        String file_name)
+    {
+        // TODO this is PRINS-specific, at least the "modules"-prefix
+        new Path("modules").append(
+            GeneratorUtil.asPath(ParameterBundle.createBuilder(module_stack).with(project_type).build,
+                ArtifactNature.CPP)).append(if (project_type == ProjectType.PROTOBUF) "gen" else "include").append(
+            file_name).addFileExtension(if (project_type == ProjectType.PROTOBUF) "pb.h" else "h")
     }
 
     /**
