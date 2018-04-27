@@ -1,13 +1,12 @@
 package com.btc.serviceidl.generator.cpp
 
+import java.util.Arrays
+import java.util.Collection
+import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.Data
-import java.util.Set
-import java.util.Collection
-import java.util.Arrays
-import java.util.HashMap
 
 @Data
 @Accessors(NONE)
