@@ -11,6 +11,7 @@
 package com.btc.serviceidl.tests.generator.cpp.prins
 
 import com.btc.serviceidl.generator.cpp.prins.ReferenceResolver
+import org.eclipse.core.runtime.Path
 import org.junit.Test
 
 import static org.junit.Assert.*
@@ -20,38 +21,38 @@ class ReferenceResolverTest
     @Test(expected=IllegalArgumentException)
     def void testModulesHeaderPathToModuleName_Empty_Fails()
     {
-        ReferenceResolver.modulesHeaderPathToModuleName("")
+        ReferenceResolver.modulesHeaderPathToModuleName(new Path(""))
     }
 
     @Test(expected=IllegalArgumentException)
     def void testModulesHeaderPathToModuleName_Incomplete_Fails()
     {
-        ReferenceResolver.modulesHeaderPathToModuleName("modules/Commons/GUID.h")
+        ReferenceResolver.modulesHeaderPathToModuleName(new Path("modules/Commons/GUID.h"))
     }
 
     @Test(expected=IllegalArgumentException)
     def void testModulesHeaderPathToModuleName_MissingIncludeFragment_Fails()
     {
-        ReferenceResolver.modulesHeaderPathToModuleName("modules/Commons/")
+        ReferenceResolver.modulesHeaderPathToModuleName(new Path("modules/Commons/"))
     }
 
     @Test(expected=IllegalArgumentException)
     def void testModulesHeaderPathToModuleName_NonModules_Fails()
     {
-        ReferenceResolver.modulesHeaderPathToModuleName("Commons/Core/include/CompilerSettings.h")
+        ReferenceResolver.modulesHeaderPathToModuleName(new Path("Commons/Core/include/CompilerSettings.h"))
     }
 
     @Test
     def void testModulesHeaderPathToModuleName_CommonsHeader()
     {
         assertEquals("BTC.PRINS.Commons",
-            ReferenceResolver.modulesHeaderPathToModuleName("modules/Commons/include/GUID.h"))
+            ReferenceResolver.modulesHeaderPathToModuleName(new Path("modules/Commons/include/GUID.h")))
     }
 
     @Test
     def void testModulesHeaderPathToModuleName_CommonsUtilitiesHeader()
     {
         assertEquals("BTC.PRINS.Commons.Utilities",
-            ReferenceResolver.modulesHeaderPathToModuleName("modules/Commons/Utilities/include/GUIDHelper.h"))
+            ReferenceResolver.modulesHeaderPathToModuleName(new Path("modules/Commons/Utilities/include/GUIDHelper.h")))
     }
 }

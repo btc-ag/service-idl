@@ -25,6 +25,7 @@ import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
 import java.util.Optional
+import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
@@ -64,7 +65,7 @@ class ProtobufUtil
         var header_path = GeneratorUtil.getTransformedModuleName(builder.build, ArtifactNature.CPP,
             TransformType.FILE_SYSTEM)
         var header_file = GeneratorUtil.getPbFileName(object)
-        addTargetInclude("modules/" + header_path + "/gen/" + header_file.pb.h)
+        addTargetInclude(new Path("modules").append(header_path).append("gen").append(header_file.pb.h))
         object.resolveProjectFilePath(ProjectType.PROTOBUF)
         return new ResolvedName(result, TransformType.NAMESPACE)
     }
@@ -158,7 +159,7 @@ class ProtobufUtil
 
         var header_path = GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.CPP,
             TransformType.FILE_SYSTEM)
-        addTargetInclude("modules/" + header_path + "/include/" + codec_name.h)
+        addTargetInclude(new Path("modules").append(header_path).append("include").append(codec_name.h))
         resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
         GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.CPP, TransformType.NAMESPACE) +

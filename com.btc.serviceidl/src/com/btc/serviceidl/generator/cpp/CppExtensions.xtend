@@ -20,7 +20,6 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.common.TypeWrapper
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
@@ -33,16 +32,17 @@ import java.util.Arrays
 import java.util.HashSet
 import java.util.LinkedHashSet
 import java.util.List
+import org.eclipse.core.runtime.IPath
+import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.util.Extensions.*
-import org.eclipse.core.runtime.Path
 
 class CppExtensions
 {
     private static val CPP_NATURE = ArtifactNature.CPP
 
-    def static String getIncludeFilePath(EObject referenced_object, ProjectType project_type)
+    def static IPath getIncludeFilePath(EObject referenced_object, ProjectType project_type)
     {
         val scope_determinant = if (referenced_object instanceof InterfaceDeclaration)
                 referenced_object
@@ -62,9 +62,8 @@ class CppExtensions
         val include_folder = if (project_type == ProjectType.PROTOBUF) "gen" else "include"
         val file_extension = if (project_type == ProjectType.PROTOBUF) "pb.h" else "h"
 
-        // TODO change return type to IPath
         new Path("modules").append(GeneratorUtil.asPath(param_bundle.with(project_type).build, ArtifactNature.CPP)).
-            append(include_folder).append(file_name).addFileExtension(file_extension).toString
+            append(include_folder).append(file_name).addFileExtension(file_extension)
     }
 
     /**

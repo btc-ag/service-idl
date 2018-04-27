@@ -18,6 +18,7 @@ package com.btc.serviceidl.generator.cpp.prins
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.HeaderResolver
 import com.btc.serviceidl.generator.cpp.TypeResolver
+import org.eclipse.core.runtime.IPath
 
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 
@@ -34,8 +35,8 @@ class ReferenceResolver
                 setPath('''$(SolutionDir)\Commons\Utilities\BTC.PRINS.Commons.Utilities''').build
     }
 
-    static val MODULES_HEADER_PATH_PREFIX = "modules/"
-    static val MODULES_HEADER_INCLUDE_FRAGMENT = "/include/"
+    static val MODULES_HEADER_PATH_PREFIX = "modules"
+    static val MODULES_HEADER_INCLUDE_SEGMENT = "include"
     static val MODULES_MODULE_NAME_PREFIX = "BTC.PRINS."
 
     def static VSProjectInfo getProjectReference(HeaderResolver.GroupedHeader header)
@@ -52,19 +53,19 @@ class ReferenceResolver
         throw new IllegalArgumentException("Could not find project reference mapping for header: " + header.toString)
     }
 
-    public def static String modulesHeaderPathToModuleName(String headerPath)
+    public def static String modulesHeaderPathToModuleName(IPath headerPath)
     {
-        if (!headerPath.startsWith(MODULES_HEADER_PATH_PREFIX))
+        if (headerPath.segment(0) != MODULES_HEADER_PATH_PREFIX)
             throw new IllegalArgumentException(
             '''Modules header path must start with '«MODULES_HEADER_PATH_PREFIX»': «headerPath»''')
 
-        val includePosition = headerPath.indexOf(MODULES_HEADER_INCLUDE_FRAGMENT)
+        val includePosition = headerPath.segments.indexOf(MODULES_HEADER_INCLUDE_SEGMENT)
         if (includePosition == -1)
             throw new IllegalArgumentException(
-            '''Modules header path must contain '«MODULES_HEADER_INCLUDE_FRAGMENT»': «headerPath»''')
+            '''Modules header path must contain '«MODULES_HEADER_INCLUDE_SEGMENT»': «headerPath»''')
 
         MODULES_MODULE_NAME_PREFIX +
-            headerPath.substring(0, includePosition).replaceFirst(MODULES_HEADER_PATH_PREFIX, "").switchSeparator(
+            headerPath.uptoSegment(includePosition).removeFirstSegments(1).toString.switchSeparator(
                 TransformType.FILE_SYSTEM, TransformType.PACKAGE)
     }
 }

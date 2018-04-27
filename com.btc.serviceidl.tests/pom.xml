@@ -26,4 +26,11 @@
 		</plugins>
 	</build>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.eclipse.equinox</groupId>
+			<artifactId>common</artifactId>
+			<version>[3.5,)</version>
+		</dependency>
+	</dependencies>
 </project>

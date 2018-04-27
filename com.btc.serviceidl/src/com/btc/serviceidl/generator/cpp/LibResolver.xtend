@@ -15,8 +15,8 @@
  */
 package com.btc.serviceidl.generator.cpp
 
-import com.btc.serviceidl.util.Constants
 import java.util.HashSet
+import org.eclipse.core.runtime.IPath
 
 class LibResolver
 {
@@ -70,17 +70,14 @@ class LibResolver
                 "BTC.CAB.ServiceComm.SQ.Default.lib", "BTC.CAB.ServiceComm.SQ.ImportAPI.lib"]
     }
 
-    def static Iterable<String> getCABLibs(String header_file)
+    def static Iterable<String> getCABLibs(IPath header_file)
     {
         val result = new HashSet<String>
 
-        // remove last component (which is the *.h file name)
-        var key = header_file.substring(0, header_file.lastIndexOf(Constants.SEPARATOR_FILE))
+        // remove last 2 component (which are the "include" directory name and the *.h file name)
+        var key = header_file.removeLastSegments(2)
 
-        // remove "/include" part
-        key = key.substring(0, key.lastIndexOf(Constants.SEPARATOR_FILE))
-
-        if (cab_lib_mapper.containsKey(key))
+        if (cab_lib_mapper.containsKey(key.toString))
         {
             result.add(cab_lib_mapper.get(key))
 

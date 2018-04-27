@@ -15,6 +15,7 @@ import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.StructDeclaration
+import org.eclipse.core.runtime.Path
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.cpp.Util.*
@@ -128,7 +129,7 @@ class TestGenerator extends BasicCppGenerator
                        «IF param.paramType.isSequenceType»
                            «val ulimate_type = toText(param.paramType.ultimateType, param)»
                            «val is_failable = param.paramType.isFailable»
-                           «val inner_type = if (is_failable) '''«addCabInclude("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h").alias(resolveSymbol("BTC::Commons::CoreExtras::FailableHandle"))»< «ulimate_type» >''' else ulimate_type»
+                           «val inner_type = if (is_failable) '''«addCabInclude(new Path("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h")).alias(resolveSymbol("BTC::Commons::CoreExtras::FailableHandle"))»< «ulimate_type» >''' else ulimate_type»
                            «resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «inner_type» >::AutoPtrType «param.paramName.asParameter»( «resolveSymbol("BTC::Commons::FutureUtil::CreateDefaultAsyncInsertable")»< «inner_type» >() );
                        «ELSE»
                            «val type_name = toText(param.paramType, param)»
