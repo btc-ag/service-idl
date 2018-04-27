@@ -25,10 +25,10 @@ import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
 import java.util.Optional
-import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 
-import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
+import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufUtil
 {
@@ -45,27 +45,23 @@ class ProtobufUtil
         else if (object instanceof AbstractType && (object as AbstractType).primitiveType !== null)
             return resolveProtobuf(typeResolver, (object as AbstractType).primitiveType, protobuf_type)
 
-        val is_function = (object instanceof FunctionDeclaration)
-        val is_interface = (object instanceof InterfaceDeclaration)
-        val scope_determinant = com.btc.serviceidl.util.Util.getScopeDeterminant(object)
+        val scope_determinant = object.scopeDeterminant
 
-        val builder = ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(scope_determinant))
-        builder.reset(ProjectType.PROTOBUF)
+        val paramBundle = ParameterBundle.createBuilder(scope_determinant.moduleStack).with(ProjectType.PROTOBUF).build
 
-        var result = GeneratorUtil.getTransformedModuleName(builder.build, ArtifactNature.CPP, TransformType.NAMESPACE)
+        var result = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.NAMESPACE)
         result += Constants.SEPARATOR_NAMESPACE
-        if (is_interface)
+        if (object instanceof InterfaceDeclaration)
             result += Names.plain(object) + "_" + protobuf_type.getName
-        else if (is_function)
+        else if (object instanceof FunctionDeclaration)
             result += Names.plain(scope_determinant) + "_" + protobuf_type.getName + "_" + Names.plain(object) + "_" +
                 protobuf_type.getName
         else
             result += Names.plain(object)
 
-        var header_path = GeneratorUtil.getTransformedModuleName(builder.build, ArtifactNature.CPP,
-            TransformType.FILE_SYSTEM)
-        var header_file = GeneratorUtil.getPbFileName(object)
-        addTargetInclude(new Path("modules").append(header_path).append("gen").append(header_file.pb.h))
+        addTargetInclude(
+            paramBundle.moduleStack.getIncludeFilePath(ProjectType.PROTOBUF, GeneratorUtil.getPbFileName(object)))
+
         object.resolveProjectFilePath(ProjectType.PROTOBUF)
         return new ResolvedName(result, TransformType.NAMESPACE)
     }
@@ -145,23 +141,20 @@ class ProtobufUtil
     def static String resolveCodecNS(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject object,
         boolean is_failable, Optional<EObject> container)
     {
-        val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
+        val ultimate_type = object.ultimateType
 
-        val temp_param = new ParameterBundle.Builder
-        temp_param.reset(
-            if (is_failable) paramBundle.moduleStack else com.btc.serviceidl.util.Util.getModuleStack(ultimate_type)) // failable wrappers always local!
-        temp_param.reset(ProjectType.PROTOBUF)
+        // failable wrappers always local!
+        val moduleStack = if (is_failable) paramBundle.moduleStack else ultimate_type.moduleStack
 
-        val codec_name = if (is_failable)
-                GeneratorUtil.getCodecName(container.get)
-            else
-                GeneratorUtil.getCodecName(ultimate_type)
+        val codec_name = GeneratorUtil.getCodecName(if (is_failable) container.get else ultimate_type)
 
-        var header_path = GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.CPP,
-            TransformType.FILE_SYSTEM)
-        addTargetInclude(new Path("modules").append(header_path).append("include").append(codec_name.h))
+        addTargetInclude(moduleStack.getIncludeFilePath(ProjectType.IMPL, codec_name))
+
         resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
+        val temp_param = new ParameterBundle.Builder
+        temp_param.reset(moduleStack)
+        temp_param.reset(ProjectType.PROTOBUF)
         GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.CPP, TransformType.NAMESPACE) +
             TransformType.NAMESPACE.separator + codec_name
     }
