@@ -74,7 +74,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         // individual project files for every interface
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
-            // TODO remove reference to OdbConstants here
+            // TODO remove reference to OdbConstants here, it is PRINS-specific
             val localProjectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP))
             val project_name = GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
                 TransformType.PACKAGE) + TransformType.PACKAGE.separator + interface_declaration.name

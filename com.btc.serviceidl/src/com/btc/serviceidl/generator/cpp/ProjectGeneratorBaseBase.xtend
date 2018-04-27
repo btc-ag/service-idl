@@ -118,6 +118,7 @@ class ProjectGeneratorBaseBase
     def static String generateHeader(BasicCppGenerator basicCppGenerator, String file_content,
         Optional<String> export_header)
     {
+        // TODO the prefix and suffix includes are PRINS-specific
         '''
             #pragma once
             #include "modules/Commons/include/BeginPrinsModulesInclude.h"

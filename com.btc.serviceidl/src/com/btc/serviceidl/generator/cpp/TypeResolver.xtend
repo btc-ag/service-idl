@@ -103,7 +103,7 @@ class TypeResolver
     // PRINS-specific, TODO move to PRINS-package
     public static val MODULES_INCLUDE_GROUP = new IncludeGroup("BTC.PRINS.Modules")
 
-    // TODO inject this
+    // TODO inject this, this is PRINS-specific
     @Accessors(PACKAGE_GETTER)
     private val headerResolver = PrinsHeaderResolver.create
 
