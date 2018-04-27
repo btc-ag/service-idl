@@ -86,7 +86,7 @@ class ProjectGeneratorBaseBase
 
     def protected createBasicCppGenerator(ParameterBundle param_bundle)
     {
-        new BasicCppGenerator(createTypeResolver(param_bundle), param_bundle, idl)
+        new BasicCppGenerator(createTypeResolver(param_bundle), param_bundle)
     }
 
     def protected void generateVSProjectFiles(ProjectType project_type, String project_path, String project_name)

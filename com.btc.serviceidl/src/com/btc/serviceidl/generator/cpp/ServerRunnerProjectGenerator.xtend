@@ -89,7 +89,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
     {
         val basicCppGenerator = createBasicCppGenerator
 
-        val file_content = new ServerRunnerGenerator(basicCppGenerator.typeResolver, param_bundle, idl).generateImplFileBody(
+        val file_content = new ServerRunnerGenerator(basicCppGenerator.typeResolver, param_bundle).generateImplFileBody(
             interface_declaration)
 
         '''
@@ -101,7 +101,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
     def private generateIoCServerRunner()
     {
         // TODO for generating the IoC file, none of the arguments are required
-        new ServerRunnerGenerator(createTypeResolver, param_bundle, idl).generateIoC()
+        new ServerRunnerGenerator(createTypeResolver, param_bundle).generateIoC()
     }
 
 }

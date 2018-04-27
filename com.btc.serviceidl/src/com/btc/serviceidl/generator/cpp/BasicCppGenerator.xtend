@@ -25,7 +25,6 @@ import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.ExceptionReferenceDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
-import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -45,12 +44,12 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
-@Accessors
+@Accessors(NONE)
 class BasicCppGenerator
 {
-    protected val extension TypeResolver typeResolver
-    protected val ParameterBundle paramBundle
-    protected val IDLSpecification idl
+    // must be protected to allow subclasses to benefit from extension declaration
+    @Accessors(PUBLIC_GETTER) protected val extension TypeResolver typeResolver 
+    @Accessors(PUBLIC_GETTER) private val ParameterBundle paramBundle
 
     def String generateCppDestructor(InterfaceDeclaration interface_declaration)
     {
@@ -154,7 +153,7 @@ class BasicCppGenerator
         if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
             context instanceof StructDeclaration)
         {
-            val related_event = com.btc.serviceidl.util.Util.getRelatedEvent(item, idl)
+            val related_event = com.btc.serviceidl.util.Util.getRelatedEvent(item)
             var makeCompareOperator = false
             for (member : item.members)
             {

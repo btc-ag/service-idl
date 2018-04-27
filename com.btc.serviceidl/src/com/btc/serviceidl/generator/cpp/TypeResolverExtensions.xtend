@@ -1,18 +1,17 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.GuidMapper
-import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import java.util.Map
 
 class TypeResolverExtensions {
-    def static String makeEventGUIDImplementations(extension TypeResolver typeResolver, IDLSpecification idl,
+    def static String makeEventGUIDImplementations(extension TypeResolver typeResolver,
         Iterable<StructDeclaration> structs)
     {        
       '''
       «FOR event_data : structs»
-         «val related_event = com.btc.serviceidl.util.Util.getRelatedEvent(event_data, idl)»
+         «val related_event = com.btc.serviceidl.util.Util.getRelatedEvent(event_data)»
          «IF related_event !== null»
             «val event_uuid = GuidMapper.get(event_data)»
             // {«event_uuid»}

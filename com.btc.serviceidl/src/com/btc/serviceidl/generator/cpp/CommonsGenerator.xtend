@@ -64,7 +64,7 @@ class CommonsGenerator extends BasicCppGenerator
              «makeExceptionImplementation(exception)»
           «ENDFOR»
           
-          «makeEventGUIDImplementations(typeResolver, idl, module.moduleComponents.filter(StructDeclaration))»
+          «makeEventGUIDImplementations(typeResolver, module.moduleComponents.filter(StructDeclaration))»
       '''
     }
 }
