@@ -68,7 +68,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
 
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
         file_system_access.generateFile(source_path + dependency_file_name, generateDependencies)
-        projectFileSet.dependency_files.add(dependency_file_name)
+        projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
 
         // individual project files for every interface
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
