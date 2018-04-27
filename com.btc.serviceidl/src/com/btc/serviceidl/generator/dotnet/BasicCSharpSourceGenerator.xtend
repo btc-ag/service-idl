@@ -122,7 +122,7 @@ class BasicCSharpSourceGenerator {
          val all_class_members = new ArrayList<Triple<String, String, String>>
          element.allMembers.forEach[e | all_class_members.add(Tuples.create(e.name.asProperty, toText(e, element), maybeOptional(e)))]
 
-         val related_event =  com.btc.serviceidl.util.Util.getRelatedEvent(element, idl)
+         val related_event =  com.btc.serviceidl.util.Util.getRelatedEvent(element)
          
          '''
          public class «element.name»«IF element.supertype !== null» : «resolve(element.supertype)»«ENDIF»
