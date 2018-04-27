@@ -70,7 +70,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
         projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cpp_file)
 
         file_system_access.generateFile(source_path + dependency_file_name, generateDependencies)
-        projectFileSet.dependency_files.add(dependency_file_name)
+        projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
 
         generateVSProjectFiles(ProjectType.COMMON, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)
     }

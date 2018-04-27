@@ -259,12 +259,12 @@ class VcxProjGenerator
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
-          «IF !(projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty && projectFileSet.dependency_files.empty && projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
+          «IF !(projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty && projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP).empty && projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
               <ItemGroup>
                 «FOR cpp_file : projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP)»
                     <ClCompile Include="source\«cpp_file»" />
                 «ENDFOR»
-                «FOR dependency_file : projectFileSet.dependency_files»
+                «FOR dependency_file : projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP)»
                     <ClCompile Include="source\«dependency_file»" />
                 «ENDFOR»
                 «FOR pb_cc_file : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
@@ -357,7 +357,7 @@ class VcxProjGenerator
                        <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
                      </Filter>
                  «ENDIF»
-                 «IF !projectFileSet.dependency_files.empty»
+                 «IF !projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP).empty»
                      <Filter Include="Dependencies">
                        <UniqueIdentifier>{0e47593f-5119-4a3e-a4ac-b88dba5ffd81}</UniqueIdentifier>
                      </Filter>
@@ -401,9 +401,9 @@ class VcxProjGenerator
                     «ENDFOR»
                   </ItemGroup>
               «ENDIF»
-              «IF !projectFileSet.dependency_files.empty»
+              «IF !projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP).empty»
                   <ItemGroup>
-                    «FOR dependency_file : projectFileSet.dependency_files»
+                    «FOR dependency_file : projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP)»
                         <ClCompile Include="source\«dependency_file»">
                           <Filter>Dependencies</Filter>
                         </ClCompile>

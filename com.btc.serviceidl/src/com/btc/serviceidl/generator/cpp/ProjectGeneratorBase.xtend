@@ -56,7 +56,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
         file_system_access.generateFile(projectPath + "source" + Constants.SEPARATOR_FILE + dependency_file_name,
             generateDependencies())
-        projectFileSet.dependency_files.add(dependency_file_name)
+        projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
 
         if (param_bundle.projectType != ProjectType.EXTERNAL_DB_IMPL) // done separately for ExternalDBImpl to include ODB files also
         {
