@@ -48,7 +48,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
         Map<EObject, Collection<EObject>> smart_pointer_map,  ModuleDeclaration module)
     {
         super(resource, file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
-            protobuf_project_references, smart_pointer_map, ProjectType.EXTERNAL_DB_IMPL, module)
+            protobuf_project_references, smart_pointer_map, ProjectType.EXTERNAL_DB_IMPL, module, new OdbSourceGenerationStrategy)
     }
     
    override void generate()
@@ -143,20 +143,21 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       '''
    }
    
-   def override String generateProjectSource(InterfaceDeclaration interface_declaration)
-   {
-        val basicCppGenerator = createBasicCppGenerator
-        
-        val file_content = generateCppImpl(basicCppGenerator.typeResolver, interface_declaration)
-        
-        generateSource(basicCppGenerator, file_content.toString, Optional.empty)
-    }
- 
-     def override String generateProjectHeader(BasicCppGenerator basicCppGenerator, String export_header, InterfaceDeclaration interface_declaration)
+   private static class OdbSourceGenerationStrategy implements ISourceGenerationStrategy
     {
-        val file_content = generateInterface(basicCppGenerator.typeResolver, interface_declaration)
+        def override String generateProjectSource(BasicCppGenerator basicCppGenerator, InterfaceDeclaration interface_declaration)
+        {
+            val file_content = generateCppImpl(basicCppGenerator.typeResolver, interface_declaration)
 
-        generateHeader(basicCppGenerator, file_content.toString, Optional.of(export_header))
+            generateSource(basicCppGenerator, file_content.toString, Optional.empty)
+        }
+
+        def override String generateProjectHeader(BasicCppGenerator basicCppGenerator,
+            InterfaceDeclaration interface_declaration, String export_header)
+        {
+            val file_content = generateInterface(basicCppGenerator.typeResolver, interface_declaration)
+
+            generateHeader(basicCppGenerator, file_content.toString, Optional.of(export_header))
+        }
     }
-    
 }

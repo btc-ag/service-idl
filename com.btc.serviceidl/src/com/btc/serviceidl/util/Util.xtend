@@ -100,6 +100,11 @@ class Util
 
         return module_stack
     }
+    
+    def public static <T> T getParent(EObject element, Class<T> t)
+    {
+        if (t.isAssignableFrom(element.class)) element as T else getParent(element.eContainer, t)
+    }
 
     def public static EObject getScopeDeterminant(EObject element)
     {
