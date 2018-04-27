@@ -29,6 +29,7 @@ import java.util.HashSet
 import java.util.LinkedHashSet
 import java.util.Map
 import java.util.Set
+import org.eclipse.core.runtime.IPath
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.Data
@@ -49,7 +50,7 @@ class TypeResolver
     private val Collection<String> cab_libs
     private val Map<EObject, Collection<EObject>> smart_pointer_map
 
-    @Accessors(NONE) private val Map<IncludeGroup, Set<String>> includes = new HashMap<IncludeGroup, Set<String>>
+    @Accessors(NONE) private val Map<IncludeGroup, Set<IPath>> includes = new HashMap<IncludeGroup, Set<IPath>>
 
     def getIncludes()
     {
@@ -72,19 +73,19 @@ class TypeResolver
         cab_libs.add(libFile)
     }
 
-    def addTargetInclude(String path)
+    def addTargetInclude(IPath path)
     { addToGroup(TARGET_INCLUDE_GROUP, path) }
 
     @Deprecated
-    def addCabInclude(String path)
+    def addCabInclude(IPath path)
     {
         addToGroup(CAB_INCLUDE_GROUP, path)
         path
     }
 
-    private def void addToGroup(IncludeGroup includeGroup, String path)
+    private def void addToGroup(IncludeGroup includeGroup, IPath path)
     {
-        if (!includes.containsKey(includeGroup)) includes.put(includeGroup, new HashSet<String>)
+        if (!includes.containsKey(includeGroup)) includes.put(includeGroup, new HashSet<IPath>)
         includes.get(includeGroup).add(path)
     }
 

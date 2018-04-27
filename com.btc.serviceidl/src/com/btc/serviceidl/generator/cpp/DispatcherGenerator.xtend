@@ -20,6 +20,7 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.util.Constants
 import java.util.Optional
+import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -118,7 +119,7 @@ class DispatcherGenerator extends BasicCppGenerator
                               «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
                                   «val type_name = resolve(com.btc.serviceidl.util.Util.getUltimateType(param.paramType))»
                                   «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
-                                  «if (is_failable) addCabInclude("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h").alias("") /* necessary to use InsertableTraits with FailableHandle */»
+                                  «if (is_failable) addCabInclude(new Path("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h")).alias("") /* necessary to use InsertableTraits with FailableHandle */»
                                   «val effective_typename = if (is_failable) '''«resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»< «type_name» >''' else type_name»
                                   «resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «effective_typename» >::AutoPtrType «param.paramName»(
                                      «resolveSymbol("BTC::Commons::FutureUtil::GetOrCreateDefaultInsertable")»(«resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «effective_typename» >::MakeEmptyInsertablePtr()) );

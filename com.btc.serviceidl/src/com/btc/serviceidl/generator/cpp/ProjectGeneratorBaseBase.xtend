@@ -98,11 +98,11 @@ class ProjectGeneratorBaseBase
         new BasicCppGenerator(createTypeResolver(param_bundle), param_bundle)
     }
 
-    def protected void generateVSProjectFiles(ProjectType project_type, IPath projectPath, String project_name,
+    def protected void generateVSProjectFiles(ProjectType project_type, IPath project_path, String project_name,
         ProjectFileSet projectFileSet)
     {
         new VSProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
-            project_references, projectFileSet.unmodifiableView, project_type, projectPath, project_name).generate()
+            project_references, projectFileSet.unmodifiableView, project_type, project_path, project_name).generate()
     }
 
     def protected generateDependencies()

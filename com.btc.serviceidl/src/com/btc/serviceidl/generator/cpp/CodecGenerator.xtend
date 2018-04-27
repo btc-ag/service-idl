@@ -19,8 +19,8 @@ import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
-import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
+import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -645,10 +645,9 @@ class CodecGenerator extends BasicCppGenerator
         val failable_types = GeneratorUtil.getFailableTypes(owner)
 
         // always include corresponding *.pb.h file due to local failable types definitions
-        val include_path = "modules" + Constants.SEPARATOR_FILE +
-            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM) +
-            Constants.SEPARATOR_FILE + "gen" + Constants.SEPARATOR_FILE + GeneratorUtil.getPbFileName(owner).pb.h
-        addTargetInclude(include_path)
+        addTargetInclude(new Path("modules").append(
+            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM)).
+            append("gen").append(GeneratorUtil.getPbFileName(owner).pb.h))
 
         '''
             namespace «GeneratorUtil.getCodecName(owner)»

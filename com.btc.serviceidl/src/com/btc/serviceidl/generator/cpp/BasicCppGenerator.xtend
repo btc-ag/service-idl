@@ -43,6 +43,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import java.util.Comparator
 
 @Accessors(NONE)
 class BasicCppGenerator
@@ -357,7 +358,8 @@ resolveSymbol
 
         for (outputConfigurationItem : outputConfiguration)
         {
-            val sortedElements = includes.extractAllExcludeNull(outputConfigurationItem.includeGroups).flatten.sort
+            val sortedElements = includes.extractAllExcludeNull(outputConfigurationItem.includeGroups).flatten.sortWith(
+                Comparator.comparing[toString])
             if (!sortedElements.empty)
             {
                 result.append(outputConfigurationItem.prefix)

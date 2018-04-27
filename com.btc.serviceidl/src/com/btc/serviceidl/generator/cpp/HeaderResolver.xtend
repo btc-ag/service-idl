@@ -22,6 +22,8 @@ import java.util.ArrayList
 import java.util.Arrays
 import java.util.HashMap
 import java.util.Map
+import org.eclipse.core.runtime.IPath
+import org.eclipse.core.runtime.Path
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.Data
 
@@ -264,14 +266,14 @@ class HeaderResolver
 
     def static Iterable<Pair<String, GroupedHeader>> transformHeaderMap(Map<String, String> map, IncludeGroup group)
     {
-        map.entrySet.map[new Pair(it.key, new GroupedHeader(group, it.value))]
+        map.entrySet.map[new Pair(it.key, new GroupedHeader(group, new Path(it.value)))]
     }
 
     @Data
     static class GroupedHeader
     {
         IncludeGroup includeGroup
-        String path
+        IPath path
     }
 
     def GroupedHeader getHeader(String className)
