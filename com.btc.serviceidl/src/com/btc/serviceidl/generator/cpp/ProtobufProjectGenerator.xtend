@@ -57,19 +57,19 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
 
         // sub-folder "./include"
         file_system_access.generateFile(include_path + export_header_file_name, generateExportHeader())
-        projectFileSet.header_files.add(export_header_file_name)
+        projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
 
         if (module.containsTypes)
         {
             val codec_header_name = GeneratorUtil.getCodecName(module).h
             file_system_access.generateFile(include_path + codec_header_name, generateHCodec(module))
-            projectFileSet.header_files.add(codec_header_name)
+            projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, codec_header_name)
         }
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
             val codec_header_name = GeneratorUtil.getCodecName(interface_declaration).h
             file_system_access.generateFile(include_path + codec_header_name, generateHCodec(interface_declaration))
-            projectFileSet.header_files.add(codec_header_name)
+            projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, codec_header_name)
         }
 
         // sub-folder "./source"

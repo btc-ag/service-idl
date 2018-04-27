@@ -277,9 +277,9 @@ class VcxProjGenerator
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
-          «IF !(projectFileSet.header_files.empty && projectFileSet.protobuf_files.empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
+          «IF !(projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP).empty && projectFileSet.protobuf_files.empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
               <ItemGroup>
-                «FOR header_file : projectFileSet.header_files»
+                «FOR header_file : projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP)»
                     <ClInclude Include="include\«header_file»" />
                 «ENDFOR»
                 «FOR pb_h_file : projectFileSet.protobuf_files»
@@ -351,7 +351,7 @@ class VcxProjGenerator
                        <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
                      </Filter>
                  «ENDIF»
-                 «IF !(projectFileSet.header_files.empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
+                 «IF !(projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP).empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
                      <Filter Include="Header Files">
                        <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
                        <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
@@ -373,14 +373,14 @@ class VcxProjGenerator
                      </Filter>
                  «ENDIF»
               </ItemGroup>
-              «IF !(projectFileSet.header_files.empty && projectFileSet.protobuf_files.empty)»
+              «IF !(projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP).empty && projectFileSet.protobuf_files.empty)»
                   <ItemGroup>
                     «FOR pb_h_file : projectFileSet.protobuf_files»
                         <ClCompile Include="gen\«pb_h_file.pb.h»">
                           <Filter>Header Files</Filter>
                         </ClCompile>
                     «ENDFOR»
-                    «FOR header_file : projectFileSet.header_files»
+                    «FOR header_file : projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP)»
                         <ClInclude Include="include\«header_file»">
                           <Filter>Header Files</Filter>
                         </ClInclude>

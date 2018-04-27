@@ -59,11 +59,11 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
 
         // sub-folder "./include"
         file_system_access.generateFile(include_path + export_header_file_name, generateExportHeader())
-        projectFileSet.header_files.add(export_header_file_name)
+        projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
 
         file_system_access.generateFile(include_path + header_file,
             generateHFileCommons(module, export_header_file_name))
-        projectFileSet.header_files.add(header_file)
+        projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, header_file)
 
         // sub-folder "./source"
         file_system_access.generateFile(source_path + cpp_file, generateCppCommons(module, export_header_file_name))

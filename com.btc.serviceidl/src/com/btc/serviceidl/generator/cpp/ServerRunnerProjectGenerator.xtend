@@ -55,7 +55,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         val export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
         file_system_access.generateFile(include_path + export_header_file_name, generateExportHeader())
-        projectFileSet.header_files.add(export_header_file_name)
+        projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
 
         // sub-folder "./source"
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))

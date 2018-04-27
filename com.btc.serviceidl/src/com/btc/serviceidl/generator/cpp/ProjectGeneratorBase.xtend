@@ -46,7 +46,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
         file_system_access.generateFile(projectPath + "include" + Constants.SEPARATOR_FILE + export_header_file_name,
             generateExportHeader())
-        projectFileSet.header_files.add(export_header_file_name)
+        projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
 
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
@@ -88,7 +88,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
             file_system_access.generateFile(include_path + Constants.SEPARATOR_FILE + main_header_file_name,
                 sourceGenerationStrategy.generateProjectHeader(createBasicCppGenerator(localParamBundle),
                     interface_declaration, export_header_file_name))
-            projectFileSet.header_files.add(main_header_file_name)
+            projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, main_header_file_name)
         }
 
         // sub-folder "./source"
