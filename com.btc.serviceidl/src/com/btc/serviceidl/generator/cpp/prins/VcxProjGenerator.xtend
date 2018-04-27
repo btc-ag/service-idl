@@ -15,6 +15,7 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import com.btc.serviceidl.util.Constants
 import java.util.Map
 import java.util.Set
@@ -30,11 +31,7 @@ class VcxProjGenerator
     private val Map<String, Set<VSSolution.ProjectReference>> protobuf_project_references
     private val Set<VSSolution.ProjectReference> project_references
 
-    private val Iterable<String> cpp_files
-    private val Iterable<String> header_files
-    private val Iterable<String> dependency_files
-    private val Iterable<String> protobuf_files
-    private val Iterable<String> odb_files
+    private val ProjectFileSet projectFileSet
 
     def generate(String project_name, String project_path)
     {
@@ -255,46 +252,46 @@ class VcxProjGenerator
                 </PreBuildEvent>
             «ENDIF»
           </ItemDefinitionGroup>
-          «IF !protobuf_files.empty»
+          «IF !projectFileSet.protobuf_files.empty»
               <ItemGroup>
-                «FOR proto_file : protobuf_files»
+                «FOR proto_file : projectFileSet.protobuf_files»
                     <Google_Protocol_Buffers Include="gen\«proto_file».proto" />
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
-          «IF !(cpp_files.empty && dependency_files.empty && protobuf_files.empty && odb_files.empty)»
+          «IF !(projectFileSet.cpp_files.empty && projectFileSet.dependency_files.empty && projectFileSet.protobuf_files.empty && projectFileSet.odb_files.empty)»
               <ItemGroup>
-                «FOR cpp_file : cpp_files»
+                «FOR cpp_file : projectFileSet.cpp_files»
                     <ClCompile Include="source\«cpp_file»" />
                 «ENDFOR»
-                «FOR dependency_file : dependency_files»
+                «FOR dependency_file : projectFileSet.dependency_files»
                     <ClCompile Include="source\«dependency_file»" />
                 «ENDFOR»
-                «FOR pb_cc_file : protobuf_files»
+                «FOR pb_cc_file : projectFileSet.protobuf_files»
                     <ClCompile Include="gen\«pb_cc_file».pb.cc" />
                 «ENDFOR»
-                «FOR cxx_file : odb_files»
+                «FOR cxx_file : projectFileSet.odb_files»
                     <ClCompile Include="odb\«cxx_file»-odb.cxx" />
                     <ClCompile Include="odb\«cxx_file»-odb-mssql.cxx" />
                     <ClCompile Include="odb\«cxx_file»-odb-oracle.cxx" />
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
-          «IF !(header_files.empty && protobuf_files.empty && odb_files.empty)»
+          «IF !(projectFileSet.header_files.empty && projectFileSet.protobuf_files.empty && projectFileSet.odb_files.empty)»
               <ItemGroup>
-                «FOR header_file : header_files»
+                «FOR header_file : projectFileSet.header_files»
                     <ClInclude Include="include\«header_file»" />
                 «ENDFOR»
-                «FOR pb_h_file : protobuf_files»
+                «FOR pb_h_file : projectFileSet.protobuf_files»
                     <ClInclude Include="gen\«pb_h_file.pb.h»" />
                 «ENDFOR»
-                «FOR hxx_file : odb_files»
+                «FOR hxx_file : projectFileSet.odb_files»
                     <ClInclude Include="odb\«hxx_file.hxx»" />
                     <ClInclude Include="odb\«hxx_file»-odb.hxx" />
                     <ClInclude Include="odb\«hxx_file»-odb-mssql.hxx" />
                     <ClInclude Include="odb\«hxx_file»-odb-oracle.hxx" />
                 «ENDFOR»
-                «FOR odb_file : odb_files»
+                «FOR odb_file : projectFileSet.odb_files»
                     <CustomBuild Include="odb\«odb_file.hxx»">
                       <Message>odb «odb_file.hxx»</Message>
                       <Command>"$(ODBExe)" --std c++11 -I $(SolutionDir).. -I $(CabInc) -I $(BoostInc) --multi-database dynamic --database common --database mssql --database oracle --generate-query --generate-prepared --generate-schema --schema-format embedded «ignoreGCCWarnings» --hxx-prologue "#include \"«Constants.FILE_NAME_ODB_TRAITS.hxx»\"" --output-dir .\odb odb\«odb_file.hxx»</Command>
@@ -303,9 +300,9 @@ class VcxProjGenerator
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
-          «IF !odb_files.empty»
+          «IF !projectFileSet.odb_files.empty»
               <ItemGroup>
-                «FOR odb_file : odb_files»
+                «FOR odb_file : projectFileSet.odb_files»
                     <None Include="odb\«odb_file»-odb.ixx" />
                     <None Include="odb\«odb_file»-odb-mssql.ixx" />
                     <None Include="odb\«odb_file»-odb-oracle.ixx" />
@@ -348,83 +345,83 @@ class VcxProjGenerator
             <?xml version="1.0" encoding="utf-8"?>
             <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
               <ItemGroup>
-                 «IF !cpp_files.empty || !protobuf_files.empty»
+                 «IF !projectFileSet.cpp_files.empty || !projectFileSet.protobuf_files.empty»
                      <Filter Include="Source Files">
                        <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
                        <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
                      </Filter>
                  «ENDIF»
-                 «IF !(header_files.empty && odb_files.empty)»
+                 «IF !(projectFileSet.header_files.empty && projectFileSet.odb_files.empty)»
                      <Filter Include="Header Files">
                        <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
                        <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
                      </Filter>
                  «ENDIF»
-                 «IF !dependency_files.empty»
+                 «IF !projectFileSet.dependency_files.empty»
                      <Filter Include="Dependencies">
                        <UniqueIdentifier>{0e47593f-5119-4a3e-a4ac-b88dba5ffd81}</UniqueIdentifier>
                      </Filter>
                  «ENDIF»
-                 «IF !protobuf_files.empty»
+                 «IF !projectFileSet.protobuf_files.empty»
                      <Filter Include="Protobuf Files">
                        <UniqueIdentifier>{6f3dd233-58fc-4467-a4cc-9ba5ef3b5517}</UniqueIdentifier>
                      </Filter>
                  «ENDIF»
-                 «IF !odb_files.empty»
+                 «IF !projectFileSet.odb_files.empty»
                      <Filter Include="ODB Files">
                        <UniqueIdentifier>{31ddc234-0d60-4695-be06-2c69510365ac}</UniqueIdentifier>
                      </Filter>
                  «ENDIF»
               </ItemGroup>
-              «IF !(header_files.empty && protobuf_files.empty)»
+              «IF !(projectFileSet.header_files.empty && projectFileSet.protobuf_files.empty)»
                   <ItemGroup>
-                    «FOR pb_h_file : protobuf_files»
+                    «FOR pb_h_file : projectFileSet.protobuf_files»
                         <ClCompile Include="gen\«pb_h_file.pb.h»">
                           <Filter>Header Files</Filter>
                         </ClCompile>
                     «ENDFOR»
-                    «FOR header_file : header_files»
+                    «FOR header_file : projectFileSet.header_files»
                         <ClInclude Include="include\«header_file»">
                           <Filter>Header Files</Filter>
                         </ClInclude>
                     «ENDFOR»
                   </ItemGroup>
               «ENDIF»
-              «IF !(cpp_files.empty && protobuf_files.empty)»
+              «IF !(projectFileSet.cpp_files.empty && projectFileSet.protobuf_files.empty)»
                   <ItemGroup>
-                    «FOR pb_cc_file : protobuf_files»
+                    «FOR pb_cc_file : projectFileSet.protobuf_files»
                         <ClCompile Include="gen\«pb_cc_file».pb.cc">
                           <Filter>Source Files</Filter>
                         </ClCompile>
                     «ENDFOR»
-                    «FOR cpp_file : cpp_files»
+                    «FOR cpp_file : projectFileSet.cpp_files»
                         <ClCompile Include="source\«cpp_file»">
                           <Filter>Source Files</Filter>
                         </ClCompile>
                     «ENDFOR»
                   </ItemGroup>
               «ENDIF»
-              «IF !dependency_files.empty»
+              «IF !projectFileSet.dependency_files.empty»
                   <ItemGroup>
-                    «FOR dependency_file : dependency_files»
+                    «FOR dependency_file : projectFileSet.dependency_files»
                         <ClCompile Include="source\«dependency_file»">
                           <Filter>Dependencies</Filter>
                         </ClCompile>
                     «ENDFOR»
                   </ItemGroup>
               «ENDIF»
-              «IF !protobuf_files.empty»
+              «IF !projectFileSet.protobuf_files.empty»
                   <ItemGroup>
-                    «FOR proto_file : protobuf_files»
+                    «FOR proto_file : projectFileSet.protobuf_files»
                         <Google_Protocol_Buffers Include="gen\«proto_file».proto">
                           <Filter>Protobuf Files</Filter>
                         </Google_Protocol_Buffers>
                     «ENDFOR»
                   </ItemGroup>
               «ENDIF»
-              «IF !odb_files.empty»
+              «IF !projectFileSet.odb_files.empty»
                   <ItemGroup>
-                    «FOR odb_file : odb_files»
+                    «FOR odb_file : projectFileSet.odb_files»
                         <ClInclude Include="odb\«odb_file.hxx»">
                           <Filter>ODB Files</Filter>
                         </ClInclude>
@@ -440,7 +437,7 @@ class VcxProjGenerator
                     «ENDFOR»
                   </ItemGroup>
                   <ItemGroup>
-                    «FOR odb_file : odb_files»
+                    «FOR odb_file : projectFileSet.odb_files»
                         <ClCompile Include="odb\«odb_file»-odb.cxx">
                           <Filter>ODB Files</Filter>
                         </ClCompile>
@@ -453,7 +450,7 @@ class VcxProjGenerator
                     «ENDFOR»
                   </ItemGroup>
                   <ItemGroup>
-                    «FOR odb_file : odb_files»
+                    «FOR odb_file : projectFileSet.odb_files»
                         <None Include="odb\«odb_file»-odb.ixx">
                           <Filter>ODB Files</Filter>
                         </None>
@@ -466,7 +463,7 @@ class VcxProjGenerator
                     «ENDFOR»
                   </ItemGroup>
                   <ItemGroup>
-                    «FOR odb_file : odb_files»
+                    «FOR odb_file : projectFileSet.odb_files»
                         <CustomBuild Include="odb\«odb_file.hxx»">
                           <Filter>Header Files</Filter>
                         </CustomBuild>

@@ -57,35 +57,35 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
 
         // sub-folder "./include"
         file_system_access.generateFile(include_path + export_header_file_name, generateExportHeader())
-        header_files.add(export_header_file_name)
+        projectFileSet.header_files.add(export_header_file_name)
 
         if (module.containsTypes)
         {
             val codec_header_name = GeneratorUtil.getCodecName(module).h
             file_system_access.generateFile(include_path + codec_header_name, generateHCodec(module))
-            header_files.add(codec_header_name)
+            projectFileSet.header_files.add(codec_header_name)
         }
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
             val codec_header_name = GeneratorUtil.getCodecName(interface_declaration).h
             file_system_access.generateFile(include_path + codec_header_name, generateHCodec(interface_declaration))
-            header_files.add(codec_header_name)
+            projectFileSet.header_files.add(codec_header_name)
         }
 
         // sub-folder "./source"
         file_system_access.generateFile(source_path + dependency_file_name, generateDependencies)
-        dependency_files.add(dependency_file_name)
+        projectFileSet.dependency_files.add(dependency_file_name)
 
         // sub-folder "./gen"
         if (module.containsTypes)
         {
             val file_name = Constants.FILE_NAME_TYPES
-            protobuf_files.add(file_name)
+            projectFileSet.protobuf_files.add(file_name)
         }
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
             val file_name = interface_declaration.name
-            protobuf_files.add(file_name)
+            projectFileSet.protobuf_files.add(file_name)
         }
 
         generateVSProjectFiles(ProjectType.PROTOBUF, projectPath, vsSolution.getVcxprojName(param_bundle))

@@ -80,13 +80,13 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       {
          val basic_file_name = Constants.FILE_NAME_ODB_COMMON
          file_system_access.generateFile(odb_path + basic_file_name.hxx, generateCommonHxx(common_types))
-         odb_files.add(basic_file_name);
+         projectFileSet.odb_files.add(basic_file_name);
       }
       for ( struct : id_structs )
       {
          val basic_file_name = struct.name.toLowerCase
          file_system_access.generateFile(odb_path + basic_file_name.hxx, generateHxx(struct))
-         odb_files.add(basic_file_name);
+         projectFileSet.odb_files.add(basic_file_name);
       }
       file_system_access.generateFile(odb_path + Constants.FILE_NAME_ODB_TRAITS.hxx, generateODBTraits)
       
@@ -95,8 +95,8 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       for ( interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
       {
          val basic_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name)
-         header_files.add(basic_file_name.h)
-         cpp_files.add(basic_file_name.cpp)
+         projectFileSet.header_files.add(basic_file_name.h)
+         projectFileSet.cpp_files.add(basic_file_name.cpp)
       }
       
       generateVSProjectFiles(ProjectType.EXTERNAL_DB_IMPL, projectPath, vsSolution.getVcxprojName(param_bundle))

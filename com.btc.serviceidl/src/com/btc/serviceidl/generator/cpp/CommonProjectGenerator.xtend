@@ -58,18 +58,18 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
 
         // sub-folder "./include"
         file_system_access.generateFile(include_path + export_header_file_name, generateExportHeader())
-        header_files.add(export_header_file_name)
+        projectFileSet.header_files.add(export_header_file_name)
 
         file_system_access.generateFile(include_path + header_file,
             generateHFileCommons(module, export_header_file_name))
-        header_files.add(header_file)
+        projectFileSet.header_files.add(header_file)
 
         // sub-folder "./source"
         file_system_access.generateFile(source_path + cpp_file, generateCppCommons(module, export_header_file_name))
-        cpp_files.add(cpp_file)
+        projectFileSet.cpp_files.add(cpp_file)
 
         file_system_access.generateFile(source_path + dependency_file_name, generateDependencies)
-        dependency_files.add(dependency_file_name)
+        projectFileSet.dependency_files.add(dependency_file_name)
 
         generateVSProjectFiles(ProjectType.COMMON, projectPath, vsSolution.getVcxprojName(param_bundle))
     }
@@ -77,16 +77,16 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
     def private String generateHFileCommons(ModuleDeclaration module, String export_header)
     {
         val basicCppGenerator = createBasicCppGenerator
-        val file_content = new CommonsGenerator(basicCppGenerator.typeResolver, param_bundle).generateHeaderFileBody(module,
-            export_header)
+        val file_content = new CommonsGenerator(basicCppGenerator.typeResolver, param_bundle).
+            generateHeaderFileBody(module, export_header)
         generateHeader(basicCppGenerator, file_content.toString, Optional.of(export_header))
     }
 
     def private String generateCppCommons(ModuleDeclaration module, String export_header)
     {
         val basicCppGenerator = createBasicCppGenerator
-        val file_content = new CommonsGenerator(basicCppGenerator.typeResolver, param_bundle).generateImplFileBody(module,
-            export_header)
+        val file_content = new CommonsGenerator(basicCppGenerator.typeResolver, param_bundle).
+            generateImplFileBody(module, export_header)
         generateSource(basicCppGenerator, file_content.toString, Optional.empty)
     }
 
