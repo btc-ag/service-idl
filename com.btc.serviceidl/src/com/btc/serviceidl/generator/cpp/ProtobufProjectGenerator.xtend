@@ -80,12 +80,12 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
         if (module.containsTypes)
         {
             val file_name = Constants.FILE_NAME_TYPES
-            projectFileSet.protobuf_files.add(file_name)
+            projectFileSet.addToGroup(ProjectFileSet.PROTOBUF_FILE_GROUP, file_name)
         }
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
             val file_name = interface_declaration.name
-            projectFileSet.protobuf_files.add(file_name)
+            projectFileSet.addToGroup(ProjectFileSet.PROTOBUF_FILE_GROUP, file_name)
         }
 
         generateVSProjectFiles(ProjectType.PROTOBUF, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)

@@ -35,12 +35,6 @@ class ProjectFileSet
         files.get(DEPENDENCY_FILE_GROUP)
     }
 
-    @Deprecated
-    def getProtobuf_files()
-    {
-        files.get(PROTOBUF_FILE_GROUP)
-    }
-
     new(Iterable<FileGroup> extraFileGroups)
     {
         this.files = new HashMap<FileGroup, Collection<String>>
