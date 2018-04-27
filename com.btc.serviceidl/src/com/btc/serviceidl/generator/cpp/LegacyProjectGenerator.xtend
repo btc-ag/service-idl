@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
@@ -50,15 +51,20 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
             val file_content = switch (project_type)
             {
                 case SERVICE_API:
-                    generateCppServiceAPI(basicCppGenerator.typeResolver, interface_declaration)
+                    generateCppServiceAPI(basicCppGenerator.typeResolver, basicCppGenerator.paramBundle,
+                        interface_declaration)
                 case DISPATCHER:
-                    generateCppDispatcher(basicCppGenerator.typeResolver, interface_declaration)
+                    generateCppDispatcher(basicCppGenerator.typeResolver, basicCppGenerator.paramBundle,
+                        interface_declaration)
                 case IMPL:
-                    generateCppImpl(basicCppGenerator.typeResolver, interface_declaration)
+                    generateCppImpl(basicCppGenerator.typeResolver, basicCppGenerator.paramBundle,
+                        interface_declaration)
                 case PROXY:
-                    generateCppProxy(basicCppGenerator.typeResolver, interface_declaration)
+                    generateCppProxy(basicCppGenerator.typeResolver, basicCppGenerator.paramBundle,
+                        interface_declaration)
                 case TEST:
-                    generateCppTest(basicCppGenerator.typeResolver, interface_declaration)
+                    generateCppTest(basicCppGenerator.typeResolver, basicCppGenerator.paramBundle,
+                        interface_declaration)
                 // TODO check that this is generated otherwise
 //            case SERVER_RUNNER:
 //                generateCppServerRunner(interface_declaration)
@@ -69,7 +75,7 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
 
             val file_tail = '''
                 «IF project_type == ProjectType.PROXY || project_type == ProjectType.DISPATCHER || project_type == ProjectType.IMPL»
-                    «generateCppReflection(basicCppGenerator.typeResolver, interface_declaration)»
+                    «generateCppReflection(basicCppGenerator.typeResolver, basicCppGenerator.paramBundle, interface_declaration)»
                 «ENDIF»
             '''
 
@@ -83,13 +89,17 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
             val file_content = switch (basicCppGenerator.paramBundle.projectType)
             {
                 case SERVICE_API:
-                    generateInterface(basicCppGenerator.typeResolver, interface_declaration)
+                    generateInterface(basicCppGenerator.typeResolver, basicCppGenerator.paramBundle,
+                        interface_declaration)
                 case DISPATCHER:
-                    generateHFileDispatcher(basicCppGenerator.typeResolver, interface_declaration)
+                    generateHFileDispatcher(basicCppGenerator.typeResolver, basicCppGenerator.paramBundle,
+                        interface_declaration)
                 case IMPL:
-                    generateInterface(basicCppGenerator.typeResolver, interface_declaration)
+                    generateInterface(basicCppGenerator.typeResolver, basicCppGenerator.paramBundle,
+                        interface_declaration)
                 case PROXY:
-                    generateInterface(basicCppGenerator.typeResolver, interface_declaration)
+                    generateInterface(basicCppGenerator.typeResolver, basicCppGenerator.paramBundle,
+                        interface_declaration)
                 default:
                     /* nothing to do for other project types */
                     throw new IllegalArgumentException("Inapplicable project type:" +
@@ -99,40 +109,46 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
             generateHeader(basicCppGenerator, file_content.toString, Optional.of(export_header))
         }
 
-        def private generateCppServiceAPI(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
+        def private generateCppServiceAPI(TypeResolver typeResolver, ParameterBundle paramBundle,
+            InterfaceDeclaration interface_declaration)
         {
-            new ServiceAPIGenerator(typeResolver, typeResolver.param_bundle,
-                interface_declaration.getParent(IDLSpecification)).generateImplFileBody(interface_declaration)
+            new ServiceAPIGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
+                generateImplFileBody(interface_declaration)
         }
 
-        def private generateCppProxy(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
+        def private generateCppProxy(TypeResolver typeResolver, ParameterBundle paramBundle,
+            InterfaceDeclaration interface_declaration)
         {
-            new ProxyGenerator(typeResolver, typeResolver.param_bundle,
-                interface_declaration.getParent(IDLSpecification)).generateImplementationFileBody(interface_declaration)
+            new ProxyGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
+                generateImplementationFileBody(interface_declaration)
         }
 
-        def private generateCppTest(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
+        def private generateCppTest(TypeResolver typeResolver, ParameterBundle paramBundle,
+            InterfaceDeclaration interface_declaration)
         {
-            new TestGenerator(typeResolver, typeResolver.param_bundle,
-                interface_declaration.getParent(IDLSpecification)).generateCppTest(interface_declaration)
+            new TestGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
+                generateCppTest(interface_declaration)
         }
 
-        def private generateCppDispatcher(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
+        def private generateCppDispatcher(TypeResolver typeResolver, ParameterBundle paramBundle,
+            InterfaceDeclaration interface_declaration)
         {
-            new DispatcherGenerator(typeResolver, typeResolver.param_bundle,
-                interface_declaration.getParent(IDLSpecification)).generateImplementationFileBody(interface_declaration)
+            new DispatcherGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
+                generateImplementationFileBody(interface_declaration)
         }
 
-        def private generateHFileDispatcher(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
+        def private generateHFileDispatcher(TypeResolver typeResolver, ParameterBundle paramBundle,
+            InterfaceDeclaration interface_declaration)
         {
-            new DispatcherGenerator(typeResolver, typeResolver.param_bundle,
-                interface_declaration.getParent(IDLSpecification)).generateHeaderFileBody(interface_declaration)
+            new DispatcherGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
+                generateHeaderFileBody(interface_declaration)
         }
 
-        def private generateCppReflection(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
+        def private generateCppReflection(TypeResolver typeResolver, ParameterBundle paramBundle,
+            InterfaceDeclaration interface_declaration)
         {
-            new ReflectionGenerator(typeResolver, typeResolver.param_bundle,
-                interface_declaration.getParent(IDLSpecification)).generateImplFileBody(interface_declaration)
+            new ReflectionGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
+                generateImplFileBody(interface_declaration)
         }
     }
 

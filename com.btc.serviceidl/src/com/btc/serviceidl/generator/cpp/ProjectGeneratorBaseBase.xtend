@@ -76,8 +76,7 @@ class ProjectGeneratorBaseBase
 
     def protected createTypeResolver(ParameterBundle param_bundle)
     {
-        new TypeResolver(qualified_name_provider, param_bundle, vsSolution, project_references, cab_libs,
-            smart_pointer_map)
+        new TypeResolver(qualified_name_provider, vsSolution, project_references, cab_libs, smart_pointer_map)
     }
 
     def protected createBasicCppGenerator()

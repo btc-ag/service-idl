@@ -99,17 +99,19 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
     }
 
     // TODO move this somewhere else
-    def protected static generateCppImpl(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
+    def protected static generateCppImpl(TypeResolver typeResolver, ParameterBundle paramBundle,
+        InterfaceDeclaration interface_declaration)
     {
-        new ImplementationStubGenerator(typeResolver, typeResolver.param_bundle,
-            interface_declaration.getParent(IDLSpecification)).generateCppImpl(interface_declaration)
+        new ImplementationStubGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
+            generateCppImpl(interface_declaration)
     }
 
     // TODO move this somewhere else
-    def protected static generateInterface(TypeResolver typeResolver, InterfaceDeclaration interface_declaration)
+    def protected static generateInterface(TypeResolver typeResolver, ParameterBundle paramBundle,
+        InterfaceDeclaration interface_declaration)
     {
-        new ServiceAPIGenerator(typeResolver, typeResolver.param_bundle,
-            interface_declaration.getParent(IDLSpecification)).generateHeaderFileBody(interface_declaration)
+        new ServiceAPIGenerator(typeResolver, paramBundle, interface_declaration.getParent(IDLSpecification)).
+            generateHeaderFileBody(interface_declaration)
     }
 
 }

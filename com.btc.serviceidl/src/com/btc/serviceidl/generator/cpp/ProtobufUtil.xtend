@@ -61,20 +61,22 @@ class ProtobufUtil
         else
             result += Names.plain(object)
 
-        var header_path = GeneratorUtil.getTransformedModuleName(builder.build, ArtifactNature.CPP, TransformType.FILE_SYSTEM)
+        var header_path = GeneratorUtil.getTransformedModuleName(builder.build, ArtifactNature.CPP,
+            TransformType.FILE_SYSTEM)
         var header_file = GeneratorUtil.getPbFileName(object)
         addTargetInclude("modules/" + header_path + "/gen/" + header_file.pb.h)
         object.resolveProjectFilePath(ProjectType.PROTOBUF)
         return new ResolvedName(result, TransformType.NAMESPACE)
     }
 
-    def static String resolveDecode(extension TypeResolver typeResolver, EObject element, EObject container)
+    def static String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject element,
+        EObject container)
     {
-        resolveDecode(typeResolver, element, container, true)
+        resolveDecode(typeResolver, paramBundle, element, container, true)
     }
 
-    def static String resolveDecode(extension TypeResolver typeResolver, EObject element, EObject container,
-        boolean use_codec_ns)
+    def static String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject element,
+        EObject container, boolean use_codec_ns)
     {
         // handle sequence first, because it may include UUIDs and other types from below
         if (com.btc.serviceidl.util.Util.isSequenceType(element))
@@ -116,11 +118,11 @@ class ProtobufUtil
                 }
             }
 
-            return '''«IF use_codec_ns»«typeResolver.resolveCodecNS(ultimate_type, is_failable, Optional.of(container))»::«ENDIF»«decodeMethodName»«IF is_failable || !com.btc.serviceidl.util.Util.isUUIDType(ultimate_type)»< «protobuf_type», «resolve(ultimate_type)» >«ENDIF»'''
+            return '''«IF use_codec_ns»«typeResolver.resolveCodecNS(paramBundle, ultimate_type, is_failable, Optional.of(container))»::«ENDIF»«decodeMethodName»«IF is_failable || !com.btc.serviceidl.util.Util.isUUIDType(ultimate_type)»< «protobuf_type», «resolve(ultimate_type)» >«ENDIF»'''
         }
 
         if (com.btc.serviceidl.util.Util.isUUIDType(element))
-            return '''«typeResolver.resolveCodecNS(element)»::DecodeUUID'''
+            return '''«typeResolver.resolveCodecNS(paramBundle, element)»::DecodeUUID'''
 
         if (com.btc.serviceidl.util.Util.isByte(element))
             return '''static_cast<«resolveSymbol("int8_t")»>'''
@@ -131,22 +133,22 @@ class ProtobufUtil
         if (com.btc.serviceidl.util.Util.isChar(element))
             return '''static_cast<char>'''
 
-        return '''«typeResolver.resolveCodecNS(element)»::Decode'''
+        return '''«typeResolver.resolveCodecNS(paramBundle, element)»::Decode'''
     }
 
-    def static String resolveCodecNS(extension TypeResolver typeResolver, EObject object)
+    def static String resolveCodecNS(TypeResolver typeResolver, ParameterBundle paramBundle, EObject object)
     {
-        resolveCodecNS(typeResolver, object, false, Optional.empty)
+        resolveCodecNS(typeResolver, paramBundle, object, false, Optional.empty)
     }
 
-    def static String resolveCodecNS(extension TypeResolver typeResolver, EObject object, boolean is_failable,
-        Optional<EObject> container)
+    def static String resolveCodecNS(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject object,
+        boolean is_failable, Optional<EObject> container)
     {
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
 
         val temp_param = new ParameterBundle.Builder
         temp_param.reset(
-            if (is_failable) param_bundle.moduleStack else com.btc.serviceidl.util.Util.getModuleStack(ultimate_type)) // failable wrappers always local!
+            if (is_failable) paramBundle.moduleStack else com.btc.serviceidl.util.Util.getModuleStack(ultimate_type)) // failable wrappers always local!
         temp_param.reset(ProjectType.PROTOBUF)
 
         val codec_name = if (is_failable)
@@ -154,7 +156,8 @@ class ProtobufUtil
             else
                 GeneratorUtil.getCodecName(ultimate_type)
 
-        var header_path = GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.CPP, TransformType.FILE_SYSTEM)
+        var header_path = GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.CPP,
+            TransformType.FILE_SYSTEM)
         addTargetInclude("modules/" + header_path + "/include/" + codec_name.h)
         resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
