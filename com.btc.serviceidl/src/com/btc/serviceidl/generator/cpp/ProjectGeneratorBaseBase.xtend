@@ -15,10 +15,12 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.prins.OdbConstants
 import com.btc.serviceidl.generator.cpp.prins.VSProjectFileGenerator
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
+import java.util.Arrays
 import java.util.Collection
 import java.util.HashSet
 import java.util.Map
@@ -52,7 +54,7 @@ class ProjectGeneratorBaseBase
     // per-project global variables
     private val cab_libs = new HashSet<String>
     private val project_references = new HashSet<IProjectReference>
-    private val projectFileSet = new ProjectFileSet
+    private val projectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP)) // TODO inject the file groups
 
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
