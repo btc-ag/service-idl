@@ -19,6 +19,7 @@ import com.btc.serviceidl.util.Constants
 import java.util.HashMap
 import java.util.Map
 import java.util.Set
+import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 
@@ -36,7 +37,7 @@ class VSProjectFileGenerator
     val ProjectFileSet projectFileSet
 
     val ProjectType project_type
-    val String project_path
+    val IPath project_path
     val String project_name
 
     def generate()

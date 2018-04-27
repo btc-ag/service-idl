@@ -33,7 +33,7 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 @Accessors(PROTECTED_GETTER)
 class CommonProjectGenerator extends ProjectGeneratorBaseBase
 {
-    
+
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
         Map<String, Set<IProjectReference>> protobuf_project_references,
@@ -47,8 +47,8 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
     def generate()
     {
         // paths
-        val include_path = projectPath + "include" + Constants.SEPARATOR_FILE
-        val source_path = projectPath + "source" + Constants.SEPARATOR_FILE
+        val include_path = projectPath.append("include")
+        val source_path = projectPath.append("source")
 
         // file names
         val export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
@@ -58,18 +58,19 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
 
         // sub-folder "./include"
-        file_system_access.generateFile(include_path + export_header_file_name, generateExportHeader())
+        file_system_access.generateFile(include_path.append(export_header_file_name).toString, generateExportHeader())
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
 
-        file_system_access.generateFile(include_path + header_file,
+        file_system_access.generateFile(include_path.append(header_file).toString,
             generateHFileCommons(module, export_header_file_name))
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, header_file)
 
         // sub-folder "./source"
-        file_system_access.generateFile(source_path + cpp_file, generateCppCommons(module, export_header_file_name))
+        file_system_access.generateFile(source_path.append(cpp_file).toString,
+            generateCppCommons(module, export_header_file_name))
         projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cpp_file)
 
-        file_system_access.generateFile(source_path + dependency_file_name, generateDependencies)
+        file_system_access.generateFile(source_path.append(dependency_file_name).toString, generateDependencies)
         projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
 
         generateVSProjectFiles(ProjectType.COMMON, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)

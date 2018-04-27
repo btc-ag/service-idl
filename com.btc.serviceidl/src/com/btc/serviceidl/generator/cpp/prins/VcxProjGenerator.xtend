@@ -19,6 +19,7 @@ import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import com.btc.serviceidl.util.Constants
 import java.util.Map
 import java.util.Set
+import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
@@ -33,7 +34,7 @@ class VcxProjGenerator
 
     private val ProjectFileSet projectFileSet
 
-    def generate(String project_name, String project_path)
+    def generate(String project_name, IPath project_path)
     {
         val project_export_macro = GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER).toUpperCase

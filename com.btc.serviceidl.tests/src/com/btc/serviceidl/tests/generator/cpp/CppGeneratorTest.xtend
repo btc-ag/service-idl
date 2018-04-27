@@ -36,7 +36,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
         val fileCount = 6
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
         val directory = IFileSystemAccess::DEFAULT_OUTPUT + "cpp/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
-        val contents = ImmutableMap.of(directory + "include//IKeyValueStore.h", '''
+        val contents = ImmutableMap.of(directory + "include/IKeyValueStore.h", '''
             #pragma once
             #include "modules/Commons/include/BeginPrinsModulesInclude.h"
             

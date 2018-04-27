@@ -36,6 +36,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import org.eclipse.core.runtime.Path
 
 class GeneratorUtil
 {
@@ -211,4 +212,10 @@ class GeneratorUtil
         }
         return paths
     }
+
+    def static asPath(ParameterBundle bundle, ArtifactNature nature)
+    {
+        new Path(getTransformedModuleName(bundle, nature, TransformType.FILE_SYSTEM))
+    }
+
 }

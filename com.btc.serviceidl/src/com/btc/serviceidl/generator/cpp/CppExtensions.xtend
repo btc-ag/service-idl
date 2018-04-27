@@ -36,6 +36,7 @@ import java.util.List
 import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.util.Extensions.*
+import org.eclipse.core.runtime.Path
 
 class CppExtensions
 {
@@ -59,10 +60,11 @@ class CppExtensions
         param_bundle.reset(module_stack)
 
         val include_folder = if (project_type == ProjectType.PROTOBUF) "gen" else "include"
-        val file_extension = if (project_type == ProjectType.PROTOBUF) ".pb.h" else ".h"
+        val file_extension = if (project_type == ProjectType.PROTOBUF) "pb.h" else "h"
 
-        "modules/" + GeneratorUtil.getTransformedModuleName(param_bundle.with(project_type).build, ArtifactNature.CPP,
-            TransformType.FILE_SYSTEM) + "/" + include_folder + "/" + file_name + file_extension
+        // TODO change return type to IPath
+        new Path("modules").append(GeneratorUtil.asPath(param_bundle.with(project_type).build, ArtifactNature.CPP)).
+            append(include_folder).append(file_name).addFileExtension(file_extension).toString
     }
 
     /**
@@ -240,12 +242,15 @@ class CppExtensions
 
     def static private boolean declaredInternally(EObject element, EObject type)
     {
-        return (!(type instanceof PrimitiveType) && com.btc.serviceidl.util.Util.getScopeDeterminant(type) == com.btc.serviceidl.util.Util.getScopeDeterminant(element))
+        return (!(type instanceof PrimitiveType) && com.btc.serviceidl.util.Util.getScopeDeterminant(type) ==
+            com.btc.serviceidl.util.Util.getScopeDeterminant(element))
     }
 
     def private static dispatch void getUnderlyingTypes(StructDeclaration struct, HashSet<EObject> all_types)
     {
-        val contained_types = struct.members.filter[com.btc.serviceidl.util.Util.getUltimateType(type) instanceof StructDeclaration].map [
+        val contained_types = struct.members.filter [
+            com.btc.serviceidl.util.Util.getUltimateType(type) instanceof StructDeclaration
+        ].map [
             com.btc.serviceidl.util.Util.getUltimateType(type) as StructDeclaration
         ]
 
@@ -260,7 +265,9 @@ class CppExtensions
 
     def private static dispatch void getUnderlyingTypes(ExceptionDeclaration element, HashSet<EObject> all_types)
     {
-        val contained_types = element.members.filter[com.btc.serviceidl.util.Util.getUltimateType(type) instanceof ExceptionDeclaration].map [
+        val contained_types = element.members.filter [
+            com.btc.serviceidl.util.Util.getUltimateType(type) instanceof ExceptionDeclaration
+        ].map [
             com.btc.serviceidl.util.Util.getUltimateType(type) as ExceptionDeclaration
         ]
 

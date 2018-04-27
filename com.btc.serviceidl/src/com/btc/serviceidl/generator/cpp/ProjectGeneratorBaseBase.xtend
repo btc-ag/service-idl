@@ -19,13 +19,14 @@ import com.btc.serviceidl.generator.cpp.prins.OdbConstants
 import com.btc.serviceidl.generator.cpp.prins.VSProjectFileGenerator
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
-import com.btc.serviceidl.util.Constants
 import java.util.Arrays
 import java.util.Collection
 import java.util.HashSet
 import java.util.Map
 import java.util.Optional
 import java.util.Set
+import org.eclipse.core.runtime.IPath
+import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -97,11 +98,11 @@ class ProjectGeneratorBaseBase
         new BasicCppGenerator(createTypeResolver(param_bundle), param_bundle)
     }
 
-    def protected void generateVSProjectFiles(ProjectType project_type, String project_path, String project_name,
+    def protected void generateVSProjectFiles(ProjectType project_type, IPath projectPath, String project_name,
         ProjectFileSet projectFileSet)
     {
         new VSProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
-            project_references, projectFileSet.unmodifiableView, project_type, project_path, project_name).generate()
+            project_references, projectFileSet.unmodifiableView, project_type, projectPath, project_name).generate()
     }
 
     def protected generateDependencies()
@@ -143,11 +144,10 @@ class ProjectGeneratorBaseBase
         '''
     }
 
-    def protected getProjectPath()
+    def protected IPath getProjectPath()
     {
-        ArtifactNature.CPP.label + Constants.SEPARATOR_FILE +
-            GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM) +
-            Constants.SEPARATOR_FILE
+        new Path(ArtifactNature.CPP.label).append(
+            GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
     }
 
 }
