@@ -35,7 +35,7 @@ class ReferenceResolver
                 setPath('''$(SolutionDir)\Commons\Utilities\BTC.PRINS.Commons.Utilities''').build
     }
 
-    static val MODULES_HEADER_PATH_PREFIX = "modules"
+    public static val MODULES_HEADER_PATH_PREFIX = "modules"
     static val MODULES_HEADER_INCLUDE_SEGMENT = "include"
     static val MODULES_MODULE_NAME_PREFIX = "BTC.PRINS."
 

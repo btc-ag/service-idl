@@ -21,6 +21,7 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TypeWrapper
+import com.btc.serviceidl.generator.cpp.prins.ReferenceResolver
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
@@ -61,7 +62,7 @@ class CppExtensions
         String file_name)
     {
         // TODO this is PRINS-specific, at least the "modules"-prefix
-        new Path("modules").append(
+        new Path(ReferenceResolver.MODULES_HEADER_PATH_PREFIX).append(
             GeneratorUtil.asPath(ParameterBundle.createBuilder(module_stack).with(project_type).build,
                 ArtifactNature.CPP)).append(if (project_type == ProjectType.PROTOBUF) "gen" else "include").append(
             file_name).addFileExtension(if (project_type == ProjectType.PROTOBUF) "pb.h" else "h")
