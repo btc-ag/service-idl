@@ -34,6 +34,8 @@ class OdbGenerator
 
     def generateODBTraitsBody()
     {
+        val guidResolved = resolveSymbol(PrinsTypeNames.GUID)
+        
         '''
             namespace odb
             {
@@ -41,17 +43,17 @@ class OdbGenerator
                namespace mssql
                {
                   template<>
-                  struct default_type_traits<«resolveSymbol("BTC::PRINS::Commons::GUID")»>
+                  struct default_type_traits<«guidResolved»>
                   {
                      static const database_type_id db_type_id = «resolveSymbol("id_uniqueidentifier")»;
                   };
             
                   template<>
-                  class value_traits<BTC::PRINS::Commons::GUID, id_uniqueidentifier>
+                  class value_traits<«guidResolved», id_uniqueidentifier>
                   {
                   public:
-                     typedef BTC::PRINS::Commons::GUID   value_type;
-                     typedef BTC::PRINS::Commons::GUID   query_type;
+                     typedef «guidResolved»   value_type;
+                     typedef «guidResolved»   query_type;
                      typedef uniqueidentifier            image_type;
             
                      static void set_value(value_type& val, const image_type& img, bool is_null)
@@ -62,10 +64,10 @@ class OdbGenerator
                            «resolveSymbol("std::array")»<char, 16> db_data;
                            «resolveSymbol("std::memcpy")»(db_data.data(), &img, 16);
                            «resolveSymbol("BTC::PRINS::Commons::Utilities::GUIDHelper")»::guidEncode(db_data.data(), uuid);
-                           val = BTC::PRINS::Commons::GUID::FromStringSafe("{" + uuid.ToString() + "}");
+                           val = «guidResolved»::FromStringSafe("{" + uuid.ToString() + "}");
                         }
                         else
-                           val = BTC::PRINS::Commons::GUID::nullGuid;
+                           val = «guidResolved»::nullGuid;
                      }
             
                      static void set_image(image_type& img, bool& is_null, const value_type& val)
@@ -83,17 +85,17 @@ class OdbGenerator
                namespace oracle
                {
                   template<>
-                  struct default_type_traits<«resolveSymbol("BTC::PRINS::Commons::GUID")»>
+                  struct default_type_traits<«resolveSymbol(PrinsTypeNames.GUID)»>
                   {
                      static const database_type_id db_type_id = «resolveSymbol("id_raw")»;
                   };
             
                   template<>
-                  class value_traits<BTC::PRINS::Commons::GUID, id_raw>
+                  class value_traits<«guidResolved», id_raw>
                   {
                   public:
-                     typedef BTC::PRINS::Commons::GUID   value_type;
-                     typedef BTC::PRINS::Commons::GUID   query_type;
+                     typedef «guidResolved»   value_type;
+                     typedef «guidResolved»   query_type;
                      typedef char                        image_type[16];
             
                      static void set_value(value_type& val, const image_type img, std::size_t n, bool is_null)
@@ -103,7 +105,7 @@ class OdbGenerator
                         db_data.reserve(n);
                         «resolveSymbol("std::memcpy")»(db_data.data(), img, n);
                         «resolveSymbol("BTC::PRINS::Commons::Utilities::GUIDHelper")»::guidEncode(db_data.data(), uuid);
-                        val = BTC::PRINS::Commons::GUID::FromStringSafe("{" + uuid.ToString() + "}");
+                        val = «guidResolved»::FromStringSafe("{" + uuid.ToString() + "}");
                      }
             
                      static void set_image(image_type img, std::size_t c, std::size_t& n, bool& is_null, const value_type& val)
@@ -146,7 +148,7 @@ class OdbGenerator
         else if (element.floatingPointType !== null)
             return element.floatingPointType
         else if (element.uuidType !== null)
-            return resolveSymbol("BTC::PRINS::Commons::GUID")
+            return resolveSymbol(PrinsTypeNames.GUID)
         else if (element.booleanType !== null)
             return "bool"
         else if (element.charType !== null)

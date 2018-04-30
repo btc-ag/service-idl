@@ -27,7 +27,7 @@ class PrinsHeaderResolver
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
     private static val modules_header_mapper = #{
-        "BTC::PRINS::Commons::GUID" -> "modules/Commons/include/GUID.h",
+        PrinsTypeNames.GUID -> "modules/Commons/include/GUID.h",
         "BTC::PRINS::Commons::Utilities::GUIDHelper" -> "modules/Commons/Utilities/include/GUIDHelper.h"
     }
 
