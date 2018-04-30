@@ -248,10 +248,7 @@ class BasicCppGenerator
     {
         val inner_type = '''«IF item.failable»«
 
-resolveSymbol
-("BTC::Commons::CoreExtras::FailableHandle")»< «ENDIF»«toText
-(item.type, item)»«IF item
-.failable» >«ENDIF»'''
+        resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»< «ENDIF»«toText(item.type, item)»«IF item.failable» >«ENDIF»'''
 
         if (item.isOutputParameter)
             '''«resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «inner_type» >::Type'''
