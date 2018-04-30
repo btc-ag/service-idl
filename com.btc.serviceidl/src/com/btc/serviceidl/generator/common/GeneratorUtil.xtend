@@ -15,82 +15,77 @@
  */
 package com.btc.serviceidl.generator.common
 
-import com.btc.serviceidl.util.Constants
-import java.util.regex.Pattern
-import com.btc.serviceidl.idl.ModuleDeclaration
+import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AliasDeclaration
+import com.btc.serviceidl.idl.EnumDeclaration
+import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
-import org.eclipse.emf.ecore.EObject
-import java.util.HashSet
 import com.btc.serviceidl.idl.InterfaceDeclaration
-import org.eclipse.xtext.naming.IQualifiedNameProvider
+import com.btc.serviceidl.idl.ModuleDeclaration
+import com.btc.serviceidl.idl.ParameterElement
+import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.idl.SequenceDeclaration
+import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
+import java.util.Arrays
+import java.util.HashSet
+import java.util.regex.Pattern
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtext.naming.IQualifiedNameProvider
+
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.AliasDeclaration
-import com.btc.serviceidl.idl.StructDeclaration
-import java.util.Collection
-import com.btc.serviceidl.idl.ExceptionDeclaration
-import com.btc.serviceidl.idl.EnumDeclaration
-import com.btc.serviceidl.idl.SequenceDeclaration
-import com.btc.serviceidl.idl.AbstractType
-import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.ParameterElement
+import org.eclipse.core.runtime.Path
 
 class GeneratorUtil
 {
-    def public static String transform(ParameterBundle param_bundle)
+    def public static String getTransformedModuleName(ParameterBundle parameterBundle, ArtifactNature artifactNature,
+        TransformType transformType)
     {
-        var result = ""
-        for (module : param_bundle.module_stack)
-        {
-            if (!module.virtual)
-            {
-                result += getEffectiveModuleName(module, param_bundle) +
-                    (if (module != param_bundle.module_stack.last) param_bundle.transform_type.getSeparator else "")
-            }
+        val parts = parameterBundle.getModuleStack.map [ module |
+            if (!module.virtual || transformType.useVirtual || artifactNature == ArtifactNature.JAVA)
+                getEffectiveModuleName(module, artifactNature)
             else
-            {
-                if (param_bundle.transform_type.useVirtual || param_bundle.artifact_nature == ArtifactNature.JAVA)
-                    result += getEffectiveModuleName(module, param_bundle) +
-                        if (module != param_bundle.module_stack.last)
-                            param_bundle.transform_type.getSeparator
-                        else
-                            ""
-            }
-        }
-        if (param_bundle.project_type.present)
-            result += param_bundle.transform_type.getSeparator + param_bundle.project_type.get.getName
-        if (param_bundle.artifact_nature == ArtifactNature.JAVA)
-            result = result.toLowerCase
-        return result
+                Arrays.asList()
+        ].flatten + if (parameterBundle.projectType !== null)
+            Arrays.asList(parameterBundle.projectType.getName)
+        else
+            Arrays.asList()
+        val result = parts.join(transformType.separator)
+
+        if (artifactNature == ArtifactNature.JAVA)
+            result.toLowerCase
+        else
+            result
     }
 
-    def public static String getEffectiveModuleName(ModuleDeclaration module, ParameterBundle param_bundle)
+    def private static Iterable<String> getEffectiveModuleName(ModuleDeclaration module, ArtifactNature artifactNature)
     {
-        val artifact_nature = param_bundle.artifact_nature
-
-        if (artifact_nature == ArtifactNature.DOTNET)
+        if (artifactNature == ArtifactNature.DOTNET && module.main)
         {
-            if (module.main) return module.name + ".NET" else module.name
+            // TODO shouldn't this return two parts instead of a single one containg "."?
+            if (module.main) Arrays.asList(module.name + ".NET") else Arrays.asList(module.name)
         }
-        else if (artifact_nature == ArtifactNature.JAVA)
+        else if (artifactNature == ArtifactNature.JAVA)
         {
             if (module.eContainer === null || (module.eContainer instanceof IDLSpecification))
-                return "com" + param_bundle.transform_type.separator + module.name
+                Arrays.asList("com", module.name)
             else
-                return module.name
+                Arrays.asList(module.name)
         }
-        return module.name
+        else
+            Arrays.asList(module.name)
     }
 
-    def public static String switchPackageSeperator(String name, TransformType transform_type)
+    def public static String switchPackageSeperator(String name, TransformType targetTransformType)
     {
-        return name.replaceAll(Pattern.quote(Constants.SEPARATOR_PACKAGE), transform_type.getSeparator)
+        return name.replaceAll(Pattern.quote(Constants.SEPARATOR_PACKAGE), targetTransformType.getSeparator)
     }
 
-    def static String switchSeparator(String name, TransformType source, TransformType target)
+    def static String switchSeparator(String name, TransformType sourceTransformType, TransformType targetTransformType)
     {
-        name.replaceAll(Pattern.quote(source.separator), target.separator)
+        name.replaceAll(Pattern.quote(sourceTransformType.separator), targetTransformType.separator)
     }
 
     def static Iterable<EObject> getFailableTypes(EObject container)
@@ -100,14 +95,8 @@ class GeneratorUtil
         // interfaces: special handling due to inheritance
         if (container instanceof InterfaceDeclaration)
         {
-            // function parameters
-            val parameter_types = container.functions.map[parameters].flatten.filter[isFailable(paramType)].toSet
-
-            // function return types
-            val return_types = container.functions.map[returnedType].filter[isFailable].toSet
-
-            objects.addAll(parameter_types)
-            objects.addAll(return_types)
+            objects.addAll(container.functions.map[parameters].flatten.filter[isFailable(paramType)])
+            objects.addAll(container.functions.map[returnedType].filter[isFailable])
         }
 
         val contents = container.eAllContents.toList
@@ -126,42 +115,38 @@ class GeneratorUtil
         return objects.map[getUltimateType].map[UniqueWrapper.from(it)].toSet.map[type].sortBy[e|Names.plain(e)]
     }
 
-    def static String asFailable(EObject element, EObject container, IQualifiedNameProvider name_provider)
+    static val FAILABLE_SEPARATOR = "_"
+
+    def static String asFailable(EObject element, EObject container, IQualifiedNameProvider qualifiedNameProvider)
     {
-        val type = Util.getUltimateType(element)
-        var String type_name
+        Arrays.asList(Arrays.asList("Failable"),
+            qualifiedNameProvider.getFullyQualifiedName(container).segments, getTypeName(Util.getUltimateType(element),
+                qualifiedNameProvider).map[toFirstUpper]).flatten.join(FAILABLE_SEPARATOR)
+    }
+
+    private def static Iterable<String> getTypeName(EObject type, IQualifiedNameProvider qualifiedNameProvider)
+    {
         if (type.isPrimitive)
-        {
-            type_name = Names.plain(type)
-        }
+            Arrays.asList(Names.plain(type))
         else
-        {
-            type_name = name_provider.getFullyQualifiedName(type).segments.join("_")
-        }
-        val container_fqn = name_provider.getFullyQualifiedName(container)
-        return '''Failable_«container_fqn.segments.join("_")»_«type_name.toFirstUpper»'''
+            qualifiedNameProvider.getFullyQualifiedName(type).segments
     }
 
-    def static Collection<EObject> getEncodableTypes(EObject owner)
+    def static Iterable<EObject> getEncodableTypes(EObject owner)
     {
-        val nested_types = new HashSet<EObject>
-        nested_types.addAll(owner.eContents.filter(StructDeclaration))
-        nested_types.addAll(owner.eContents.filter(ExceptionDeclaration))
-        nested_types.addAll(owner.eContents.filter(EnumDeclaration))
-        return nested_types.sortBy[e|Names.plain(e)]
+        val nestedTypes = new HashSet<EObject>
+        nestedTypes.addAll(owner.eContents.filter(StructDeclaration))
+        nestedTypes.addAll(owner.eContents.filter(ExceptionDeclaration))
+        nestedTypes.addAll(owner.eContents.filter(EnumDeclaration))
+        return nestedTypes.sortBy[e|Names.plain(e)]
     }
 
-    def public static String getClassName(ParameterBundle param_bundle, String basic_name)
+    def static String getClassName(ArtifactNature artifactNature, ProjectType projectType, String basicName)
     {
-        return getClassName(param_bundle, param_bundle.project_type.get, basic_name)
+        projectType.getClassName(artifactNature, basicName)
     }
 
-    def static String getClassName(ParameterBundle param_bundle, ProjectType project_type, String basic_name)
-    {
-        return project_type.getClassName(param_bundle.artifact_nature, basic_name)
-    }
-
-    def static boolean useCodec(EObject element, ArtifactNature artifact_nature)
+    def static boolean useCodec(EObject element, ArtifactNature artifactNature)
     {
         if (element instanceof PrimitiveType)
         {
@@ -170,27 +155,27 @@ class GeneratorUtil
         }
         else if (element instanceof ParameterElement)
         {
-            return useCodec(element.paramType, artifact_nature)
+            return useCodec(element.paramType, artifactNature)
         }
         else if (element instanceof AliasDeclaration)
         {
-            return useCodec(element.type, artifact_nature)
+            return useCodec(element.type, artifactNature)
         }
         else if (element instanceof SequenceDeclaration)
         {
-            if (artifact_nature == ArtifactNature.DOTNET || artifact_nature == ArtifactNature.JAVA)
-                return useCodec(element.type, artifact_nature) // check type of containing elements
+            if (artifactNature == ArtifactNature.DOTNET || artifactNature == ArtifactNature.JAVA)
+                return useCodec(element.type, artifactNature) // check type of containing elements
             else
                 return true
         }
         else if (element instanceof AbstractType)
         {
             if (element.primitiveType !== null)
-                return useCodec(element.primitiveType, artifact_nature)
+                return useCodec(element.primitiveType, artifactNature)
             else if (element.collectionType !== null)
-                return useCodec(element.collectionType, artifact_nature)
+                return useCodec(element.collectionType, artifactNature)
             else if (element.referenceType !== null)
-                return useCodec(element.referenceType, artifact_nature)
+                return useCodec(element.referenceType, artifactNature)
         }
         return true;
     }
@@ -217,14 +202,20 @@ class GeneratorUtil
      * \details If at least one relative parent path is there, the string ALWAYS
      * ends with the path separator!
      */
-    def public static String getRelativePathsUpwards(ParameterBundle param_bundle)
+    def public static String getRelativePathsUpwards(Iterable<ModuleDeclaration> moduleStack)
     {
         var paths = ""
-        for (module : param_bundle.module_stack)
+        for (module : moduleStack)
         {
             if (!module.virtual) // = non-virtual
                 paths += ".." + TransformType.FILE_SYSTEM.separator
         }
         return paths
     }
+
+    def static asPath(ParameterBundle bundle, ArtifactNature nature)
+    {
+        new Path(getTransformedModuleName(bundle, nature, TransformType.FILE_SYSTEM))
+    }
+
 }

@@ -15,14 +15,13 @@
  */
 package com.btc.serviceidl.generator.cpp
 
-import com.btc.serviceidl.util.Constants
-import java.util.Collection
 import java.util.HashSet
+import org.eclipse.core.runtime.IPath
 
 class LibResolver
 {
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val cab_lib_mapper = #{
+    static val cab_lib_mapper = #{
         "Commons/Core" -> "BTC.CAB.Commons.Core.lib",
         "Commons/CoreExtras" -> "BTC.CAB.Commons.CoreExtras.lib",
         "Commons/CoreYacl" -> "BTC.CAB.Commons.CoreYacl.lib",
@@ -46,7 +45,7 @@ class LibResolver
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val cab_additional_dependencies = #{
+    static val cab_additional_dependencies = #{
         "Performance/CommonsTestSupport/include/TestLoggerFactory.h" -> #["BTC.CAB.Logging.API.lib"],
         "ServiceComm/API/include/IClientEndpoint.h" ->
             #["BTC.CAB.ServiceComm.ProtobufUtil.lib", "BTC.CAB.ServiceComm.Commons.lib",
@@ -71,17 +70,14 @@ class LibResolver
                 "BTC.CAB.ServiceComm.SQ.Default.lib", "BTC.CAB.ServiceComm.SQ.ImportAPI.lib"]
     }
 
-    def static Collection<String> getCABLibs(String header_file)
+    def static Iterable<String> getCABLibs(IPath header_file)
     {
         val result = new HashSet<String>
 
-        // remove last component (which is the *.h file name)
-        var key = header_file.substring(0, header_file.lastIndexOf(Constants.SEPARATOR_FILE))
+        // remove last 2 component (which are the "include" directory name and the *.h file name)
+        var key = header_file.removeLastSegments(2)
 
-        // remove "/include" part
-        key = key.substring(0, key.lastIndexOf(Constants.SEPARATOR_FILE))
-
-        if (cab_lib_mapper.containsKey(key))
+        if (cab_lib_mapper.containsKey(key.toString))
         {
             result.add(cab_lib_mapper.get(key))
 

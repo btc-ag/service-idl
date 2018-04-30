@@ -20,27 +20,27 @@ import java.util.HashSet
 class NuGetPackageResolver
 {
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val version_mapper = #{
+    static val version_mapper = #{
         "CommandLineParser" -> "1.9.71",
         "Google.ProtocolBuffers" -> "2.4.1.555"
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val package_mapper = #{
+    static val package_mapper = #{
         "CommandLine" -> "CommandLineParser",
         "Google.ProtocolBuffers" -> "Google.ProtocolBuffers",
         "Google.ProtocolBuffers.Serialization" -> "Google.ProtocolBuffers"
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val assembly_mapper = #{
+    static val assembly_mapper = #{
         "CommandLine" -> '''CommandLineParser.1.9.71\lib\net40\CommandLine.dll''',
         "Google.ProtocolBuffers" -> '''Google.ProtocolBuffers.2.4.1.555\lib\net40\Google.ProtocolBuffers.dll''',
         "Google.ProtocolBuffers.Serialization" ->
             '''Google.ProtocolBuffers.2.4.1.555\lib\net40\Google.ProtocolBuffers.Serialization.dll'''
     }
 
-    private val nuget_packages = new HashSet<NuGetPackage>
+    val nuget_packages = new HashSet<NuGetPackage>
 
     def private static NuGetPackage resolvePackageInternal(String name)
     {

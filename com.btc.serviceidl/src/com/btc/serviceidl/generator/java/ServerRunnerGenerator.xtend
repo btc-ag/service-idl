@@ -17,7 +17,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 @Accessors(NONE)
 class ServerRunnerGenerator
 {
-    private val BasicJavaSourceGenerator basicJavaSourceGenerator
+    val BasicJavaSourceGenerator basicJavaSourceGenerator
 
     def private getTypeResolver()
     {

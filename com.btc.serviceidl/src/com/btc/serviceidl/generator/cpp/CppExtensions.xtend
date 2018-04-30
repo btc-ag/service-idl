@@ -16,55 +16,56 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.common.TypeWrapper
+import com.btc.serviceidl.generator.cpp.prins.ReferenceResolver
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.StructDeclaration
-import com.btc.serviceidl.util.Util
 import java.util.ArrayList
-import java.util.Collection
+import java.util.Arrays
 import java.util.HashSet
 import java.util.LinkedHashSet
 import java.util.List
+import org.eclipse.core.runtime.IPath
+import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.util.Extensions.*
-import com.btc.serviceidl.generator.common.GeneratorUtil
+import static extension com.btc.serviceidl.util.Util.*
 
 class CppExtensions
 {
-    private static val CPP_NATURE = ArtifactNature.CPP
-
-    def static String getIncludeFilePath(EObject referenced_object, ProjectType project_type)
+    def static IPath getIncludeFilePath(EObject referenced_object, ProjectType project_type)
     {
         val scope_determinant = if (referenced_object instanceof InterfaceDeclaration)
                 referenced_object
             else
-                Util.getScopeDeterminant(referenced_object)
-        val is_common = (scope_determinant instanceof InterfaceDeclaration)
+                referenced_object.scopeDeterminant
 
-        val file_name = if (is_common)
-                project_type.getClassName(CPP_NATURE, Names.plain(scope_determinant))
+        val file_name = if (scope_determinant instanceof InterfaceDeclaration)
+                project_type.getClassName(ArtifactNature.CPP, Names.plain(scope_determinant))
             else
                 "Types"
-        val module_stack = Util.getModuleStack(referenced_object)
 
-        val param_bundle = new ParameterBundle.Builder()
-        param_bundle.reset(CPP_NATURE)
-        param_bundle.reset(module_stack)
+        getIncludeFilePath(referenced_object.moduleStack, project_type, file_name)
+    }
 
-        val include_folder = if (project_type == ProjectType.PROTOBUF) "gen" else "include"
-        val file_extension = if (project_type == ProjectType.PROTOBUF) ".pb.h" else ".h"
-
-        "modules/" + GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).with(project_type).build) +
-            "/" + include_folder + "/" + file_name + file_extension
+    def static IPath getIncludeFilePath(Iterable<ModuleDeclaration> module_stack, ProjectType project_type,
+        String file_name)
+    {
+        // TODO this is PRINS-specific, at least the "modules"-prefix
+        new Path(ReferenceResolver.MODULES_HEADER_PATH_PREFIX).append(
+            GeneratorUtil.asPath(ParameterBundle.createBuilder(module_stack).with(project_type).build,
+                ArtifactNature.CPP)).append(if (project_type == ProjectType.PROTOBUF) "gen" else "include").append(
+            file_name).addFileExtension(if (project_type == ProjectType.PROTOBUF) "pb.h" else "h")
     }
 
     /**
@@ -73,9 +74,10 @@ class CppExtensions
      * forwardDeclarations collection, so that they can be handled in a specific
      * way.
      */
-    def static Collection<TypeWrapper> getTopologicallySortedTypes(EObject owner)
+    def static Iterable<TypeWrapper> getTopologicallySortedTypes(EObject owner)
     {
         // aggregate enums, typedefs, structs and exceptions into the same collection
+        // TODO change metamodel such that these types have a common supertype (besides EObject)
         val all_elements = new HashSet<EObject>
         all_elements.addAll(owner.eContents.filter(EnumDeclaration))
         all_elements.addAll(owner.eContents.filter(AliasDeclaration))
@@ -100,7 +102,7 @@ class CppExtensions
      * generation of ODB files to resolve dependencies by sorting the types in
      * the topological order.
      */
-    def static Collection<TypeWrapper> resolveAllDependencies(Iterable<? extends EObject> elements)
+    def static Iterable<TypeWrapper> resolveAllDependencies(Iterable<? extends EObject> elements)
     {
         // construct a directed graph representation; a dependency relation between two
         // elements is represented as a pair X -> Y (meaning: X depends on Y)
@@ -120,7 +122,7 @@ class CppExtensions
     /**
      * Execute topological sorting based on Kahn's algorithm
      */
-    def private static Collection<TypeWrapper> applyKahnsAlgorithm(HashSet<Pair<EObject, EObject>> graph,
+    def private static Iterable<TypeWrapper> applyKahnsAlgorithm(HashSet<Pair<EObject, EObject>> graph,
         List<EObject> independent_elements)
     {
         // list finally containing the sorted elements
@@ -172,7 +174,7 @@ class CppExtensions
 
                 if (index_dependency >= index || index_dependency < 0)
                 {
-                    type_wrapper.forwardDeclarations.add(dependency_wrapper.type)
+                    type_wrapper.addForwardDeclaration(dependency_wrapper.type)
                 }
 
                 graph.remove(edge)
@@ -190,64 +192,67 @@ class CppExtensions
      * headers are NOT among the predecessors, since they are resolved based
      * on the #include directive. 
      */
-    def static dispatch Collection<EObject> predecessors(StructDeclaration element)
+    def static dispatch Iterable<EObject> predecessors(StructDeclaration element)
     {
         val result = new HashSet<EObject>(element.members.size)
         for (member : element.members)
         {
-            resolvePredecessor(member.type, result)
+            result.addAll(resolvePredecessor(member.type))
         }
         // base type must be handled also
         if (element.supertype !== null)
         {
-            resolvePredecessor(element.supertype, result)
+            result.addAll(resolvePredecessor(element.supertype))
         }
         return result
     }
 
-    def static dispatch Collection<EObject> predecessors(AliasDeclaration element)
+    def static dispatch Iterable<EObject> predecessors(AliasDeclaration element)
     {
-        val result = new HashSet<EObject>(1)
-        resolvePredecessor(element.type, result)
-        return result
+        resolvePredecessor(element.type)
     }
 
-    def static dispatch Collection<EObject> predecessors(ExceptionDeclaration element)
+    def static dispatch Iterable<EObject> predecessors(ExceptionDeclaration element)
     {
         val result = new HashSet<EObject>(element.members.size)
         for (member : element.members)
         {
-            resolvePredecessor(member.type, result)
+            result.addAll(resolvePredecessor(member.type))
         }
         // base type must be handled also
         if (element.supertype !== null)
         {
-            resolvePredecessor(element.supertype, result)
+            result.addAll(resolvePredecessor(element.supertype))
         }
         return result
     }
 
-    def private static void resolvePredecessor(EObject element, Collection<EObject> predecessors)
+    def private static Iterable<EObject> resolvePredecessor(EObject element)
     {
-        val type = Util.getUltimateType(element, false)
+        val type = com.btc.serviceidl.util.Util.getUltimateType(element, false)
         if (declaredInternally(element, type))
-            predecessors.add(type)
+            Arrays.asList(type)
+        else
+            Arrays.asList
     }
 
-    def static dispatch Collection<EObject> predecessors(EObject element)
+    def static dispatch Iterable<EObject> predecessors(EObject element)
     {
         return new ArrayList<EObject> // by default, never need an external include
     }
 
     def static private boolean declaredInternally(EObject element, EObject type)
     {
-        return (!(type instanceof PrimitiveType) && Util.getScopeDeterminant(type) == Util.getScopeDeterminant(element))
+        return (!(type instanceof PrimitiveType) && com.btc.serviceidl.util.Util.getScopeDeterminant(type) ==
+            com.btc.serviceidl.util.Util.getScopeDeterminant(element))
     }
 
     def private static dispatch void getUnderlyingTypes(StructDeclaration struct, HashSet<EObject> all_types)
     {
-        val contained_types = struct.members.filter[Util.getUltimateType(type) instanceof StructDeclaration].map [
-            Util.getUltimateType(type) as StructDeclaration
+        val contained_types = struct.members.filter [
+            com.btc.serviceidl.util.Util.getUltimateType(type) instanceof StructDeclaration
+        ].map [
+            com.btc.serviceidl.util.Util.getUltimateType(type) as StructDeclaration
         ]
 
         for (type : contained_types)
@@ -261,8 +266,10 @@ class CppExtensions
 
     def private static dispatch void getUnderlyingTypes(ExceptionDeclaration element, HashSet<EObject> all_types)
     {
-        val contained_types = element.members.filter[Util.getUltimateType(type) instanceof ExceptionDeclaration].map [
-            Util.getUltimateType(type) as ExceptionDeclaration
+        val contained_types = element.members.filter [
+            com.btc.serviceidl.util.Util.getUltimateType(type) instanceof ExceptionDeclaration
+        ].map [
+            com.btc.serviceidl.util.Util.getUltimateType(type) as ExceptionDeclaration
         ]
 
         for (type : contained_types)
@@ -282,12 +289,12 @@ class CppExtensions
     def public static String openNamespaces(ParameterBundle param_bundle)
     {
         '''
-            «FOR module : param_bundle.module_stack»
+            «FOR module : param_bundle.getModuleStack»
                 namespace «module.name»
                 {
             «ENDFOR»
-            «IF param_bundle.project_type.present»
-                namespace «param_bundle.project_type.get.getName»
+            «IF param_bundle.getProjectType !== null»
+                namespace «param_bundle.getProjectType.getName»
                 {
             «ENDIF»
         '''
@@ -296,7 +303,7 @@ class CppExtensions
     def public static String closeNamespaces(ParameterBundle param_bundle)
     {
         '''
-            «FOR module : param_bundle.module_stack»}«ENDFOR»«IF param_bundle.project_type.present»}«ENDIF»
+            «FOR module : param_bundle.moduleStack»}«ENDFOR»«IF param_bundle.getProjectType !== null»}«ENDIF»
             
         '''
     }

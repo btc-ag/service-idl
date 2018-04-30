@@ -22,7 +22,7 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(NONE)
 class ServiceFaultHandlerFactoryGenerator
 {
-    private val BasicJavaSourceGenerator basicJavaSourceGenerator
+    val BasicJavaSourceGenerator basicJavaSourceGenerator
 
     def private getTypeResolver()
     {

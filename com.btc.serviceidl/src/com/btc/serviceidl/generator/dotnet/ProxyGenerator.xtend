@@ -10,13 +10,13 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.dotnet
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.FeatureProfile
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
@@ -63,7 +63,7 @@ class ProxyGenerator extends ProxyDispatcherGeneratorBase {
             {
                var methodRequestBuilder = «api_request_name».Types.«com.btc.serviceidl.util.Util.asRequest(function.name)».CreateBuilder();
                «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
-                  «val use_codec = GeneratorUtil.useCodec(param, param_bundle.artifactNature)»
+                  «val use_codec = GeneratorUtil.useCodec(param, ArtifactNature.DOTNET)»
                   «val encodeMethod = getEncodeMethod(param.paramType)»
                   «val codec = resolveCodec(typeResolver, param_bundle, param.paramType)»
                   methodRequestBuilder.«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»AddRange«ELSE»Set«ENDIF»«param.paramName.toLowerCase.toFirstUpper»(«IF use_codec»(«resolveEncode(param.paramType)») «codec».«encodeMethod»(«ENDIF»«toText(param, function)»«IF use_codec»)«ENDIF»);
@@ -82,7 +82,7 @@ class ProxyGenerator extends ProxyDispatcherGeneratorBase {
                var result =_serviceReference.RequestAsync(new «resolve("BTC.CAB.ServiceComm.NET.Common.MessageBuffer")»(protobufRequest.ToByteArray())).ContinueWith(task =>
                {
                   «api_response_name» response = «api_response_name».ParseFrom(task.Result.PopFront());
-                  «val use_codec = GeneratorUtil.useCodec(function.returnedType, param_bundle.artifactNature)»
+                  «val use_codec = GeneratorUtil.useCodec(function.returnedType, ArtifactNature.DOTNET)»
                   «val decodeMethod = getDecodeMethod(function.returnedType)»
                   «val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)»
                   «val codec = resolveCodec(typeResolver, param_bundle, function.returnedType)»
@@ -92,7 +92,7 @@ class ProxyGenerator extends ProxyDispatcherGeneratorBase {
                   «FOR param : out_params»
                      «val basic_name = param.paramName.asParameter»
                      «val is_sequence_param = com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
-                     «val use_codec_param = GeneratorUtil.useCodec(param.paramType, param_bundle.artifactNature)»
+                     «val use_codec_param = GeneratorUtil.useCodec(param.paramType, ArtifactNature.DOTNET)»
                      «val decode_method_param = getDecodeMethod(param.paramType)»
                      «val codec_param = resolveCodec(typeResolver, param_bundle, param.paramType)»
                      «basic_name»Placeholder = «IF use_codec_param»(«toText(param.paramType, param)») «codec_param».«decode_method_param»(«ENDIF»response.«function.name.toLowerCase.toFirstUpper»Response.«basic_name.toLowerCase.toFirstUpper»«IF is_sequence_param»List«ENDIF»«IF use_codec_param»)«ENDIF»;

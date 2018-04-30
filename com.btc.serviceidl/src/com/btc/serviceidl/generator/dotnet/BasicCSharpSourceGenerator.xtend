@@ -43,9 +43,9 @@ import static extension com.btc.serviceidl.util.Extensions.*
 
 @Accessors(PACKAGE_GETTER)
 class BasicCSharpSourceGenerator {
-    private val extension TypeResolver typeResolver 
-    private val Map<String, String> typedef_table    
-    private val IDLSpecification idl
+    val extension TypeResolver typeResolver 
+    val Map<String, String> typedef_table    
+    val IDLSpecification idl
     
    def public dispatch String toText(AliasDeclaration element, EObject context)
    {
@@ -122,7 +122,7 @@ class BasicCSharpSourceGenerator {
          val all_class_members = new ArrayList<Triple<String, String, String>>
          element.allMembers.forEach[e | all_class_members.add(Tuples.create(e.name.asProperty, toText(e, element), maybeOptional(e)))]
 
-         val related_event =  com.btc.serviceidl.util.Util.getRelatedEvent(element, idl)
+         val related_event =  com.btc.serviceidl.util.Util.getRelatedEvent(element)
          
          '''
          public class «element.name»«IF element.supertype !== null» : «resolve(element.supertype)»«ENDIF»

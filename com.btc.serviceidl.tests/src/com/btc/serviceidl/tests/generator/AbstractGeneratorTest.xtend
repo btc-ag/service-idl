@@ -42,7 +42,7 @@ class AbstractGeneratorTest
         defaultGenerationSettingsProvider.projectTypes = new HashSet<ProjectType>(projectTypes)
         defaultGenerationSettingsProvider.languages = new HashSet<ArtifactNature>(artifactNatures)
         underTest.doGenerate(spec.eResource, fsa, new GeneratorContext)
-        println(fsa.textFiles.keySet)
+        println(fsa.textFiles.keySet.join("\n"))
         assertEquals(fileCount, fsa.textFiles.size)
         contents.forEach([k, v|checkFile(fsa, k, v)])
     }

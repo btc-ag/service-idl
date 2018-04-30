@@ -23,7 +23,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors(NONE)
 class TestGenerator
 {
-    private val BasicJavaSourceGenerator basicJavaSourceGenerator
+    val BasicJavaSourceGenerator basicJavaSourceGenerator
 
     def private getTypeResolver()
     {

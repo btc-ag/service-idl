@@ -41,10 +41,10 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(PACKAGE_GETTER)
 class BasicJavaSourceGenerator
 {
-    private val IQualifiedNameProvider qualified_name_provider
-    private val TypeResolver typeResolver
-    private val IDLSpecification idl
-    private val Map<String, ResolvedName> typedef_table
+    val IQualifiedNameProvider qualified_name_provider
+    val TypeResolver typeResolver
+    val IDLSpecification idl
+    val Map<String, ResolvedName> typedef_table
 
     def public dispatch String toText(ExceptionDeclaration element)
     {
@@ -205,7 +205,7 @@ class BasicJavaSourceGenerator
                         name, '''«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(member.type)»«IF member.optional»>«ENDIF»'''))
 
         val is_derived = ( element.supertype !== null )
-        val related_event = element.getRelatedEvent(idl)
+        val related_event = element.getRelatedEvent
 
         '''
             public class «element.name» «IF is_derived»extends «toText(element.supertype)» «ENDIF»{

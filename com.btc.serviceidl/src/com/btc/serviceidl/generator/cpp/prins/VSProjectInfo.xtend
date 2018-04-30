@@ -14,16 +14,16 @@
  * \brief      Represents some Visual Studio related project information,
  *             e.g. project GUID, name, etc.
  */
-package com.btc.serviceidl.generator.common
+package com.btc.serviceidl.generator.cpp.prins
 
 import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors(PUBLIC_GETTER)
 class VSProjectInfo
 {
-    private val String project_name
-    private val String project_guid
-    private val String project_path
+    val String project_name
+    val String project_guid
+    val String project_path
 
     static class Builder
     {

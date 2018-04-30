@@ -23,8 +23,8 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors(NONE)
 class ClientConsoleProgramGenerator
 {
-    private val extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
-    private val NuGetPackageResolver nuget_packages
+    val extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
+    val NuGetPackageResolver nuget_packages
 
     private def getTypeResolver()
     {

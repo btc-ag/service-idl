@@ -34,13 +34,13 @@ import static extension com.btc.serviceidl.generator.common.Extensions.*
 @Accessors(PACKAGE_GETTER)
 class TypeResolver
 {
-    private val DotNetFrameworkVersion frameworkVersion
-    private val IQualifiedNameProvider qualified_name_provider
-    private val Set<String> namespace_references
-    private val Set<String> referenced_assemblies
-    private val Map<String, String> project_references
-    private val VSSolution vsSolution
-    private val ParameterBundle.Builder param_bundle
+    val DotNetFrameworkVersion frameworkVersion
+    val IQualifiedNameProvider qualified_name_provider
+    val Set<String> namespace_references
+    val Set<String> referenced_assemblies
+    val Map<String, String> project_references
+    val VSSolution vsSolution
+    val ParameterBundle param_bundle
 
     def ResolvedName resolve(String name)
     {
@@ -99,12 +99,12 @@ class TypeResolver
             return new ResolvedName(Names.plain(element), TransformType.PACKAGE, fully_qualified)
         }
 
-        var result = GeneratorUtil.transform(
+        var result = GeneratorUtil.getTransformedModuleName(
             ParameterBundle.createBuilder(
                 com.btc.serviceidl.util.Util.getModuleStack(com.btc.serviceidl.util.Util.getScopeDeterminant(element))).
-                reset(ArtifactNature.DOTNET).with(project_type).with(TransformType.PACKAGE).build)
+                with(project_type).build, ArtifactNature.DOTNET, TransformType.PACKAGE)
         result += Constants.SEPARATOR_PACKAGE + if (element instanceof InterfaceDeclaration)
-            project_type.getClassName(param_bundle.artifactNature, name.lastSegment)
+            project_type.getClassName(ArtifactNature.DOTNET, name.lastSegment)
         else
             name.lastSegment
 
@@ -134,7 +134,8 @@ class TypeResolver
 
     def private boolean isSameProject(QualifiedName referenced_package)
     {
-        GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).build) == referenced_package.toString
+        GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.DOTNET, TransformType.PACKAGE) ==
+            referenced_package.toString
     }
 
     def void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
@@ -143,11 +144,10 @@ class TypeResolver
         var project_path = ""
 
         val temp_param = new ParameterBundle.Builder()
-        temp_param.reset(param_bundle.artifactNature)
         temp_param.reset(module_stack)
         temp_param.reset(project_type)
 
-        val project_name = vsSolution.getCsprojName(temp_param)
+        val project_name = vsSolution.getCsprojName(temp_param.build)
 
         if (module_stack.elementsEqual(param_bundle.moduleStack))
         {
@@ -155,8 +155,9 @@ class TypeResolver
         }
         else
         {
-            project_path = "../" + GeneratorUtil.getRelativePathsUpwards(param_bundle.build) +
-                GeneratorUtil.transform(temp_param.with(TransformType.FILE_SYSTEM).build) + "/" + project_name
+            project_path = "../" + GeneratorUtil.getRelativePathsUpwards(param_bundle.moduleStack) +
+                GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM) + "/" +
+                project_name
         }
 
         project_references.put(project_name, project_path)

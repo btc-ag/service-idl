@@ -36,7 +36,6 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.google.common.collect.Sets
 import java.util.Arrays
-import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Set
@@ -65,14 +64,14 @@ class DotNetGenerator
    
    private var param_bundle = new ParameterBundle.Builder()
    
-   private val typedef_table = new HashMap<String, String>
-   private val namespace_references = new HashSet<String>
-   private val referenced_assemblies = new HashSet<String>
+   val typedef_table = new HashMap<String, String>
+   val namespace_references = new HashSet<String>
+   val referenced_assemblies = new HashSet<String>
    private var nuget_packages = new NuGetPackageResolver
-   private val project_references = new HashMap<String, String>
-   private val vsSolution = new VSSolution
-   private val cs_files = new HashSet<String>
-   private val protobuf_files = new HashSet<String>
+   val project_references = new HashMap<String, String>
+   val vsSolution = new VSSolution
+   val cs_files = new HashSet<String>
+   val protobuf_files = new HashSet<String>
    private var protobuf_project_references = new HashMap<String, HashMap<String, String>>
    private var extension TypeResolver typeResolver
    private var extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
@@ -84,7 +83,6 @@ class DotNetGenerator
       qualified_name_provider = qnp
       scope_provider = sp
       protobuf_project_references = pr
-      param_bundle.reset(ArtifactNature.DOTNET)
       
       idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
             
@@ -98,7 +96,6 @@ class DotNetGenerator
    def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
       param_bundle = ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(module))
-      param_bundle.reset(ArtifactNature.DOTNET)
       
       if (!module.virtual)
       {
@@ -206,7 +203,7 @@ class DotNetGenerator
    
    def private void generateVSProjectFiles(String project_root_path)
    {
-      val project_name = vsSolution.getCsprojName(param_bundle)
+      val project_name = vsSolution.getCsprojName(param_bundle.build)
       
       // generate project file
       file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + project_name.csproj, generateCsproj(cs_files))
@@ -237,7 +234,7 @@ class DotNetGenerator
    
    def private String generateAssemblyInfo(String project_name)
    {
-       new AssemblyInfoGenerator(param_bundle).generate(project_name).toString
+       new AssemblyInfoGenerator(param_bundle.build).generate(project_name).toString
    }
    
    def private void reinitializeFile()
@@ -256,14 +253,14 @@ class DotNetGenerator
       cs_files.clear
       
       typeResolver = new TypeResolver(DOTNET_FRAMEWORK_VERSION, qualified_name_provider, 
-          namespace_references, referenced_assemblies, project_references, vsSolution, param_bundle
+          namespace_references, referenced_assemblies, project_references, vsSolution, param_bundle.build
       )
       basicCSharpSourceGenerator = new BasicCSharpSourceGenerator(typeResolver, typedef_table, idl)      
    }
    
    def private void generateImpl(String src_root_path, InterfaceDeclaration interface_declaration)
    {
-      val impl_class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
+      val impl_class_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)
       
       cs_files.add(impl_class_name)
       file_system_access.generateFile(
@@ -279,7 +276,7 @@ class DotNetGenerator
    {
       reinitializeFile
 
-      val dispatcher_class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
+      val dispatcher_class_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)
       cs_files.add(dispatcher_class_name)
       file_system_access.generateFile(
          src_root_path + dispatcher_class_name.cs,
@@ -427,7 +424,7 @@ class DotNetGenerator
    
    def private String generateLog4NetConfig(ModuleDeclaration module)
    {
-       new Log4NetConfigGenerator(param_bundle).generate().toString
+       new Log4NetConfigGenerator(param_bundle.build).generate().toString
    }
    
    def private String generateCsServerRunnerProgram(String class_name, ModuleDeclaration module)
@@ -518,7 +515,7 @@ class DotNetGenerator
          generateSourceFile(generateProxyData(proxy_data_name, interface_declaration))
       )
 
-      val proxy_class_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
+      val proxy_class_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)
       cs_files.add(proxy_class_name)
       file_system_access.generateFile(
          project_root_path + proxy_class_name.cs,
@@ -602,7 +599,7 @@ class DotNetGenerator
       ))
       
       reinitializeFile
-      file_name = GeneratorUtil.getClassName(param_bundle.build, interface_declaration.name)
+      file_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)
       cs_files.add(file_name)
       file_system_access.generateFile(project_root_path + file_name.cs,
         generateSourceFile(
@@ -616,20 +613,20 @@ class DotNetGenerator
       «FOR reference : namespace_references.sort AFTER System.lineSeparator»
          using «reference»;
       «ENDFOR»
-      namespace «GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).build)»
+      namespace «GeneratorUtil.getTransformedModuleName(param_bundle.build, ArtifactNature.DOTNET, TransformType.PACKAGE)»
       {
          «main_content»
       }
       '''
    }
    
-   def private generateCsproj(Collection<String> cs_files)
+   def private generateCsproj(Iterable<String> cs_files)
    {
       // Please do NOT edit line indents in the code below (even though they
       // may look misplaced) unless you are fully aware of what you are doing!!!
       // Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
       
-      val project_name = vsSolution.getCsprojName(param_bundle)
+      val project_name = vsSolution.getCsprojName(param_bundle.build)
       
       val is_protobuf = param_bundle.projectType == ProjectType.PROTOBUF
       
@@ -646,7 +643,7 @@ class DotNetGenerator
          }
       }
 
-      CSProjGenerator.generateCSProj(project_name, vsSolution, param_bundle, referenced_assemblies, nuget_packages.resolvedPackages, project_references, cs_files, if (is_protobuf) protobuf_files else null
+      CSProjGenerator.generateCSProj(project_name, vsSolution, param_bundle.build, referenced_assemblies, nuget_packages.resolvedPackages, project_references, cs_files, if (is_protobuf) protobuf_files else null
       )      
    }
    
@@ -665,15 +662,15 @@ class DotNetGenerator
       
    def private String getProjectRootPath()
    {
-      param_bundle.artifactNature.label
+      ArtifactNature.DOTNET.label
          + Constants.SEPARATOR_FILE
-         + GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).build)
+         + GeneratorUtil.getTransformedModuleName(param_bundle.build, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM)
          + Constants.SEPARATOR_FILE
    }
    
    def private String getLog4NetConfigFile()
    {
-      param_bundle.log4NetConfigFile
+      param_bundle.build.log4NetConfigFile
    }
          
 }
