@@ -21,7 +21,7 @@ import org.eclipse.core.runtime.IPath
 class LibResolver
 {
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val cab_lib_mapper = #{
+    static val cab_lib_mapper = #{
         "Commons/Core" -> "BTC.CAB.Commons.Core.lib",
         "Commons/CoreExtras" -> "BTC.CAB.Commons.CoreExtras.lib",
         "Commons/CoreYacl" -> "BTC.CAB.Commons.CoreYacl.lib",
@@ -45,7 +45,7 @@ class LibResolver
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val cab_additional_dependencies = #{
+    static val cab_additional_dependencies = #{
         "Performance/CommonsTestSupport/include/TestLoggerFactory.h" -> #["BTC.CAB.Logging.API.lib"],
         "ServiceComm/API/include/IClientEndpoint.h" ->
             #["BTC.CAB.ServiceComm.ProtobufUtil.lib", "BTC.CAB.ServiceComm.Commons.lib",

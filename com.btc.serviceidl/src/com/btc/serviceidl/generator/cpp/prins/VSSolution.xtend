@@ -28,7 +28,7 @@ class VSSolution implements IProjectSet
 // it is important for this container to be static! if an *.IDL file contains
 // "import" references to external *.IDL files, each file will be generated separately
 // but we need consistent project GUIDs in order to create valid project references!
-    private static val vs_projects = new HashMap<String, Entry>
+    static val vs_projects = new HashMap<String, Entry>
 
     @Data
     private static class Entry

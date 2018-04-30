@@ -16,17 +16,17 @@ import java.util.Arrays
 
 class PrinsHeaderResolver
 {
-    private static val ODB_INCLUDE_GROUP = new TypeResolver.IncludeGroup("ODB")
+    static val ODB_INCLUDE_GROUP = new TypeResolver.IncludeGroup("ODB")
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val odb_header_mapper = #{
+    static val odb_header_mapper = #{
         "id_raw" -> "odb/oracle/traits.hxx",
         "id_uniqueidentifier" -> "odb/mssql/traits.hxx",
         "odb::nullable" -> "odb/nullable.hxx"
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val modules_header_mapper = #{
+    static val modules_header_mapper = #{
         PrinsTypeNames.GUID -> "modules/Commons/include/GUID.h",
         "BTC::PRINS::Commons::Utilities::GUIDHelper" -> "modules/Commons/Utilities/include/GUIDHelper.h"
     }

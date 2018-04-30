@@ -30,7 +30,7 @@ import org.eclipse.xtend.lib.annotations.Data
 class HeaderResolver
 {
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val stl_header_mapper = #{
+    static val stl_header_mapper = #{
         "assert" -> "cassert",
         "int8_t" -> "cstdint",
         "int16_t" -> "cstdint",
@@ -59,7 +59,7 @@ class HeaderResolver
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val cab_header_mapper = #{
+    static val cab_header_mapper = #{
         "BTC::Commons::Core::AutoPtr" -> "Commons/Core/include/AutoPtr.h",
         "BTC::Commons::Core::BlockStackTraceSettings" -> "Commons/Core/include/Exception.h",
         "BTC::Commons::Core::Context" -> "Commons/Core/include/Context.h",
@@ -175,14 +175,14 @@ class HeaderResolver
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val cab_impl_header_mapper = #{
+    static val cab_impl_header_mapper = #{
         "BTC::Commons::CoreExtras::Optional" -> "Commons/CoreExtras/include/OptionalImpl.h",
         "BTC::ServiceComm::Util::CDefaultObservableRegistrationProxy" ->
             "ServiceComm/Util/include/CDefaultObservableRegistrationProxy.impl.h"
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val boost_header_mapper = #{
+    static val boost_header_mapper = #{
         "boost::bimap" -> "boost/bimap.hpp"
     }
 

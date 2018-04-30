@@ -18,7 +18,7 @@ package com.btc.serviceidl.generator.dotnet
 class AssemblyResolver
 {
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val assemblies_mapper = #{
+    static val assemblies_mapper = #{
         "BTC.CAB.ServiceComm.NET.API.DTO" -> "BTC.CAB.ServiceComm.NET.API",
         "CommandLine.Text" -> "CommandLine",
         "log4net.Config" -> "log4net",

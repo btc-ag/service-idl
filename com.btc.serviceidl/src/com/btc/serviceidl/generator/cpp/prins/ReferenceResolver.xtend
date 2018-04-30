@@ -25,7 +25,7 @@ import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 class ReferenceResolver
 {
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val vs_projects_mapper = #{
+    static val vs_projects_mapper = #{
         "BTC.PRINS.Commons" ->
             new VSProjectInfo.Builder().setName("BTC.PRINS.Commons").setGUID("68E95AE7-BBFA-412B-8F65-026108BD8B28").
                 setPath('''$(SolutionDir)\Commons\BTC.PRINS.Commons''').build,
