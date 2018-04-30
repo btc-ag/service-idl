@@ -136,14 +136,10 @@ class TypeResolver
 
     def ResolvedName resolve(EObject object, ProjectType project_type)
     {
-        if (com.btc.serviceidl.util.Util.isUUIDType(object))
-        {
-            if (project_type == ProjectType.PROTOBUF)
-                return new ResolvedName(resolveSymbol("std::string"), TransformType.NAMESPACE)
-            else
-                return new ResolvedName("BTC::Commons::CoreExtras::UUID", TransformType.NAMESPACE)
-        }
-        else if (object instanceof PrimitiveType)
+        if (project_type == ProjectType.PROTOBUF)
+            throw new IllegalArgumentException("Use ProtobufUtil.resolveProtobuf instead!")
+            
+        if (object instanceof PrimitiveType)
             return new ResolvedName(getPrimitiveTypeName(object), TransformType.NAMESPACE)
         else if (object instanceof AbstractType && (object as AbstractType).primitiveType !== null)
             return resolve((object as AbstractType).primitiveType, project_type)

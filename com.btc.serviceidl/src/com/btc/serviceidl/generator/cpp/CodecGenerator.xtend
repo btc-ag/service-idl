@@ -50,6 +50,7 @@ class CodecGenerator extends BasicCppGenerator
 
         val failable_types = GeneratorUtil.getFailableTypes(owner)
 
+        // TODO all the template functions here do not depend on the contents on the IDL and could be moved to some library
         '''
             template<typename PROTOBUF_TYPE, typename API_TYPE>
             inline «forward_const_iterator»< API_TYPE > Decode(google::protobuf::RepeatedPtrField< PROTOBUF_TYPE > const& protobuf_input)
@@ -452,7 +453,8 @@ class CodecGenerator extends BasicCppGenerator
             
             «FOR type : nested_types»
                 «val api_type_name = resolve(type)»
-                «val proto_type_name = resolve(type, ProjectType.PROTOBUF)»
+                «/* TODO change such that ProtobufType does not need to be passed, it is irrelevant here */»
+                «val proto_type_name = typeResolver.resolveProtobuf(type, ProtobufType.REQUEST)»
                 inline «api_type_name» Decode(«proto_type_name» const& protobuf_input)
                 {
                    «makeDecode(type, owner)»
@@ -749,7 +751,8 @@ class CodecGenerator extends BasicCppGenerator
                
                «FOR type : nested_types»
                    «val api_type_name = resolve(type)»
-                   «val proto_type_name = resolve(type, ProjectType.PROTOBUF)»
+                   «/* TODO change such that ProtobufType does not need to be passed, it is irrelevant here */»
+                   «val proto_type_name = typeResolver.resolveProtobuf(type, ProtobufType.REQUEST)»
                    «api_type_name» Decode(«proto_type_name» const& protobuf_input);
                    
                    «IF type instanceof EnumDeclaration»
