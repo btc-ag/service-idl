@@ -60,7 +60,7 @@ class ProtobufUtil
             result += Names.plain(object)
 
         addTargetInclude(
-            paramBundle.moduleStack.getIncludeFilePath(ProjectType.PROTOBUF, GeneratorUtil.getPbFileName(object)))
+            scope_determinant.moduleStack.getIncludeFilePath(ProjectType.PROTOBUF, GeneratorUtil.getPbFileName(object)))
 
         object.resolveProjectFilePath(ProjectType.PROTOBUF)
         return new ResolvedName(result, TransformType.NAMESPACE)
