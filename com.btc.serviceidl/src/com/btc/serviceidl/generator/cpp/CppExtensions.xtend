@@ -43,7 +43,8 @@ import static extension com.btc.serviceidl.util.Util.*
 
 class CppExtensions
 {
-    def static IPath getIncludeFilePath(EObject referenced_object, ProjectType project_type)
+    def static IPath getIncludeFilePath(EObject referenced_object, ProjectType project_type,
+        IModuleStructureStrategy moduleStructureStrategy)
     {
         val scope_determinant = if (referenced_object instanceof InterfaceDeclaration)
                 referenced_object
@@ -55,17 +56,13 @@ class CppExtensions
             else
                 "Types"
 
-        getIncludeFilePath(referenced_object.moduleStack, project_type, baseName)
+        getIncludeFilePath(referenced_object.moduleStack, project_type, baseName, moduleStructureStrategy)
     }
 
     def static IPath getIncludeFilePath(Iterable<ModuleDeclaration> module_stack, ProjectType project_type,
-        String baseName)
+        String baseName, IModuleStructureStrategy moduleStructureStrategy)
     {
-        // TODO this is PRINS-specific, at least the "modules"-prefix
-        new Path(ReferenceResolver.MODULES_HEADER_PATH_PREFIX).append(
-            GeneratorUtil.asPath(ParameterBundle.createBuilder(module_stack).with(project_type).build,
-                ArtifactNature.CPP)).append(if (project_type == ProjectType.PROTOBUF) "gen" else "include").append(
-            baseName).addFileExtension(if (project_type == ProjectType.PROTOBUF) "pb.h" else "h")
+        moduleStructureStrategy.getIncludeFilePath(module_stack, project_type, baseName)
     }
 
     /**

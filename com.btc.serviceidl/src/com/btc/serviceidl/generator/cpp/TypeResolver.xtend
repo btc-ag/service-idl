@@ -44,6 +44,8 @@ class TypeResolver
 {
     @Accessors(PACKAGE_GETTER) val IQualifiedNameProvider qualified_name_provider
     @Accessors(PACKAGE_GETTER) val IProjectSet projectSet
+    @Accessors(PACKAGE_GETTER) val IModuleStructureStrategy moduleStructureStrategy
+
     val Collection<IProjectReference> project_references
     val Collection<String> cab_libs
     val Map<EObject, Collection<EObject>> smart_pointer_map
@@ -163,7 +165,7 @@ class TypeResolver
                 project_type.getClassName(ArtifactNature.CPP, qualified_name.lastSegment)
             else
                 qualified_name.lastSegment
-            addToGroup(TARGET_INCLUDE_GROUP, object.getIncludeFilePath(project_type))
+            addToGroup(TARGET_INCLUDE_GROUP, object.getIncludeFilePath(project_type, moduleStructureStrategy))
             object.resolveProjectFilePath(project_type)
             return new ResolvedName(result, TransformType.NAMESPACE)
         }

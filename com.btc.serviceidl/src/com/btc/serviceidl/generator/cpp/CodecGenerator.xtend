@@ -646,7 +646,8 @@ class CodecGenerator extends BasicCppGenerator
 
         // always include corresponding *.pb.h file due to local failable types definitions
         addTargetInclude(
-            paramBundle.moduleStack.getIncludeFilePath(ProjectType.PROTOBUF, GeneratorUtil.getPbFileName(owner)))
+            paramBundle.moduleStack.getIncludeFilePath(ProjectType.PROTOBUF, GeneratorUtil.getPbFileName(owner),
+                moduleStructureStrategy))
 
         '''
             namespace «GeneratorUtil.getCodecName(owner)»

@@ -17,6 +17,8 @@ package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.prins.OdbProjectGenerator
+import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
+import com.btc.serviceidl.generator.cpp.prins.VSSolution
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.google.common.collect.Sets
@@ -33,7 +35,6 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
-import com.btc.serviceidl.generator.cpp.prins.VSSolution
 
 class CppGenerator
 {
@@ -44,7 +45,9 @@ class CppGenerator
     private var IScopeProvider scope_provider
     private var IDLSpecification idl
 
+    // TODO inject these
     val extension IProjectSet vsSolution = new VSSolution
+    val IModuleStructureStrategy moduleStructureStrategy = new PrinsModuleStructureStrategy
 
     private var protobuf_project_references = new HashMap<String, Set<IProjectReference>>
 
@@ -58,7 +61,7 @@ class CppGenerator
         qualified_name_provider = qnp
         scope_provider = sp
         // TODO the protobuf projects must be added to the vsSolution, and converted into IProjectReference 
-        protobuf_project_references = /*if (pr !== null) new HashMap<String, Set<IProjectReference>>(pr) else */null
+        protobuf_project_references = /*if (pr !== null) new HashMap<String, Set<IProjectReference>>(pr) else */ null
 
         idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
         if (idl === null)
@@ -88,6 +91,7 @@ class CppGenerator
                     scope_provider,
                     idl,
                     vsSolution,
+                    moduleStructureStrategy,
                     protobuf_project_references,
                     smart_pointer_map,
                     module
@@ -113,6 +117,7 @@ class CppGenerator
                         scope_provider,
                         idl,
                         vsSolution,
+                        moduleStructureStrategy,
                         protobuf_project_references,
                         smart_pointer_map,
                         projectType,
@@ -129,6 +134,7 @@ class CppGenerator
                         scope_provider,
                         idl,
                         vsSolution,
+                        moduleStructureStrategy,
                         protobuf_project_references,
                         smart_pointer_map,
                         module
@@ -147,6 +153,7 @@ class CppGenerator
                     scope_provider,
                     idl,
                     vsSolution,
+                    moduleStructureStrategy,
                     protobuf_project_references,
                     smart_pointer_map,
                     module
@@ -163,6 +170,7 @@ class CppGenerator
                     scope_provider,
                     idl,
                     vsSolution,
+                    moduleStructureStrategy,
                     protobuf_project_references,
                     smart_pointer_map,
                     module
