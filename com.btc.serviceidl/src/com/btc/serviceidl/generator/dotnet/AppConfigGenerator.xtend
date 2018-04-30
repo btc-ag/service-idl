@@ -21,7 +21,7 @@ import static extension com.btc.serviceidl.generator.dotnet.Util.*
 
 @Accessors(NONE)
 class AppConfigGenerator {
-  private val extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
+  val extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
   
   private def getTypeResolver()
   {

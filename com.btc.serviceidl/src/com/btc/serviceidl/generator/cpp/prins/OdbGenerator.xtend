@@ -30,7 +30,7 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors
 class OdbGenerator
 {
-    private val extension TypeResolver typeResolver
+    val extension TypeResolver typeResolver
 
     def generateODBTraitsBody()
     {

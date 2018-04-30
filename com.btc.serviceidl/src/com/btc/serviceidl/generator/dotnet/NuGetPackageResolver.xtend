@@ -40,7 +40,7 @@ class NuGetPackageResolver
             '''Google.ProtocolBuffers.2.4.1.555\lib\net40\Google.ProtocolBuffers.Serialization.dll'''
     }
 
-    private val nuget_packages = new HashSet<NuGetPackage>
+    val nuget_packages = new HashSet<NuGetPackage>
 
     def private static NuGetPackage resolvePackageInternal(String name)
     {

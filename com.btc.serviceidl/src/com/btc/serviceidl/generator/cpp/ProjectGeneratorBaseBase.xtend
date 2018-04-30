@@ -40,22 +40,22 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(PROTECTED_GETTER)
 class ProjectGeneratorBaseBase
 {
-    private val Resource resource
-    private val IFileSystemAccess file_system_access
-    private val IQualifiedNameProvider qualified_name_provider
-    private val IScopeProvider scope_provider
-    private val IDLSpecification idl
-    private val extension IProjectSet vsSolution
-    private val Map<String, Set<IProjectReference>> protobuf_project_references
-    private val Map<EObject, Collection<EObject>> smart_pointer_map
+    val Resource resource
+    val IFileSystemAccess file_system_access
+    val IQualifiedNameProvider qualified_name_provider
+    val IScopeProvider scope_provider
+    val IDLSpecification idl
+    val extension IProjectSet vsSolution
+    val Map<String, Set<IProjectReference>> protobuf_project_references
+    val Map<EObject, Collection<EObject>> smart_pointer_map
 
     private var ParameterBundle param_bundle
-    private val ModuleDeclaration module
+    val ModuleDeclaration module
 
     // per-project global variables
-    private val cab_libs = new HashSet<String>
-    private val project_references = new HashSet<IProjectReference>
-    private val projectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP)) // TODO inject the file groups
+    val cab_libs = new HashSet<String>
+    val project_references = new HashSet<IProjectReference>
+    val projectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP)) // TODO inject the file groups
 
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,

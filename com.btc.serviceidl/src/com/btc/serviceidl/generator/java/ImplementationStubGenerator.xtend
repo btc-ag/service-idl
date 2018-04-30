@@ -20,7 +20,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors(NONE)
 class ImplementationStubGenerator
 {
-    private val BasicJavaSourceGenerator basicJavaSourceGenerator
+    val BasicJavaSourceGenerator basicJavaSourceGenerator
 
     def private getTypeResolver()
     {

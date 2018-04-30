@@ -19,7 +19,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 @Accessors
 class ExportHeaderGenerator
 {
-    private val ParameterBundle param_bundle 
+    val ParameterBundle param_bundle 
     
     def generateExportHeader()
     {

@@ -44,11 +44,11 @@ class CppGenerator
     private var IScopeProvider scope_provider
     private var IDLSpecification idl
 
-    private val extension IProjectSet vsSolution = new VSSolution
+    val extension IProjectSet vsSolution = new VSSolution
 
     private var protobuf_project_references = new HashMap<String, Set<IProjectReference>>
 
-    private val smart_pointer_map = new HashMap<EObject, Collection<EObject>>
+    val smart_pointer_map = new HashMap<EObject, Collection<EObject>>
 
     def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp,
         Set<ProjectType> projectTypes, Map<String, HashMap<String, String>> pr)

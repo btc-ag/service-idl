@@ -25,8 +25,8 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(NONE)
 class ServiceAPIGenerator
 {
-    private val BasicJavaSourceGenerator basicJavaSourceGenerator
-    private val ParameterBundle param_bundle
+    val BasicJavaSourceGenerator basicJavaSourceGenerator
+    val ParameterBundle param_bundle
 
     def private getTypeResolver()
     {

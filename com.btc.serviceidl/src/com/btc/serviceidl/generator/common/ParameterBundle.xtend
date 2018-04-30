@@ -31,7 +31,7 @@ class ParameterBundle
     static class Builder
     {
         private Optional<ProjectType> project_type = Optional.empty
-        private val master_data = new ParameterBundle
+        val master_data = new ParameterBundle
 
         new()
         {

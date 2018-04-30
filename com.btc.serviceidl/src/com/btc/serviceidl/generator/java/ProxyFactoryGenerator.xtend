@@ -19,7 +19,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 @Accessors(NONE)
 class ProxyFactoryGenerator
 {
-    private val BasicJavaSourceGenerator basicJavaSourceGenerator
+    val BasicJavaSourceGenerator basicJavaSourceGenerator
 
     def private getTypeResolver()
     {

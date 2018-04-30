@@ -50,7 +50,7 @@ class BasicCppGenerator
 {
     // must be protected to allow subclasses to benefit from extension declaration
     @Accessors(PUBLIC_GETTER) protected val extension TypeResolver typeResolver
-    @Accessors(PUBLIC_GETTER) private val ParameterBundle paramBundle
+    @Accessors(PUBLIC_GETTER) val ParameterBundle paramBundle
 
     def String generateCppDestructor(InterfaceDeclaration interface_declaration)
     {

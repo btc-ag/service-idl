@@ -26,7 +26,7 @@ class ProjectFileSet
     public static val DEFAULT_FILE_GROUPS = Arrays.asList(CPP_FILE_GROUP, HEADER_FILE_GROUP, DEPENDENCY_FILE_GROUP,
         PROTOBUF_FILE_GROUP)
 
-    private val Map<FileGroup, Collection<String>> files
+    val Map<FileGroup, Collection<String>> files
 
     new(Iterable<FileGroup> extraFileGroups)
     {

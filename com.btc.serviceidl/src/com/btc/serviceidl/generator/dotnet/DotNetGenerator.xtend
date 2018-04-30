@@ -64,14 +64,14 @@ class DotNetGenerator
    
    private var param_bundle = new ParameterBundle.Builder()
    
-   private val typedef_table = new HashMap<String, String>
-   private val namespace_references = new HashSet<String>
-   private val referenced_assemblies = new HashSet<String>
+   val typedef_table = new HashMap<String, String>
+   val namespace_references = new HashSet<String>
+   val referenced_assemblies = new HashSet<String>
    private var nuget_packages = new NuGetPackageResolver
-   private val project_references = new HashMap<String, String>
-   private val vsSolution = new VSSolution
-   private val cs_files = new HashSet<String>
-   private val protobuf_files = new HashSet<String>
+   val project_references = new HashMap<String, String>
+   val vsSolution = new VSSolution
+   val cs_files = new HashSet<String>
+   val protobuf_files = new HashSet<String>
    private var protobuf_project_references = new HashMap<String, HashMap<String, String>>
    private var extension TypeResolver typeResolver
    private var extension BasicCSharpSourceGenerator basicCSharpSourceGenerator

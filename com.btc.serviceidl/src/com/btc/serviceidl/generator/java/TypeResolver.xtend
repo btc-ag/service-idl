@@ -42,13 +42,13 @@ class TypeResolver
     // which avoids problems with conflicts. Apart from that, this seems like a recurring 
     // problem when generating Java code using Xtext. Perhaps there is some reusable solution? 
     @Accessors(PUBLIC_GETTER)
-    private val referenced_types = new HashSet<String>
+    val referenced_types = new HashSet<String>
 
-    private val IQualifiedNameProvider qualified_name_provider
-    private val ParameterBundle param_bundle
-    private val Set<MavenDependency> dependencies
+    val IQualifiedNameProvider qualified_name_provider
+    val ParameterBundle param_bundle
+    val Set<MavenDependency> dependencies
 
-    private val fully_qualified = false // we want the toString method show short names by default!
+    val fully_qualified = false // we want the toString method show short names by default!
 
     new(IQualifiedNameProvider qualified_name_provider, ParameterBundle param_bundle,
         Set<MavenDependency> dependencies)

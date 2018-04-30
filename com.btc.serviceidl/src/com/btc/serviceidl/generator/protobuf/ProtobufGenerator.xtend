@@ -65,11 +65,11 @@ class ProtobufGenerator
    
    private var param_bundle = new ParameterBundle.Builder()
    
-   private val referenced_files = new HashSet<String>
-   private val generated_artifacts = new HashMap<EObject, String>
-   private val typedef_table = new HashMap<String, String>
-   private val cpp_project_references = new HashMap<String, HashMap<String, String>>
-   private val dotnet_project_references = new HashMap<String, HashMap<String, String>>
+   val referenced_files = new HashSet<String>
+   val generated_artifacts = new HashMap<EObject, String>
+   val typedef_table = new HashMap<String, String>
+   val cpp_project_references = new HashMap<String, HashMap<String, String>>
+   val dotnet_project_references = new HashMap<String, HashMap<String, String>>
    
    def HashMap<String, HashMap<String, String>> getProjectReferences(ArtifactNature artifact_nature)
    {

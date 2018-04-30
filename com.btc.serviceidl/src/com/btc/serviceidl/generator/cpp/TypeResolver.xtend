@@ -42,13 +42,13 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(NONE)
 class TypeResolver
 {
-    @Accessors(PACKAGE_GETTER) private val IQualifiedNameProvider qualified_name_provider
-    @Accessors(PACKAGE_GETTER) private val IProjectSet projectSet
-    private val Collection<IProjectReference> project_references
-    private val Collection<String> cab_libs
-    private val Map<EObject, Collection<EObject>> smart_pointer_map
+    @Accessors(PACKAGE_GETTER) val IQualifiedNameProvider qualified_name_provider
+    @Accessors(PACKAGE_GETTER) val IProjectSet projectSet
+    val Collection<IProjectReference> project_references
+    val Collection<String> cab_libs
+    val Map<EObject, Collection<EObject>> smart_pointer_map
 
-    @Accessors(NONE) private val Map<IncludeGroup, Set<IPath>> includes = new HashMap<IncludeGroup, Set<IPath>>
+    @Accessors(NONE) val Map<IncludeGroup, Set<IPath>> includes = new HashMap<IncludeGroup, Set<IPath>>
 
     def getIncludes()
     {
@@ -102,7 +102,7 @@ class TypeResolver
     public static val MODULES_INCLUDE_GROUP = new IncludeGroup("BTC.PRINS.Modules")
 
     // TODO inject this, this is PRINS-specific
-    @Accessors(PACKAGE_GETTER) private val headerResolver = PrinsHeaderResolver.create
+    @Accessors(PACKAGE_GETTER) val headerResolver = PrinsHeaderResolver.create
 
     def String resolveSymbol(String symbolName)
     {
@@ -226,7 +226,7 @@ class TypeResolver
     {
         // sequences use forward-declared types as template parameters
         // and do not need the smart pointer wrapping
-        if (com.btc.serviceidl.util.Util.isSequenceType(other_type))
+        if (other_type.isSequenceType)
             return false
 
         val dependencies = smart_pointer_map.get(element)

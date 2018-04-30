@@ -41,10 +41,10 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(PACKAGE_GETTER)
 class BasicJavaSourceGenerator
 {
-    private val IQualifiedNameProvider qualified_name_provider
-    private val TypeResolver typeResolver
-    private val IDLSpecification idl
-    private val Map<String, ResolvedName> typedef_table
+    val IQualifiedNameProvider qualified_name_provider
+    val TypeResolver typeResolver
+    val IDLSpecification idl
+    val Map<String, ResolvedName> typedef_table
 
     def public dispatch String toText(ExceptionDeclaration element)
     {

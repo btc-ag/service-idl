@@ -27,12 +27,12 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 @Accessors
 class VcxProjGenerator
 {
-    private val ParameterBundle param_bundle
-    private val VSSolution vsSolution
-    private val Map<String, Set<VSSolution.ProjectReference>> protobuf_project_references
-    private val Set<VSSolution.ProjectReference> project_references
+    val ParameterBundle param_bundle
+    val VSSolution vsSolution
+    val Map<String, Set<VSSolution.ProjectReference>> protobuf_project_references
+    val Set<VSSolution.ProjectReference> project_references
 
-    private val ProjectFileSet projectFileSet
+    val ProjectFileSet projectFileSet
 
     def generate(String project_name, IPath project_path)
     {

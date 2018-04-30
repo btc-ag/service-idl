@@ -9,7 +9,7 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 
 class VSSolution
 {
-    private val vs_projects = new HashMap<String, UUID>
+    val vs_projects = new HashMap<String, UUID>
 
     def public String getCsprojName(ParameterBundle builder)
     {

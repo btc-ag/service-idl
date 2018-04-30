@@ -34,13 +34,13 @@ import static extension com.btc.serviceidl.generator.common.Extensions.*
 @Accessors(PACKAGE_GETTER)
 class TypeResolver
 {
-    private val DotNetFrameworkVersion frameworkVersion
-    private val IQualifiedNameProvider qualified_name_provider
-    private val Set<String> namespace_references
-    private val Set<String> referenced_assemblies
-    private val Map<String, String> project_references
-    private val VSSolution vsSolution
-    private val ParameterBundle param_bundle
+    val DotNetFrameworkVersion frameworkVersion
+    val IQualifiedNameProvider qualified_name_provider
+    val Set<String> namespace_references
+    val Set<String> referenced_assemblies
+    val Map<String, String> project_references
+    val VSSolution vsSolution
+    val ParameterBundle param_bundle
 
     def ResolvedName resolve(String name)
     {

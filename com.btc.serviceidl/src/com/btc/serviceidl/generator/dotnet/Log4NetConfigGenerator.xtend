@@ -9,7 +9,7 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 @Accessors
 class Log4NetConfigGenerator
 {
-    private val ParameterBundle param_bundle
+    val ParameterBundle param_bundle
 
     def generate()
     {

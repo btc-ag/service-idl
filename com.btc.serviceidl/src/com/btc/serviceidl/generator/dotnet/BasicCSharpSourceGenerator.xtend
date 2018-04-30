@@ -43,9 +43,9 @@ import static extension com.btc.serviceidl.util.Extensions.*
 
 @Accessors(PACKAGE_GETTER)
 class BasicCSharpSourceGenerator {
-    private val extension TypeResolver typeResolver 
-    private val Map<String, String> typedef_table    
-    private val IDLSpecification idl
+    val extension TypeResolver typeResolver 
+    val Map<String, String> typedef_table    
+    val IDLSpecification idl
     
    def public dispatch String toText(AliasDeclaration element, EObject context)
    {

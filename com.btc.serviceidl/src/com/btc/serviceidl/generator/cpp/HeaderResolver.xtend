@@ -186,10 +186,10 @@ class HeaderResolver
         "boost::bimap" -> "boost/bimap.hpp"
     }
 
-    private val Map<String, GroupedHeader> headerMap
-    private val Map<String, GroupedHeader> implementationHeaderMap
+    val Map<String, GroupedHeader> headerMap
+    val Map<String, GroupedHeader> implementationHeaderMap
 
-    @Accessors private val Iterable<OutputConfigurationItem> outputConfiguration
+    @Accessors val Iterable<OutputConfigurationItem> outputConfiguration
 
     private new(Map<String, GroupedHeader> headerMap, Map<String, GroupedHeader> implementationHeaderMap,
         Iterable<OutputConfigurationItem> outputConfiguration)
@@ -211,9 +211,9 @@ class HeaderResolver
 
     static class Builder
     {
-        private val headerMap = new HashMap<String, GroupedHeader>
-        private val implementationHeaderMap = new HashMap<String, GroupedHeader>
-        private val outputConfiguration = new ArrayList<OutputConfigurationItem>
+        val headerMap = new HashMap<String, GroupedHeader>
+        val implementationHeaderMap = new HashMap<String, GroupedHeader>
+        val outputConfiguration = new ArrayList<OutputConfigurationItem>
 
         def withGroup(Map<String, String> classToHeaderMap, IncludeGroup group)
         {

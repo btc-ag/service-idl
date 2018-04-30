@@ -66,8 +66,8 @@ class JavaGenerator
    
    private var BasicJavaSourceGenerator basicJavaSourceGenerator 
    
-   private val typedef_table = new HashMap<String, ResolvedName>
-   private val dependencies = new HashSet<MavenDependency>
+   val typedef_table = new HashMap<String, ResolvedName>
+   val dependencies = new HashSet<MavenDependency>
    
    private var param_bundle = new ParameterBundle.Builder()    
    
