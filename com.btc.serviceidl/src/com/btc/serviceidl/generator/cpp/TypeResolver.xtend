@@ -160,10 +160,9 @@ class TypeResolver
         }
         else
         {
-            var result = GeneratorUtil.getTransformedModuleName(
-                ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(
-                    com.btc.serviceidl.util.Util.getScopeDeterminant(object))).with(project_type).build,
-                ArtifactNature.CPP, TransformType.NAMESPACE)
+            var result = GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(
+                object.scopeDeterminant.moduleStack
+            ).with(project_type).build, ArtifactNature.CPP, TransformType.NAMESPACE)
             result += Constants.SEPARATOR_NAMESPACE + if (object instanceof InterfaceDeclaration)
                 project_type.getClassName(ArtifactNature.CPP, qualified_name.lastSegment)
             else
