@@ -153,10 +153,11 @@ class TypeResolver
             return new ResolvedName(Names.plain(object), TransformType.NAMESPACE)
 
         val resolved_name = qualified_name.toString
-        if (headerResolver.isCAB(resolved_name))
+        if (headerResolver.isCAB(resolved_name) || headerResolver.isBoost(resolved_name))
+        {
             resolveSymbol(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
-        else if (headerResolver.isBoost(resolved_name))
-            resolveSymbol(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
+            return new ResolvedName(qualified_name, TransformType.NAMESPACE)
+        }
         else
         {
             var result = GeneratorUtil.getTransformedModuleName(
@@ -171,8 +172,6 @@ class TypeResolver
             object.resolveProjectFilePath(project_type)
             return new ResolvedName(result, TransformType.NAMESPACE)
         }
-
-        return new ResolvedName(qualified_name, TransformType.NAMESPACE)
     }
 
     def void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
