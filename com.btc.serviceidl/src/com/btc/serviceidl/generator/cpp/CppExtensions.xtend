@@ -56,13 +56,7 @@ class CppExtensions
             else
                 "Types"
 
-        getIncludeFilePath(referenced_object.moduleStack, project_type, baseName, moduleStructureStrategy)
-    }
-
-    def static IPath getIncludeFilePath(Iterable<ModuleDeclaration> module_stack, ProjectType project_type,
-        String baseName, IModuleStructureStrategy moduleStructureStrategy)
-    {
-        moduleStructureStrategy.getIncludeFilePath(module_stack, project_type, baseName)
+        moduleStructureStrategy.getIncludeFilePath(referenced_object.moduleStack, project_type, baseName)
     }
 
     /**

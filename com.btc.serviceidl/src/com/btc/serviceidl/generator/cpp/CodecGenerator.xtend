@@ -22,7 +22,6 @@ import com.btc.serviceidl.util.MemberElementWrapper
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.TypeResolverExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
@@ -645,9 +644,11 @@ class CodecGenerator extends BasicCppGenerator
         val failable_types = GeneratorUtil.getFailableTypes(owner)
 
         // always include corresponding *.pb.h file due to local failable types definitions
-        addTargetInclude(
-            paramBundle.moduleStack.getIncludeFilePath(ProjectType.PROTOBUF, GeneratorUtil.getPbFileName(owner),
-                moduleStructureStrategy))
+        addTargetInclude(moduleStructureStrategy.getIncludeFilePath(
+            paramBundle.moduleStack,
+            ProjectType.PROTOBUF,
+            GeneratorUtil.getPbFileName(owner)
+        ))
 
         '''
             namespace «GeneratorUtil.getCodecName(owner)»
