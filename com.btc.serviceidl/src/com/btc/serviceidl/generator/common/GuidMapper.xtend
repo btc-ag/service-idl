@@ -22,7 +22,7 @@ import java.util.UUID
 class GuidMapper
 {
 
-    private static val guid_map = new HashMap<EObject, String>
+    static val guid_map = new HashMap<EObject, String>
 
     def public static void put(EObject object, String guid)
     {

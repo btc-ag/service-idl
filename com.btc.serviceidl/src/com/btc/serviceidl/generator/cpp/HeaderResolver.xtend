@@ -15,13 +15,22 @@
  */
 package com.btc.serviceidl.generator.cpp
 
-import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.TypeResolver.IncludeGroup
+import java.util.ArrayList
+import java.util.Arrays
+import java.util.HashMap
+import java.util.Map
+import org.eclipse.core.runtime.IPath
+import org.eclipse.core.runtime.Path
+import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtend.lib.annotations.Data
 
 class HeaderResolver
 {
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val stl_header_mapper = #{
+    static val stl_header_mapper = #{
         "assert" -> "cassert",
         "int8_t" -> "cstdint",
         "int16_t" -> "cstdint",
@@ -50,7 +59,7 @@ class HeaderResolver
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val cab_header_mapper = #{
+    static val cab_header_mapper = #{
         "BTC::Commons::Core::AutoPtr" -> "Commons/Core/include/AutoPtr.h",
         "BTC::Commons::Core::BlockStackTraceSettings" -> "Commons/Core/include/Exception.h",
         "BTC::Commons::Core::Context" -> "Commons/Core/include/Context.h",
@@ -166,91 +175,127 @@ class HeaderResolver
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val cab_impl_header_mapper = #{
+    static val cab_impl_header_mapper = #{
         "BTC::Commons::CoreExtras::Optional" -> "Commons/CoreExtras/include/OptionalImpl.h",
         "BTC::ServiceComm::Util::CDefaultObservableRegistrationProxy" ->
             "ServiceComm/Util/include/CDefaultObservableRegistrationProxy.impl.h"
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val boost_header_mapper = #{
+    static val boost_header_mapper = #{
         "boost::bimap" -> "boost/bimap.hpp"
     }
 
-    // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val odb_header_mapper = #{
-        "id_raw" -> "odb/oracle/traits.hxx",
-        "id_uniqueidentifier" -> "odb/mssql/traits.hxx",
-        "odb::nullable" -> "odb/nullable.hxx"
-    }
+    val Map<String, GroupedHeader> headerMap
+    val Map<String, GroupedHeader> implementationHeaderMap
 
-    // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    private static val modules_header_mapper = #{
-        "BTC::PRINS::Commons::GUID" -> "modules/Commons/include/GUID.h",
-        "BTC::PRINS::Commons::Utilities::GUIDHelper" -> "modules/Commons/Utilities/include/GUIDHelper.h"
-    }
+    @Accessors val Iterable<OutputConfigurationItem> outputConfiguration
 
-    def static String getCABHeader(String class_name)
+    private new(Map<String, GroupedHeader> headerMap, Map<String, GroupedHeader> implementationHeaderMap,
+        Iterable<OutputConfigurationItem> outputConfiguration)
     {
-        val header = cab_header_mapper.get(class_name)
-
-        if (header !== null)
-            return header
-        else
-            throw new IllegalArgumentException("Could not find CAB *.h mapping: " + class_name)
+        this.headerMap = headerMap.immutableCopy
+        this.implementationHeaderMap = implementationHeaderMap.immutableCopy
+        this.outputConfiguration = outputConfiguration.sortBy[precedence].immutableCopy
     }
 
-    def static String getCABImpl(String class_name)
+    @Data
+    static class OutputConfigurationItem
     {
-        val header = cab_impl_header_mapper.get(class_name)
-
-        if (header !== null)
-            return header
-        else
-            throw new IllegalArgumentException("Could not find CAB *.impl.h mapping: " + class_name)
+        Iterable<TypeResolver.IncludeGroup> includeGroups
+        int precedence
+        String prefix
+        String suffix
+        boolean systemIncludeStyle
     }
 
-    def static String getSTLHeader(String class_name)
+    static class Builder
     {
-        val header = stl_header_mapper.get(class_name)
+        val headerMap = new HashMap<String, GroupedHeader>
+        val implementationHeaderMap = new HashMap<String, GroupedHeader>
+        val outputConfiguration = new ArrayList<OutputConfigurationItem>
 
-        if (header !== null)
-            return header
-        else
-            throw new IllegalArgumentException("Could not find STL *.h mapping: " + class_name)
+        def withGroup(Map<String, String> classToHeaderMap, IncludeGroup group)
+        {
+            withGroup(headerMap, classToHeaderMap, group)
+            this
+        }
+
+        private static def withGroup(Map<String, GroupedHeader> headerMap, Map<String, String> classToHeaderMap,
+            IncludeGroup group)
+        {
+            headerMap.putAll(transformHeaderMap(classToHeaderMap, group).toMap([it.key], [it.value]))
+        // TODO check for conflicts?            
+        }
+
+        def withImplementationGroup(Map<String, String> classToHeaderMap, IncludeGroup group)
+        {
+            withGroup(implementationHeaderMap, classToHeaderMap, group)
+            this
+        }
+
+        def build()
+        {
+            new HeaderResolver(headerMap, implementationHeaderMap, outputConfiguration)
+        }
+
+        def static withBasicGroups(Builder builder)
+        {
+            builder.withGroup(stl_header_mapper, TypeResolver.STL_INCLUDE_GROUP).withGroup(boost_header_mapper,
+                TypeResolver.BOOST_INCLUDE_GROUP).withGroup(cab_header_mapper, TypeResolver.CAB_INCLUDE_GROUP).
+                withImplementationGroup(cab_impl_header_mapper, TypeResolver.CAB_INCLUDE_GROUP)
+        }
+
+        def configureGroup(Iterable<TypeResolver.IncludeGroup> includeGroups, int precedence, String prefix,
+            String suffix, boolean systemIncludeStyle)
+        {
+            outputConfiguration.add(
+                new OutputConfigurationItem(includeGroups.toList.immutableCopy, precedence, prefix, suffix,
+                    systemIncludeStyle))
+            this
+        }
+
+        def configureGroup(TypeResolver.IncludeGroup includeGroup, int precedence, String prefix, String suffix,
+            boolean systemIncludeStyle)
+        {
+            configureGroup(Arrays.asList(includeGroup), precedence, prefix, suffix, systemIncludeStyle)
+            this
+        }
+
     }
 
-    def static String getBoostHeader(String class_name)
+    def static Iterable<Pair<String, GroupedHeader>> transformHeaderMap(Map<String, String> map, IncludeGroup group)
     {
-        val header = boost_header_mapper.get(class_name)
-
-        if (header !== null)
-            return header
-        else
-            throw new IllegalArgumentException("Could not find Boost *.h mapping: " + class_name)
+        map.entrySet.map[new Pair(it.key, new GroupedHeader(group, new Path(it.value)))]
     }
 
-    def static String getODBHeader(String class_name)
+    @Data
+    static class GroupedHeader
     {
-        val header = odb_header_mapper.get(class_name)
-
-        if (header !== null)
-            return header
-        else
-            throw new IllegalArgumentException("Could not find ODB *.h mapping: " + class_name)
+        IncludeGroup includeGroup
+        IPath path
     }
 
-    def static String getModulesHeader(String class_name)
+    def GroupedHeader getHeader(String className)
     {
-        val header = modules_header_mapper.get(class_name)
-
-        if (header !== null)
-            return header
+        val res = headerMap.get(className)
+        if (res === null)
+            throw new IllegalArgumentException("Could not find *.h mapping: " + className)
         else
-            throw new IllegalArgumentException("Could not find modules *.h mapping: " + class_name)
+            res
     }
 
-    def static boolean isCAB(String class_name)
+    def GroupedHeader getImplementationHeader(String className)
+    {
+        val res = implementationHeaderMap.get(className)
+        if (res === null)
+            getHeader(className)
+        else
+            res
+    }
+
+    @Deprecated
+    def boolean isCAB(String class_name)
     {
         val key = GeneratorUtil.switchSeparator(class_name, TransformType.PACKAGE, TransformType.NAMESPACE)
 
@@ -263,7 +308,8 @@ class HeaderResolver
         return false
     }
 
-    def static boolean isBoost(String class_name)
+    @Deprecated
+    def boolean isBoost(String class_name)
     {
         return class_name.startsWith("boost")
     }

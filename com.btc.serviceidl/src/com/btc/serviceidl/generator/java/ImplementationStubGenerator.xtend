@@ -10,7 +10,6 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.java
 
-import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -21,7 +20,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors(NONE)
 class ImplementationStubGenerator
 {
-    private val BasicJavaSourceGenerator basicJavaSourceGenerator
+    val BasicJavaSourceGenerator basicJavaSourceGenerator
 
     def private getTypeResolver()
     {

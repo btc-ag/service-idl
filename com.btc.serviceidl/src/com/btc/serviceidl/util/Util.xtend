@@ -36,7 +36,10 @@ import java.util.ArrayDeque
 import java.util.Deque
 import java.util.HashSet
 import java.util.Optional
+import java.util.function.Function
 import java.util.regex.Pattern
+import java.util.stream.Stream
+import java.util.stream.StreamSupport
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -98,6 +101,11 @@ class Util
         return module_stack
     }
 
+    def public static <T> T getParent(EObject element, Class<T> t)
+    {
+        if (t.isAssignableFrom(element.class)) element as T else getParent(element.eContainer, t)
+    }
+
     def public static EObject getScopeDeterminant(EObject element)
     {
         var container = element
@@ -112,9 +120,9 @@ class Util
         return EcoreUtil.getRootContainer(element)
     }
 
-    def public static EventDeclaration getRelatedEvent(StructDeclaration object, IDLSpecification idl)
+    def public static EventDeclaration getRelatedEvent(StructDeclaration object)
     {
-        return idl.eAllContents.filter(EventDeclaration).findFirst[data === object]
+        return object.getParent(IDLSpecification).eAllContents.filter(EventDeclaration).findFirst[data === object]
     }
 
     def public static EventDeclaration getAnonymousEvent(InterfaceDeclaration interface_declaration)
@@ -515,4 +523,15 @@ class Util
         return exceptions.sortBy[name]
     }
 
+    static def <T> stream(Iterable<T> iterable)
+    {
+        StreamSupport.stream(iterable.spliterator, false)
+    }
+
+    static def <T> flatten(Stream<Stream<T>> stream)
+    {
+        stream.flatMap(
+            Function.identity
+        );
+    }
 }

@@ -15,46 +15,46 @@
  */
 package com.btc.serviceidl.generator.common
 
+import com.btc.serviceidl.idl.ModuleDeclaration
+import java.util.ArrayDeque
 import java.util.Deque
 import java.util.Optional
-import com.btc.serviceidl.idl.ModuleDeclaration
 import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors(PUBLIC_GETTER)
 class ParameterBundle
 {
-    private Deque<ModuleDeclaration> module_stack
-    private TransformType transform_type
-    private ArtifactNature artifact_nature
-    private Optional<ProjectType> project_type = Optional.empty
+    private Deque<ModuleDeclaration> moduleStack // TODO can't this be changed to Iterable?
+    private ProjectType projectType
 
     // TODO redesign this, the role of "master_data" is unclear and confusing
     static class Builder
     {
-        private Optional<TransformType> transform_type = Optional.empty
         private Optional<ProjectType> project_type = Optional.empty
-        private val master_data = new ParameterBundle
+        val master_data = new ParameterBundle
 
-        def Builder reset(ArtifactNature element)
+        new()
         {
-            master_data.artifact_nature = element
-            return this
         }
 
-        def void reset(Deque<ModuleDeclaration> element)
+        new(ParameterBundle bundle)
         {
-            master_data.module_stack = element
+            this.master_data.moduleStack = bundle.moduleStack
+
+            // TODO check if handling of projectType is correct
+            this.master_data.projectType = bundle.projectType
+            this.project_type = Optional.of(bundle.projectType)
+        }
+
+        def void reset(Iterable<ModuleDeclaration> element)
+        {
+            master_data.moduleStack = new ArrayDeque<ModuleDeclaration>()
+            master_data.moduleStack.addAll(element)
         }
 
         def void reset(ProjectType element)
         {
-            master_data.project_type = Optional.of(element)
-        }
-
-        def Builder with(TransformType element)
-        {
-            transform_type = Optional.of(element)
-            return this
+            master_data.projectType = element
         }
 
         def Builder with(ProjectType element)
@@ -68,16 +68,9 @@ class ParameterBundle
             // initially same as default data
             val bundle = new ParameterBundle(this)
 
-            // overwrite with optionally provided values, if applicable
-            if (transform_type.present)
-            {
-                bundle.transform_type = transform_type.get
-                transform_type = Optional.empty // reset
-            }
-
             if (project_type.present)
             {
-                bundle.project_type = Optional.of(project_type.get)
+                bundle.projectType = project_type.get
                 project_type = Optional.empty // reset
             }
 
@@ -96,13 +89,11 @@ class ParameterBundle
 
     private new(Builder builder)
     {
-        module_stack = builder.master_data.module_stack
-        artifact_nature = builder.master_data.artifact_nature
-        transform_type = builder.master_data.transform_type
-        project_type = builder.master_data.project_type
+        moduleStack = builder.master_data.moduleStack
+        projectType = builder.master_data.projectType
     }
-    
-    def static Builder createBuilder(Deque<ModuleDeclaration> module_stack)
+
+    def static Builder createBuilder(Iterable<ModuleDeclaration> module_stack)
     {
         val builder = new Builder
         builder.reset(module_stack)

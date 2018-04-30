@@ -17,9 +17,10 @@ import java.util.Map
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
+import com.btc.serviceidl.generator.common.ArtifactNature
 
 class CSProjGenerator {
-  def static generateCSProj(String project_name, VSSolution vsSolution, ParameterBundle.Builder param_bundle, Iterable<String> referenced_assemblies, Iterable<NuGetPackage> nuget_packages, Map<String, String> project_references, Iterable<String> cs_files, Iterable<String> protobuf_files)
+  def static generateCSProj(String project_name, VSSolution vsSolution, ParameterBundle param_bundle, Iterable<String> referenced_assemblies, Iterable<NuGetPackage> nuget_packages, Map<String, String> project_references, Iterable<String> cs_files, Iterable<String> protobuf_files)
   {
       val project_guid = vsSolution.getCsprojGUID(project_name)
       val is_exe = isExecutable(param_bundle.projectType)
@@ -143,7 +144,7 @@ class CSProjGenerator {
           <PropertyGroup>
             <PreBuildEvent>
             «FOR protobuf_file : protobuf_files»
-               protoc.exe --include_imports --proto_path=$(SolutionDir).. --descriptor_set_out=$(ProjectDir)gen/«protobuf_file».protobin $(SolutionDir)../«GeneratorUtil.transform(param_bundle.with(TransformType.FILE_SYSTEM).build)»/gen/«protobuf_file».proto
+               protoc.exe --include_imports --proto_path=$(SolutionDir).. --descriptor_set_out=$(ProjectDir)gen/«protobuf_file».protobin $(SolutionDir)../«GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM)»/gen/«protobuf_file».proto
 Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».protobin
             «ENDFOR»
             </PreBuildEvent>

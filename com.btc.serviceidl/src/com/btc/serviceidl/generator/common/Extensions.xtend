@@ -21,22 +21,7 @@ class Extensions
 {
     def static ProjectType getProjectType(Builder param)
     {
-        param.read.project_type.get
-    }
-
-    def static TransformType getTransformType(Builder param)
-    {
-        param.read.transform_type
-    }
-
-    def static Deque<ModuleDeclaration> getModuleStack(Builder param)
-    {
-        param.read.module_stack
-    }
-
-    def static ArtifactNature getArtifactNature(Builder param)
-    {
-        param.read.artifact_nature
+        param.read.getProjectType
     }
 
     def static ProjectType getMainProjectType(EObject item)

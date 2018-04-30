@@ -10,13 +10,13 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.dotnet
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
@@ -50,7 +50,7 @@ class ProxyProtocolGenerator extends ProxyDispatcherGeneratorBase
                          .CreateBuilder()
                          «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
                              «val codec = resolveCodec(typeResolver, param_bundle, param.paramType)»
-                             «val use_codec = GeneratorUtil.useCodec(param, param_bundle.artifactNature)»
+                             «val use_codec = GeneratorUtil.useCodec(param, ArtifactNature.DOTNET)»
                              «val encodeMethod = getEncodeMethod(param.paramType)»
                              .«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»AddRange«ELSE»Set«ENDIF»«param.paramName.toLowerCase.toFirstUpper»(«IF use_codec»(«resolveEncode(param.paramType)») «codec».«encodeMethod»(«ENDIF»arg.«param.paramName.asProperty»«IF use_codec»)«ENDIF»)
                          «ENDFOR»
@@ -65,7 +65,7 @@ class ProxyProtocolGenerator extends ProxyDispatcherGeneratorBase
                «FOR function : interface_declaration.functions.filter[!returnedType.isVoid] SEPARATOR System.lineSeparator»
                    «val response_name = getDataContractName(interface_declaration, function, ProtobufType.RESPONSE)»
                    «val protobuf_message = function.name.toLowerCase.toFirstUpper»
-                   «val use_codec = GeneratorUtil.useCodec(function.returnedType, param_bundle.artifactNature)»
+                   «val use_codec = GeneratorUtil.useCodec(function.returnedType, ArtifactNature.DOTNET)»
                    «val decodeMethod = getDecodeMethod(function.returnedType)»
                    «val return_type = toText(function.returnedType, function)»
                    «val codec = resolveCodec(typeResolver, param_bundle, function.returnedType)»

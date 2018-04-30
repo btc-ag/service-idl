@@ -20,10 +20,10 @@ import org.eclipse.xtend.lib.annotations.Accessors
 @Accessors(PUBLIC_GETTER)
 class MavenDependency
 {
-    private val String groupId
-    private val String artifactId
-    private val String version
-    private val String scope
+    val String groupId
+    val String artifactId
+    val String version
+    val String scope
 
     private new(Builder builder)
     {

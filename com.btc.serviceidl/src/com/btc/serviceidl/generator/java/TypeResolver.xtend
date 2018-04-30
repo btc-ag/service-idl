@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.java
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
@@ -41,15 +42,15 @@ class TypeResolver
     // which avoids problems with conflicts. Apart from that, this seems like a recurring 
     // problem when generating Java code using Xtext. Perhaps there is some reusable solution? 
     @Accessors(PUBLIC_GETTER)
-    private val referenced_types = new HashSet<String>
+    val referenced_types = new HashSet<String>
 
-    private val IQualifiedNameProvider qualified_name_provider
-    private val ParameterBundle.Builder param_bundle
-    private val Set<MavenDependency> dependencies
+    val IQualifiedNameProvider qualified_name_provider
+    val ParameterBundle param_bundle
+    val Set<MavenDependency> dependencies
 
-    private val fully_qualified = false // we want the toString method show short names by default!
+    val fully_qualified = false // we want the toString method show short names by default!
 
-    new(IQualifiedNameProvider qualified_name_provider, ParameterBundle.Builder param_bundle,
+    new(IQualifiedNameProvider qualified_name_provider, ParameterBundle param_bundle,
         Set<MavenDependency> dependencies)
     {
         this.qualified_name_provider = qualified_name_provider
@@ -152,7 +153,7 @@ class TypeResolver
 
         val effective_name = MavenResolver.resolvePackage(element, Optional.of(project_type)) +
             TransformType.PACKAGE.separator + if (element instanceof InterfaceDeclaration)
-                project_type.getClassName(param_bundle.artifactNature, name.lastSegment)
+                project_type.getClassName(ArtifactNature.JAVA, name.lastSegment)
             else if (element instanceof EventDeclaration) getObservableName(element) else name.lastSegment
         val fully_qualified_name = QualifiedName.create(
             effective_name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))

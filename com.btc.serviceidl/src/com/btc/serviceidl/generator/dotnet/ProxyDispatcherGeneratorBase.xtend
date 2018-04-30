@@ -11,6 +11,7 @@
 package com.btc.serviceidl.generator.dotnet
 
 import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
@@ -23,6 +24,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.generator.common.ArtifactNature
 
 @Accessors(NONE)
 class ProxyDispatcherGeneratorBase extends GeneratorBase
@@ -30,15 +32,17 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
     def protected String getProtobufRequestClassName(InterfaceDeclaration interface_declaration)
     {
         resolve(interface_declaration, ProjectType.PROTOBUF)
-        return GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).with(ProjectType.PROTOBUF).build) +
-            Constants.SEPARATOR_PACKAGE + com.btc.serviceidl.util.Util.asRequest(interface_declaration.name)
+        return GeneratorUtil.getTransformedModuleName(new ParameterBundle.Builder(param_bundle).with(ProjectType.PROTOBUF).build,
+            ArtifactNature.DOTNET, TransformType.PACKAGE) + Constants.SEPARATOR_PACKAGE +
+            com.btc.serviceidl.util.Util.asRequest(interface_declaration.name)
     }
 
     def protected String getProtobufResponseClassName(InterfaceDeclaration interface_declaration)
     {
         resolve(interface_declaration, ProjectType.PROTOBUF)
-        return GeneratorUtil.transform(param_bundle.with(TransformType.PACKAGE).with(ProjectType.PROTOBUF).build) +
-            Constants.SEPARATOR_PACKAGE + com.btc.serviceidl.util.Util.asResponse(interface_declaration.name)
+        return GeneratorUtil.getTransformedModuleName(new ParameterBundle.Builder(param_bundle).with(ProjectType.PROTOBUF).build,
+            ArtifactNature.DOTNET, TransformType.PACKAGE) + Constants.SEPARATOR_PACKAGE +
+            com.btc.serviceidl.util.Util.asResponse(interface_declaration.name)
     }
 
     def protected String getEncodeMethod(EObject type)

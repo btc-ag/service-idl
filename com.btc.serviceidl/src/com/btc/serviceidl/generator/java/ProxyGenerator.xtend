@@ -10,11 +10,13 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.java
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
-import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
+import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.idl.EventDeclaration
+import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.ParameterElement
@@ -23,19 +25,15 @@ import com.btc.serviceidl.util.Constants
 import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.java.BasicJavaSourceGenerator.*
 import static extension com.btc.serviceidl.generator.java.ProtobufUtil.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.FunctionDeclaration
-import com.btc.serviceidl.generator.common.ResolvedName
 
 @Accessors(NONE)
 class ProxyGenerator
 {
-    private val BasicJavaSourceGenerator basicJavaSourceGenerator
-    private val ParameterBundle.Builder param_bundle
+    val BasicJavaSourceGenerator basicJavaSourceGenerator
 
     def private getTypeResolver()
     {
@@ -114,7 +112,7 @@ class ProxyGenerator
                «request_message» request«function.name» = 
                   «request_message».newBuilder()
                   «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
-                      «val use_codec = GeneratorUtil.useCodec(param.paramType, param_bundle.artifactNature)»
+                      «val use_codec = GeneratorUtil.useCodec(param.paramType, ArtifactNature.JAVA)»
                       «var codec = resolveCodec(param.paramType)»
                       «val is_sequence = param.paramType.isSequenceType»
                       «val is_failable = is_sequence && param.paramType.isFailable»
@@ -155,7 +153,7 @@ class ProxyGenerator
                      «val is_byte = function.returnedType.isByte»
                      «val is_short = function.returnedType.isInt16»
                      «val is_char = function.returnedType.isChar»
-                     «val use_codec = GeneratorUtil.useCodec(function.returnedType, param_bundle.artifactNature)»
+                     «val use_codec = GeneratorUtil.useCodec(function.returnedType, ArtifactNature.JAVA)»
                      «val is_sequence = function.returnedType.isSequenceType»
                      «val is_failable = is_sequence && function.returnedType.isFailable»
                      «IF is_sequence»
