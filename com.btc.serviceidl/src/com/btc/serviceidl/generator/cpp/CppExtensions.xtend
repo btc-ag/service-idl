@@ -50,22 +50,22 @@ class CppExtensions
             else
                 referenced_object.scopeDeterminant
 
-        val file_name = if (scope_determinant instanceof InterfaceDeclaration)
+        val baseName = if (scope_determinant instanceof InterfaceDeclaration)
                 project_type.getClassName(ArtifactNature.CPP, Names.plain(scope_determinant))
             else
                 "Types"
 
-        getIncludeFilePath(referenced_object.moduleStack, project_type, file_name)
+        getIncludeFilePath(referenced_object.moduleStack, project_type, baseName)
     }
 
     def static IPath getIncludeFilePath(Iterable<ModuleDeclaration> module_stack, ProjectType project_type,
-        String file_name)
+        String baseName)
     {
         // TODO this is PRINS-specific, at least the "modules"-prefix
         new Path(ReferenceResolver.MODULES_HEADER_PATH_PREFIX).append(
             GeneratorUtil.asPath(ParameterBundle.createBuilder(module_stack).with(project_type).build,
                 ArtifactNature.CPP)).append(if (project_type == ProjectType.PROTOBUF) "gen" else "include").append(
-            file_name).addFileExtension(if (project_type == ProjectType.PROTOBUF) "pb.h" else "h")
+            baseName).addFileExtension(if (project_type == ProjectType.PROTOBUF) "pb.h" else "h")
     }
 
     /**
