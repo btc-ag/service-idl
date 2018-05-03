@@ -15,7 +15,6 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.TransformType
 import java.util.Map
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import com.btc.serviceidl.generator.common.ArtifactNature
 

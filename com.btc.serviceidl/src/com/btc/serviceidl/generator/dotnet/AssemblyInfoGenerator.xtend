@@ -7,8 +7,6 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 import static com.btc.serviceidl.generator.dotnet.Util.*
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
-
 @Accessors
 class AssemblyInfoGenerator
 {
