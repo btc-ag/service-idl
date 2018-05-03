@@ -46,6 +46,7 @@ class ProjectGeneratorBaseBase
     val IScopeProvider scope_provider
     val IDLSpecification idl
     val extension IProjectSet vsSolution
+    val IModuleStructureStrategy moduleStructureStrategy
     val Map<String, Set<IProjectReference>> protobuf_project_references
     val Map<EObject, Collection<EObject>> smart_pointer_map
 
@@ -59,6 +60,7 @@ class ProjectGeneratorBaseBase
 
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
+        IModuleStructureStrategy moduleStructureStrategy,
         Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ProjectType type, ModuleDeclaration module)
     {
@@ -68,6 +70,7 @@ class ProjectGeneratorBaseBase
         this.scope_provider = scope_provider
         this.idl = idl
         this.vsSolution = vsSolution
+        this.moduleStructureStrategy = moduleStructureStrategy
         this.protobuf_project_references = protobuf_project_references
         this.smart_pointer_map = smart_pointer_map
         this.module = module
@@ -85,7 +88,8 @@ class ProjectGeneratorBaseBase
 
     def protected createTypeResolver(ParameterBundle param_bundle)
     {
-        new TypeResolver(qualified_name_provider, vsSolution, project_references, cab_libs, smart_pointer_map)
+        new TypeResolver(qualified_name_provider, vsSolution, moduleStructureStrategy, project_references, cab_libs,
+            smart_pointer_map)
     }
 
     def protected createBasicCppGenerator()

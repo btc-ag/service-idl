@@ -22,7 +22,6 @@ import com.btc.serviceidl.util.MemberElementWrapper
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.TypeResolverExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
@@ -50,6 +49,7 @@ class CodecGenerator extends BasicCppGenerator
 
         val failable_types = GeneratorUtil.getFailableTypes(owner)
 
+        // TODO all the template functions here do not depend on the contents on the IDL and could be moved to some library
         '''
             template<typename PROTOBUF_TYPE, typename API_TYPE>
             inline «forward_const_iterator»< API_TYPE > Decode(google::protobuf::RepeatedPtrField< PROTOBUF_TYPE > const& protobuf_input)
@@ -452,7 +452,8 @@ class CodecGenerator extends BasicCppGenerator
             
             «FOR type : nested_types»
                 «val api_type_name = resolve(type)»
-                «val proto_type_name = resolve(type, ProjectType.PROTOBUF)»
+                «/* TODO change such that ProtobufType does not need to be passed, it is irrelevant here */»
+                «val proto_type_name = typeResolver.resolveProtobuf(type, ProtobufType.REQUEST)»
                 inline «api_type_name» Decode(«proto_type_name» const& protobuf_input)
                 {
                    «makeDecode(type, owner)»
@@ -643,8 +644,11 @@ class CodecGenerator extends BasicCppGenerator
         val failable_types = GeneratorUtil.getFailableTypes(owner)
 
         // always include corresponding *.pb.h file due to local failable types definitions
-        addTargetInclude(
-            paramBundle.moduleStack.getIncludeFilePath(ProjectType.PROTOBUF, GeneratorUtil.getPbFileName(owner)))
+        addTargetInclude(moduleStructureStrategy.getIncludeFilePath(
+            paramBundle.moduleStack,
+            ProjectType.PROTOBUF,
+            GeneratorUtil.getPbFileName(owner)
+        ))
 
         '''
             namespace «GeneratorUtil.getCodecName(owner)»
@@ -749,7 +753,8 @@ class CodecGenerator extends BasicCppGenerator
                
                «FOR type : nested_types»
                    «val api_type_name = resolve(type)»
-                   «val proto_type_name = resolve(type, ProjectType.PROTOBUF)»
+                   «/* TODO change such that ProtobufType does not need to be passed, it is irrelevant here */»
+                   «val proto_type_name = typeResolver.resolveProtobuf(type, ProtobufType.REQUEST)»
                    «api_type_name» Decode(«proto_type_name» const& protobuf_input);
                    
                    «IF type instanceof EnumDeclaration»

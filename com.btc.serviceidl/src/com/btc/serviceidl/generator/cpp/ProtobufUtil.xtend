@@ -27,7 +27,6 @@ import com.btc.serviceidl.util.Constants
 import java.util.Optional
 import org.eclipse.emf.ecore.EObject
 
-import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufUtil
@@ -59,8 +58,11 @@ class ProtobufUtil
         else
             result += Names.plain(object)
 
-        addTargetInclude(
-            paramBundle.moduleStack.getIncludeFilePath(ProjectType.PROTOBUF, GeneratorUtil.getPbFileName(object)))
+        addTargetInclude(typeResolver.moduleStructureStrategy.getIncludeFilePath(
+            scope_determinant.moduleStack,
+            ProjectType.PROTOBUF,
+            GeneratorUtil.getPbFileName(object)
+        ))
 
         object.resolveProjectFilePath(ProjectType.PROTOBUF)
         return new ResolvedName(result, TransformType.NAMESPACE)
@@ -148,7 +150,8 @@ class ProtobufUtil
 
         val codec_name = GeneratorUtil.getCodecName(if (is_failable) container.get else ultimate_type)
 
-        addTargetInclude(moduleStack.getIncludeFilePath(ProjectType.IMPL, codec_name))
+        addTargetInclude(
+            typeResolver.moduleStructureStrategy.getIncludeFilePath(moduleStack, ProjectType.IMPL, codec_name))
 
         resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 

@@ -37,11 +37,12 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
 {
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
+        IModuleStructureStrategy moduleStructureStrategy,
         Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ModuleDeclaration module)
     {
         super(resource, file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
-            protobuf_project_references, smart_pointer_map, ProjectType.SERVER_RUNNER, module)
+            moduleStructureStrategy, protobuf_project_references, smart_pointer_map, ProjectType.SERVER_RUNNER, module)
     }
 
     def generate()
