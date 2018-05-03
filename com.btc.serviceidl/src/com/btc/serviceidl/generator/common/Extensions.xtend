@@ -12,7 +12,6 @@ package com.btc.serviceidl.generator.common
 
 import com.btc.serviceidl.generator.common.ParameterBundle.Builder
 import com.btc.serviceidl.idl.ModuleDeclaration
-import java.util.Deque
 import org.eclipse.emf.ecore.EObject
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.util.Util
