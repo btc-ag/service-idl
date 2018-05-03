@@ -44,6 +44,8 @@ class TypeResolver
 {
     @Accessors(PACKAGE_GETTER) val IQualifiedNameProvider qualified_name_provider
     @Accessors(PACKAGE_GETTER) val IProjectSet projectSet
+    @Accessors(PACKAGE_GETTER) val IModuleStructureStrategy moduleStructureStrategy
+
     val Collection<IProjectReference> project_references
     val Collection<String> cab_libs
     val Map<EObject, Collection<EObject>> smart_pointer_map
@@ -136,14 +138,10 @@ class TypeResolver
 
     def ResolvedName resolve(EObject object, ProjectType project_type)
     {
-        if (com.btc.serviceidl.util.Util.isUUIDType(object))
-        {
-            if (project_type == ProjectType.PROTOBUF)
-                return new ResolvedName(resolveSymbol("std::string"), TransformType.NAMESPACE)
-            else
-                return new ResolvedName("BTC::Commons::CoreExtras::UUID", TransformType.NAMESPACE)
-        }
-        else if (object instanceof PrimitiveType)
+        if (project_type == ProjectType.PROTOBUF)
+            throw new IllegalArgumentException("Use ProtobufUtil.resolveProtobuf instead!")
+            
+        if (object instanceof PrimitiveType)
             return new ResolvedName(getPrimitiveTypeName(object), TransformType.NAMESPACE)
         else if (object instanceof AbstractType && (object as AbstractType).primitiveType !== null)
             return resolve((object as AbstractType).primitiveType, project_type)
@@ -153,26 +151,24 @@ class TypeResolver
             return new ResolvedName(Names.plain(object), TransformType.NAMESPACE)
 
         val resolved_name = qualified_name.toString
-        if (headerResolver.isCAB(resolved_name))
+        if (headerResolver.isCAB(resolved_name) || headerResolver.isBoost(resolved_name))
+        {
             resolveSymbol(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
-        else if (headerResolver.isBoost(resolved_name))
-            resolveSymbol(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
+            return new ResolvedName(qualified_name, TransformType.NAMESPACE)
+        }
         else
         {
-            var result = GeneratorUtil.getTransformedModuleName(
-                ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(
-                    com.btc.serviceidl.util.Util.getScopeDeterminant(object))).with(project_type).build,
-                ArtifactNature.CPP, TransformType.NAMESPACE)
+            var result = GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(
+                object.scopeDeterminant.moduleStack
+            ).with(project_type).build, ArtifactNature.CPP, TransformType.NAMESPACE)
             result += Constants.SEPARATOR_NAMESPACE + if (object instanceof InterfaceDeclaration)
                 project_type.getClassName(ArtifactNature.CPP, qualified_name.lastSegment)
             else
                 qualified_name.lastSegment
-            addToGroup(TARGET_INCLUDE_GROUP, object.getIncludeFilePath(project_type))
+            addToGroup(TARGET_INCLUDE_GROUP, object.getIncludeFilePath(project_type, moduleStructureStrategy))
             object.resolveProjectFilePath(project_type)
             return new ResolvedName(result, TransformType.NAMESPACE)
         }
-
-        return new ResolvedName(qualified_name, TransformType.NAMESPACE)
     }
 
     def void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)

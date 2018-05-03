@@ -39,16 +39,19 @@ import static com.btc.serviceidl.generator.cpp.Util.*
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
+import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 
 @Accessors
 class OdbProjectGenerator extends ProjectGeneratorBase {
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
+        IModuleStructureStrategy moduleStructureStrategy,
         Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map,  ModuleDeclaration module)
     {
         super(resource, file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
-            protobuf_project_references, smart_pointer_map, ProjectType.EXTERNAL_DB_IMPL, module, new OdbSourceGenerationStrategy)
+            moduleStructureStrategy, protobuf_project_references, smart_pointer_map, ProjectType.EXTERNAL_DB_IMPL, 
+            module, new OdbSourceGenerationStrategy)
     }
     
    override void generate()
