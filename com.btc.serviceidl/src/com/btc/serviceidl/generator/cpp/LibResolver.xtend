@@ -79,7 +79,7 @@ class LibResolver
 
         if (cab_lib_mapper.containsKey(key.toString))
         {
-            result.add(cab_lib_mapper.get(key))
+            result.add(cab_lib_mapper.get(key.toString))
 
             if (cab_additional_dependencies.containsKey(header_file))
                 result.addAll(cab_additional_dependencies.get(header_file))
