@@ -92,7 +92,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                
                public static «resolve("System.object")» encode(object plainData)
                {
-                  if (plainData === null)
+                  if (plainData == null)
                      throw new «resolve("System.ArgumentNullException")»();
             
                   «FOR data_type : data_types»
@@ -152,7 +152,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                
                public static object decode(object encodedData)
                {
-                  if (encodedData === null)
+                  if (encodedData == null)
                      throw new «resolve("System.ArgumentNullException")»();
             
                   «FOR data_type : data_types»
