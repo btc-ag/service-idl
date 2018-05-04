@@ -1,7 +1,8 @@
 Manifest-Version: 1.0
+Automatic-Module-Name: com.btc.serviceidl.ui.tests
 Bundle-ManifestVersion: 2
 Bundle-Name: com.btc.serviceidl.ui.tests
-Bundle-Vendor: My Company
+Bundle-Vendor: BTC Business Technology Consulting AG
 Bundle-Version: 1.0.0.qualifier
 Bundle-SymbolicName: com.btc.serviceidl.ui.tests; singleton:=true
 Bundle-ActivationPolicy: lazy

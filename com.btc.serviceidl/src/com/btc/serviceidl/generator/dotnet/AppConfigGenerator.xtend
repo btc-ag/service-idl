@@ -16,7 +16,6 @@ import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 
 @Accessors(NONE)
