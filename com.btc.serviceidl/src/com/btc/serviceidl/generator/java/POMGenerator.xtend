@@ -54,7 +54,7 @@ class POMGenerator
                <repositories>
                   <repository>
                      <id>cab-maven-resolver</id>
-                     <url>http://artifactory.inf.bop/artifactory/cab-maven-resolver//</url>
+                     <url>http://artifactory.bop-dev.de/artifactory/cab-maven-resolver//</url>
                      <releases>
                         <enabled>true</enabled>
                      </releases>
@@ -68,7 +68,7 @@ class POMGenerator
                   <repository>
                      <id>cab-maven</id>
                      <name>CAB Main Maven Repository</name>
-                     <url>http://artifactory.inf.bop/artifactory/cab-maven/</url>
+                     <url>http://artifactory.bop-dev.de/artifactory/cab-maven/</url>
                   </repository>
                </distributionManagement>
                
