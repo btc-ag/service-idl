@@ -10,10 +10,9 @@ before_script:
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3 # give xvfb some time to start
   
-script: mvn install
+script: mvn compile test package verify install
 
 after_success:
-  - mvn package
   - find -name '*.zip' #DEBUG
   - bash <(curl -s https://codecov.io/bash)
 
