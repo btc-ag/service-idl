@@ -3,7 +3,15 @@ language: java
 cache:  
     directories:  
         - $HOME/.m2  
-script: xvfb-run mvn integration-test
+
+# TODO we start xvfb separately (instead of only using xvfb-run for mvn integration-test, because during "deploy" the tests are currently executed again, which should be avoided
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
+  
+script: mvn integration-test
+
 after_success:
   - mvn package
   - find -name '*.zip' #DEBUG
