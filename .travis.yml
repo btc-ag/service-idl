@@ -10,7 +10,7 @@ before_script:
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3 # give xvfb some time to start
   
-script: mvn compile test package verify install
+script: mvn install
 
 after_success:
   - find -name '*.zip' #DEBUG
