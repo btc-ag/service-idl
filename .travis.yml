@@ -3,10 +3,24 @@ language: java
 cache:  
     directories:  
         - $HOME/.m2  
-script: xvfb-run mvn integration-test
+
+# TODO we start xvfb separately (instead of only using xvfb-run for mvn install, because during "deploy" the tests are currently executed again, which should be avoided
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
+  
+script: mvn install
+
 after_success:
-  - mvn package
   - find -name '*.zip' #DEBUG
   - bash <(curl -s https://codecov.io/bash)
 
-
+# based on https://blog.travis-ci.com/2017-03-30-deploy-maven-travis-ci-packagecloud/
+deploy:
+  provider: script
+  script: "cp .travis.settings.xml $HOME/.m2/settings.xml && mvn deploy"
+  skip_cleanup: true
+  on:
+    all_branches: true
+  # tags: true
