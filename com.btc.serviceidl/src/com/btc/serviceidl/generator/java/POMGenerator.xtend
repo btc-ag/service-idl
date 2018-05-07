@@ -21,6 +21,8 @@ class POMGenerator
         val root_name = MavenResolver.resolvePackage(container, Optional.empty)
         val version = MavenResolver.resolveVersion(container)
 
+        // TODO depending on the target version, different protoc versions must be used
+        // TODO use the https://github.com/xolstice/protobuf-maven-plugin instead
         '''
             <project xmlns="http://maven.apache.org/POM/4.0.0"
                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -47,8 +49,10 @@ class POMGenerator
                <protobuf.outputDirectory>${project.build.sourceDirectory}</protobuf.outputDirectory>
                <!-- *.proto source files (default = /src/main/proto) -->
                <protobuf.sourceDirectory>${basedir}/src/main/proto</protobuf.sourceDirectory>
-               <!-- directory containing the protoc executable (default = %PROTOC_HOME% environment variable) -->
-               <protobuf.binDirectory>${PROTOC_HOME}</protobuf.binDirectory>
+
+               <maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
+               <os-maven-plugin.version>1.4.1.Final</os-maven-plugin.version>
+               <protobuf.version>3.1.0</protobuf.version>
                </properties>
                
                <repositories>
@@ -86,6 +90,14 @@ class POMGenerator
                </dependencies>
             
                <build>
+                 <extensions>
+                    <!-- provides os.detected.classifier (i.e. linux-x86_64, osx-x86_64) property -->
+                    <extension>
+                        <groupId>kr.motd.maven</groupId>
+                        <artifactId>os-maven-plugin</artifactId>
+                        <version>${os-maven-plugin.version}</version>
+                    </extension>
+                 </extensions>   
                <pluginManagement>
                   <plugins>
                      <plugin>
@@ -115,6 +127,33 @@ class POMGenerator
                   </plugins>
                </pluginManagement>
                <plugins>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-dependency-plugin</artifactId>
+                      <version>${maven-dependency-plugin.version}</version>
+                      <executions>
+                          <execution>
+                              <id>copy-protoc</id>
+                              <phase>generate-sources</phase>
+                              <goals>
+                                  <goal>copy</goal>
+                              </goals>
+                              <configuration>
+                                  <artifactItems>
+                                      <artifactItem>
+                                          <groupId>com.google.protobuf</groupId>
+                                          <artifactId>protoc</artifactId>
+                                          <version>${protobuf.version}</version>
+                                          <classifier>${os.detected.classifier}</classifier>
+                                          <type>exe</type>
+                                          <overWrite>true</overWrite>
+                                          <outputDirectory>${project.build.directory}</outputDirectory>
+                                      </artifactItem>
+                                  </artifactItems>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
                   <plugin>
                      <groupId>org.apache.maven.plugins</groupId>
                      <artifactId>maven-antrun-plugin</artifactId>
