@@ -152,7 +152,7 @@ class JavaGeneratorTest extends AbstractGeneratorTest
            <repositories>
               <repository>
                  <id>cab-maven-resolver</id>
-                 <url>http://artifactory.bop-dev.de/artifactory/cab-maven-resolver//</url>
+                 <url>https://artifactory.bop-dev.de/artifactory/cab-maven-resolver/</url>
                  <releases>
                     <enabled>true</enabled>
                  </releases>
@@ -166,7 +166,7 @@ class JavaGeneratorTest extends AbstractGeneratorTest
               <repository>
                  <id>cab-maven</id>
                  <name>CAB Main Maven Repository</name>
-                 <url>http://artifactory.bop-dev.de/artifactory/cab-maven/</url>
+                 <url>https://artifactory.bop-dev.de/artifactory/cab-maven/</url>
               </repository>
            </distributionManagement>
            
