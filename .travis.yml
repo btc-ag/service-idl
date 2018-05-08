@@ -19,7 +19,7 @@ after_success:
 # based on https://blog.travis-ci.com/2017-03-30-deploy-maven-travis-ci-packagecloud/
 deploy:
   provider: script
-  script: "cp .travis.settings.xml $HOME/.m2/settings.xml && mvn deploy -DskipTests"
+  script: "cp .travis.settings.xml $HOME/.m2/settings.xml && chmod +x deploy.sh && ./deploy.sh"
   skip_cleanup: true
   on:
     repo: btc-ag/service-idl
