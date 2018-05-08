@@ -270,8 +270,11 @@ class JavaGeneratorTest extends AbstractGeneratorTest
                           <phase>generate-sources</phase>
                           <configuration>
                              <target>
+                                <property name="protoc.filename" value="protoc-${protobuf.version}-${os.detected.classifier}.exe"/>
+                                <property name="protoc.filepath" value="${project.build.directory}/${protoc.filename}"/>
+                                <chmod file="${protoc.filepath}" perm="ugo+rx"/>
                                 <mkdir dir="${protobuf.outputDirectory}" />
-                                <exec executable="${protobuf.binDirectory}/protoc">
+                                <exec executable="${protoc.filepath}">
                                    <arg value="--java_out=${protobuf.outputDirectory}" />
                                    <arg value="-I=${basedir}\.." />
                                    <arg value="--proto_path=${protobuf.sourceDirectory}" />
