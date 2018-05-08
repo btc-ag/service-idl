@@ -24,6 +24,7 @@ import org.apache.commons.cli.ParseException;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.generator.GeneratorContext;
 import org.eclipse.xtext.generator.GeneratorDelegate;
 import org.eclipse.xtext.generator.JavaIoFileSystemAccess;
@@ -94,10 +95,15 @@ public class Main {
         // Validate the resource
         List<Issue> list = validator.validate(resource, CheckMode.ALL, CancelIndicator.NullImpl);
         if (!list.isEmpty()) {
+            boolean hasError = false;
             for (Issue issue : list) {
                 System.err.println(issue);
+                hasError |= issue.getSeverity() == Severity.ERROR;
             }
-            return;
+            if (hasError) {
+                System.out.println("Errors in IDL input, terminating.");
+                return;
+            }
         }
 
         // Configure and start the generator

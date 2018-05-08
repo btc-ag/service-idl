@@ -77,4 +77,14 @@ class CommandLineRunnerTest
         assertEquals(25, files.size)
     }
 
+    @Test
+    def void testWithValidInputWithWarningsInProcess()
+    {
+        val file = new File("src/com/btc/serviceidl/tests/testdata/failable.idl")
+        val path = Files.createTempDirectory("test-gen")
+        Main.main(Arrays.asList(file.absolutePath, "-outputPath", path.toString))
+        val files = path.toFile.listFilesRecursively
+        // TODO check output for Warnings!
+        assertEquals(103, files.size)
+    }
 }
