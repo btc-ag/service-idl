@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.btc.serviceidl</groupId>
+		<artifactId>com.btc.serviceidl.parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>com.btc.serviceidl.plainjava</artifactId>
+
+	<build>
+		<plugins>
+			<!-- download source code in Eclipse, best practice -->
+			<!-- <plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<version>2.10</version>
+				<configuration>
+					<downloadSources>true</downloadSources>
+					<downloadJavadocs>false</downloadJavadocs>
+				</configuration>
+			</plugin> -->
+			<!-- setup compilation level -->
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+			<!-- Copy project dependency -->
+			
+        	<plugin>
+  				<groupId>org.apache.maven.plugins</groupId>
+  				<artifactId>maven-shade-plugin</artifactId>
+  				<version>3.1.1</version>
+  				<executions>
+    				<execution>
+      					<phase>package</phase>
+      					<goals>
+        					<goal>shade</goal>
+      					</goals>
+      					<configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>plugin.properties</resource>
+                                </transformer>
+                            </transformers>
+  							<filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                  					<excludes>
+                    					<exclude>META-INF/*.SF</exclude>
+                    					<exclude>META-INF/*.DSA</exclude>
+                    					<exclude>META-INF/*.RSA</exclude>
+                    					<exclude>*.profile</exclude>
+                  					</excludes>
+                  				</filter>
+                  			</filters>
+  						</configuration>
+    				</execution>
+  				</executions>
+			</plugin>
+			<!-- Make this jar executable -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<excludes>
+						<exclude>**/log4j.properties</exclude>
+					</excludes>
+					<archive>
+						<manifest>
+							<addClasspath>false</addClasspath>
+							<mainClass>com.btc.serviceidl.generator.Main</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.btc.serviceidl</groupId>
+			<artifactId>com.btc.serviceidl</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+			<version>21.0</version>
+		</dependency>
+
+		<!-- Xtext -->
+		<dependency>
+			<groupId>org.eclipse.xtext</groupId>
+			<artifactId>org.eclipse.xtext</artifactId>
+			<version>2.13.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.xtext</groupId>
+			<artifactId>org.eclipse.xtext.xbase.lib</artifactId>
+			<version>2.13.0</version>
+			<exclusions>
+		        <exclusion>
+        		    <groupId>com.google.guava</groupId>
+		            <artifactId>guava</artifactId>
+			    </exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.xtext</groupId>
+			<artifactId>org.eclipse.xtext.util</artifactId>
+			<version>2.13.0</version>
+		</dependency>
+
+		<!-- models -->
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>org.eclipse.emf.ecore</artifactId>
+			<version>2.12.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>org.eclipse.emf.codegen.ecore</artifactId>
+			<version>2.12.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>org.eclipse.emf.ecore.xmi</artifactId>
+			<version>2.12.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>org.eclipse.emf.common</artifactId>
+			<version>2.12.0</version>
+		</dependency>
+
+	</dependencies>
+
+</project>

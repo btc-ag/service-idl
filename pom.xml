@@ -15,6 +15,7 @@
 	</properties>
 	<modules>
 		<module>com.btc.serviceidl</module>
+		<module>com.btc.serviceidl.plainjava</module>
 		<module>com.btc.serviceidl.ide</module>
 		<module>com.btc.serviceidl.ui</module>
 		<module>com.btc.serviceidl.target</module>
