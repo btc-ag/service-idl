@@ -1,0 +1,12 @@
+module BTC{
+
+module Commons {
+	
+module Core { 
+
+    interface Foo [ guid = F5CB38D9-484E-3567-99CF-9F120F8F6ADF ] {
+        query Bar(in sequence<failable string> id) returns void;
+    };
+}
+}
+}

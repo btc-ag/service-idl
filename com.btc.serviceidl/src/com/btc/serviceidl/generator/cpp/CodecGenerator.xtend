@@ -472,7 +472,8 @@ class CodecGenerator extends BasicCppGenerator
             «FOR type : failable_types»
                 «val api_type_name = resolve(type)»
                 «val proto_failable_type_name = typeResolver.resolveFailableProtobufType(type, owner)»
-                «val proto_type_name = resolve(type, ProjectType.PROTOBUF)»
+                «/* TODO change such that ProtobufType does not need to be passed, it is irrelevant here */»
+                «val proto_type_name = typeResolver.resolveProtobuf(type, ProtobufType.REQUEST)»
                 inline «api_type_name» DecodeFailable(«proto_failable_type_name» const& protobuf_entry)
                 {
                    return «typeResolver.resolveDecode(paramBundle, type, owner)»(protobuf_entry.value());
