@@ -164,6 +164,19 @@ class JavaGeneratorTest extends AbstractGeneratorTest
               </repository>
            </repositories>
            
+           <pluginRepositories>
+              <pluginRepository>
+                 <id>cab-maven-plugin-resolver</id>
+                 <url>https://artifactory.bop-dev.de/artifactory/cab-maven-resolver/</url>
+                 <releases>
+                    <enabled>true</enabled>
+                 </releases>
+                 <snapshots>
+                     <enabled>false</enabled>
+                 </snapshots>
+              </pluginRepository>
+           </pluginRepositories>
+
            <distributionManagement>
               <repository>
                  <id>cab-maven</id>
