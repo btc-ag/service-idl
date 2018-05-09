@@ -68,7 +68,8 @@ class ProxyGenerator extends BasicCppGenerator {
          {
             «event_type» const Unmarshal«event_name»( «resolveSymbol("BTC::ServiceComm::API::IEventSubscriberManager")»::ObserverType::OnNextParamType event )
             {
-               «resolve(event.data, ProjectType.PROTOBUF)» eventProtobuf;
+               «/* TODO remove ProtobufType argument */»
+               «typeResolver.resolveProtobuf(event.data, ProtobufType.REQUEST)» eventProtobuf;
                if (!(event->GetNumElements() == 1))
                   «resolveSymbol("CABTHROW_V2")»(«resolveSymbol("BTC::ServiceComm::API::InvalidMessageReceivedException")»("Event message has not exactly one part"));
                «resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ParseMessageOrThrow<«resolveSymbol("BTC::ServiceComm::API::InvalidMessageReceivedException")»>(eventProtobuf, (*event)[0]);
