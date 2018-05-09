@@ -183,7 +183,7 @@ class POMGenerator
                                  <property name="protoc.filepath" value="${project.build.directory}/${protoc.filename}"/>
                                  <chmod file="${protoc.filepath}" perm="ugo+rx"/>
                                  <mkdir dir="${protobuf.outputDirectory}" />
-                                 <exec executable="${protoc.filepath}">
+                                 <exec executable="${protoc.filepath}" failonerror="true">
                                     <arg value="--java_out=${protobuf.outputDirectory}" />
                                     <arg value="-I=${basedir}\.." />
                                     <arg value="--proto_path=${protobuf.sourceDirectory}" />
