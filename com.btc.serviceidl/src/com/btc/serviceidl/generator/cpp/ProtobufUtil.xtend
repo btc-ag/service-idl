@@ -83,7 +83,8 @@ class ProtobufUtil
             val is_failable = com.btc.serviceidl.util.Util.isFailable(element)
             val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(element)
 
-            var protobuf_type = resolve(ultimate_type, ProjectType.PROTOBUF).fullyQualifiedName
+            // TODO remove ProtobufType argument
+            var protobuf_type = typeResolver.resolveProtobuf(ultimate_type, ProtobufType.REQUEST).fullyQualifiedName
             if (is_failable)
                 protobuf_type = typeResolver.resolveFailableProtobufType(element, container)
             else if (com.btc.serviceidl.util.Util.isByte(ultimate_type) ||
