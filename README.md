@@ -19,3 +19,8 @@ java -jar com.btc.serviceidl.plainjava-1.0.0-SNAPSHOT.jar input.idl -outputPath 
 ```
 
 Currently, the generator generates all artifacts (API, Proxy, Dispatcher, ...) for all target technologies (C++, C#/.NET, Java). This will be made configurable in the future.
+
+Contributing
+============
+
+See the [contribution guidelines](CONTRIBUTING.md).
