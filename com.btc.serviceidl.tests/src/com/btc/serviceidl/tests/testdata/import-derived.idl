@@ -1,0 +1,12 @@
+import BTC.PRINS.Imported.* 
+
+virtual module BTC {
+virtual module PRINS {
+module Derived {
+
+struct StructureReferencingImport
+{
+  ImportedType member;
+};
+
+}}}

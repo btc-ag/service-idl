@@ -1,0 +1,7 @@
+virtual module BTC {
+virtual module PRINS {
+module Imported {
+    typedef string ImportedType;
+}
+}
+}

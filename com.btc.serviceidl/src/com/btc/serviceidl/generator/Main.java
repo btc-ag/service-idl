@@ -50,21 +50,27 @@ public class Main {
     private static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT       = OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ;
 
     public static void main(String[] args) {
+        System.exit(mainBackend(args));
+    }
+
+    public static int mainBackend(String[] args) {
         assert (args != null);
         if (args.length == 0) {
             new HelpFormatter().printHelp("Generator", createOptions());
             System.err.println("Aborting: no path to EMF resource provided!");
-            return;
+            return 2;
         }
         Injector injector = new IdlStandaloneSetup().createInjectorAndDoEMFRegistration();
         Main main = injector.getInstance(Main.class);
 
         CommandLine commandLine = parseCommandLine(args);
-        main.runGenerator(commandLine.getArgs()[0],
+        boolean res = main.runGenerator(commandLine.getArgs(),
                 commandLine.hasOption(OPTION_OUTPUT_PATH) ? commandLine.getOptionValue(OPTION_OUTPUT_PATH)
                         : System.getProperty("user.dir"),
                 commandLine.hasOption(OPTION_CPP_PROJECT_SYSTEM) ? commandLine.getOptionValue(OPTION_CPP_PROJECT_SYSTEM)
                         : OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT);
+
+        return res ? 0 : 1;
     }
 
     private static Options createOptions() {
@@ -101,22 +107,27 @@ public class Main {
     @Inject
     private IGenerationSettingsProvider generationSettingsProvider;
 
-    protected void runGenerator(String inputFile, String outputPath, String projectSystem) {
+    private boolean runGenerator(String[] inputFiles, String outputPath, String projectSystem) {
         // Load the resource
         ResourceSet set = resourceSetProvider.get();
-        Resource resource = set.getResource(URI.createFileURI(inputFile), true);
+        for (String inputFile : inputFiles) {
+            set.getResource(URI.createFileURI(inputFile), true);
+        }
 
-        // Validate the resource
-        List<Issue> list = validator.validate(resource, CheckMode.ALL, CancelIndicator.NullImpl);
-        if (!list.isEmpty()) {
-            boolean hasError = false;
-            for (Issue issue : list) {
-                System.err.println(issue);
-                hasError |= issue.getSeverity() == Severity.ERROR;
-            }
-            if (hasError) {
-                System.out.println("Errors in IDL input, terminating.");
-                return;
+        for (Resource resource : set.getResources()) {
+
+            // Validate the resources
+            List<Issue> list = validator.validate(resource, CheckMode.ALL, CancelIndicator.NullImpl);
+            if (!list.isEmpty()) {
+                boolean hasError = false;
+                for (Issue issue : list) {
+                    System.err.println(issue);
+                    hasError |= issue.getSeverity() == Severity.ERROR;
+                }
+                if (hasError) {
+                    System.out.println("Errors in IDL input, terminating.");
+                    return false;
+                }
             }
         }
 
@@ -135,15 +146,19 @@ public class Main {
             break;
         default:
             System.out.println("Unknown project system: " + projectSystem);
-            return;
+            return false;
         }
 
         // Configure and start the generator
         fileAccess.setOutputPath(outputPath);
         GeneratorContext context = new GeneratorContext();
         context.setCancelIndicator(CancelIndicator.NullImpl);
-        generator.generate(resource, fileAccess, context);
+
+        for (Resource resource : set.getResources()) {
+            generator.generate(resource, fileAccess, context);
+        }
 
         System.out.println("Code generation finished.");
+        return true;
     }
 }
