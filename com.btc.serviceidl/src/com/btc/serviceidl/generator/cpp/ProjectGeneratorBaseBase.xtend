@@ -38,6 +38,9 @@ import org.eclipse.xtext.scoping.IScopeProvider
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectFileGenerator
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
+import com.btc.serviceidl.generator.cpp.prins.VSSolution
 
 @Accessors(PROTECTED_GETTER)
 class ProjectGeneratorBaseBase
@@ -108,14 +111,26 @@ class ProjectGeneratorBaseBase
     def protected void generateVSProjectFiles(ProjectType project_type, IPath project_path, String project_name,
         ProjectFileSet projectFileSet)
     {
-        val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
-        val source_path = projectPath.append("source")
+        if (vsSolution instanceof VSSolution)
+        {
+            val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
+            val source_path = projectPath.append("source")
 
-        file_system_access.generateFile(source_path.append(dependency_file_name).toString, generateDependencies)
-        projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
+            file_system_access.generateFile(source_path.append(dependency_file_name).toString, generateDependencies)
+            projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
 
-        new VSProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
-            project_references, projectFileSet.unmodifiableView, project_type, project_path, project_name).generate()
+            new VSProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
+                project_references, projectFileSet.unmodifiableView, project_type, project_path, project_name).
+                generate()
+
+        }
+        else if (vsSolution instanceof CMakeProjectSet)
+        {
+            new CMakeProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
+                project_references, projectFileSet.unmodifiableView, project_type, project_path, project_name).
+                generate()
+
+        }
     }
 
     // TODO move this to com.btc.serviceidl.generator.cpp.prins
