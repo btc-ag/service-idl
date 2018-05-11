@@ -34,13 +34,19 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.validation.Issue;
 
 import com.btc.serviceidl.IdlStandaloneSetup;
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSetFactory;
+import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
 
 public class Main {
 
-    private static final String OPTION_OUTPUT_PATH = "outputPath";
+    private static final String OPTION_OUTPUT_PATH                            = "outputPath";
+    private static final String OPTION_CPP_PROJECT_SYSTEM                     = "cppProjectSystem";
+    private static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE         = "cmake";
+    private static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ = "prins-vcxproj";
+    private static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT       = OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ;
 
     public static void main(String[] args) {
         assert (args != null);
@@ -55,12 +61,16 @@ public class Main {
         CommandLine commandLine = parseCommandLine(args);
         main.runGenerator(commandLine.getArgs()[0],
                 commandLine.hasOption(OPTION_OUTPUT_PATH) ? commandLine.getOptionValue(OPTION_OUTPUT_PATH)
-                        : System.getProperty("user.dir"));
+                        : System.getProperty("user.dir"),
+                commandLine.hasOption(OPTION_CPP_PROJECT_SYSTEM) ? commandLine.getOptionValue(OPTION_CPP_PROJECT_SYSTEM)
+                        : OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT);
     }
 
     private static Options createOptions() {
         Options options = new Options();
         options.addOption(OPTION_OUTPUT_PATH, true, "base path for generated output files");
+        options.addOption(OPTION_CPP_PROJECT_SYSTEM, true, "C++ project system ("
+                + OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE + "," + OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ + ")");
         return options;
     }
 
@@ -87,7 +97,10 @@ public class Main {
     @Inject
     private JavaIoFileSystemAccess fileAccess;
 
-    protected void runGenerator(String inputFile, String outputPath) {
+    @Inject
+    private IGenerationSettingsProvider generationSettingsProvider;
+
+    protected void runGenerator(String inputFile, String outputPath, String projectSystem) {
         // Load the resource
         ResourceSet set = resourceSetProvider.get();
         Resource resource = set.getResource(URI.createFileURI(inputFile), true);
@@ -104,6 +117,18 @@ public class Main {
                 System.out.println("Errors in IDL input, terminating.");
                 return;
             }
+        }
+
+        switch (projectSystem) {
+        case OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
+            ((DefaultGenerationSettingsProvider) generationSettingsProvider).projectSetFactory = new CMakeProjectSetFactory();
+            break;
+        case OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ:
+            ((DefaultGenerationSettingsProvider) generationSettingsProvider).projectSetFactory = new VSSolutionFactory();
+            break;
+        default:
+            System.out.println("Unknown project system: " + projectSystem);
+            return;
         }
 
         // Configure and start the generator
