@@ -56,7 +56,6 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
         val header_file = Constants.FILE_NAME_TYPES.h
         val cpp_file = Constants.FILE_NAME_TYPES.cpp
-        val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
 
         // sub-folder "./include"
         file_system_access.generateFile(include_path.append(export_header_file_name).toString, generateExportHeader())
@@ -69,10 +68,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
         // sub-folder "./source"
         file_system_access.generateFile(source_path.append(cpp_file).toString,
             generateCppCommons(module, export_header_file_name))
-        projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cpp_file)
-
-        file_system_access.generateFile(source_path.append(dependency_file_name).toString, generateDependencies)
-        projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
+        projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cpp_file)        
 
         generateVSProjectFiles(ProjectType.COMMON, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)
     }

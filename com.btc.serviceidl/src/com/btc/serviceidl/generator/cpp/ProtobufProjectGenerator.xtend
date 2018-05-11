@@ -74,10 +74,6 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
             projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, codec_header_name)
         }
 
-        // sub-folder "./source"
-        file_system_access.generateFile(source_path.append(dependency_file_name).toString, generateDependencies)
-        projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
-
         // sub-folder "./gen"
         if (module.containsTypes)
         {
