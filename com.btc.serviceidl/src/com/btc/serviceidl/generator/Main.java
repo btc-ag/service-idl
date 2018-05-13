@@ -34,6 +34,7 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.validation.Issue;
 
 import com.btc.serviceidl.IdlStandaloneSetup;
+import com.btc.serviceidl.generator.common.ProjectType;
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSetFactory;
 import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory;
 import com.google.inject.Inject;
@@ -119,12 +120,17 @@ public class Main {
             }
         }
 
+        DefaultGenerationSettingsProvider defaultGenerationSettingsProvider = (DefaultGenerationSettingsProvider) generationSettingsProvider;
         switch (projectSystem) {
         case OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
-            ((DefaultGenerationSettingsProvider) generationSettingsProvider).projectSetFactory = new CMakeProjectSetFactory();
+            defaultGenerationSettingsProvider.projectSetFactory = new CMakeProjectSetFactory();
+
+            System.out.println("Disabling ODB generation, this is unsupported with CMake project system");
+            defaultGenerationSettingsProvider.projectTypes.remove(ProjectType.EXTERNAL_DB_IMPL);
+
             break;
         case OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ:
-            ((DefaultGenerationSettingsProvider) generationSettingsProvider).projectSetFactory = new VSSolutionFactory();
+            defaultGenerationSettingsProvider.projectSetFactory = new VSSolutionFactory();
             break;
         default:
             System.out.println("Unknown project system: " + projectSystem);

@@ -10,28 +10,38 @@
  */
 package com.btc.serviceidl.generator.cpp.cmake
 
+import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.HeaderResolver.GroupedHeader
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
+import java.util.HashSet
+import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.Data
 
+@Accessors(PACKAGE_GETTER)
 class CMakeProjectSet implements IProjectSet
 {
+    val projects = new HashSet<String>
+    
     @Data
     static class ProjectReference implements IProjectReference
     {
         val String projectName
     }
 
-    override getVcxprojName(ParameterBundle builder)
+    override getVcxprojName(ParameterBundle paramBundle)
     {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
+        GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.PACKAGE)
     }
 
     override resolve(ParameterBundle paramBundle)
     {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
+        val name = getVcxprojName(paramBundle)
+        projects.add(name)
+        new ProjectReference(name)        
     }
 
     override resolveHeader(GroupedHeader header)

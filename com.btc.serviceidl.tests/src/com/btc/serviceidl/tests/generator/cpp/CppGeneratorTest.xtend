@@ -10,8 +10,11 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator.cpp
 
+import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
+import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSetFactory
 import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.tests.generator.AbstractGeneratorTest
 import com.btc.serviceidl.tests.testdata.TestData
@@ -20,6 +23,7 @@ import java.util.Arrays
 import java.util.HashSet
 import java.util.Map
 import java.util.Set
+import javax.inject.Inject
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
@@ -30,9 +34,13 @@ import org.junit.runner.RunWith
 @InjectWith(IdlInjectorProvider)
 class CppGeneratorTest extends AbstractGeneratorTest
 {
+    @Inject IGenerationSettingsProvider generationSettingsProvider
+
     @Test
     def void testBasicServiceApi()
     {
+        val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
+        defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases        
         val fileCount = 6
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
         val directory = IFileSystemAccess::DEFAULT_OUTPUT + "cpp/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
@@ -107,6 +115,72 @@ class CppGeneratorTest extends AbstractGeneratorTest
                      serviceFaultHandlerManager, BTC::Commons::Core::String("BTC.Commons.Core.UnsupportedOperationException"));
                }
             }}}}}}}
+        ''')
+
+        checkGenerators(TestData.basic, projectTypes, fileCount, contents)
+    }
+
+    @Test
+    def void testBasicServiceApiCmake()
+    {
+        val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
+        defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases
+        defaultGenerationSettingsProvider.projectSetFactory = new CMakeProjectSetFactory
+        val fileCount = 5
+        val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
+        val directory = IFileSystemAccess::DEFAULT_OUTPUT + "cpp/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
+
+        val contents = ImmutableMap.of(directory + "build/CMakeLists.txt", '''
+            # define target name
+            set( TARGET BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI )
+            
+            # TODO the section between BEGIN and END appears to be redundant
+            
+            #BEGIN
+            
+            # Components include dirs
+            file( GLOB INCS ../include/*.h* ../include/**/*.h* )
+            
+            # Components source files
+            file( GLOB SRCS ../source/*.c* )
+            
+            if( MSVC )
+                # other resources
+                file( GLOB RESOURCE ../res/*.rc )
+                file( GLOB RESOURCE_H ../res/*.h )
+            endif()
+            
+            # summerize files
+            set( FILES ${INCS} ${SRCS} ${RESOURCE} ${RESOURCE_H} )
+            source_group( "Resources" FILES ${RESOURCE} ${RESOURCE_H} )
+            #END
+            
+            # define list of targets which have to be linked
+            set( LINK_TARGETS
+              
+              ${BTC}${CAB}Commons.Core${Commons_Version}
+              ${BTC}${CAB}Commons.CoreExtras${Commons_Version}
+              ${BTC}${CAB}Commons.CoreOS${Commons_Version}
+              ${BTC}${CAB}Commons.FutureUtil${Commons_Version}
+              ${BTC}${CAB}Logging.API${Logging_Version}
+              ${BTC}${CAB}ServiceComm.API${Logging_Version}
+              #TODO BTCCABINF-1257 this is just to make it work. Is * ok here?
+              libboost*
+            )
+            
+            # define list of dependent targets
+            set( DEP_TARGETS
+              ${LINK_TARGETS}
+            )
+            
+            add_definitions( -DCAB_NO_LEGACY_EXPORT_MACROS )
+            
+            # define complete target description
+            MY_TARGET( SHARED_LIB TARGET FILES DEP_TARGETS LINK_TARGETS WARNING_LEVEL_DEFAULT COMPILE_OPTS_DEFAULT )
+            #ENABLE_WARNINGSASERRORS( "${TARGET}" )            
+        ''', directory + "build/make.cmakeset", '''
+            cab_file_guard()            
+            cab_add_project(${CMAKE_CURRENT_LIST_DIR})            
         ''')
 
         checkGenerators(TestData.basic, projectTypes, fileCount, contents)

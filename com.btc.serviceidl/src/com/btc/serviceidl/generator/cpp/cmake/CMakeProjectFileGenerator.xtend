@@ -15,7 +15,6 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
-import com.btc.serviceidl.util.Constants
 import java.util.HashMap
 import java.util.Map
 import java.util.Set
@@ -23,10 +22,9 @@ import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 
-import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
-
-@Accessors
-class CMakeProjectFileGenerator {
+@Accessors(NONE)
+class CMakeProjectFileGenerator
+{
     val IFileSystemAccess file_system_access
     val ParameterBundle param_bundle
     val IProjectSet projectSet
@@ -41,18 +39,17 @@ class CMakeProjectFileGenerator {
 
     def generate()
     {
-        // root folder of the project
         file_system_access.generateFile(
-            project_path + Constants.SEPARATOR_FILE + project_name.vcxproj,
+            project_path.append("build").append("make.cmakeset").toString,
             generateCMakeSet().toString
         )
         file_system_access.generateFile(
-            project_path + Constants.SEPARATOR_FILE + project_name.vcxproj.filters,
+            project_path.append("build").append("CMakeLists.txt").toString,
             generateCMakeLists().toString
         )
     }
 
-    def getMyProtobufProjectReferences()
+    private def getMyProtobufProjectReferences()
     {
         if (protobuf_project_references === null) return null
 
@@ -65,7 +62,7 @@ class CMakeProjectFileGenerator {
         return res
     }
 
-    def getMyProjectReferences()
+    private def getMyProjectReferences()
     {
         project_references.downcast
     }
@@ -102,5 +99,5 @@ class CMakeProjectFileGenerator {
             projectFileSet.unmodifiableView
         ).generateCMakeSet(project_name, project_path)
     }
-    
+
 }
