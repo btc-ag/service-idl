@@ -155,12 +155,12 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
             generateSource(basicCppGenerator, file_content.toString, Optional.empty)
         }
 
-        def override String generateProjectHeader(BasicCppGenerator basicCppGenerator,
+        def override String generateProjectHeader(BasicCppGenerator basicCppGenerator, IModuleStructureStrategy moduleStructureStrategy, 
             InterfaceDeclaration interface_declaration, String export_header)
         {
             val file_content = generateInterface(basicCppGenerator.typeResolver, basicCppGenerator.paramBundle, interface_declaration)
 
-            generateHeader(basicCppGenerator, file_content.toString, Optional.of(export_header))
+            generateHeader(basicCppGenerator, moduleStructureStrategy, file_content.toString, Optional.of(export_header))
         }
     }
 }

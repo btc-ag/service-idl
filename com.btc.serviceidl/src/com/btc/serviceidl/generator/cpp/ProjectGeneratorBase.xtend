@@ -33,7 +33,8 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
             InterfaceDeclaration interface_declaration)
 
         def String generateProjectHeader(BasicCppGenerator basicCppGenerator,
-            InterfaceDeclaration interface_declaration, String export_header)
+            IModuleStructureStrategy moduleStructureStrategy, InterfaceDeclaration interface_declaration,
+            String export_header)
     }
 
     val ISourceGenerationStrategy sourceGenerationStrategy
@@ -83,7 +84,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         {
             file_system_access.generateFile(include_path.append(main_header_file_name).toString,
                 sourceGenerationStrategy.generateProjectHeader(createBasicCppGenerator(localParamBundle),
-                    interface_declaration, export_header_file_name))
+                    moduleStructureStrategy, interface_declaration, export_header_file_name))
             projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, main_header_file_name)
         }
 

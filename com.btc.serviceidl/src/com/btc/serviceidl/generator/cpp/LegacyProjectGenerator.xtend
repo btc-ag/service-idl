@@ -82,7 +82,8 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
         }
 
         def override String generateProjectHeader(BasicCppGenerator basicCppGenerator,
-            InterfaceDeclaration interface_declaration, String export_header)
+            IModuleStructureStrategy moduleStructureStrategy, InterfaceDeclaration interface_declaration,
+            String export_header)
         {
             val file_content = switch (basicCppGenerator.paramBundle.projectType)
             {
@@ -104,7 +105,8 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
                         basicCppGenerator.paramBundle.projectType)
             }
 
-            generateHeader(basicCppGenerator, file_content.toString, Optional.of(export_header))
+            generateHeader(basicCppGenerator, moduleStructureStrategy, file_content.toString,
+                Optional.of(export_header))
         }
 
         def private generateCppServiceAPI(TypeResolver typeResolver, ParameterBundle paramBundle,

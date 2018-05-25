@@ -95,7 +95,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
         val basicCppGenerator = createBasicCppGenerator
         val file_content = new CodecGenerator(basicCppGenerator.typeResolver, param_bundle).
             generateHeaderFileBody(owner)
-        generateHeader(basicCppGenerator, file_content.toString, Optional.empty)
+        generateHeader(basicCppGenerator, moduleStructureStrategy, file_content.toString, Optional.empty)
     }
 
 }
