@@ -67,12 +67,19 @@ class CMakeGenerator
             # define list of targets which have to be linked
             set( LINK_TARGETS
               «/* TODO use the actual external references */»
-              ${BTC}${CAB}Commons.Core${Commons_Version}
-              ${BTC}${CAB}Commons.CoreExtras${Commons_Version}
-              ${BTC}${CAB}Commons.CoreOS${Commons_Version}
-              ${BTC}${CAB}Commons.FutureUtil${Commons_Version}
-              ${BTC}${CAB}Logging.API${Logging_Version}
-              ${BTC}${CAB}ServiceComm.API${Logging_Version}
+              ${BTC}${CAB}Commons.Core
+              ${BTC}${CAB}Commons.CoreExtras
+              ${BTC}${CAB}Commons.CoreOS
+              ${BTC}${CAB}Commons.FutureUtil
+              ${BTC}${CAB}Logging.API
+              ${BTC}${CAB}ServiceComm.API
+              ${BTC}${CAB}ServiceComm.Base
+              ${BTC}${CAB}ServiceComm.Commons
+              ${BTC}${CAB}ServiceComm.CommonsUtil
+              ${BTC}${CAB}ServiceComm.ProtobufBase
+              ${BTC}${CAB}ServiceComm.ProtobufUtil
+              ${BTC}${CAB}ServiceComm.TestBase
+              ${BTC}${CAB}ServiceComm.Util
               #TODO BTCCABINF-1257 this is just to make it work. Is * ok here?
               libboost*
               «FOR project : project_references»
