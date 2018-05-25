@@ -153,7 +153,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
         ''', IFileSystemAccess::DEFAULT_OUTPUT + "cpp/CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.4)
             
-            project (Test)
+            project (Test CXX)
             
             include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
             conan_basic_setup()
