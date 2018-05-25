@@ -152,7 +152,7 @@ class ProtobufUtil
         val codec_name = GeneratorUtil.getCodecName(if (is_failable) container.get else ultimate_type)
 
         addTargetInclude(
-            typeResolver.moduleStructureStrategy.getIncludeFilePath(moduleStack, ProjectType.IMPL, codec_name))
+            typeResolver.moduleStructureStrategy.getIncludeFilePath(moduleStack, ProjectType.PROTOBUF, codec_name))
 
         resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
