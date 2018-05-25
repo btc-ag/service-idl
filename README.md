@@ -15,7 +15,7 @@ There is no release yet, but you can download the current snapshot from https://
 
 When you downloaded it, you need to specify an IDL input file and an output directory, which must already exist:
 ```
-java -jar com.btc.serviceidl.plainjava-1.0.0-SNAPSHOT.jar input.idl -outputPath out
+java -jar com.btc.serviceidl.plainjava-1.0.0-SNAPSHOT.jar input.idl -outputPath out -cppProjectSystem cmake
 ```
 
 Currently, the generator generates all artifacts (API, Proxy, Dispatcher, ...) for all target technologies (C++, C#/.NET, Java). This will be made configurable in the future.
