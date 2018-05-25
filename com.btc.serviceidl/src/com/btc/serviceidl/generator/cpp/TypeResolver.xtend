@@ -18,7 +18,6 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.common.TypeWrapper
-import com.btc.serviceidl.generator.cpp.prins.PrinsHeaderResolver
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
@@ -100,11 +99,28 @@ class TypeResolver
     public static val BOOST_INCLUDE_GROUP = new IncludeGroup("boost")
     public static val CAB_INCLUDE_GROUP = new IncludeGroup("BTC.CAB")
 
-    // PRINS-specific, TODO move to PRINS-package
+// PRINS-specific, TODO move to PRINS-package
     public static val MODULES_INCLUDE_GROUP = new IncludeGroup("BTC.PRINS.Modules")
 
-    // TODO inject this, this is PRINS-specific
-    @Accessors(PACKAGE_GETTER) val headerResolver = PrinsHeaderResolver.create
+    @Accessors(PACKAGE_GETTER) val HeaderResolver headerResolver
+
+    new(
+        IQualifiedNameProvider qualified_name_provider,
+        IProjectSet projectSet,
+        IModuleStructureStrategy moduleStructureStrategy,
+        Collection<IProjectReference> project_references,
+        Collection<String> cab_libs,
+        Map<EObject, Collection<EObject>> smart_pointer_map
+    )
+    {
+        this.qualified_name_provider = qualified_name_provider
+        this.projectSet = projectSet
+        this.moduleStructureStrategy = moduleStructureStrategy
+        this.project_references = project_references
+        this.cab_libs = cab_libs
+        this.smart_pointer_map = smart_pointer_map
+        this.headerResolver = moduleStructureStrategy.createHeaderResolver
+    }
 
     def String resolveSymbol(String symbolName)
     {
@@ -140,7 +156,7 @@ class TypeResolver
     {
         if (project_type == ProjectType.PROTOBUF)
             throw new IllegalArgumentException("Use ProtobufUtil.resolveProtobuf instead!")
-            
+
         if (object instanceof PrimitiveType)
             return new ResolvedName(getPrimitiveTypeName(object), TransformType.NAMESPACE)
         else if (object instanceof AbstractType && (object as AbstractType).primitiveType !== null)

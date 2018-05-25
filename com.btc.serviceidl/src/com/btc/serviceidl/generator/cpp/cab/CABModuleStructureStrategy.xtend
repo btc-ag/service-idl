@@ -14,10 +14,12 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.HeaderResolver
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.prins.ReferenceResolver
 import com.btc.serviceidl.idl.ModuleDeclaration
 import org.eclipse.core.runtime.Path
+import com.btc.serviceidl.generator.cpp.TypeResolver
 
 class CABModuleStructureStrategy implements IModuleStructureStrategy
 {
@@ -34,6 +36,13 @@ class CABModuleStructureStrategy implements IModuleStructureStrategy
     override getEncapsulationHeaders()
     {
         new Pair('#include <Commons/Core/include/BeginCABHeader.h>', '#include <Commons/Core/include/EndCABHeader.h>')
+    }
+
+    override createHeaderResolver()
+    {
+        new HeaderResolver.Builder().withBasicGroups.configureGroup(TypeResolver.TARGET_INCLUDE_GROUP, 10, "", "",
+            false).configureGroup(TypeResolver.CAB_INCLUDE_GROUP, 20, "", "", true).configureGroup(
+            TypeResolver.STL_INCLUDE_GROUP, 30, "", "", true).build
     }
 
 }

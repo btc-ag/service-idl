@@ -12,4 +12,6 @@ public interface IModuleStructureStrategy {
 
     Pair<String, String> getEncapsulationHeaders();
 
+    HeaderResolver createHeaderResolver();
+
 }

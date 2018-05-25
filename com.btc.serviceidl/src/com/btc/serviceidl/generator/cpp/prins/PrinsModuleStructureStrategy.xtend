@@ -34,5 +34,9 @@ class PrinsModuleStructureStrategy implements IModuleStructureStrategy
         new Pair('#include "modules/Commons/include/BeginPrinsModulesInclude.h"',
             '#include "modules/Commons/include/EndPrinsModulesInclude.h"')
     }
+    
+    override createHeaderResolver() {
+        PrinsHeaderResolver.create
+    }
 
 }

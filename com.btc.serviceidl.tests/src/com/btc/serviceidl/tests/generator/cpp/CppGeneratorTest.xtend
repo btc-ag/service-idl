@@ -14,6 +14,7 @@ import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
 import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.cab.CABModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSetFactory
 import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.tests.generator.AbstractGeneratorTest
@@ -127,6 +128,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
         val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
         defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases
         defaultGenerationSettingsProvider.projectSetFactory = new CMakeProjectSetFactory
+        defaultGenerationSettingsProvider.moduleStructureStrategy = new CABModuleStructureStrategy
         val fileCount = 7
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
         val directory = IFileSystemAccess::DEFAULT_OUTPUT +
