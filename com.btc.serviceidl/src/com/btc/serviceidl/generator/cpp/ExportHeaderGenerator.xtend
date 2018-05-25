@@ -33,7 +33,7 @@ class ExportHeaderGenerator
             #define CAB_NO_LEGACY_EXPORT_MACROS
             #endif
             
-            #include <modules/Commons/include/Export.h>
+            #include <Commons/Core/include/Export.h>
             
             #ifdef «prefix»_STATIC_DEFINE
             #  define «prefix»_EXPORT
