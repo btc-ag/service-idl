@@ -38,6 +38,9 @@ class CMakeGenerator
 
     def CharSequence generateCMakeLists(String project_name, IPath project_path)
     {
+        // TODO this must be changed, pass the ProjectType to this function, and decide based on that
+        val cmakeTargetType = if (project_name.contains(".Protobuf")) "STATIC_LIB" else "SHARED_LIB"
+        
         // TODO instead of globbing, this could list files from the projectFileSet explicitly
         '''
             # define target name
@@ -99,7 +102,7 @@ class CMakeGenerator
             add_definitions( -DCAB_NO_LEGACY_EXPORT_MACROS )
             
             # define complete target description
-            MY_TARGET( SHARED_LIB TARGET FILES DEP_TARGETS LINK_TARGETS WARNING_LEVEL_DEFAULT COMPILE_OPTS_DEFAULT )
+            MY_TARGET( «cmakeTargetType» TARGET FILES DEP_TARGETS LINK_TARGETS WARNING_LEVEL_DEFAULT COMPILE_OPTS_DEFAULT )
             #ENABLE_WARNINGSASERRORS( "${TARGET}" )
             
             «/* set linker_language explicitly to allow for modules without source files (headers only) */»
