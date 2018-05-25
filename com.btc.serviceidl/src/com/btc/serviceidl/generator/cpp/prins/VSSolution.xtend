@@ -80,7 +80,7 @@ class VSSolution implements IProjectSet
     def resolve(String projectName, IPath projectPath)
     {
         // TODO check if the else branch is valid
-        var effectiveProjectPath = if (projectPath.segment(0) == "cpp")
+        var effectiveProjectPath = if (projectPath.segment(0) == ArtifactNature.CPP.label)
                 projectPath.removeFirstSegments(1)
             else
                 projectPath
