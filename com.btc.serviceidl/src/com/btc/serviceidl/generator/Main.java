@@ -121,6 +121,7 @@ public class Main {
         }
 
         DefaultGenerationSettingsProvider defaultGenerationSettingsProvider = (DefaultGenerationSettingsProvider) generationSettingsProvider;
+
         switch (projectSystem) {
         case OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
             defaultGenerationSettingsProvider.projectSetFactory = new CMakeProjectSetFactory();

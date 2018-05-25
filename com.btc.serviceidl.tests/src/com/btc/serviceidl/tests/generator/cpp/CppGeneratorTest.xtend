@@ -126,11 +126,48 @@ class CppGeneratorTest extends AbstractGeneratorTest
         val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
         defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases
         defaultGenerationSettingsProvider.projectSetFactory = new CMakeProjectSetFactory
-        val fileCount = 5
+        val fileCount = 7
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
         val directory = IFileSystemAccess::DEFAULT_OUTPUT + "cpp/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
 
-        val contents = ImmutableMap.of(directory + "build/CMakeLists.txt", '''
+        val contents = ImmutableMap.of(IFileSystemAccess::DEFAULT_OUTPUT + "cpp/conanfile.py", '''
+            from conan_template import *
+            
+            class Conan(ConanTemplate):
+                name = "Test"
+                version= version_name("0.1.0-unreleased")
+                url = "TODO"
+                description = """
+                TODO
+                """
+                
+                build_requires = "CMakeMacros/0.3.latest@cab/testing"
+                requires = ( 
+                            ("BTC.CAB.Commons/1.8.latest@cab/testing"),
+                            ("BTC.CAB.IoC/1.7.latest@cab/testing"),
+                            ("BTC.CAB.Logging/1.7.latest@cab/testing"),
+                            ("BTC.CAB.ServiceComm/0.10.latest@cab/testing")
+                            )
+                generators = "cmake"
+                short_paths = True
+        ''', IFileSystemAccess::DEFAULT_OUTPUT + "cpp/CMakeLists.txt", '''
+            cmake_minimum_required(VERSION 3.4)
+            
+            project (Test)
+            
+            include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+            conan_basic_setup()
+            
+            include(${CONAN_CMAKEMACROS_ROOT}/cmake/cab_globals.cmake)
+            
+            option(BUILD_TESTS "Build test" ON)
+            
+            include_directories(${CMAKE_SOURCE_DIR})
+            set(CAB_INT_SOURCE_DIR ${CMAKE_SOURCE_DIR})
+            set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
+            
+            include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/ServiceAPI/build/make.cmakeset)           
+        ''', directory + "build/CMakeLists.txt", '''
             # define target name
             set( TARGET BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI )
             

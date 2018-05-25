@@ -24,7 +24,7 @@ import org.eclipse.xtend.lib.annotations.Data
 @Accessors(PACKAGE_GETTER)
 class CMakeProjectSet implements IProjectSet
 {
-    val projects = new HashSet<String>
+    val projects = new HashSet<ParameterBundle>
     
     @Data
     static class ProjectReference implements IProjectReference
@@ -39,9 +39,8 @@ class CMakeProjectSet implements IProjectSet
 
     override resolve(ParameterBundle paramBundle)
     {
-        val name = getVcxprojName(paramBundle)
-        projects.add(name)
-        new ProjectReference(name)        
+        projects.add(paramBundle)
+        new ProjectReference(getVcxprojName(paramBundle))        
     }
 
     override resolveHeader(GroupedHeader header)

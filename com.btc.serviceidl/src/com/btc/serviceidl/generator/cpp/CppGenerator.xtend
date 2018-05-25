@@ -17,6 +17,8 @@ package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
+import com.btc.serviceidl.generator.cpp.cmake.CMakeTopLevelProjectFileGenerator
 import com.btc.serviceidl.generator.cpp.prins.OdbProjectGenerator
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -74,6 +76,12 @@ class CppGenerator
         for (module : idl.modules)
         {
             processModule(module, generationSettingsProvider.projectTypes)
+            
+            // only for the top-level modules, produce a parent project file
+            if (vsSolution instanceof CMakeProjectSet)
+            {
+                new CMakeTopLevelProjectFileGenerator(file_system_access, vsSolution, module).generate()
+            }
         }
     }
 
