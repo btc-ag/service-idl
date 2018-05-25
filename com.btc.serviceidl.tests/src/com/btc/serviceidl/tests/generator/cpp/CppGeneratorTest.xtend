@@ -212,6 +212,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
               ${BTC}${CAB}ServiceComm.ProtobufUtil
               ${BTC}${CAB}ServiceComm.TestBase
               ${BTC}${CAB}ServiceComm.Util
+              libprotobuf
               #TODO BTCCABINF-1257 this is just to make it work. Is * ok here?
               libboost*
             )
