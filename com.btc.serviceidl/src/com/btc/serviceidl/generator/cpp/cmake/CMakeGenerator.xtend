@@ -93,6 +93,9 @@ class CMakeGenerator
             # define complete target description
             MY_TARGET( SHARED_LIB TARGET FILES DEP_TARGETS LINK_TARGETS WARNING_LEVEL_DEFAULT COMPILE_OPTS_DEFAULT )
             #ENABLE_WARNINGSASERRORS( "${TARGET}" )
+            
+            «/* set linker_language explicitly to allow for modules without source files (headers only) */»
+            set_target_properties("${TARGET}" PROPERTIES LINKER_LANGUAGE CXX)
         '''
     }
 
