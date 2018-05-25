@@ -16,17 +16,14 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.ArtifactNature
-import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TypeWrapper
-import com.btc.serviceidl.generator.cpp.prins.ReferenceResolver
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.StructDeclaration
 import java.util.ArrayList
@@ -35,7 +32,6 @@ import java.util.HashSet
 import java.util.LinkedHashSet
 import java.util.List
 import org.eclipse.core.runtime.IPath
-import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.util.Extensions.*
@@ -56,7 +52,8 @@ class CppExtensions
             else
                 "Types"
 
-        moduleStructureStrategy.getIncludeFilePath(referenced_object.moduleStack, project_type, baseName)
+        moduleStructureStrategy.getIncludeFilePath(referenced_object.moduleStack, project_type, baseName,
+            HeaderType.REGULAR_HEADER)
     }
 
     /**

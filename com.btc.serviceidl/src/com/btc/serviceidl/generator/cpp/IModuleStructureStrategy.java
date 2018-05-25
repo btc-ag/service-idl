@@ -8,7 +8,8 @@ import com.btc.serviceidl.idl.ModuleDeclaration;
 
 public interface IModuleStructureStrategy {
 
-    IPath getIncludeFilePath(Iterable<ModuleDeclaration> declarations, ProjectType type, String string);
+    IPath getIncludeFilePath(Iterable<ModuleDeclaration> declarations, ProjectType type, String baseName,
+            HeaderType headerType);
 
     Pair<String, String> getEncapsulationHeaders();
 

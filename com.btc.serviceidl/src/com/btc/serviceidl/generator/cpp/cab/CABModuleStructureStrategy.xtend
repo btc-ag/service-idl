@@ -20,17 +20,19 @@ import com.btc.serviceidl.generator.cpp.prins.ReferenceResolver
 import com.btc.serviceidl.idl.ModuleDeclaration
 import org.eclipse.core.runtime.Path
 import com.btc.serviceidl.generator.cpp.TypeResolver
+import com.btc.serviceidl.generator.cpp.HeaderType
 
 class CABModuleStructureStrategy implements IModuleStructureStrategy
 {
 
-    override getIncludeFilePath(Iterable<ModuleDeclaration> module_stack, ProjectType project_type, String baseName)
+    override getIncludeFilePath(Iterable<ModuleDeclaration> module_stack, ProjectType project_type, String baseName,
+        HeaderType headerType)
     {
         // TODO remove MODULES_HEADER_PATH_PREFIX here, and add a method to IModuleStructureStrategy that determines that
         new Path(ReferenceResolver.MODULES_HEADER_PATH_PREFIX).append(
             GeneratorUtil.asPath(ParameterBundle.createBuilder(module_stack).with(project_type).build,
-                ArtifactNature.CPP)).append(if (project_type == ProjectType.PROTOBUF) "gen" else "include").append(
-            baseName).addFileExtension(if (project_type == ProjectType.PROTOBUF) "pb.h" else "h")
+                ArtifactNature.CPP)).append(if (headerType == HeaderType.PROTOBUF_HEADER) "gen" else "include").append(
+            baseName).addFileExtension(if (headerType == HeaderType.PROTOBUF_HEADER) "pb.h" else "h")
     }
 
     override getEncapsulationHeaders()

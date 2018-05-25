@@ -61,7 +61,8 @@ class ProtobufUtil
         addTargetInclude(typeResolver.moduleStructureStrategy.getIncludeFilePath(
             scope_determinant.moduleStack,
             ProjectType.PROTOBUF,
-            GeneratorUtil.getPbFileName(object)
+            GeneratorUtil.getPbFileName(object),
+            HeaderType.PROTOBUF_HEADER
         ))
 
         object.resolveProjectFilePath(ProjectType.PROTOBUF)
@@ -152,7 +153,8 @@ class ProtobufUtil
         val codec_name = GeneratorUtil.getCodecName(if (is_failable) container.get else ultimate_type)
 
         addTargetInclude(
-            typeResolver.moduleStructureStrategy.getIncludeFilePath(moduleStack, ProjectType.PROTOBUF, codec_name))
+            typeResolver.moduleStructureStrategy.getIncludeFilePath(moduleStack, ProjectType.PROTOBUF, codec_name,
+                HeaderType.REGULAR_HEADER))
 
         resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
