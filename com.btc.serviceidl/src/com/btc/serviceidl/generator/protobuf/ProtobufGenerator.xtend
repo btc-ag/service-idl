@@ -149,6 +149,9 @@ class ProtobufGenerator
    {
       param_bundle.reset(ProjectType.PROTOBUF)
       var project_path = an.label + Constants.SEPARATOR_FILE;
+      // TODO this depends on the PRINS directory structure
+      if (an == ArtifactNature.CPP)
+         project_path += "modules" + Constants.SEPARATOR_FILE
       if (an == ArtifactNature.JAVA) // special directory structure according to Maven conventions
          project_path += getJavaProtoLocation(container)
       else
