@@ -43,7 +43,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
         defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases        
         val fileCount = 6
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
-        val directory = IFileSystemAccess::DEFAULT_OUTPUT + "cpp/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
+        val directory = IFileSystemAccess::DEFAULT_OUTPUT + "cpp/modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
         val contents = ImmutableMap.of(directory + "include/IKeyValueStore.h", '''
             #pragma once
             #include "modules/Commons/include/BeginPrinsModulesInclude.h"
@@ -128,7 +128,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
         defaultGenerationSettingsProvider.projectSetFactory = new CMakeProjectSetFactory
         val fileCount = 7
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
-        val directory = IFileSystemAccess::DEFAULT_OUTPUT + "cpp/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
+        val directory = IFileSystemAccess::DEFAULT_OUTPUT + "cpp/modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
 
         val contents = ImmutableMap.of(IFileSystemAccess::DEFAULT_OUTPUT + "cpp/conanfile.py", '''
             from conan_template import *
@@ -166,7 +166,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             set(CAB_INT_SOURCE_DIR ${CMAKE_SOURCE_DIR})
             set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
             
-            include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/ServiceAPI/build/make.cmakeset)           
+            include(${CMAKE_CURRENT_LIST_DIR}/modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/build/make.cmakeset)           
         ''', directory + "build/CMakeLists.txt", '''
             # define target name
             set( TARGET BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI )

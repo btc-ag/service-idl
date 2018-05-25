@@ -104,7 +104,8 @@ class CMakeTopLevelProjectFileGenerator
 
     private def relativePath(ParameterBundle paramBundle)
     {
-        val projectDir = new Path(
+        // TODO this depends on the implementation of ProjectGeneratorBaseBase.getProjectPath
+        val projectDir = new Path("modules").append(
             GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
         projectDir.makeRelativeTo(modulePath)
     }

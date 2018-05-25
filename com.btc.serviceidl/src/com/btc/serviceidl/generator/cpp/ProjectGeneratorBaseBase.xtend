@@ -176,7 +176,8 @@ class ProjectGeneratorBaseBase
 
     def protected IPath getProjectPath()
     {
-        new Path(ArtifactNature.CPP.label).append(
+        // TODO at least the "modules" part is PRINS-specific and should be determined by PrinsModuleStructureStrategy  
+        new Path(ArtifactNature.CPP.label).append("modules").append(
             GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
     }
 
