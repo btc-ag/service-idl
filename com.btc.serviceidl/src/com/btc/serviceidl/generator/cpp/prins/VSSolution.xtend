@@ -79,6 +79,7 @@ class VSSolution implements IProjectSet
     @Deprecated
     def resolve(String projectName, IPath projectPath)
     {
+        // TODO this depends on the implementation of ProjectGeneratorBaseBase.getProjectPath
         // TODO check if the else branch is valid
         var effectiveProjectPath = if (projectPath.segment(0) == ArtifactNature.CPP.label)
                 projectPath.removeFirstSegments(1)
