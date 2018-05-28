@@ -14,9 +14,15 @@ import java.util.Set;
 
 import com.btc.serviceidl.generator.common.ArtifactNature;
 import com.btc.serviceidl.generator.common.ProjectType;
+import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy;
+import com.btc.serviceidl.generator.cpp.IProjectSetFactory;
 
 public interface IGenerationSettingsProvider {
     Set<ArtifactNature> getLanguages();
 
     Set<ProjectType> getProjectTypes();
+
+    IProjectSetFactory getProjectSetFactory();
+
+    IModuleStructureStrategy getModuleStructureStrategy();
 }

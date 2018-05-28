@@ -10,31 +10,37 @@
  **********************************************************************/
 package com.btc.serviceidl.generator
 
-import java.util.HashSet
 import com.btc.serviceidl.generator.common.ArtifactNature
-import java.util.Arrays
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
+import com.btc.serviceidl.generator.cpp.IProjectSetFactory
+import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
+import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory
+import java.util.Arrays
+import java.util.HashSet
 import java.util.Set
 
 class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 {
 
-    public Set<ArtifactNature> languages;
-    public Set<ProjectType> projectTypes;
+    public Set<ArtifactNature> languages
+    public Set<ProjectType> projectTypes
+    public IProjectSetFactory projectSetFactory
+    public IModuleStructureStrategy moduleStructureStrategy
 
     new()
     {
-        reset();
+        reset
     }
 
     override getLanguages()
     {
-        return languages;
+        languages
     }
 
     override getProjectTypes()
     {
-        return projectTypes;
+        projectTypes
     }
 
     def reset()
@@ -45,6 +51,16 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             Arrays.asList(ProjectType.SERVICE_API, ProjectType.PROXY, ProjectType.DISPATCHER, ProjectType.IMPL,
                 ProjectType.PROTOBUF, ProjectType.COMMON, ProjectType.TEST, ProjectType.SERVER_RUNNER,
                 ProjectType.CLIENT_CONSOLE, ProjectType.EXTERNAL_DB_IMPL));
+        projectSetFactory = new VSSolutionFactory
+        moduleStructureStrategy = new PrinsModuleStructureStrategy
+    }
+    
+    override getProjectSetFactory() {
+        projectSetFactory
+    }
+    
+    override getModuleStructureStrategy() {
+        moduleStructureStrategy
     }
 
 }

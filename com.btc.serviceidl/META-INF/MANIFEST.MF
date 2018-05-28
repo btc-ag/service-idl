@@ -17,8 +17,11 @@ Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtend.lib;bundle-version="2.12.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.btc.serviceidl,
+ com.btc.serviceidl.formatting2,
  com.btc.serviceidl.generator,
  com.btc.serviceidl.generator.common,
+ com.btc.serviceidl.generator.cpp,
+ com.btc.serviceidl.generator.cpp.cmake,
  com.btc.serviceidl.generator.cpp.prins,
  com.btc.serviceidl.idl,
  com.btc.serviceidl.idl.impl,
@@ -28,6 +31,5 @@ Export-Package: com.btc.serviceidl,
  com.btc.serviceidl.scoping,
  com.btc.serviceidl.serializer,
  com.btc.serviceidl.services,
- com.btc.serviceidl.validation,
- com.btc.serviceidl.formatting2
+ com.btc.serviceidl.validation
 Import-Package: org.apache.log4j

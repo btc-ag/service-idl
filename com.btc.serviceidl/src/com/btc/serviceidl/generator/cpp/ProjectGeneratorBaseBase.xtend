@@ -19,6 +19,7 @@ import com.btc.serviceidl.generator.cpp.prins.OdbConstants
 import com.btc.serviceidl.generator.cpp.prins.VSProjectFileGenerator
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
+import com.btc.serviceidl.util.Constants
 import java.util.Arrays
 import java.util.Collection
 import java.util.HashSet
@@ -34,8 +35,12 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
+import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectFileGenerator
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
+import com.btc.serviceidl.generator.cpp.prins.VSSolution
 
 @Accessors(PROTECTED_GETTER)
 class ProjectGeneratorBaseBase
@@ -102,14 +107,34 @@ class ProjectGeneratorBaseBase
         new BasicCppGenerator(createTypeResolver(param_bundle), param_bundle)
     }
 
+    // TODO move this to com.btc.serviceidl.generator.cpp.prins resp. use a factory for the ProjectFileGenerator implementation
     def protected void generateVSProjectFiles(ProjectType project_type, IPath project_path, String project_name,
         ProjectFileSet projectFileSet)
     {
-        new VSProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
-            project_references, projectFileSet.unmodifiableView, project_type, project_path, project_name).generate()
+        if (vsSolution instanceof VSSolution)
+        {
+            val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
+            val source_path = projectPath.append("source")
+
+            file_system_access.generateFile(source_path.append(dependency_file_name).toString, generateDependencies)
+            projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
+
+            new VSProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
+                project_references, projectFileSet.unmodifiableView, project_type, project_path, project_name).
+                generate()
+
+        }
+        else if (vsSolution instanceof CMakeProjectSet)
+        {
+            new CMakeProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
+                project_references, projectFileSet.unmodifiableView, project_type, project_path, project_name).
+                generate()
+
+        }
     }
 
-    def protected generateDependencies()
+    // TODO move this to com.btc.serviceidl.generator.cpp.prins
+    def private generateDependencies()
     {
         new DependenciesGenerator(createTypeResolver, param_bundle).generate()
     }
@@ -151,7 +176,8 @@ class ProjectGeneratorBaseBase
 
     def protected IPath getProjectPath()
     {
-        new Path(ArtifactNature.CPP.label).append(
+        // TODO at least the "modules" part is PRINS-specific and should be determined by PrinsModuleStructureStrategy  
+        new Path(ArtifactNature.CPP.label).append("modules").append(
             GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
     }
 

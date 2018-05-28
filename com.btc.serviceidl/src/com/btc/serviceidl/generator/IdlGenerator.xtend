@@ -85,7 +85,7 @@ class IdlGenerator implements IGenerator2
         if (languages.contains(ArtifactNature.CPP))
         {
             val cpp_generator = new CppGenerator
-            cpp_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, projectTypes,
+            cpp_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, generation_settings_provider,
                 if (protobuf_generator !== null) protobuf_generator.getProjectReferences(ArtifactNature.CPP) else null)
         }
 

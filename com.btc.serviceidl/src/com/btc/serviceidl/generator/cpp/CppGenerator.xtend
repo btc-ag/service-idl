@@ -15,10 +15,11 @@
  */
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
+import com.btc.serviceidl.generator.cpp.cmake.CMakeTopLevelProjectFileGenerator
 import com.btc.serviceidl.generator.cpp.prins.OdbProjectGenerator
-import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
-import com.btc.serviceidl.generator.cpp.prins.VSSolution
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.google.common.collect.Sets
@@ -45,16 +46,15 @@ class CppGenerator
     private var IScopeProvider scope_provider
     private var IDLSpecification idl
 
-    // TODO inject these
-    val extension IProjectSet vsSolution = new VSSolution
-    val IModuleStructureStrategy moduleStructureStrategy = new PrinsModuleStructureStrategy
+    var extension IProjectSet vsSolution
+    var IModuleStructureStrategy moduleStructureStrategy
 
     private var protobuf_project_references = new HashMap<String, Set<IProjectReference>>
 
     val smart_pointer_map = new HashMap<EObject, Collection<EObject>>
 
     def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp,
-        Set<ProjectType> projectTypes, Map<String, HashMap<String, String>> pr)
+        IGenerationSettingsProvider generationSettingsProvider, Map<String, HashMap<String, String>> pr)
     {
         resource = res
         file_system_access = fsa
@@ -69,12 +69,20 @@ class CppGenerator
             return
         }
 
+        vsSolution = generationSettingsProvider.projectSetFactory.create
+        moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
+
         // iterate module by module and generate included content
         for (module : idl.modules)
         {
-            processModule(module, projectTypes)
+            processModule(module, generationSettingsProvider.projectTypes)
+            
+            // only for the top-level modules, produce a parent project file
+            if (vsSolution instanceof CMakeProjectSet)
+            {
+                new CMakeTopLevelProjectFileGenerator(file_system_access, vsSolution, module).generate()
+            }
         }
-
     }
 
     def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)

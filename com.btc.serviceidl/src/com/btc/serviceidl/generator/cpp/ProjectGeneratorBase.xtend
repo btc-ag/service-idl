@@ -54,11 +54,6 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
             generateProject(param_bundle.projectType, interface_declaration, projectPath, export_header_file_name)
         }
 
-        val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
-        file_system_access.generateFile(projectPath.append("source").append(dependency_file_name).toString,
-            generateDependencies())
-        projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
-
         if (param_bundle.projectType != ProjectType.EXTERNAL_DB_IMPL) // done separately for ExternalDBImpl to include ODB files also
         {
             generateVSProjectFiles(param_bundle.projectType, projectPath, vsSolution.getVcxprojName(param_bundle),

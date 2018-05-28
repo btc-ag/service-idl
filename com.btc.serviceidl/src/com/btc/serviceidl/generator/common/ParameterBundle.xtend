@@ -46,10 +46,11 @@ class ParameterBundle
             this.project_type = Optional.of(bundle.projectType)
         }
 
-        def void reset(Iterable<ModuleDeclaration> element)
+        def Builder reset(Iterable<ModuleDeclaration> element)
         {
             master_data.moduleStack = new ArrayDeque<ModuleDeclaration>()
             master_data.moduleStack.addAll(element)
+            this
         }
 
         def void reset(ProjectType element)
