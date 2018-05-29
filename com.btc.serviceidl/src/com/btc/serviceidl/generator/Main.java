@@ -68,7 +68,7 @@ public class Main {
         Main main = injector.getInstance(Main.class);
 
         CommandLine commandLine = parseCommandLine(args);
-        boolean res = main.runGenerator(commandLine.getArgs(),
+        boolean res = main.tryRunGenerator(commandLine.getArgs(),
                 commandLine.hasOption(OPTION_OUTPUT_PATH) ? commandLine.getOptionValue(OPTION_OUTPUT_PATH)
                         : System.getProperty("user.dir"),
                 commandLine.hasOption(OPTION_CPP_PROJECT_SYSTEM) ? commandLine.getOptionValue(OPTION_CPP_PROJECT_SYSTEM)
@@ -111,7 +111,7 @@ public class Main {
     @Inject
     private IGenerationSettingsProvider generationSettingsProvider;
 
-    private boolean runGenerator(String[] inputFiles, String outputPath, String projectSystem) {
+    private boolean tryRunGenerator(String[] inputFiles, String outputPath, String projectSystem) {
         // Load the resource
         ResourceSet set = resourceSetProvider.get();
         for (String inputFile : inputFiles) {
