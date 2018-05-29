@@ -72,7 +72,7 @@ class CommandLineRunnerTest
     {
         val file = new File("src/com/btc/serviceidl/tests/testdata/base.idl")
         val path = Files.createTempDirectory("test-gen")
-        Main.main(Arrays.asList(file.absolutePath, "-outputPath", path.toString))
+        assertEquals(0, Main.mainBackend(Arrays.asList(file.absolutePath, "-outputPath", path.toString)))
         val files = path.toFile.listFilesRecursively
         assertEquals(25, files.size)
     }
@@ -82,9 +82,23 @@ class CommandLineRunnerTest
     {
         val file = new File("src/com/btc/serviceidl/tests/testdata/failable.idl")
         val path = Files.createTempDirectory("test-gen")
-        Main.main(Arrays.asList(file.absolutePath, "-outputPath", path.toString))
+        assertEquals(0, Main.mainBackend(Arrays.asList(file.absolutePath, "-outputPath", path.toString)))
         val files = path.toFile.listFilesRecursively
         // TODO check output for Warnings!
         assertEquals(103, files.size)
     }
+
+    @Test
+    def void testWithImport()
+    {
+        val derivedFile = new File("src/com/btc/serviceidl/tests/testdata/import-derived.idl")
+        val importedFile = new File("src/com/btc/serviceidl/tests/testdata/import-imported.idl")
+        val path = Files.createTempDirectory("test-gen")
+        assertEquals(0,
+            Main.mainBackend(
+                Arrays.asList(derivedFile.absolutePath, importedFile.absolutePath, "-outputPath", path.toString)))
+        val files = path.toFile.listFilesRecursively
+        assertEquals(49, files.size)
+    }
+
 }
