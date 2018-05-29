@@ -49,6 +49,10 @@ public class Main {
     private static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ = "prins-vcxproj";
     private static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT       = OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ;
 
+    public static final int EXIT_CODE_GOOD              = 0;
+    public static final int EXIT_CODE_GENERATION_FAILED = 1;
+    public static final int EXIT_CODE_INVALID_ARGUMENTS = 1;
+
     public static void main(String[] args) {
         System.exit(mainBackend(args));
     }
@@ -58,7 +62,7 @@ public class Main {
         if (args.length == 0) {
             new HelpFormatter().printHelp("Generator", createOptions());
             System.err.println("Aborting: no path to EMF resource provided!");
-            return 2;
+            return EXIT_CODE_INVALID_ARGUMENTS;
         }
         Injector injector = new IdlStandaloneSetup().createInjectorAndDoEMFRegistration();
         Main main = injector.getInstance(Main.class);
@@ -70,7 +74,7 @@ public class Main {
                 commandLine.hasOption(OPTION_CPP_PROJECT_SYSTEM) ? commandLine.getOptionValue(OPTION_CPP_PROJECT_SYSTEM)
                         : OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT);
 
-        return res ? 0 : 1;
+        return res ? EXIT_CODE_GOOD : EXIT_CODE_GENERATION_FAILED;
     }
 
     private static Options createOptions() {
