@@ -67,4 +67,6 @@ public interface Constants {
     public static final String ZMQ_SERVER_PUBLIC_KEY  = "Qr5^/{Rc{V%ji//usp(^m^{(qxC3*j.vsF+Q{XJt";
     public static final String ZMQ_CLIENT_PRIVATE_KEY = "9L9K[bCFp7a]/:gJL2x{PoV}wnaAb.Zt}[qj)z/!";
     public static final String ZMQ_CLIENT_PUBLIC_KEY  = "=ayKwMDx1YB]TK9hj4:II%8W2p4:Ue((iEkh30:@";
+
+    public static final String PROTOBUF_GENERATION_DIRECTORY_NAME = "gen";
 }

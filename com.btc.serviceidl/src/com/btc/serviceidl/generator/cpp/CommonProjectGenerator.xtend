@@ -78,7 +78,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
         val basicCppGenerator = createBasicCppGenerator
         val file_content = new CommonsGenerator(basicCppGenerator.typeResolver, param_bundle).
             generateHeaderFileBody(module, export_header)
-        generateHeader(basicCppGenerator, file_content.toString, Optional.of(export_header))
+        generateHeader(basicCppGenerator, moduleStructureStrategy, file_content.toString, Optional.of(export_header))
     }
 
     def private String generateCppCommons(ModuleDeclaration module, String export_header)

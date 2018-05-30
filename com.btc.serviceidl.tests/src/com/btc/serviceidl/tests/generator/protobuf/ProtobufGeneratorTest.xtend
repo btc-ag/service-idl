@@ -34,7 +34,7 @@ class ProtobufGeneratorTest extends AbstractGeneratorTest
     {
         val fileCount = 3 // TODO why is the proto file generated for each language? 
         val contents = ImmutableMap.of(IFileSystemAccess::DEFAULT_OUTPUT +
-            "cpp/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/KeyValueStore.proto", '''
+            "cpp/modules/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/KeyValueStore.proto", '''
             syntax = "proto2";
             package BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf;
             message KeyValueStore_Request {

@@ -14,6 +14,7 @@ import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
 import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.cab.CABModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSetFactory
 import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.tests.generator.AbstractGeneratorTest
@@ -43,7 +44,8 @@ class CppGeneratorTest extends AbstractGeneratorTest
         defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases        
         val fileCount = 6
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
-        val directory = IFileSystemAccess::DEFAULT_OUTPUT + "cpp/modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
+        val directory = IFileSystemAccess::DEFAULT_OUTPUT +
+            "cpp/modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
         val contents = ImmutableMap.of(directory + "include/IKeyValueStore.h", '''
             #pragma once
             #include "modules/Commons/include/BeginPrinsModulesInclude.h"
@@ -126,9 +128,11 @@ class CppGeneratorTest extends AbstractGeneratorTest
         val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
         defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases
         defaultGenerationSettingsProvider.projectSetFactory = new CMakeProjectSetFactory
+        defaultGenerationSettingsProvider.moduleStructureStrategy = new CABModuleStructureStrategy
         val fileCount = 7
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
-        val directory = IFileSystemAccess::DEFAULT_OUTPUT + "cpp/modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
+        val directory = IFileSystemAccess::DEFAULT_OUTPUT +
+            "cpp/modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
 
         val contents = ImmutableMap.of(IFileSystemAccess::DEFAULT_OUTPUT + "cpp/conanfile.py", '''
             from conan_template import *
@@ -179,7 +183,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             file( GLOB INCS ../include/*.h* ../include/**/*.h* )
             
             # Components source files
-            file( GLOB SRCS ../source/*.c* )
+            file( GLOB SRCS ../source/*.cpp ../gen/*.cc )
             
             if( MSVC )
                 # other resources
@@ -195,12 +199,20 @@ class CppGeneratorTest extends AbstractGeneratorTest
             # define list of targets which have to be linked
             set( LINK_TARGETS
               
-              ${BTC}${CAB}Commons.Core${Commons_Version}
-              ${BTC}${CAB}Commons.CoreExtras${Commons_Version}
-              ${BTC}${CAB}Commons.CoreOS${Commons_Version}
-              ${BTC}${CAB}Commons.FutureUtil${Commons_Version}
-              ${BTC}${CAB}Logging.API${Logging_Version}
-              ${BTC}${CAB}ServiceComm.API${Logging_Version}
+              ${BTC}${CAB}Commons.Core
+              ${BTC}${CAB}Commons.CoreExtras
+              ${BTC}${CAB}Commons.CoreOS
+              ${BTC}${CAB}Commons.FutureUtil
+              ${BTC}${CAB}Logging.API
+              ${BTC}${CAB}ServiceComm.API
+              ${BTC}${CAB}ServiceComm.Base
+              ${BTC}${CAB}ServiceComm.Commons
+              ${BTC}${CAB}ServiceComm.CommonsUtil
+              ${BTC}${CAB}ServiceComm.ProtobufBase
+              ${BTC}${CAB}ServiceComm.ProtobufUtil
+              ${BTC}${CAB}ServiceComm.TestBase
+              ${BTC}${CAB}ServiceComm.Util
+              libprotobuf
               #TODO BTCCABINF-1257 this is just to make it work. Is * ok here?
               libboost*
             )
@@ -215,7 +227,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             # define complete target description
             MY_TARGET( SHARED_LIB TARGET FILES DEP_TARGETS LINK_TARGETS WARNING_LEVEL_DEFAULT COMPILE_OPTS_DEFAULT )
             #ENABLE_WARNINGSASERRORS( "${TARGET}" )            
-
+            
             set_target_properties("${TARGET}" PROPERTIES LINKER_LANGUAGE CXX)
         ''', directory + "build/make.cmakeset", '''
             cab_file_guard()            

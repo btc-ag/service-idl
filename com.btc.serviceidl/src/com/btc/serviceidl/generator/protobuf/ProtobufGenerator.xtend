@@ -54,6 +54,7 @@ import org.eclipse.xtext.scoping.IScopeProvider
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.generator.cpp.CppConstants
 
 class ProtobufGenerator
 {
@@ -149,12 +150,15 @@ class ProtobufGenerator
    {
       param_bundle.reset(ProjectType.PROTOBUF)
       var project_path = an.label + Constants.SEPARATOR_FILE;
+      // TODO this depends on the PRINS directory structure
+      if (an == ArtifactNature.CPP)
+         project_path += "modules" + Constants.SEPARATOR_FILE
       if (an == ArtifactNature.JAVA) // special directory structure according to Maven conventions
          project_path += getJavaProtoLocation(container)
       else
          project_path += GeneratorUtil.getTransformedModuleName(param_bundle.build, an, TransformType.FILE_SYSTEM)
          + Constants.SEPARATOR_FILE
-         + "gen"
+         + Constants.PROTOBUF_GENERATION_DIRECTORY_NAME
          + Constants.SEPARATOR_FILE
 
       file_system_access.generateFile(project_path + artifact_name.proto, file_content)

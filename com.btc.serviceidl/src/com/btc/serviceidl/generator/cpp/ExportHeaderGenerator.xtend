@@ -23,7 +23,8 @@ class ExportHeaderGenerator
     
     def generateExportHeader()
     {
-        val prefix = GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.EXPORT_HEADER).toUpperCase
+        val prefix = GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.EXPORT_HEADER)
+        val prefixUpperCase = prefix.toUpperCase
 
         '''
             #ifndef «prefix»_EXPORT_H
@@ -33,27 +34,27 @@ class ExportHeaderGenerator
             #define CAB_NO_LEGACY_EXPORT_MACROS
             #endif
             
-            #include <modules/Commons/include/Export.h>
+            #include <Commons/Core/include/Export.h>
             
-            #ifdef «prefix»_STATIC_DEFINE
-            #  define «prefix»_EXPORT
-            #  define «prefix»_EXTERN
-            #  define «prefix»_NO_EXPORT
+            #ifdef «prefixUpperCase»_STATIC_DEFINE
+            #  define «prefixUpperCase»_EXPORT
+            #  define «prefixUpperCase»_EXTERN
+            #  define «prefixUpperCase»_NO_EXPORT
             #else
-            #  ifndef «prefix»_EXPORT
+            #  ifndef «prefixUpperCase»_EXPORT
             #    ifdef «prefix»_EXPORTS
                     /* We are building this library */
-            #      define «prefix»_EXPORT CAB_EXPORT
-            #      define «prefix»_EXTERN 
+            #      define «prefixUpperCase»_EXPORT CAB_EXPORT
+            #      define «prefixUpperCase»_EXTERN 
             #    else
                     /* We are using this library */
-            #      define «prefix»_EXPORT CAB_IMPORT
-            #      define «prefix»_EXTERN CAB_EXTERN
+            #      define «prefixUpperCase»_EXPORT CAB_IMPORT
+            #      define «prefixUpperCase»_EXTERN CAB_EXTERN
             #    endif
             #  endif
             
-            #  ifndef «prefix»_NO_EXPORT
-            #    define «prefix»_NO_EXPORT CAB_NO_EXPORT
+            #  ifndef «prefixUpperCase»_NO_EXPORT
+            #    define «prefixUpperCase»_NO_EXPORT CAB_NO_EXPORT
             #  endif
             #endif
             

@@ -8,26 +8,31 @@
  * 
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
-package com.btc.serviceidl.generator.cpp.prins
+package com.btc.serviceidl.generator.cpp.cab
 
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.HeaderResolver
 import com.btc.serviceidl.generator.cpp.HeaderType
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
+import com.btc.serviceidl.generator.cpp.TypeResolver
+import com.btc.serviceidl.generator.cpp.prins.ReferenceResolver
 import com.btc.serviceidl.idl.ModuleDeclaration
 import org.eclipse.core.runtime.Path
 
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 
-class PrinsModuleStructureStrategy implements IModuleStructureStrategy
+import static extension com.btc.serviceidl.generator.cpp.HeaderResolver.Builder.*
+
+class CABModuleStructureStrategy implements IModuleStructureStrategy
 {
 
-    // TODO it is not correct here to distinguish based on the ProjectType, the Codec is also in the PROTOBUF project!
     override getIncludeFilePath(Iterable<ModuleDeclaration> module_stack, ProjectType project_type, String baseName,
         HeaderType headerType)
     {
+        // TODO remove MODULES_HEADER_PATH_PREFIX here, and add a method to IModuleStructureStrategy that determines that
         new Path(ReferenceResolver.MODULES_HEADER_PATH_PREFIX).append(
             GeneratorUtil.asPath(ParameterBundle.createBuilder(module_stack).with(project_type).build,
                 ArtifactNature.CPP)).append(headerType.includeDirectoryName).append(baseName).addFileExtension(
@@ -36,13 +41,14 @@ class PrinsModuleStructureStrategy implements IModuleStructureStrategy
 
     override getEncapsulationHeaders()
     {
-        new Pair('#include "modules/Commons/include/BeginPrinsModulesInclude.h"',
-            '#include "modules/Commons/include/EndPrinsModulesInclude.h"')
+        new Pair('#include <Commons/Core/include/BeginCABHeader.h>', '#include <Commons/Core/include/EndCABHeader.h>')
     }
 
     override createHeaderResolver()
     {
-        PrinsHeaderResolver.create
+        new HeaderResolver.Builder().withBasicGroups.configureGroup(TypeResolver.TARGET_INCLUDE_GROUP, 10, "", "",
+            false).configureGroup(TypeResolver.CAB_INCLUDE_GROUP, 20, "", "", true).configureGroup(
+            TypeResolver.STL_INCLUDE_GROUP, 30, "", "", true).build
     }
 
 }

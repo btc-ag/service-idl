@@ -38,6 +38,9 @@ class CMakeGenerator
 
     def CharSequence generateCMakeLists(String project_name, IPath project_path)
     {
+        // TODO this must be changed, pass the ProjectType to this function, and decide based on that
+        val cmakeTargetType = if (project_name.contains(".Protobuf")) "STATIC_LIB" else "SHARED_LIB"
+        
         // TODO instead of globbing, this could list files from the projectFileSet explicitly
         '''
             # define target name
@@ -51,7 +54,7 @@ class CMakeGenerator
             file( GLOB INCS ../include/*.h* ../include/**/*.h* )
             
             # Components source files
-            file( GLOB SRCS ../source/*.c* )
+            file( GLOB SRCS ../source/*.cpp ../gen/*.cc )
             
             if( MSVC )
                 # other resources
@@ -67,12 +70,20 @@ class CMakeGenerator
             # define list of targets which have to be linked
             set( LINK_TARGETS
               «/* TODO use the actual external references */»
-              ${BTC}${CAB}Commons.Core${Commons_Version}
-              ${BTC}${CAB}Commons.CoreExtras${Commons_Version}
-              ${BTC}${CAB}Commons.CoreOS${Commons_Version}
-              ${BTC}${CAB}Commons.FutureUtil${Commons_Version}
-              ${BTC}${CAB}Logging.API${Logging_Version}
-              ${BTC}${CAB}ServiceComm.API${Logging_Version}
+              ${BTC}${CAB}Commons.Core
+              ${BTC}${CAB}Commons.CoreExtras
+              ${BTC}${CAB}Commons.CoreOS
+              ${BTC}${CAB}Commons.FutureUtil
+              ${BTC}${CAB}Logging.API
+              ${BTC}${CAB}ServiceComm.API
+              ${BTC}${CAB}ServiceComm.Base
+              ${BTC}${CAB}ServiceComm.Commons
+              ${BTC}${CAB}ServiceComm.CommonsUtil
+              ${BTC}${CAB}ServiceComm.ProtobufBase
+              ${BTC}${CAB}ServiceComm.ProtobufUtil
+              ${BTC}${CAB}ServiceComm.TestBase
+              ${BTC}${CAB}ServiceComm.Util
+              libprotobuf
               #TODO BTCCABINF-1257 this is just to make it work. Is * ok here?
               libboost*
               «FOR project : project_references»
@@ -91,7 +102,7 @@ class CMakeGenerator
             add_definitions( -DCAB_NO_LEGACY_EXPORT_MACROS )
             
             # define complete target description
-            MY_TARGET( SHARED_LIB TARGET FILES DEP_TARGETS LINK_TARGETS WARNING_LEVEL_DEFAULT COMPILE_OPTS_DEFAULT )
+            MY_TARGET( «cmakeTargetType» TARGET FILES DEP_TARGETS LINK_TARGETS WARNING_LEVEL_DEFAULT COMPILE_OPTS_DEFAULT )
             #ENABLE_WARNINGSASERRORS( "${TARGET}" )
             
             «/* set linker_language explicitly to allow for modules without source files (headers only) */»

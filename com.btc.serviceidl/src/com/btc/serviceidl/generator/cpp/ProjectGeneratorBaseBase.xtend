@@ -144,21 +144,20 @@ class ProjectGeneratorBaseBase
         new ExportHeaderGenerator(param_bundle).generateExportHeader()
     }
 
-    def static String generateHeader(BasicCppGenerator basicCppGenerator, String file_content,
-        Optional<String> export_header)
+    def static String generateHeader(BasicCppGenerator basicCppGenerator,
+        IModuleStructureStrategy moduleStructureStrategy, String file_content, Optional<String> export_header)
     {
-        // TODO the prefix and suffix includes are PRINS-specific
         '''
             #pragma once
-            #include "modules/Commons/include/BeginPrinsModulesInclude.h"
             
+            «moduleStructureStrategy.encapsulationHeaders.key»
             «IF export_header.present»#include "«export_header.get»"«ENDIF»
             «basicCppGenerator.generateIncludes(true)»
             
             «basicCppGenerator.paramBundle.openNamespaces»
                «file_content»
             «basicCppGenerator.paramBundle.closeNamespaces»
-            #include "modules/Commons/include/EndPrinsModulesInclude.h"
+            «moduleStructureStrategy.encapsulationHeaders.value»
         '''
     }
 

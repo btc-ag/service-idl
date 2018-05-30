@@ -648,7 +648,8 @@ class CodecGenerator extends BasicCppGenerator
         addTargetInclude(moduleStructureStrategy.getIncludeFilePath(
             paramBundle.moduleStack,
             ProjectType.PROTOBUF,
-            GeneratorUtil.getPbFileName(owner)
+            GeneratorUtil.getPbFileName(owner),
+            HeaderType.PROTOBUF_HEADER
         ))
 
         '''

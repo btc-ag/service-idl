@@ -35,6 +35,7 @@ import org.eclipse.xtext.validation.Issue;
 
 import com.btc.serviceidl.IdlStandaloneSetup;
 import com.btc.serviceidl.generator.common.ProjectType;
+import com.btc.serviceidl.generator.cpp.cab.CABModuleStructureStrategy;
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSetFactory;
 import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory;
 import com.google.inject.Inject;
@@ -143,6 +144,7 @@ public class Main {
 
             System.out.println("Disabling ODB generation, this is unsupported with CMake project system");
             defaultGenerationSettingsProvider.projectTypes.remove(ProjectType.EXTERNAL_DB_IMPL);
+            defaultGenerationSettingsProvider.moduleStructureStrategy = new CABModuleStructureStrategy();
 
             break;
         case OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ:
