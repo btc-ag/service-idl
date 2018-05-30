@@ -91,6 +91,8 @@ class DotNetGenerator
       {
          processModule(module, projectTypes)
       }
+      
+      new VSSolutionGenerator(fsa, vsSolution, resource.URI.lastSegment.replace(".idl", "")).generateSolutionFile
    }
    
    def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)

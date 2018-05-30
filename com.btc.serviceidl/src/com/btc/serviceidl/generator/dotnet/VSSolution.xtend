@@ -1,34 +1,53 @@
 package com.btc.serviceidl.generator.dotnet
 
-import com.btc.serviceidl.generator.common.ParameterBundle
-import com.btc.serviceidl.generator.common.GeneratorUtil
-import com.btc.serviceidl.generator.common.TransformType
-import java.util.UUID
-import java.util.HashMap
 import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.common.TransformType
+import java.util.HashMap
+import java.util.UUID
+import org.eclipse.xtend.lib.annotations.Data
+import org.eclipse.core.runtime.IPath
 
 class VSSolution
 {
-    val vs_projects = new HashMap<String, UUID>
-
-    def public String getCsprojName(ParameterBundle builder)
+    @Data
+    static class Entry
     {
-        val project_name = GeneratorUtil.getTransformedModuleName(builder, ArtifactNature.DOTNET, TransformType.PACKAGE)
-        getCsprojGUID(project_name)
-        return project_name
+        UUID uuid
+        IPath path
     }
 
-    def public String getCsprojGUID(String project_name)
+    val vs_projects = new HashMap<String, Entry>
+
+    def public String getCsprojName(ParameterBundle parameterBundle)
     {
-        var UUID guid
-        if (vs_projects.containsKey(project_name))
-            guid = vs_projects.get(project_name)
-        else
+        return registerCsprojGUID(
+            parameterBundle
+        )
+    }
+
+    private def registerCsprojGUID(ParameterBundle parameterBundle)
+    {
+        val projectName = GeneratorUtil.getTransformedModuleName(parameterBundle, ArtifactNature.DOTNET,
+            TransformType.PACKAGE)
+        if (!vs_projects.containsKey(projectName))
         {
-            guid = UUID.nameUUIDFromBytes(project_name.bytes)
-            vs_projects.put(project_name, guid)
+            vs_projects.put(projectName,
+                new Entry(UUID.nameUUIDFromBytes(projectName.bytes),
+                    GeneratorUtil.asPath(parameterBundle, ArtifactNature.DOTNET)))
         }
-        return guid.toString.toUpperCase
+        return projectName
+    }
+
+    def public String getCsprojGUID(String projectName)
+    {
+        return vs_projects.get(projectName).uuid.toString.toUpperCase
+    }
+
+    def getAllProjects()
+    {
+        return vs_projects.entrySet.immutableCopy
     }
 
 }

@@ -35,10 +35,33 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
     @Test
     def void testBasicServiceApi()
     {
-        val fileCount = 4
+        val fileCount = 5
         val baseDirectory = IFileSystemAccess::DEFAULT_OUTPUT + "dotnet/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
         val directory = baseDirectory
-        val contents = ImmutableMap.of(directory + "IKeyValueStore.cs", '''
+        val contents = ImmutableMap.of(IFileSystemAccess::DEFAULT_OUTPUT + "dotnet/__synthetic0.sln", '''
+            
+            Microsoft Visual Studio Solution File, Format Version 12.00
+            # Visual Studio 14
+            VisualStudioVersion = 14.0.25420.1
+            MinimumVisualStudioVersion = 10.0.40219.1
+            Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI", "Infrastructure\ServiceHost\Demo\API\ServiceAPI\BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.csproj", "{9492E992-0B76-3834-A485-8F5D7175DAE7}"
+            EndProject
+            Global
+                GlobalSection(SolutionConfigurationPlatforms) = preSolution
+                    Debug|Any CPU = Debug|Any CPU
+                    Release|Any CPU = Release|Any CPU
+                EndGlobalSection
+                GlobalSection(ProjectConfigurationPlatforms) = postSolution
+                {9492E992-0B76-3834-A485-8F5D7175DAE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                {9492E992-0B76-3834-A485-8F5D7175DAE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                {9492E992-0B76-3834-A485-8F5D7175DAE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+                {9492E992-0B76-3834-A485-8F5D7175DAE7}.Release|Any CPU.Build.0 = Release|Any CPU
+                EndGlobalSection
+                GlobalSection(SolutionProperties) = preSolution
+                    HideSolutionNode = FALSE
+                EndGlobalSection
+            EndGlobal
+        ''', directory + "IKeyValueStore.cs", '''
             namespace BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI
             {
                public interface IKeyValueStore

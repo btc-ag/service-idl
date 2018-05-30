@@ -45,7 +45,7 @@ class IdlGeneratorTest
         val generatorContext = new GeneratorContext()
         underTest.doGenerate(spec.eResource, fsa, generatorContext)
         println(fsa.textFiles.keySet.join("\n"))
-        assertEquals(103, fsa.textFiles.size)
+        assertEquals(104, fsa.textFiles.size)
     }
 
     @Test
@@ -58,6 +58,6 @@ class IdlGeneratorTest
         val generatorContext = new GeneratorContext()
         underTest.doGenerate(spec.eResource, fsa, generatorContext)
         println(fsa.textFiles.keySet.join("\n"))
-        assertEquals(130, fsa.textFiles.size)
+        assertEquals(131, fsa.textFiles.size)
     }
 }
