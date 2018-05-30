@@ -148,8 +148,9 @@ class CSProjGenerator {
           <PropertyGroup>
             <PreBuildEvent>
             «FOR protobuf_file : protobuf_files»
-               protoc.exe --include_imports --proto_path=$(SolutionDir).. --descriptor_set_out=$(ProjectDir)gen/«protobuf_file».protobin $(SolutionDir)../«GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM)»/gen/«protobuf_file».proto
-Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».protobin
+            «/** TODO here was "$(SolutionDir)..", this must be generalized */»
+                protoc.exe --include_imports --proto_path=$(SolutionDir) --descriptor_set_out=$(ProjectDir)gen/«protobuf_file».protobin $(SolutionDir)/«GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM)»/gen/«protobuf_file».proto
+                Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».protobin
             «ENDFOR»
             </PreBuildEvent>
           </PropertyGroup>
