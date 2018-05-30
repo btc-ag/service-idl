@@ -27,10 +27,11 @@ class CSProjGenerator {
       
       val project_guid = vsSolution.getCsprojGUID(project_name)
       val is_exe = isExecutable(param_bundle.projectType)
+      val prins = false
       '''
       <?xml version="1.0" encoding="utf-8"?>
       <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-        «IF is_exe»<Import Project="$(SolutionDir)Net.ProjectSettings" />«ENDIF»
+        «IF is_exe && prins»<Import Project="$(SolutionDir)Net.ProjectSettings" />«ENDIF»
         <PropertyGroup>
           <ProjectGuid>{«project_guid»}</ProjectGuid>
           <OutputType>«IF is_exe»Exe«ELSE»Library«ENDIF»</OutputType>
@@ -39,7 +40,7 @@ class CSProjGenerator {
           <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
           <TargetFrameworkProfile />
         </PropertyGroup>
-        «IF !is_exe»
+        «IF !is_exe || !prins»
         <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
           <DebugSymbols>true</DebugSymbols>
           <DebugType>full</DebugType>
