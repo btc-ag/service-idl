@@ -54,6 +54,7 @@ import org.eclipse.xtext.scoping.IScopeProvider
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.generator.cpp.CppConstants
 
 class ProtobufGenerator
 {
@@ -157,7 +158,7 @@ class ProtobufGenerator
       else
          project_path += GeneratorUtil.getTransformedModuleName(param_bundle.build, an, TransformType.FILE_SYSTEM)
          + Constants.SEPARATOR_FILE
-         + "gen"
+         + Constants.PROTOBUF_GENERATION_DIRECTORY_NAME
          + Constants.SEPARATOR_FILE
 
       file_system_access.generateFile(project_path + artifact_name.proto, file_content)

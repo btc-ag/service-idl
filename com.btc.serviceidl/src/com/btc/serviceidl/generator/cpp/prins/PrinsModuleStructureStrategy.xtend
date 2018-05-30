@@ -14,10 +14,12 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.HeaderType
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.idl.ModuleDeclaration
 import org.eclipse.core.runtime.Path
-import com.btc.serviceidl.generator.cpp.HeaderType
+
+import static extension com.btc.serviceidl.generator.cpp.Util.*
 
 class PrinsModuleStructureStrategy implements IModuleStructureStrategy
 {
@@ -28,8 +30,8 @@ class PrinsModuleStructureStrategy implements IModuleStructureStrategy
     {
         new Path(ReferenceResolver.MODULES_HEADER_PATH_PREFIX).append(
             GeneratorUtil.asPath(ParameterBundle.createBuilder(module_stack).with(project_type).build,
-                ArtifactNature.CPP)).append(if (headerType == HeaderType.PROTOBUF_HEADER) "gen" else "include").append(
-            baseName).addFileExtension(if (headerType == HeaderType.PROTOBUF_HEADER) "pb.h" else "h")
+                ArtifactNature.CPP)).append(headerType.includeDirectoryName).append(baseName).addFileExtension(
+            headerType.fileExtension)
     }
 
     override getEncapsulationHeaders()

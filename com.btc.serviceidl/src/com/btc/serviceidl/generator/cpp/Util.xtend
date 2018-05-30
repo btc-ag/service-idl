@@ -13,6 +13,21 @@ import static extension com.btc.serviceidl.util.Util.*
 // TODO check splitting up this class by logical aspects
 class Util
 {
+    /**
+     * Returns the name of the include directory within a module for a header of the given type.
+     */
+    def static getIncludeDirectoryName(HeaderType headerType)
+    {
+        // TODO probably, this should also be made part of a strategy, at least the non-protobuf folder name may be chosen arbitrarily
+         if (headerType == HeaderType.PROTOBUF_HEADER) CppConstants.PROTOBUF_INCLUDE_DIRECTORY_NAME else "include"
+    }
+    
+    def static getFileExtension(HeaderType headerType)
+    {
+        // TODO probably, this should also be made part of a strategy, at least the non-protobuf folder name may be chosen arbitrarily
+        if (headerType == HeaderType.PROTOBUF_HEADER) "pb.h" else "h"
+    }
+
     def static Iterable<StructDeclaration> getUnderlyingTypes(StructDeclaration struct)
     {
         val all_types = new HashSet<StructDeclaration>
