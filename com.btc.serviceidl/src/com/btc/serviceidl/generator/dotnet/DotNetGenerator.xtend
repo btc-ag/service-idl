@@ -622,10 +622,6 @@ class DotNetGenerator
    
    def private generateCsproj(Iterable<String> cs_files)
    {
-      // Please do NOT edit line indents in the code below (even though they
-      // may look misplaced) unless you are fully aware of what you are doing!!!
-      // Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
-      
       val project_name = vsSolution.getCsprojName(param_bundle.build)
       
       val is_protobuf = param_bundle.projectType == ProjectType.PROTOBUF

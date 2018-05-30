@@ -21,6 +21,10 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 class CSProjGenerator {
   def static generateCSProj(String project_name, VSSolution vsSolution, ParameterBundle param_bundle, Iterable<String> referenced_assemblies, Iterable<NuGetPackage> nuget_packages, Map<String, String> project_references, Iterable<String> cs_files, Iterable<String> protobuf_files)
   {
+      // Please do NOT edit line indents in the code below (even though they
+      // may look misplaced) unless you are fully aware of what you are doing!!!
+      // Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
+      
       val project_guid = vsSolution.getCsprojGUID(project_name)
       val is_exe = isExecutable(param_bundle.projectType)
       '''
