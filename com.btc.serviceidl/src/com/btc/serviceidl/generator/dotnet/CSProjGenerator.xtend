@@ -144,13 +144,16 @@ class CSProjGenerator {
           «ENDFOR»
 
         <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+        «/** TODO protobufBaseDir was "$(SolutionDir)..", this must be generalized */»
+        «val protobufBaseDir = "$(SolutionDir)"»
         «IF protobuf_files !== null»
           <PropertyGroup>
             <PreBuildEvent>
-            «FOR protobuf_file : protobuf_files»
-            «/** TODO here was "$(SolutionDir)..", this must be generalized */»
-                protoc.exe --include_imports --proto_path=$(SolutionDir) --descriptor_set_out=$(ProjectDir)gen/«protobuf_file».protobin $(SolutionDir)/«GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM)»/gen/«protobuf_file».proto
-                Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».protobin
+            «FOR protobufFileBasename : protobuf_files»
+                «val protobufFile = makeProtobufFilePath(param_bundle, protobufFileBasename)»
+                «val protobinFile = '''$(ProjectDir)gen\«protobufFileBasename».protobin'''»
+                protoc.exe --include_imports --proto_path=«protobufBaseDir» --descriptor_set_out=«protobinFile» «protobufFile»
+                Protogen.exe -output_directory=$(ProjectDir) «protobinFile»
             «ENDFOR»
             </PreBuildEvent>
           </PropertyGroup>
@@ -165,7 +168,12 @@ class CSProjGenerator {
       </Project>
       '''
       
-  }    
+  }
+    
+    def static makeProtobufFilePath(ParameterBundle parameterBundle, String protobufFileBasename)
+    {
+        '''$(SolutionDir)/«GeneratorUtil.getTransformedModuleName(parameterBundle, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM)»/gen/«protobufFileBasename».proto'''
+    }
 
    /**
     * On rare occasions (like ServerRunner) the reference is not a DLL, but a
