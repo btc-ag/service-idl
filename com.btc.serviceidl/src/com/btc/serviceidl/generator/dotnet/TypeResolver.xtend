@@ -39,6 +39,7 @@ class TypeResolver
     val Set<String> namespace_references
     val Set<String> referenced_assemblies
     val Map<String, String> project_references
+    val NuGetPackageResolver nugetPackageResolver
     val VSSolution vsSolution
     val ParameterBundle param_bundle
 
@@ -52,7 +53,11 @@ class TypeResolver
         if (namespace.startsWith("System"))
             referenced_assemblies.add(DotNetAssemblies.getAssemblyForNamespace(namespace, frameworkVersion))
         else
-            referenced_assemblies.add(AssemblyResolver.resolveReference(namespace))
+        {
+            val assemblyName = AssemblyResolver.resolveReference(namespace)
+            referenced_assemblies.add(assemblyName)
+            nugetPackageResolver.resolvePackage(assemblyName)
+        }
 
         namespace_references.add(namespace)
         return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, false)
@@ -156,8 +161,8 @@ class TypeResolver
         else
         {
             project_path = "../" + GeneratorUtil.getRelativePathsUpwards(param_bundle.moduleStack) +
-                GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM) + "/" +
-                project_name
+                GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.DOTNET,
+                    TransformType.FILE_SYSTEM) + "/" + project_name
         }
 
         project_references.put(project_name, project_path)

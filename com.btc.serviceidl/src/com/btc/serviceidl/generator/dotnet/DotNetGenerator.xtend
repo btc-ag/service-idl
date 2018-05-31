@@ -254,9 +254,16 @@ class DotNetGenerator
       nuget_packages = new NuGetPackageResolver
       cs_files.clear
       
-      typeResolver = new TypeResolver(DOTNET_FRAMEWORK_VERSION, qualified_name_provider, 
-          namespace_references, referenced_assemblies, project_references, vsSolution, param_bundle.build
-      )
+      typeResolver = new TypeResolver(
+            DOTNET_FRAMEWORK_VERSION,
+            qualified_name_provider,
+            namespace_references,
+            referenced_assemblies,
+            project_references,
+            nuget_packages,
+            vsSolution,
+            param_bundle.build
+        )
       basicCSharpSourceGenerator = new BasicCSharpSourceGenerator(typeResolver, typedef_table, idl)      
    }
    

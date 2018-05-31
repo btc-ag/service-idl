@@ -85,7 +85,7 @@ class CommandLineRunnerTest
         assertEquals(0, Main.mainBackend(Arrays.asList(file.absolutePath, "-outputPath", path.toString)))
         val files = path.toFile.listFilesRecursively
         // TODO check output for Warnings!
-        assertEquals(104, files.size)
+        assertEquals(105, files.size)
     }
 
     @Test
