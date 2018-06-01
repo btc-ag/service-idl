@@ -256,7 +256,12 @@ class DotNetGenerator
       source https://artifactory.bop-dev.de/artifactory/api/nuget/cab-nuget-stable
       
       «FOR packageEntry : paketDependencies»
-          nuget «packageEntry.key» >= «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
+          «/** TODO remove this workaround */»
+          «IF packageEntry.key.equals("Common.Logging")»
+            nuget «packageEntry.key» == «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
+          «ELSE»
+            nuget «packageEntry.key» >= «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
+          «ENDIF»
       «ENDFOR»      
       '''
    }
