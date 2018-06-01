@@ -60,13 +60,13 @@ class NuGetPackageResolver
     def private static NuGetPackage resolvePackageInternal(String assemblyName)
     {
         val versions = validOrThrow(package_mapper.get(assemblyName), assemblyName, "package ID").map [
-            new Pair(it, validOrThrow(version_mapper.get(it),
-            it, "package version"))
+            new Pair(it, validOrThrow(version_mapper.get(it), it, "package version"))
         ].toList
         // TODO probably, this must be generalized, depending on the .NET version. but is this necessary at all? 
         // isn't the hint path filled by nuget or paket?
         // TODO the assembly path with paket doesn't contain the version number, but it probably does when nu-get is used
-        val assemblyPath = versions.get(0).key + "\\lib\\net40\\" + assemblyName + ".dll"
+        val assemblyPath = versions.get(0).key + "\\lib\\" + (if (assemblyName.startsWith("BTC.")) "" else "net40\\") +
+            assemblyName + ".dll"
         new NuGetPackage(versions, assemblyName, assemblyPath)
 
     }
