@@ -55,7 +55,6 @@ class TypeResolver
         else
         {
             val assemblyName = AssemblyResolver.resolveReference(namespace)
-            referenced_assemblies.add(assemblyName)
             nugetPackageResolver.resolvePackage(assemblyName)
         }
 
