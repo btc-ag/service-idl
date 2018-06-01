@@ -75,6 +75,8 @@ class DotNetGenerator
    private var protobuf_project_references = new HashMap<String, HashMap<String, String>>
    private var extension TypeResolver typeResolver
    private var extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
+    
+   val paketDependencies = new HashSet<Pair<String, String>>
    
    def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Set<ProjectType> projectTypes, HashMap<String, HashMap<String, String>> pr)
    {
@@ -93,6 +95,11 @@ class DotNetGenerator
       }
       
       new VSSolutionGenerator(fsa, vsSolution, resource.URI.lastSegment.replace(".idl", "")).generateSolutionFile
+      
+      // TODO generate only either NuGet or Paket file
+      file_system_access.generateFile(ArtifactNature.DOTNET.label + Constants.SEPARATOR_FILE + "paket.dependencies",
+            generatePaketDependencies)       
+      
    }
    
    def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
@@ -213,9 +220,15 @@ class DotNetGenerator
       // generate mandatory AssemblyInfo.cs file
       file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "Properties" + Constants.SEPARATOR_FILE + "AssemblyInfo.cs", generateAssemblyInfo(project_name))
    
+   
       // NuGet (optional)
       if (!nuget_packages.resolvedPackages.empty)
-         file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "packages.config", generatePackagesConfig)
+      {
+        file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "packages.config",
+                generatePackagesConfig)
+        // TODO generate only either NuGet or Paket file
+        paketDependencies.addAll(flatPackages)
+      }
    }
    
    def private getFlatPackages()
@@ -228,10 +241,23 @@ class DotNetGenerator
       '''
       <?xml version="1.0" encoding="utf-8"?>
       <packages>
-        «FOR packageEntry : flatPackages»
+        «FOR packageEntry : paketDependencies»
           <package id="«packageEntry.key»" version="«packageEntry.value»" targetFramework="«DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»" />
         «ENDFOR»
       </packages>
+      '''
+   }
+   
+   def private String generatePaketDependencies()
+   {
+      // TODO shouldn't the sources (at least extern) be configured somewhere else?
+      '''
+      source https://artifactory.bop-dev.de/artifactory/api/nuget/cab-nuget-extern
+      source https://artifactory.bop-dev.de/artifactory/api/nuget/cab-nuget-stable
+      
+      «FOR packageEntry : paketDependencies»
+          nuget «packageEntry.key» >= «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
+      «ENDFOR»      
       '''
    }
    
