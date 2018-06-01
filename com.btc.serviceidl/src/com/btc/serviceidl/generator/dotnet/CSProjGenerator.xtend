@@ -152,8 +152,8 @@ class CSProjGenerator {
             «FOR protobufFileBasename : protobuf_files»
                 «val protobufFile = makeProtobufFilePath(param_bundle, protobufFileBasename)»
                 «val protobinFile = '''$(ProjectDir)gen\«protobufFileBasename».protobin'''»
-                protoc.exe --include_imports --proto_path=«protobufBaseDir» --descriptor_set_out=«protobinFile» «protobufFile»
-                Protogen.exe -output_directory=$(ProjectDir) «protobinFile»
+                «protobufBaseDir»\\packages\\Google.ProtocolBuffers\\tools\\protoc.exe --include_imports --proto_path=«protobufBaseDir» --descriptor_set_out=«protobinFile» «protobufFile»
+                «protobufBaseDir»\\packages\\Google.ProtocolBuffers\\tools\\Protogen.exe -output_directory=$(ProjectDir) «protobinFile»
             «ENDFOR»
             </PreBuildEvent>
           </PropertyGroup>
