@@ -221,8 +221,8 @@ class DotNetGenerator
    def private String generatePackagesConfig()
    {
       val packages = new HashMap<String, String>
-      for (nuget_package : nuget_packages.resolvedPackages)
-         packages.put(nuget_package.packageID, nuget_package.packageVersion)
+      for (nuget_package : nuget_packages.resolvedPackages.map[it.packageVersions].flatten)
+         packages.put(nuget_package.key, nuget_package.value)
 
       '''
       <?xml version="1.0" encoding="utf-8"?>

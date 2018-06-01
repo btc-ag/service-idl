@@ -15,31 +15,13 @@
  */
 package com.btc.serviceidl.generator.dotnet
 
-import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtend.lib.annotations.Data
 
-@Accessors(PUBLIC_GETTER, PUBLIC_SETTER)
+// TODO this is not correctly modeled, this assumes there is a single assembly per package
+@Data
 class NuGetPackage
 {
-    private var String assemblyName
-    private var String assemblyPath
-    private var String packageID
-    private var String packageVersion
-
-    override boolean equals(Object obj)
-    {
-        if (obj === null)
-            return false
-
-        if (!(obj instanceof NuGetPackage))
-            return false
-
-        if (obj == this)
-            return true
-
-        val nuget_package = obj as NuGetPackage
-        return (assemblyName == nuget_package.assemblyName && assemblyPath == nuget_package.assemblyPath &&
-            packageID == nuget_package.packageID && packageVersion == nuget_package.packageVersion
-      )
-    }
-
+    val Iterable<Pair<String, String>> packageVersions
+    val String assemblyName
+    val String assemblyPath
 }
