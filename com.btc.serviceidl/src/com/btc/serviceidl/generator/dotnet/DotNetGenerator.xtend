@@ -218,17 +218,18 @@ class DotNetGenerator
          file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "packages.config", generatePackagesConfig)
    }
    
+   def private getFlatPackages()
+   {
+      nuget_packages.resolvedPackages.map[it.packageVersions].flatten
+   } 
+   
    def private String generatePackagesConfig()
    {
-      val packages = new HashMap<String, String>
-      for (nuget_package : nuget_packages.resolvedPackages.map[it.packageVersions].flatten)
-         packages.put(nuget_package.key, nuget_package.value)
-
       '''
       <?xml version="1.0" encoding="utf-8"?>
       <packages>
-        «FOR package_id : packages.keySet»
-          <package id="«package_id»" version="«packages.get(package_id)»" targetFramework="«DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»" />
+        «FOR packageEntry : flatPackages»
+          <package id="«packageEntry.key»" version="«packageEntry.value»" targetFramework="«DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»" />
         «ENDFOR»
       </packages>
       '''
