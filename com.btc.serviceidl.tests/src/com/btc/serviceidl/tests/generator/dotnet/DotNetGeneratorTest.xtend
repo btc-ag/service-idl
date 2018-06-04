@@ -88,7 +88,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                 <OutputType>Library</OutputType>
                 <RootNamespace>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI</RootNamespace>
                 <AssemblyName>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI</AssemblyName>
-                <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+                <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
                 <TargetFrameworkProfile />
               </PropertyGroup>
               <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

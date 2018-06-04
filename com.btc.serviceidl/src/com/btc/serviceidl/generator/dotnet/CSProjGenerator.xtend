@@ -37,7 +37,7 @@ class CSProjGenerator {
           <OutputType>«IF is_exe»Exe«ELSE»Library«ENDIF»</OutputType>
           <RootNamespace>«project_name»</RootNamespace>
           <AssemblyName>«project_name»</AssemblyName>
-          <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+          <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
           <TargetFrameworkProfile />
         </PropertyGroup>
         «IF !is_exe || !prins»
