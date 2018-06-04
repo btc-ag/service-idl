@@ -15,7 +15,6 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.tests.generator.AbstractGeneratorTest
 import com.btc.serviceidl.tests.testdata.TestData
-import com.google.common.collect.ImmutableMap
 import java.util.Arrays
 import java.util.HashSet
 import java.util.Map
@@ -38,7 +37,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
         val fileCount = 6
         val baseDirectory = IFileSystemAccess::DEFAULT_OUTPUT + "dotnet/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
         val directory = baseDirectory
-        val contents = ImmutableMap.of(IFileSystemAccess::DEFAULT_OUTPUT + "dotnet/__synthetic0.sln", '''
+        val contents = #{IFileSystemAccess::DEFAULT_OUTPUT + "dotnet/__synthetic0.sln" -> '''
             
             Microsoft Visual Studio Solution File, Format Version 12.00
             # Visual Studio 14
@@ -61,14 +60,14 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                     HideSolutionNode = FALSE
                 EndGlobalSection
             EndGlobal
-        ''', directory + "IKeyValueStore.cs", '''
+        ''', directory + "IKeyValueStore.cs" -> '''
             namespace BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI
             {
                public interface IKeyValueStore
                {
                }
             }
-        ''', directory + "KeyValueStoreConst.cs", '''
+        ''', directory + "KeyValueStoreConst.cs" -> '''
             using System;
             
             namespace BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI
@@ -79,7 +78,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                   public static readonly string typeName = typeof(BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.IKeyValueStore).FullName;
                }
             }
-        ''', baseDirectory + "/BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.csproj", // TODO double slash 
+        ''', baseDirectory + "/BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.csproj" -> // TODO double slash 
         '''
             <?xml version="1.0" encoding="utf-8"?>
             <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -169,7 +168,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
               </Target>
               -->
             </Project>
-        ''', baseDirectory + "/Properties/AssemblyInfo.cs", // TODO double slash
+        ''', baseDirectory + "/Properties/AssemblyInfo.cs" -> // TODO double slash
         '''
             using System.Reflection;
             using System.Runtime.CompilerServices;
@@ -194,7 +193,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
             
             // The following GUID is for the ID of the typelib if this project is exposed to COM
             [assembly: Guid("801100a3-a556-3742-93ca-fe54049a7b3e")]        
-        ''')
+        '''}
 
         checkGenerators(TestData.basic, setOf(ProjectType.SERVICE_API), fileCount, contents)
     }
