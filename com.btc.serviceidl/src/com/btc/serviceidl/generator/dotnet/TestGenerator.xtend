@@ -58,7 +58,7 @@ class TestGenerator extends GeneratorBase
                   StartServer(loggerFactory, connectionString);
                   
                   // client
-                  «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.API.IConnectionFactory")» connectionFactory = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqClientConnectionFactory")»(loggerFactory);
+                  «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.API.IConnectionFactory")» connectionFactory = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory")»(NetMqConnectionFactory.DefaultClientConnectionOptions, loggerFactory);
                   _client = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.Client")»(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcClientEndpoint")»(loggerFactory), connectionFactory);
                   
                   _testSubject = «resolve(interface_declaration, ProjectType.PROXY).alias(getProxyFactoryName(interface_declaration))».CreateProtobufProxy(_client.ClientEndpoint);
@@ -66,7 +66,7 @@ class TestGenerator extends GeneratorBase
             
                private void StartServer(«logger_factory» loggerFactory, string connectionString)
                {
-                  _serverConnectionFactory = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqServerConnectionFactory")»(loggerFactory);
+                  _serverConnectionFactory = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory")»(NetMqConnectionFactory.DefaultServerConnectionOptions, loggerFactory);
                   _server = new Server(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcServerEndpoint")»(loggerFactory), _serverConnectionFactory);
                   _serverRegistration = new «server_registration»(_server);
                   _serverRegistration.RegisterService();
