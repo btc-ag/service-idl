@@ -80,7 +80,7 @@ class TestGenerator extends GeneratorBase
                   _serverRegistration.Dispose();
                   _server.Dispose();
                   _testSubject = null;
-                  if (_client !== null)
+                  if (_client != null)
                      _client.Dispose();
                }
             
