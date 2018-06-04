@@ -34,7 +34,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
     @Test
     def void testBasicServiceApi()
     {
-        val fileCount = 6
+        val fileCount = 5
         val baseDirectory = IFileSystemAccess::DEFAULT_OUTPUT + "dotnet/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
         val directory = baseDirectory
         val contents = #{IFileSystemAccess::DEFAULT_OUTPUT + "dotnet/__synthetic0.sln" -> '''

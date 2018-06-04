@@ -74,7 +74,7 @@ class CommandLineRunnerTest
         val path = Files.createTempDirectory("test-gen")
         assertEquals(0, Main.mainBackend(Arrays.asList(file.absolutePath, "-outputPath", path.toString)))
         val files = path.toFile.listFilesRecursively
-        assertEquals(27, files.size)
+        assertEquals(28, files.size)
     }
 
     @Test
@@ -85,7 +85,7 @@ class CommandLineRunnerTest
         assertEquals(0, Main.mainBackend(Arrays.asList(file.absolutePath, "-outputPath", path.toString)))
         val files = path.toFile.listFilesRecursively
         // TODO check output for Warnings!
-        assertEquals(106, files.size)
+        assertEquals(112, files.size)
     }
 
     @Test
@@ -98,7 +98,7 @@ class CommandLineRunnerTest
             Main.mainBackend(
                 Arrays.asList(derivedFile.absolutePath, importedFile.absolutePath, "-outputPath", path.toString)))
         val files = path.toFile.listFilesRecursively.toList
-        assertEquals(52, files.size)
+        assertEquals(54, files.size)
         // TODO currently a solution file is generated for each file specified on the command line. Is this sensible?
         // TODO ... but only one paket.dependencies file, probably it is overwritten by the second solution generation
         val expectedFirstSolution = new File(path + "/dotnet/import-derived.sln")

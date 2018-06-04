@@ -227,6 +227,8 @@ class DotNetGenerator
         file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "packages.config",
                 generatePackagesConfig)
         // TODO generate only either NuGet or Paket file
+        file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "paket.references",
+                generatePaketReferences)
         paketDependencies.addAll(flatPackages)
       }
    }
@@ -241,29 +243,40 @@ class DotNetGenerator
       '''
       <?xml version="1.0" encoding="utf-8"?>
       <packages>
-        «FOR packageEntry : paketDependencies»
+        «FOR packageEntry : flatPackages»
           <package id="«packageEntry.key»" version="«packageEntry.value»" targetFramework="«DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»" />
         «ENDFOR»
       </packages>
       '''
    }
    
+   def private String generatePaketReferences()
+   {
+      '''      
+      «FOR packageEntry : flatPackages»
+          «packageEntry.key»
+      «ENDFOR»
+      '''
+   }
+   
    def private String generatePaketDependencies()
    {
       // TODO shouldn't the sources (at least extern) be configured somewhere else?
-      '''
-      source https://artifactory.bop-dev.de/artifactory/api/nuget/cab-nuget-extern
-      source https://artifactory.bop-dev.de/artifactory/api/nuget/cab-nuget-stable
-      
-      «FOR packageEntry : paketDependencies»
-          «/** TODO remove this workaround */»
-          «IF packageEntry.key.equals("Common.Logging")»
-            nuget «packageEntry.key» == «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
-          «ELSE»
-            nuget «packageEntry.key» >= «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
-          «ENDIF»
-      «ENDFOR»      
-      '''
+      if (!paketDependencies.empty) {
+          '''
+          source https://artifactory.bop-dev.de/artifactory/api/nuget/cab-nuget-extern
+          source https://artifactory.bop-dev.de/artifactory/api/nuget/cab-nuget-stable
+          
+          «FOR packageEntry : paketDependencies»
+              «/** TODO remove this workaround */»
+              «IF packageEntry.key.equals("Common.Logging")»
+                nuget «packageEntry.key» == «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
+              «ELSE»
+                nuget «packageEntry.key» >= «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
+              «ENDIF»
+          «ENDFOR»      
+          '''
+      }     
    }
    
    def private String generateAssemblyInfo(String project_name)
