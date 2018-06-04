@@ -66,7 +66,7 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
 
            _faultHandlerManager = new «resolve("BTC.CAB.ServiceComm.NET.FaultHandling.ServiceFaultHandlerManager")»();
 
-           var «service_fault_handler» = new «resolve("BTC.CAB.ServiceComm.NET.FaultHandling.ProtobufServiceFaultHandler")»();
+           var «service_fault_handler» = new «resolve("BTC.CAB.ServiceComm.NET.FaultHandling.MultipleExceptionTypesServiceFaultHandler")»();
 
            «makeExceptionRegistration(service_fault_handler, com.btc.serviceidl.util.Util.getRaisedExceptions(interface_declaration))»
 
