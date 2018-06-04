@@ -45,7 +45,7 @@ class NuGetPackageResolver
         "BTC.CAB.ServiceComm.NET.ServerRunner" -> #["BTC.CAB.ServiceComm.NET"],
         "BTC.CAB.ServiceComm.NET.SingleQueue.API" -> #["BTC.CAB.ServiceComm.NET"],
         "BTC.CAB.ServiceComm.NET.SingleQueue.Core" -> #["BTC.CAB.ServiceComm.NET"],
-        "BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ" -> #["BTC.CAB.ServiceComm.NET"],
+        "BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ" -> #["BTC.CAB.ServiceComm.NET"],
         "BTC.CAB.ServiceComm.NET.Util" -> #["BTC.CAB.ServiceComm.NET"],
         "CommandLine" -> #["CommandLineParser"],
         "Google.ProtocolBuffers" -> #["Google.ProtocolBuffers"],
