@@ -12,17 +12,22 @@ import static extension com.btc.serviceidl.util.Util.*
 import com.btc.serviceidl.util.Constants
 import org.eclipse.core.runtime.Path
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.CppConstants
+import com.btc.serviceidl.generator.IGenerationSettingsProvider
 
 @Accessors(NONE)
 class CMakeTopLevelProjectFileGenerator
 {
     val IFileSystemAccess file_system_access
+    val IGenerationSettingsProvider generationSettingsProvider
     val CMakeProjectSet projectSet
     val ModuleDeclaration module
 
-    new(IFileSystemAccess file_system_access, IProjectSet projectSet, ModuleDeclaration module)
+    new(IFileSystemAccess file_system_access, IGenerationSettingsProvider generationSettingsProvider,
+        IProjectSet projectSet, ModuleDeclaration module)
     {
         this.file_system_access = file_system_access
+        this.generationSettingsProvider = generationSettingsProvider
         this.projectSet = projectSet as CMakeProjectSet
         this.module = module
     }
@@ -71,7 +76,7 @@ class CMakeTopLevelProjectFileGenerator
                             ("BTC.CAB.Commons/1.8.latest@cab/testing"),
                             ("BTC.CAB.IoC/1.7.latest@cab/testing"),
                             ("BTC.CAB.Logging/1.7.latest@cab/testing"),
-                            ("BTC.CAB.ServiceComm/0.10.latest@cab/testing")
+                            ("BTC.CAB.ServiceComm/«generationSettingsProvider.getTargetVersion(CppConstants.SERVICECOMM_VERSION_KIND)».latest@cab/testing")
                             )
                 generators = "cmake"
                 short_paths = True

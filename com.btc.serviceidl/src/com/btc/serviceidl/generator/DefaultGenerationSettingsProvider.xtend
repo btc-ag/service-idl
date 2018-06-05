@@ -19,18 +19,41 @@ import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory
 import java.util.Arrays
 import java.util.HashSet
 import java.util.Set
+import java.util.Map
+import java.util.HashMap
+import com.btc.serviceidl.generator.cpp.CppConstants
 
 class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 {
-
     public Set<ArtifactNature> languages
     public Set<ProjectType> projectTypes
     public IProjectSetFactory projectSetFactory
     public IModuleStructureStrategy moduleStructureStrategy
+    private static val Map<String, Set<String>> supportedVersionMap = createSupportedVersionMap
+    private val Map<String, String> versionMap
 
     new()
     {
+        versionMap = createBareVersionMap
         reset
+    }
+
+    private static def createSupportedVersionMap()
+    {
+        val res = new HashMap<String, Set<String>>
+        // TODO these should be registered by the respective generator plugins instead
+        res.put(CppConstants.SERVICECOMM_VERSION_KIND, CppConstants.SERVICECOMM_VERSIONS)
+        return res.immutableCopy
+    }
+
+    private def createBareVersionMap()
+    {
+        val res = new HashMap<String, String>
+        for (versionKind : supportedVersionMap.keySet)
+        {
+            res.put(versionKind, null)
+        }
+        return res
     }
 
     override getLanguages()
@@ -53,14 +76,45 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
                 ProjectType.CLIENT_CONSOLE, ProjectType.EXTERNAL_DB_IMPL));
         projectSetFactory = new VSSolutionFactory
         moduleStructureStrategy = new PrinsModuleStructureStrategy
+        setVersion(CppConstants.SERVICECOMM_VERSION_KIND, "0.10")
     }
-    
-    override getProjectSetFactory() {
+
+    def getVersionKinds()
+    {
+        versionMap.keySet.immutableCopy
+    }
+
+    def setVersion(String kind, String version)
+    {
+        val supportedVersions = supportedVersionMap.get(kind)
+        if (supportedVersions === null)
+        {
+            throw new IllegalArgumentException("Version kind '" + kind + "' is unknown, known values are " +
+                supportedVersionMap.keySet.join(", "))
+        }
+        if (!supportedVersions.contains(version))
+        {
+            throw new IllegalArgumentException(
+                "Version '" + version + "' is not supported for '" + kind + "', supported versions are " +
+                    supportedVersions.join(", ")
+            )
+        }
+        versionMap.replace(kind, version)
+    }
+
+    override getProjectSetFactory()
+    {
         projectSetFactory
     }
-    
-    override getModuleStructureStrategy() {
+
+    override getModuleStructureStrategy()
+    {
         moduleStructureStrategy
+    }
+
+    override getTargetVersion(String versionKind)
+    {
+        versionMap.get(versionKind)
     }
 
 }
