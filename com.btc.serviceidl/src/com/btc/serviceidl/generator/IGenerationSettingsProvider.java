@@ -25,4 +25,6 @@ public interface IGenerationSettingsProvider {
     IProjectSetFactory getProjectSetFactory();
 
     IModuleStructureStrategy getModuleStructureStrategy();
+
+    String getTargetVersion(String versionKind);
 }

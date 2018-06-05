@@ -76,11 +76,12 @@ class CppGenerator
         for (module : idl.modules)
         {
             processModule(module, generationSettingsProvider.projectTypes)
-            
+
             // only for the top-level modules, produce a parent project file
             if (vsSolution instanceof CMakeProjectSet)
             {
-                new CMakeTopLevelProjectFileGenerator(file_system_access, vsSolution, module).generate()
+                new CMakeTopLevelProjectFileGenerator(file_system_access, generationSettingsProvider, vsSolution,
+                    module).generate()
             }
         }
     }

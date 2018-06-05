@@ -13,7 +13,12 @@
  */
 package com.btc.serviceidl.generator;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -44,11 +49,12 @@ import com.google.inject.Provider;
 
 public class Main {
 
-    private static final String OPTION_OUTPUT_PATH                            = "outputPath";
-    private static final String OPTION_CPP_PROJECT_SYSTEM                     = "cppProjectSystem";
-    private static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE         = "cmake";
-    private static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ = "prins-vcxproj";
-    private static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT       = OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ;
+    public static final String OPTION_OUTPUT_PATH                            = "outputPath";
+    public static final String OPTION_CPP_PROJECT_SYSTEM                     = "cppProjectSystem";
+    public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE         = "cmake";
+    public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ = "prins-vcxproj";
+    public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT       = OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ;
+    public static final String OPTION_VERSIONS                               = "versions";
 
     public static final int EXIT_CODE_GOOD              = 0;
     public static final int EXIT_CODE_GENERATION_FAILED = 1;
@@ -73,9 +79,24 @@ public class Main {
                 commandLine.hasOption(OPTION_OUTPUT_PATH) ? commandLine.getOptionValue(OPTION_OUTPUT_PATH)
                         : System.getProperty("user.dir"),
                 commandLine.hasOption(OPTION_CPP_PROJECT_SYSTEM) ? commandLine.getOptionValue(OPTION_CPP_PROJECT_SYSTEM)
-                        : OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT);
+                        : OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT,
+                commandLine.hasOption(OPTION_VERSIONS) ? splitVersions(commandLine.getOptionValue(OPTION_VERSIONS))
+                        : new ArrayList<Map.Entry<String, String>>());
 
         return res ? EXIT_CODE_GOOD : EXIT_CODE_GENERATION_FAILED;
+    }
+
+    private static Iterable<Map.Entry<String, String>> splitVersions(String optionValue) {
+        Collection<Map.Entry<String, String>> res = new ArrayList<Map.Entry<String, String>>();
+        for (String versionEntry : optionValue.split(",")) {
+            String[] versionEntryParts = versionEntry.split("=");
+            if (versionEntryParts.length != 2) {
+                throw new IllegalArgumentException(
+                        "Invalid version specifiction '" + versionEntry + "', use kind=version");
+            }
+            res.add(new AbstractMap.SimpleImmutableEntry<String, String>(versionEntryParts[0], versionEntryParts[1]));
+        }
+        return res;
     }
 
     private static Options createOptions() {
@@ -83,6 +104,7 @@ public class Main {
         options.addOption(OPTION_OUTPUT_PATH, true, "base path for generated output files");
         options.addOption(OPTION_CPP_PROJECT_SYSTEM, true, "C++ project system ("
                 + OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE + "," + OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ + ")");
+        options.addOption(OPTION_VERSIONS, true, "target Version overrides");
         return options;
     }
 
@@ -112,13 +134,15 @@ public class Main {
     @Inject
     private IGenerationSettingsProvider generationSettingsProvider;
 
-    private boolean tryRunGenerator(String[] inputFiles, String outputPath, String projectSystem) {
+    private boolean tryRunGenerator(String[] inputFiles, String outputPath, String projectSystem,
+            Iterable<Map.Entry<String, String>> versions) {
         // Load the resource
         ResourceSet set = resourceSetProvider.get();
         for (String inputFile : inputFiles) {
             set.getResource(URI.createFileURI(inputFile), true);
         }
 
+        System.out.println("Validating IDL input.");
         for (Resource resource : set.getResources()) {
 
             // Validate the resources
@@ -130,28 +154,17 @@ public class Main {
                     hasError |= issue.getSeverity() == Severity.ERROR;
                 }
                 if (hasError) {
-                    System.out.println("Errors in IDL input, terminating.");
+                    System.err.println("Errors in IDL input, terminating.");
                     return false;
                 }
             }
         }
+        System.out.println("IDL input is valid.");
 
-        DefaultGenerationSettingsProvider defaultGenerationSettingsProvider = (DefaultGenerationSettingsProvider) generationSettingsProvider;
-
-        switch (projectSystem) {
-        case OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
-            defaultGenerationSettingsProvider.projectSetFactory = new CMakeProjectSetFactory();
-
-            System.out.println("Disabling ODB generation, this is unsupported with CMake project system");
-            defaultGenerationSettingsProvider.projectTypes.remove(ProjectType.EXTERNAL_DB_IMPL);
-            defaultGenerationSettingsProvider.moduleStructureStrategy = new CABModuleStructureStrategy();
-
-            break;
-        case OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ:
-            defaultGenerationSettingsProvider.projectSetFactory = new VSSolutionFactory();
-            break;
-        default:
-            System.out.println("Unknown project system: " + projectSystem);
+        try {
+            configureGenerationSetings(projectSystem, versions);
+        } catch (Exception ex) {
+            System.err.println("Error when configuring generation settings: " + ex);
             return false;
         }
 
@@ -166,5 +179,35 @@ public class Main {
 
         System.out.println("Code generation finished.");
         return true;
+    }
+
+    private void configureGenerationSetings(String projectSystem, Iterable<Map.Entry<String, String>> versions) {
+        DefaultGenerationSettingsProvider defaultGenerationSettingsProvider = (DefaultGenerationSettingsProvider) generationSettingsProvider;
+
+        configureGenerationSettings(defaultGenerationSettingsProvider, projectSystem, versions);
+    }
+
+    public static void configureGenerationSettings(DefaultGenerationSettingsProvider defaultGenerationSettingsProvider,
+            String projectSystem, Iterable<Map.Entry<String, String>> versions) {
+        switch (projectSystem) {
+        case OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
+            defaultGenerationSettingsProvider.projectSetFactory = new CMakeProjectSetFactory();
+
+            // TODO instead of printing on System.out, use some event mechanism here
+            System.out.println("Disabling ODB generation, this is unsupported with CMake project system");
+            defaultGenerationSettingsProvider.projectTypes.remove(ProjectType.EXTERNAL_DB_IMPL);
+            defaultGenerationSettingsProvider.moduleStructureStrategy = new CABModuleStructureStrategy();
+
+            break;
+        case OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ:
+            defaultGenerationSettingsProvider.projectSetFactory = new VSSolutionFactory();
+            break;
+        default:
+            throw new IllegalArgumentException("Unknown project system: " + projectSystem);
+        }
+
+        for (Entry<String, String> version : versions) {
+            defaultGenerationSettingsProvider.setVersion(version.getKey(), version.getValue());
+        }
     }
 }
