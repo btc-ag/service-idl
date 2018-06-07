@@ -19,6 +19,9 @@ import java.util.HashSet
 
 class NuGetPackageResolver
 {
+    // TODO the versions should probably not be fixed to a specific micro version, but use something like "1.2.latest", in the
+    // format used by nuget/paket
+    
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
     static val version_mapper = #{
         "BTC.CAB.Commons" -> "1.8.7",
