@@ -58,7 +58,7 @@ class TestGenerator extends GeneratorBase
                   StartServer(loggerFactory, connectionString);
                   
                   // client
-                  «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.API.IConnectionFactory")» connectionFactory = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.ZeroMqClientConnectionFactory")»(loggerFactory);
+                  «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.API.IConnectionFactory")» connectionFactory = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory")»(NetMqConnectionFactory.DefaultClientConnectionOptions, loggerFactory);
                   _client = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.Client")»(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcClientEndpoint")»(loggerFactory), connectionFactory);
                   
                   _testSubject = «resolve(interface_declaration, ProjectType.PROXY).alias(getProxyFactoryName(interface_declaration))».CreateProtobufProxy(_client.ClientEndpoint);
@@ -66,7 +66,7 @@ class TestGenerator extends GeneratorBase
             
                private void StartServer(«logger_factory» loggerFactory, string connectionString)
                {
-                  _serverConnectionFactory = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.ZeroMqServerConnectionFactory")»(loggerFactory);
+                  _serverConnectionFactory = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory")»(NetMqConnectionFactory.DefaultServerConnectionOptions, loggerFactory);
                   _server = new Server(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcServerEndpoint")»(loggerFactory), _serverConnectionFactory);
                   _serverRegistration = new «server_registration»(_server);
                   _serverRegistration.RegisterService();
@@ -80,7 +80,7 @@ class TestGenerator extends GeneratorBase
                   _serverRegistration.Dispose();
                   _server.Dispose();
                   _testSubject = null;
-                  if (_client !== null)
+                  if (_client != null)
                      _client.Dispose();
                }
             

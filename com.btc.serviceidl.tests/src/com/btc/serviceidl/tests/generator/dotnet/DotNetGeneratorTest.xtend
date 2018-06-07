@@ -15,7 +15,6 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.tests.generator.AbstractGeneratorTest
 import com.btc.serviceidl.tests.testdata.TestData
-import com.google.common.collect.ImmutableMap
 import java.util.Arrays
 import java.util.HashSet
 import java.util.Map
@@ -35,17 +34,40 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
     @Test
     def void testBasicServiceApi()
     {
-        val fileCount = 4
+        val fileCount = 5
         val baseDirectory = IFileSystemAccess::DEFAULT_OUTPUT + "dotnet/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
         val directory = baseDirectory
-        val contents = ImmutableMap.of(directory + "IKeyValueStore.cs", '''
+        val contents = #{IFileSystemAccess::DEFAULT_OUTPUT + "dotnet/__synthetic0.sln" -> '''
+            
+            Microsoft Visual Studio Solution File, Format Version 12.00
+            # Visual Studio 14
+            VisualStudioVersion = 14.0.25420.1
+            MinimumVisualStudioVersion = 10.0.40219.1
+            Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI", "Infrastructure\ServiceHost\Demo\API\ServiceAPI\BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.csproj", "{9492E992-0B76-3834-A485-8F5D7175DAE7}"
+            EndProject
+            Global
+                GlobalSection(SolutionConfigurationPlatforms) = preSolution
+                    Debug|Any CPU = Debug|Any CPU
+                    Release|Any CPU = Release|Any CPU
+                EndGlobalSection
+                GlobalSection(ProjectConfigurationPlatforms) = postSolution
+                {9492E992-0B76-3834-A485-8F5D7175DAE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                {9492E992-0B76-3834-A485-8F5D7175DAE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                {9492E992-0B76-3834-A485-8F5D7175DAE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+                {9492E992-0B76-3834-A485-8F5D7175DAE7}.Release|Any CPU.Build.0 = Release|Any CPU
+                EndGlobalSection
+                GlobalSection(SolutionProperties) = preSolution
+                    HideSolutionNode = FALSE
+                EndGlobalSection
+            EndGlobal
+        ''', directory + "IKeyValueStore.cs" -> '''
             namespace BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI
             {
                public interface IKeyValueStore
                {
                }
             }
-        ''', directory + "KeyValueStoreConst.cs", '''
+        ''', directory + "KeyValueStoreConst.cs" -> '''
             using System;
             
             namespace BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI
@@ -56,7 +78,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                   public static readonly string typeName = typeof(BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.IKeyValueStore).FullName;
                }
             }
-        ''', baseDirectory + "/BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.csproj", // TODO double slash 
+        ''', baseDirectory + "/BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.csproj" -> // TODO double slash 
         '''
             <?xml version="1.0" encoding="utf-8"?>
             <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -65,7 +87,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                 <OutputType>Library</OutputType>
                 <RootNamespace>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI</RootNamespace>
                 <AssemblyName>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI</AssemblyName>
-                <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+                <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
                 <TargetFrameworkProfile />
               </PropertyGroup>
               <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -146,7 +168,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
               </Target>
               -->
             </Project>
-        ''', baseDirectory + "/Properties/AssemblyInfo.cs", // TODO double slash
+        ''', baseDirectory + "/Properties/AssemblyInfo.cs" -> // TODO double slash
         '''
             using System.Reflection;
             using System.Runtime.CompilerServices;
@@ -171,7 +193,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
             
             // The following GUID is for the ID of the typelib if this project is exposed to COM
             [assembly: Guid("801100a3-a556-3742-93ca-fe54049a7b3e")]        
-        ''')
+        '''}
 
         checkGenerators(TestData.basic, setOf(ProjectType.SERVICE_API), fileCount, contents)
     }

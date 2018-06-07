@@ -34,7 +34,7 @@ class ProxyProtocolGenerator extends ProxyDispatcherGeneratorBase
             {
                public static void RegisterServiceFaults(«resolve("BTC.CAB.ServiceComm.NET.API.IServiceFaultHandlerManager")» serviceFaultHandlerManager)
                {
-                  var «service_fault_handler» = new «resolve("BTC.CAB.ServiceComm.NET.FaultHandling.ProtobufServiceFaultHandler")»();
+                  var «service_fault_handler» = new «resolve("BTC.CAB.ServiceComm.NET.FaultHandling.MultipleExceptionTypesServiceFaultHandler")»();
             
                   «makeExceptionRegistration(service_fault_handler, com.btc.serviceidl.util.Util.getRaisedExceptions(interface_declaration))»
                   

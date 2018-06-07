@@ -30,7 +30,8 @@ class ServerRunnerGenerator extends GeneratorBase
                
                   try
                   {
-                     var serverRunner = new «resolve("BTC.CAB.ServiceComm.NET.ServerRunner.SpringServerRunner")»(ctx, options.ConnectionString);
+                     var loggerFactory = ctx.GetObject("BTC.CAB.Logging.API.NET.LoggerFactory") as «resolve("BTC.CAB.Logging.API.NET.ILoggerFactory")»;
+                     var serverRunner = new «resolve("BTC.CAB.ServiceComm.NET.ServerRunner.SpringServerRunner")»(loggerFactory, ctx, options.ConnectionString);
                      serverRunner.Start();
                      // shutdown
                      «resolve("System.Console")».WriteLine("Press any key to shutdown the server");

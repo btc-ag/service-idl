@@ -59,8 +59,9 @@ class AppConfigGenerator {
                «val service_descriptor = '''«typeResolver.resolve("BTC.CAB.ServiceComm.NET.API.DTO.ServiceDescriptor").fullyQualifiedName»'''»
                «val service_dispatcher = typeResolver.resolve("BTC.CAB.ServiceComm.NET.API.IServiceDispatcher").fullyQualifiedName»
                <!--ZeroMQ server factory-->
-               <object id="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.ZeroMqServerConnectionFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ">
-                 <constructor-arg index="0" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
+               <object id="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ">
+                 <constructor-arg index="0" expression="T(BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory, BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ).DefaultServerConnectionOptions" />
+                 <constructor-arg index="1" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
                </object>
                <object id="BTC.CAB.ServiceComm.NET.API.ServerFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.ServerFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.Core">
                  <constructor-arg index="0" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
@@ -101,8 +102,9 @@ class AppConfigGenerator {
                </object>
             «ELSEIF param_bundle.projectType == ProjectType.CLIENT_CONSOLE»
                <!--ZeroMQ client factory-->
-               <object id="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.ZeroMqClientConnectionFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ">
-                 <constructor-arg index="0" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
+               <object id="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ">
+                 <constructor-arg index="0" expression="T(BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory, BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ).DefaultClientConnectionOptions" />
+                 <constructor-arg index="1" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
                </object>
                <object id="BTC.CAB.ServiceComm.NET.API.ClientFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.ClientFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.Core">
                  <constructor-arg index="0" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />

@@ -21,21 +21,26 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 class CSProjGenerator {
   def static generateCSProj(String project_name, VSSolution vsSolution, ParameterBundle param_bundle, Iterable<String> referenced_assemblies, Iterable<NuGetPackage> nuget_packages, Map<String, String> project_references, Iterable<String> cs_files, Iterable<String> protobuf_files)
   {
+      // Please do NOT edit line indents in the code below (even though they
+      // may look misplaced) unless you are fully aware of what you are doing!!!
+      // Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
+      
       val project_guid = vsSolution.getCsprojGUID(project_name)
       val is_exe = isExecutable(param_bundle.projectType)
+      val prins = false
       '''
       <?xml version="1.0" encoding="utf-8"?>
       <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-        «IF is_exe»<Import Project="$(SolutionDir)Net.ProjectSettings" />«ENDIF»
+        «IF is_exe && prins»<Import Project="$(SolutionDir)Net.ProjectSettings" />«ENDIF»
         <PropertyGroup>
           <ProjectGuid>{«project_guid»}</ProjectGuid>
           <OutputType>«IF is_exe»Exe«ELSE»Library«ENDIF»</OutputType>
           <RootNamespace>«project_name»</RootNamespace>
           <AssemblyName>«project_name»</AssemblyName>
-          <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+          <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
           <TargetFrameworkProfile />
         </PropertyGroup>
-        «IF !is_exe»
+        «IF !is_exe || !prins»
         <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
           <DebugSymbols>true</DebugSymbols>
           <DebugType>full</DebugType>
@@ -139,12 +144,16 @@ class CSProjGenerator {
           «ENDFOR»
 
         <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+        «/** TODO protobufBaseDir was "$(SolutionDir)..", this must be generalized */»
+        «val protobufBaseDir = "$(SolutionDir)"»
         «IF protobuf_files !== null»
           <PropertyGroup>
             <PreBuildEvent>
-            «FOR protobuf_file : protobuf_files»
-               protoc.exe --include_imports --proto_path=$(SolutionDir).. --descriptor_set_out=$(ProjectDir)gen/«protobuf_file».protobin $(SolutionDir)../«GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM)»/gen/«protobuf_file».proto
-Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».protobin
+            «FOR protobufFileBasename : protobuf_files»
+                «val protobufFile = makeProtobufFilePath(param_bundle, protobufFileBasename)»
+                «val protobinFile = '''$(ProjectDir)gen\«protobufFileBasename».protobin'''»
+                «protobufBaseDir»\\packages\\Google.ProtocolBuffers\\tools\\protoc.exe --include_imports --proto_path=«protobufBaseDir» --descriptor_set_out=«protobinFile» «protobufFile»
+                «protobufBaseDir»\\packages\\Google.ProtocolBuffers\\tools\\Protogen.exe -output_directory=$(ProjectDir) «protobinFile»
             «ENDFOR»
             </PreBuildEvent>
           </PropertyGroup>
@@ -159,7 +168,12 @@ Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\«protobuf_file».
       </Project>
       '''
       
-  }    
+  }
+    
+    def static makeProtobufFilePath(ParameterBundle parameterBundle, String protobufFileBasename)
+    {
+        '''$(SolutionDir)/«GeneratorUtil.getTransformedModuleName(parameterBundle, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM)»/gen/«protobufFileBasename».proto'''
+    }
 
    /**
     * On rare occasions (like ServerRunner) the reference is not a DLL, but a

@@ -75,6 +75,8 @@ class DotNetGenerator
    private var protobuf_project_references = new HashMap<String, HashMap<String, String>>
    private var extension TypeResolver typeResolver
    private var extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
+    
+   val paketDependencies = new HashSet<Pair<String, String>>
    
    def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Set<ProjectType> projectTypes, HashMap<String, HashMap<String, String>> pr)
    {
@@ -91,6 +93,13 @@ class DotNetGenerator
       {
          processModule(module, projectTypes)
       }
+      
+      new VSSolutionGenerator(fsa, vsSolution, resource.URI.lastSegment.replace(".idl", "")).generateSolutionFile
+      
+      // TODO generate only either NuGet or Paket file
+      file_system_access.generateFile(ArtifactNature.DOTNET.label + Constants.SEPARATOR_FILE + "paket.dependencies",
+            generatePaketDependencies)       
+      
    }
    
    def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
@@ -211,25 +220,63 @@ class DotNetGenerator
       // generate mandatory AssemblyInfo.cs file
       file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "Properties" + Constants.SEPARATOR_FILE + "AssemblyInfo.cs", generateAssemblyInfo(project_name))
    
+   
       // NuGet (optional)
       if (!nuget_packages.resolvedPackages.empty)
-         file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "packages.config", generatePackagesConfig)
+      {
+        file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "packages.config",
+                generatePackagesConfig)
+        // TODO generate only either NuGet or Paket file
+        file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "paket.references",
+                generatePaketReferences)
+        paketDependencies.addAll(flatPackages)
+      }
    }
+   
+   def private getFlatPackages()
+   {
+      nuget_packages.resolvedPackages.map[it.packageVersions].flatten
+   } 
    
    def private String generatePackagesConfig()
    {
-      val packages = new HashMap<String, String>
-      for (nuget_package : nuget_packages.resolvedPackages)
-         packages.put(nuget_package.packageID, nuget_package.packageVersion)
-
       '''
       <?xml version="1.0" encoding="utf-8"?>
       <packages>
-        «FOR package_id : packages.keySet»
-          <package id="«package_id»" version="«packages.get(package_id)»" targetFramework="«DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»" />
+        «FOR packageEntry : flatPackages»
+          <package id="«packageEntry.key»" version="«packageEntry.value»" targetFramework="«DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»" />
         «ENDFOR»
       </packages>
       '''
+   }
+   
+   def private String generatePaketReferences()
+   {
+      '''      
+      «FOR packageEntry : flatPackages»
+          «packageEntry.key»
+      «ENDFOR»
+      '''
+   }
+   
+   def private String generatePaketDependencies()
+   {
+      // TODO shouldn't the sources (at least extern) be configured somewhere else?
+      if (!paketDependencies.empty) {
+          '''
+          source https://artifactory.bop-dev.de/artifactory/api/nuget/cab-nuget-extern
+          source https://artifactory.bop-dev.de/artifactory/api/nuget/cab-nuget-stable
+          
+          «FOR packageEntry : paketDependencies»
+              «/** TODO remove this workaround */»
+              «IF packageEntry.key.equals("Common.Logging")»
+                nuget «packageEntry.key» == «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
+              «ELSE»
+                nuget «packageEntry.key» >= «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
+              «ENDIF»
+          «ENDFOR»      
+          '''
+      }     
    }
    
    def private String generateAssemblyInfo(String project_name)
@@ -252,9 +299,16 @@ class DotNetGenerator
       nuget_packages = new NuGetPackageResolver
       cs_files.clear
       
-      typeResolver = new TypeResolver(DOTNET_FRAMEWORK_VERSION, qualified_name_provider, 
-          namespace_references, referenced_assemblies, project_references, vsSolution, param_bundle.build
-      )
+      typeResolver = new TypeResolver(
+            DOTNET_FRAMEWORK_VERSION,
+            qualified_name_provider,
+            namespace_references,
+            referenced_assemblies,
+            project_references,
+            nuget_packages,
+            vsSolution,
+            param_bundle.build
+        )
       basicCSharpSourceGenerator = new BasicCSharpSourceGenerator(typeResolver, typedef_table, idl)      
    }
    
@@ -622,10 +676,6 @@ class DotNetGenerator
    
    def private generateCsproj(Iterable<String> cs_files)
    {
-      // Please do NOT edit line indents in the code below (even though they
-      // may look misplaced) unless you are fully aware of what you are doing!!!
-      // Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
-      
       val project_name = vsSolution.getCsprojName(param_bundle.build)
       
       val is_protobuf = param_bundle.projectType == ProjectType.PROTOBUF

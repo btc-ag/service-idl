@@ -38,12 +38,14 @@ class CommandLineRunnerTest
 
         assertEquals(1, process.waitFor)
     }
+    
+    static val TEST_DATA_DIR = "src/com/btc/serviceidl/tests/testdata/";
 
     @Ignore("TODO check how to set the classpath such that this works from the test")
     @Test
     def void testWithValidInput()
     {
-        val file = new File("src/com/btc/serviceidl/tests/testdata/base.idl");
+        val file = new File(TEST_DATA_DIR + "base.idl");
         System.out.println(file.absolutePath);
         val process = Runtime.getRuntime().exec("java com.btc.serviceidl.generator.Main " + file.absolutePath)
 
@@ -70,35 +72,41 @@ class CommandLineRunnerTest
     @Test
     def void testWithValidInputInProcess()
     {
-        val file = new File("src/com/btc/serviceidl/tests/testdata/base.idl")
+        val file = new File(TEST_DATA_DIR + "base.idl")
         val path = Files.createTempDirectory("test-gen")
         assertEquals(0, Main.mainBackend(Arrays.asList(file.absolutePath, "-outputPath", path.toString)))
         val files = path.toFile.listFilesRecursively
-        assertEquals(25, files.size)
+        assertEquals(28, files.size)
     }
 
     @Test
     def void testWithValidInputWithWarningsInProcess()
     {
-        val file = new File("src/com/btc/serviceidl/tests/testdata/failable.idl")
+        val file = new File(TEST_DATA_DIR + "failable.idl")
         val path = Files.createTempDirectory("test-gen")
         assertEquals(0, Main.mainBackend(Arrays.asList(file.absolutePath, "-outputPath", path.toString)))
         val files = path.toFile.listFilesRecursively
         // TODO check output for Warnings!
-        assertEquals(103, files.size)
+        assertEquals(112, files.size)
     }
 
     @Test
     def void testWithImport()
     {
-        val derivedFile = new File("src/com/btc/serviceidl/tests/testdata/import-derived.idl")
-        val importedFile = new File("src/com/btc/serviceidl/tests/testdata/import-imported.idl")
+        val derivedFile = new File(TEST_DATA_DIR + "import-derived.idl")
+        val importedFile = new File(TEST_DATA_DIR + "import-imported.idl")
         val path = Files.createTempDirectory("test-gen")
         assertEquals(0,
             Main.mainBackend(
                 Arrays.asList(derivedFile.absolutePath, importedFile.absolutePath, "-outputPath", path.toString)))
-        val files = path.toFile.listFilesRecursively
-        assertEquals(49, files.size)
+        val files = path.toFile.listFilesRecursively.toList
+        assertEquals(54, files.size)
+        // TODO currently a solution file is generated for each file specified on the command line. Is this sensible?
+        // TODO ... but only one paket.dependencies file, probably it is overwritten by the second solution generation
+        val expectedFirstSolution = new File(path + "/dotnet/import-derived.sln")
+        val expectedSecondSolution = new File(path + "/dotnet/import-imported.sln")
+        assertEquals(1, files.filter[it.equals(expectedFirstSolution)].size)
+        assertEquals(1, files.filter[it.equals(expectedSecondSolution)].size)
     }
 
 }
