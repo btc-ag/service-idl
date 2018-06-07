@@ -38,12 +38,14 @@ class CommandLineRunnerTest
 
         assertEquals(1, process.waitFor)
     }
+    
+    static val TEST_DATA_DIR = "src/com/btc/serviceidl/tests/testdata/";
 
     @Ignore("TODO check how to set the classpath such that this works from the test")
     @Test
     def void testWithValidInput()
     {
-        val file = new File("src/com/btc/serviceidl/tests/testdata/base.idl");
+        val file = new File(TEST_DATA_DIR + "base.idl");
         System.out.println(file.absolutePath);
         val process = Runtime.getRuntime().exec("java com.btc.serviceidl.generator.Main " + file.absolutePath)
 
@@ -70,7 +72,7 @@ class CommandLineRunnerTest
     @Test
     def void testWithValidInputInProcess()
     {
-        val file = new File("src/com/btc/serviceidl/tests/testdata/base.idl")
+        val file = new File(TEST_DATA_DIR + "base.idl")
         val path = Files.createTempDirectory("test-gen")
         assertEquals(0, Main.mainBackend(Arrays.asList(file.absolutePath, "-outputPath", path.toString)))
         val files = path.toFile.listFilesRecursively
@@ -80,7 +82,7 @@ class CommandLineRunnerTest
     @Test
     def void testWithValidInputWithWarningsInProcess()
     {
-        val file = new File("src/com/btc/serviceidl/tests/testdata/failable.idl")
+        val file = new File(TEST_DATA_DIR + "failable.idl")
         val path = Files.createTempDirectory("test-gen")
         assertEquals(0, Main.mainBackend(Arrays.asList(file.absolutePath, "-outputPath", path.toString)))
         val files = path.toFile.listFilesRecursively
@@ -91,8 +93,8 @@ class CommandLineRunnerTest
     @Test
     def void testWithImport()
     {
-        val derivedFile = new File("src/com/btc/serviceidl/tests/testdata/import-derived.idl")
-        val importedFile = new File("src/com/btc/serviceidl/tests/testdata/import-imported.idl")
+        val derivedFile = new File(TEST_DATA_DIR + "import-derived.idl")
+        val importedFile = new File(TEST_DATA_DIR + "import-imported.idl")
         val path = Files.createTempDirectory("test-gen")
         assertEquals(0,
             Main.mainBackend(
