@@ -38,8 +38,7 @@ class ProxyEventGenerator extends ProxyDispatcherGeneratorBase
                   public override «resolve("System.IDisposable")» Subscribe(«resolve("System.IObserver")»<«toText(event.data, event)»> subscriber)
                   {
                       _endpoint.EventRegistry.CreateEventRegistration(«toText(event.data, event)».«eventTypeGuidProperty», EventKind.EventKindPublishSubscribe, «toText(event.data, event)».«eventTypeGuidProperty».ToString());
-                      return _endpoint.EventRegistry.SubscriberManager.Subscribe(«toText(event.data, event)».«eventTypeGuidProperty», new «deserialazing_observer»(subscriber),
-                          EventKind.EventKindPublishSubscribe);
+                      return _endpoint.EventRegistry.SubscriberManager.Subscribe(«toText(event.data, event)».«eventTypeGuidProperty», new «deserialazing_observer»(subscriber));
                   }
                   
                   class «deserialazing_observer» : «resolve("System.IObserver")»<«resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")»>
