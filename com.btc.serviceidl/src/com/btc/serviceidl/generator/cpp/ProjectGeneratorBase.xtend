@@ -22,6 +22,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
 import org.eclipse.core.runtime.IPath
+import com.btc.serviceidl.generator.ITargetVersionProvider
 
 @Accessors(PROTECTED_GETTER)
 abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
@@ -96,17 +97,19 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
     }
 
     // TODO move this somewhere else
-    def protected static generateCppImpl(TypeResolver typeResolver, ParameterBundle paramBundle,
-        InterfaceDeclaration interface_declaration)
+    def protected static generateCppImpl(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
+        ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
     {
-        new ImplementationStubGenerator(typeResolver, paramBundle).generateCppImpl(interface_declaration)
+        new ImplementationStubGenerator(typeResolver, targetVersionProvider, paramBundle).generateCppImpl(
+            interface_declaration)
     }
 
     // TODO move this somewhere else
-    def protected static generateInterface(TypeResolver typeResolver, ParameterBundle paramBundle,
-        InterfaceDeclaration interface_declaration)
+    def protected static generateInterface(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
+        ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
     {
-        new ServiceAPIGenerator(typeResolver, paramBundle).generateHeaderFileBody(interface_declaration)
+        new ServiceAPIGenerator(typeResolver, targetVersionProvider, paramBundle).
+            generateHeaderFileBody(interface_declaration)
     }
 
 }

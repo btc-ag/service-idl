@@ -44,12 +44,14 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import java.util.Comparator
+import com.btc.serviceidl.generator.ITargetVersionProvider
 
 @Accessors(NONE)
 class BasicCppGenerator
 {
     // must be protected to allow subclasses to benefit from extension declaration
     @Accessors(PUBLIC_GETTER) protected val extension TypeResolver typeResolver
+    @Accessors(PUBLIC_GETTER) val ITargetVersionProvider targetVersionProvider
     @Accessors(PUBLIC_GETTER) val ParameterBundle paramBundle
 
     def String generateCppDestructor(InterfaceDeclaration interface_declaration)

@@ -17,7 +17,7 @@ import com.btc.serviceidl.generator.common.ProjectType;
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy;
 import com.btc.serviceidl.generator.cpp.IProjectSetFactory;
 
-public interface IGenerationSettingsProvider {
+public interface IGenerationSettingsProvider extends ITargetVersionProvider {
     Set<ArtifactNature> getLanguages();
 
     Set<ProjectType> getProjectTypes();
@@ -25,6 +25,4 @@ public interface IGenerationSettingsProvider {
     IProjectSetFactory getProjectSetFactory();
 
     IModuleStructureStrategy getModuleStructureStrategy();
-
-    String getTargetVersion(String versionKind);
 }
