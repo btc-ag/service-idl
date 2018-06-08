@@ -31,18 +31,20 @@ import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import com.btc.serviceidl.generator.ITargetVersionProvider
 
 @Accessors(PROTECTED_GETTER)
 class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
 {
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
-        IModuleStructureStrategy moduleStructureStrategy,
+        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
         Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ModuleDeclaration module)
     {
         super(resource, file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
-            moduleStructureStrategy, protobuf_project_references, smart_pointer_map, ProjectType.PROTOBUF, module)
+            moduleStructureStrategy, targetVersionProvider, protobuf_project_references, smart_pointer_map,
+            ProjectType.PROTOBUF, module)
     }
 
     def generate()
@@ -93,7 +95,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
     def private String generateHCodec(EObject owner)
     {
         val basicCppGenerator = createBasicCppGenerator
-        val file_content = new CodecGenerator(basicCppGenerator.typeResolver, param_bundle).
+        val file_content = new CodecGenerator(basicCppGenerator.typeResolver, targetVersionProvider, param_bundle).
             generateHeaderFileBody(owner)
         generateHeader(basicCppGenerator, moduleStructureStrategy, file_content.toString, Optional.empty)
     }

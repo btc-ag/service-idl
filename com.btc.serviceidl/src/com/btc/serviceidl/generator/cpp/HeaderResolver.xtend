@@ -114,6 +114,7 @@ class HeaderResolver
         "BTC::ServiceComm::Commons::CMessagePartPool" -> "ServiceComm/Commons/include/MessagePools.h",
         "BTC::ServiceComm::Commons::ConstMessagePartPtr" -> "ServiceComm/Commons/include/IMessagePart.h",
         "BTC::ServiceComm::Commons::ConstSharedMessageSharedPtr" -> "ServiceComm/Commons/include/CSharedMessage.h",
+        "BTC::ServiceComm::Commons::EndpointIdentity" -> "ServiceComm/Commons/include/EndpointIdentity.h", // from SC 0.11
         "BTC::ServiceComm::Commons::IMessagePartPool" -> "ServiceComm/Commons/include/IMessagePartPool.h",
         "BTC::ServiceComm::Commons::MessageMovingPtr" -> "ServiceComm/Commons/include/CMessage.h",
         "BTC::ServiceComm::Commons::MessagePtr" -> "ServiceComm/Commons/include/CMessage.h",

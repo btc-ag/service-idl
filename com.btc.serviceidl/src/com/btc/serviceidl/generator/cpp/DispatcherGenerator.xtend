@@ -38,8 +38,6 @@ class DispatcherGenerator extends BasicCppGenerator
         val protobuf_request_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
         val protobuf_response_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
 
-        val cab_message_ptr = resolveSymbol("BTC::ServiceComm::Commons::MessagePtr")
-
         '''
             «class_name.shortName»::«class_name.shortName»
             (
@@ -64,23 +62,25 @@ class DispatcherGenerator extends BasicCppGenerator
             
             «generateCppDestructor(interface_declaration)»
             
-            «cab_message_ptr» «class_name.shortName»::ProcessRequest
+            «messagePtrType» «class_name.shortName»::ProcessRequest
             (
-               «cab_message_ptr» requestBuffer
-               , «resolveSymbol("BTC::ServiceComm::Commons::CMessage")» const& clientIdentity
+                  «messagePtrType» request,
+                  const «clientIdentityType»& clientIdentity
             )
             {
-               // check whether request has exactly one part (other dispatchers could use more than one part)
-               if (requestBuffer->GetNumElements() != 1) 
-               {
-                  «resolveSymbol("CABLOG_ERROR")»("Received invalid request (wrong message part count): " << requestBuffer->ToString());
-                  «resolveSymbol("CABTHROW_V2")»( «resolveSymbol("BTC::ServiceComm::API::InvalidRequestReceivedException")»( «resolveSymbol("BTC::Commons::CoreExtras::StringBuilder")»() 
-                     << "Expected exactly 1 message part, but received " << requestBuffer->GetNumElements() ) );
-               }
+               «IF targetVersion == "0.10"»
+                   // check whether request has exactly one part (other dispatchers could use more than one part)
+                   if (request->GetNumElements() != 1) 
+                   {
+                      «resolveSymbol("CABLOG_ERROR")»("Received invalid request (wrong message part count): " << request->ToString());
+                      «resolveSymbol("CABTHROW_V2")»( «resolveSymbol("BTC::ServiceComm::API::InvalidRequestReceivedException")»( «resolveSymbol("BTC::Commons::CoreExtras::StringBuilder")»() 
+                         << "Expected exactly 1 message part, but received " << request->GetNumElements() ) );
+                   }
+               «ENDIF»
                
                // parse raw message into Protocol Buffers message object
-               «resolveSymbol("BTC::Commons::Core::AutoPtr")»< «protobuf_request_message» > request( BorrowRequestMessage() );
-               ParseRequestOrLogAndThrow( «class_name.shortName»::GetLogger(), *request, (*requestBuffer)[0] );
+               «resolveSymbol("BTC::Commons::Core::AutoPtr")»< «protobuf_request_message» > protoBufRequest( BorrowRequestMessage() );
+               ParseRequestOrLogAndThrow( «class_name.shortName»::GetLogger(), *protoBufRequest, «IF targetVersion == "0.10"»(*request)[0]«ELSE»*request«ENDIF» );
                
                «FOR function : interface_declaration.functions»
                    «val protobuf_request_method = com.btc.serviceidl.util.Util.makeProtobufMethodName(function.name, Constants.PROTOBUF_REQUEST)»
@@ -88,10 +88,10 @@ class DispatcherGenerator extends BasicCppGenerator
                    «val is_void = function.returnedType.isVoid»
                    «val protobuf_response_method = com.btc.serviceidl.util.Util.makeProtobufMethodName(function.name, Constants.PROTOBUF_RESPONSE)»
                    «val output_parameters = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
-                   if ( request->has_«protobuf_request_method»() )
+                   if ( protoBufRequest->has_«protobuf_request_method»() )
                    {
                       // decode request -->
-                      auto const& concreteRequest( request->«protobuf_request_method»() );
+                      auto const& concreteRequest( protoBufRequest->«protobuf_request_method»() );
                       «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
                           «IF GeneratorUtil.useCodec(param.paramType, ArtifactNature.CPP)»
                               «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
@@ -150,14 +150,13 @@ class DispatcherGenerator extends BasicCppGenerator
                «ENDIF»
                
                // send return message
-               return «resolveSymbol("BTC::ServiceComm::CommonsUtil::MakeSinglePartMessage")»(
-                   GetMessagePool(), «resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ProtobufToMessagePart(
+               return «makeToMessagePtrType('''«resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ProtobufToMessagePart(
                      GetMessagePartPool()
-                    ,*response ) );
+                    ,*response )''')»;                    
                    }
                «ENDFOR»
                
-               «resolveSymbol("CABLOG_ERROR")»("Invalid request: " << request->DebugString().c_str());
+               «resolveSymbol("CABLOG_ERROR")»("Invalid request: " << protoBufRequest->DebugString().c_str());
                «resolveSymbol("CABTHROW_V2")»( «resolveSymbol("BTC::ServiceComm::API::InvalidRequestReceivedException")»(«resolveSymbol("BTC::Commons::Core::String")»("«interface_declaration.name»_Request is invalid, unknown request type")));
             }
             
@@ -203,13 +202,26 @@ class DispatcherGenerator extends BasicCppGenerator
                return «resolveSymbol("BTC::Commons::Core::CreateUnique")»<CDispatcherAutoRegistrationFactory<«api_class_name», «class_name.shortName»>>
                (
                loggerFactory
+               «IF targetVersion == "0.10"»
                , serverEndpoint
+               «ENDIF»
                , instanceGuid
                , «resolveSymbol("CABTYPENAME")»(«api_class_name»)
                , instanceName.IsNotEmpty() ? instanceName : («resolveSymbol("CABTYPENAME")»(«api_class_name») + " default instance")
                );
             }
         '''
+    }
+
+    def makeToMessagePtrType(String messagePart)
+    {
+        if (targetVersion == "0.10")
+        {
+            '''«resolveSymbol("BTC::ServiceComm::CommonsUtil::MakeSinglePartMessage")»(
+                   GetMessagePool(),  «messagePart»)'''
+        }
+        else
+            messagePart
     }
 
     def private String makeEncodeResponse(EObject type, EObject container, String protobuf_name,
@@ -235,12 +247,32 @@ class DispatcherGenerator extends BasicCppGenerator
         '''
     }
 
+    private def getTargetVersion()
+    {
+        targetVersionProvider.getTargetVersion(CppConstants.SERVICECOMM_VERSION_KIND)
+    }
+
+    private def getClientIdentityType()
+    {
+        if (targetVersion.equals("0.10"))
+            resolveSymbol("BTC::ServiceComm::Commons::CMessage")
+        else
+            resolveSymbol("BTC::ServiceComm::Commons::EndpointIdentity")
+    }
+
+    private def getMessagePtrType()
+    {
+        if (targetVersion.equals("0.10"))
+            resolveSymbol("BTC::ServiceComm::Commons::MessagePtr")
+        else
+            resolveSymbol("BTC::ServiceComm::Commons::ConstMessagePartPtr")
+    }
+
     def generateHeaderFileBody(InterfaceDeclaration interface_declaration)
     {
-        val class_name = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType, interface_declaration.name)
+        val class_name = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType,
+            interface_declaration.name)
 
-        val cab_message_ptr = resolveSymbol("BTC::ServiceComm::Commons::MessagePtr")
-        
         // TODO do not use anonymous namespaces in a header file!
         '''
             // anonymous namespace for internally used typedef
@@ -268,10 +300,10 @@ class DispatcherGenerator extends BasicCppGenerator
                /**
                   \see BTC::ServiceComm::API::IRequestDispatcher::ProcessRequest
                */
-               virtual «cab_message_ptr» ProcessRequest
+               virtual «messagePtrType» ProcessRequest
                (
-                  «cab_message_ptr» request,
-                  «resolveSymbol("BTC::ServiceComm::Commons::CMessage")» const& clientIdentity
+                  «messagePtrType» request,
+                  const «clientIdentityType»& clientIdentity
                ) override;
                
                /**

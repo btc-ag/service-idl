@@ -41,6 +41,7 @@ import static extension com.btc.serviceidl.util.Util.*
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectFileGenerator
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
 import com.btc.serviceidl.generator.cpp.prins.VSSolution
+import com.btc.serviceidl.generator.ITargetVersionProvider
 
 @Accessors(PROTECTED_GETTER)
 class ProjectGeneratorBaseBase
@@ -52,6 +53,7 @@ class ProjectGeneratorBaseBase
     val IDLSpecification idl
     val extension IProjectSet vsSolution
     val IModuleStructureStrategy moduleStructureStrategy
+    val ITargetVersionProvider targetVersionProvider
     val Map<String, Set<IProjectReference>> protobuf_project_references
     val Map<EObject, Collection<EObject>> smart_pointer_map
 
@@ -65,7 +67,7 @@ class ProjectGeneratorBaseBase
 
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
-        IModuleStructureStrategy moduleStructureStrategy,
+        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
         Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ProjectType type, ModuleDeclaration module)
     {
@@ -76,6 +78,7 @@ class ProjectGeneratorBaseBase
         this.idl = idl
         this.vsSolution = vsSolution
         this.moduleStructureStrategy = moduleStructureStrategy
+        this.targetVersionProvider = targetVersionProvider
         this.protobuf_project_references = protobuf_project_references
         this.smart_pointer_map = smart_pointer_map
         this.module = module
@@ -104,7 +107,7 @@ class ProjectGeneratorBaseBase
 
     def protected createBasicCppGenerator(ParameterBundle param_bundle)
     {
-        new BasicCppGenerator(createTypeResolver(param_bundle), param_bundle)
+        new BasicCppGenerator(createTypeResolver(param_bundle), targetVersionProvider, param_bundle)
     }
 
     // TODO move this to com.btc.serviceidl.generator.cpp.prins resp. use a factory for the ProjectFileGenerator implementation
