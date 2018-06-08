@@ -93,7 +93,7 @@ class TypeResolver
                 if (element.uuidType !== null)
                 {
                     if (project_type == ProjectType.PROTOBUF)
-                        return resolve("Google.ProtocolBuffers")
+                        return resolve("Google.ProtocolBuffers.ByteString")
                     else
                         return resolve("System.Guid")
                 }
