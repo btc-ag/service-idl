@@ -66,7 +66,7 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
     def protected String resolveEncode(EObject element)
     {
         if (element.isUUIDType)
-            resolve("Google.ProtocolBuffers.ByteString").toString
+            resolve(TypeResolver.PROTOBUF_UUID_TYPE).toString
         else if (element.isByte || element.isInt16 || element.isChar)
             "int"
         else if (element.isSequenceType)
