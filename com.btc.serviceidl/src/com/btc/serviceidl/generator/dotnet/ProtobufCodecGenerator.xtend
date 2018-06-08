@@ -61,7 +61,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                   return plainData;
                }
             
-               public static «resolve("Google.ProtocolBuffers.ByteString")» encodeUUID(«resolve("System.Guid")» plainData)
+               public static «resolve(TypeResolver.PROTOBUF_UUID_TYPE)» encodeUUID(«resolve("System.Guid")» plainData)
                {
                return Google.ProtocolBuffers.ByteString.CopyFrom(plainData.ToByteArray());
                }
@@ -85,7 +85,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                }
                
                // TOut and TIn are necessary here to be able to generate the same calling code as for the generic method above.
-               public static IEnumerable<«resolve("Google.ProtocolBuffers.ByteString")»> encodeEnumerable<TOut, TIn>(IEnumerable<«resolve("System.Guid")»> plainData)
+               public static IEnumerable<«resolve(TypeResolver.PROTOBUF_UUID_TYPE)»> encodeEnumerable<TOut, TIn>(IEnumerable<«resolve("System.Guid")»> plainData)
                {
                    return plainData.Select(item => encodeUUID(item)).ToList();
                }
@@ -125,7 +125,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                   return encodedData.Select(item => (char)item).ToList();
                }
                
-               public static IEnumerable<«resolve("System.Guid")»> decodeEnumerableUUID (IEnumerable<«resolve("Google.ProtocolBuffers.ByteString")»> encodedData)
+               public static IEnumerable<«resolve("System.Guid")»> decodeEnumerableUUID (IEnumerable<«resolve(TypeResolver.PROTOBUF_UUID_TYPE)»> encodedData)
                {
                   return encodedData.Select(item => decodeUUID(item)).ToList();
                }
@@ -145,7 +145,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                   return (char) encodedData;
                }
                
-               public static «resolve("System.Guid")» decodeUUID(«resolve("Google.ProtocolBuffers.ByteString")» encodedData)
+               public static «resolve("System.Guid")» decodeUUID(«resolve(TypeResolver.PROTOBUF_UUID_TYPE)» encodedData)
                {
                   return new System.Guid(encodedData.ToByteArray());
                }

@@ -34,6 +34,8 @@ import static extension com.btc.serviceidl.generator.common.Extensions.*
 @Accessors(PACKAGE_GETTER)
 class TypeResolver
 {
+    public static val PROTOBUF_UUID_TYPE = "Google.ProtocolBuffers.ByteString"
+    
     val DotNetFrameworkVersion frameworkVersion
     val IQualifiedNameProvider qualified_name_provider
     val Set<String> namespace_references
@@ -93,7 +95,7 @@ class TypeResolver
                 if (element.uuidType !== null)
                 {
                     if (project_type == ProjectType.PROTOBUF)
-                        return resolve("Google.ProtocolBuffers.ByteString")
+                        return resolve(PROTOBUF_UUID_TYPE)
                     else
                         return resolve("System.Guid")
                 }
