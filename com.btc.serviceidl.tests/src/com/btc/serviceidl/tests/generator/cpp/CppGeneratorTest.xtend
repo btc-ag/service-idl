@@ -150,7 +150,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
                             ("BTC.CAB.Commons/1.8.latest@cab/testing"),
                             ("BTC.CAB.IoC/1.7.latest@cab/testing"),
                             ("BTC.CAB.Logging/1.7.latest@cab/testing"),
-                            ("BTC.CAB.ServiceComm/0.10.latest@cab/testing")
+                            ("BTC.CAB.ServiceComm/0.11.latest@cab/testing")
                             )
                 generators = "cmake"
                 short_paths = True

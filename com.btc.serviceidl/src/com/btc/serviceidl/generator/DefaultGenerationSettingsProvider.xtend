@@ -76,7 +76,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
                 ProjectType.CLIENT_CONSOLE, ProjectType.EXTERNAL_DB_IMPL));
         projectSetFactory = new VSSolutionFactory
         moduleStructureStrategy = new PrinsModuleStructureStrategy
-        setVersion(CppConstants.SERVICECOMM_VERSION_KIND, "0.10")
+        setVersion(CppConstants.SERVICECOMM_VERSION_KIND, "0.11")
     }
 
     def getVersionKinds()
