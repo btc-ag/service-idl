@@ -41,7 +41,7 @@ class CodecGenerator extends BasicCppGenerator
         val insertable_traits = resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")
         val failable_handle = resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")
         val cab_exception = resolveSymbol("BTC::Commons::Core::Exception")
-        val cab_vector = resolveSymbol("BTC::Commons::Core::Vector")
+        val cab_vector = resolveSymbol("BTC::Commons::CoreStd::Collection")
         val cab_del_exception = resolveSymbol("BTC::Commons::Core::DelException")
         val cab_string = resolveSymbol("BTC::Commons::Core::String")
         val cab_create_unique = resolveSymbol("BTC::Commons::Core::CreateUnique")
