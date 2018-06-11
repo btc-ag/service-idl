@@ -450,7 +450,9 @@ class CodecGenerator extends BasicCppGenerator
                return «cab_uuid»::MakeFromComponents(param1, param2, param3, param4.data());
             }
             
-            «FOR type : nested_types»
+            // TODO for exceptions, this must probably be done differently. It appears that custom exception 
+            // attributes are not properly implemented right now
+            «FOR type : nested_types.filter[!(it instanceof ExceptionDeclaration)]»
                 «val api_type_name = resolve(type)»
                 «/* TODO change such that ProtobufType does not need to be passed, it is irrelevant here */»
                 «val proto_type_name = typeResolver.resolveProtobuf(type, ProtobufType.REQUEST)»
@@ -507,13 +509,16 @@ class CodecGenerator extends BasicCppGenerator
 
     def private dispatch String makeDecode(ExceptionDeclaration element, EObject container)
     {
-        '''
-            «resolve(element)» api_output;
-            «FOR member : element.allMembers»
-                «makeDecodeMember(member, container)»
-            «ENDFOR»
-            return api_output;
-        '''
+        throw new UnsupportedOperationException("Decode for exception types with custom attributes is unsupported right now")
+
+        // TODO this must be fixed, and the service fault registration must be changed to use this        
+//        '''
+//            «resolve(element)» api_output;
+//            «FOR member : element.allMembers»
+//                «makeDecodeMember(member, container)»
+//            «ENDFOR»
+//            return api_output;
+//        '''
     }
 
     def private dispatch String makeDecode(EnumDeclaration element, EObject container)
