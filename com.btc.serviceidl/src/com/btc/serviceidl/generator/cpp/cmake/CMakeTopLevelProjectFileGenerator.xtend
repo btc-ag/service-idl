@@ -60,6 +60,14 @@ class CMakeTopLevelProjectFileGenerator
 
     def generateConanfile()
     {
+        val serviceCommTargetVersion = generationSettingsProvider.getTargetVersion(
+            CppConstants.SERVICECOMM_VERSION_KIND)
+        val commonsTargetVersion = if (serviceCommTargetVersion == "0.10" ||
+                serviceCommTargetVersion == "0.11") "1.8" else "1.9"
+        val iocTargetVersion = if (serviceCommTargetVersion == "0.10" ||
+                serviceCommTargetVersion == "0.11") "1.7" else "1.8"
+        val loggingTargetVersion = if (serviceCommTargetVersion == "0.10" ||
+                serviceCommTargetVersion == "0.11") "1.7" else "1.8"
         '''
             from conan_template import *
             
@@ -73,10 +81,10 @@ class CMakeTopLevelProjectFileGenerator
             
                 build_requires = "CMakeMacros/0.3.latest@cab/testing"
                 requires = ( 
-                            ("BTC.CAB.Commons/1.8.latest@cab/testing"),
-                            ("BTC.CAB.IoC/1.7.latest@cab/testing"),
-                            ("BTC.CAB.Logging/1.7.latest@cab/testing"),
-                            ("BTC.CAB.ServiceComm/«generationSettingsProvider.getTargetVersion(CppConstants.SERVICECOMM_VERSION_KIND)».latest@cab/testing")
+                            ("BTC.CAB.Commons/«commonsTargetVersion».latest@cab/testing"),
+                            ("BTC.CAB.IoC/«iocTargetVersion».latest@cab/testing"),
+                            ("BTC.CAB.Logging/«loggingTargetVersion».latest@cab/testing"),
+                            ("BTC.CAB.ServiceComm/«serviceCommTargetVersion».latest@cab/testing")
                             )
                 generators = "cmake"
                 short_paths = True
