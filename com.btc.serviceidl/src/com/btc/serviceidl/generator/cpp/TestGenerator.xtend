@@ -119,7 +119,7 @@ class TestGenerator extends BasicCppGenerator
                    «FOR param : func.parameters.filter[direction == ParameterDirection.PARAM_IN]»
                        «IF param.paramType.isSequenceType»
                            «val is_failable = param.paramType.isFailable»
-                           «resolveSymbol("BTC::Commons::Core::Vector")»< «IF is_failable»«resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»<«ENDIF»«toText(param.paramType.ultimateType, param)»«IF is_failable»>«ENDIF» > «param.paramName.asParameter»;
+                           «resolveSymbol("BTC::Commons::CoreStd::Collection")»< «IF is_failable»«resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»<«ENDIF»«toText(param.paramType.ultimateType, param)»«IF is_failable»>«ENDIF» > «param.paramName.asParameter»;
                        «ELSE»
                            «val type_name = toText(param.paramType, param)»
                            «type_name» «param.paramName.asParameter»«IF param.paramType.isEnumType» = «type_name»::«(param.paramType.ultimateType as EnumDeclaration).containedIdentifiers.head»«ELSEIF param.paramType.isStruct» = {}«ENDIF»;
