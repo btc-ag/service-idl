@@ -80,6 +80,8 @@ class ProtobufUtil
         if (scopeDeterminant instanceof InterfaceDeclaration)
         {
             val name = Names.plain(scopeDeterminant)
+            // TODO Not sure if this can really be true, while still producing valid generated code
+            // this might lead to other naming conflicts
             return scopeDeterminant.contains.exists[Names.plain(it) == name]
         }
         else
