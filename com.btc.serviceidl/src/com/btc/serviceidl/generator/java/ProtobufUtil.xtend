@@ -32,21 +32,21 @@ import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufUtil
 {
-    def public static ResolvedName resolveProtobuf(BasicJavaSourceGenerator basicJavaSourceGenerator, EObject object,
+    def public static ResolvedName resolveProtobuf(TypeResolver typeResolver, EObject object,
         Optional<ProtobufType> protobuf_type)
     {
         if (object.isUUIDType)
-            return basicJavaSourceGenerator.typeResolver.resolve(object, ProjectType.PROTOBUF)
+            return typeResolver.resolve(object, ProjectType.PROTOBUF)
         else if (object.isAlias)
-            return resolveProtobuf(basicJavaSourceGenerator, object.ultimateType, protobuf_type)
+            return resolveProtobuf(typeResolver, object.ultimateType, protobuf_type)
         else if (object instanceof PrimitiveType)
-            return new ResolvedName(basicJavaSourceGenerator.toText(object), TransformType.PACKAGE)
+            return new ResolvedName(typeResolver.resolve(object).toString, TransformType.PACKAGE)
         else if (object instanceof AbstractType)
         {
             if (object.primitiveType !== null)
-                return resolveProtobuf(basicJavaSourceGenerator, object.primitiveType, protobuf_type)
+                return resolveProtobuf(typeResolver, object.primitiveType, protobuf_type)
             else if (object.referenceType !== null)
-                return resolveProtobuf(basicJavaSourceGenerator, object.referenceType, protobuf_type)
+                return resolveProtobuf(typeResolver, object.referenceType, protobuf_type)
         }
 
         val scope_determinant = object.scopeDeterminant
@@ -64,7 +64,7 @@ class ProtobufUtil
         else
             result += Names.plain(scope_determinant) + "." + Names.plain(object)
 
-        basicJavaSourceGenerator.typeResolver.addDependency(MavenResolver.resolveDependency(object))
+        typeResolver.addDependency(MavenResolver.resolveDependency(object))
         return new ResolvedName(result, TransformType.PACKAGE)
     }
 
