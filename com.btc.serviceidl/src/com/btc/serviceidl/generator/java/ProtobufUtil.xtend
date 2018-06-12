@@ -33,36 +33,36 @@ import static extension com.btc.serviceidl.util.Util.*
 class ProtobufUtil
 {
     def public static ResolvedName resolveProtobuf(TypeResolver typeResolver, EObject object,
-        Optional<ProtobufType> protobuf_type)
+        Optional<ProtobufType> optProtobufType)
     {
         if (object.isUUIDType)
             return typeResolver.resolve(object, ProjectType.PROTOBUF)
         else if (object.isAlias)
-            return resolveProtobuf(typeResolver, object.ultimateType, protobuf_type)
+            return resolveProtobuf(typeResolver, object.ultimateType, optProtobufType)
         else if (object instanceof PrimitiveType)
             return new ResolvedName(typeResolver.resolve(object).toString, TransformType.PACKAGE)
         else if (object instanceof AbstractType)
         {
             if (object.primitiveType !== null)
-                return resolveProtobuf(typeResolver, object.primitiveType, protobuf_type)
+                return resolveProtobuf(typeResolver, object.primitiveType, optProtobufType)
             else if (object.referenceType !== null)
-                return resolveProtobuf(typeResolver, object.referenceType, protobuf_type)
+                return resolveProtobuf(typeResolver, object.referenceType, optProtobufType)
         }
 
-        val scope_determinant = object.scopeDeterminant
+        val scopeDeterminant = object.scopeDeterminant
 
         var result = MavenResolver.resolvePackage(object, Optional.of(ProjectType.PROTOBUF))
         result += Constants.SEPARATOR_PACKAGE
-        if (object instanceof InterfaceDeclaration && Util.ensurePresentOrThrow(protobuf_type))
-            result += Names.plain(object) + "." + Names.plain(object) + "_" + protobuf_type.get.getName
-        else if (object instanceof FunctionDeclaration && Util.ensurePresentOrThrow(protobuf_type))
+        if (object instanceof InterfaceDeclaration && Util.ensurePresentOrThrow(optProtobufType))
+            result += Names.plain(object) + "." + Names.plain(object) + "_" + optProtobufType.get.getName
+        else if (object instanceof FunctionDeclaration && Util.ensurePresentOrThrow(optProtobufType))
             result +=
-                Names.plain(scope_determinant) + "_" + protobuf_type.get.getName + "_" + Names.plain(object) + "_" +
-                    protobuf_type.get.getName
-        else if (scope_determinant instanceof ModuleDeclaration)
+                Names.plain(scopeDeterminant) + "_" + optProtobufType.get.getName + "_" + Names.plain(object) + "_" +
+                    optProtobufType.get.getName
+        else if (scopeDeterminant instanceof ModuleDeclaration)
             result += Constants.FILE_NAME_TYPES + "." + Names.plain(object)
         else
-            result += Names.plain(scope_determinant) + "." + Names.plain(object)
+            result += Names.plain(scopeDeterminant) + "." + Names.plain(object)
 
         typeResolver.addDependency(MavenResolver.resolveDependency(object))
         return new ResolvedName(result, TransformType.PACKAGE)
@@ -76,21 +76,20 @@ class ProtobufUtil
     // TODO reconsider placement of this method
     def public static String resolveCodec(EObject object)
     {
-        val ultimate_type = object.ultimateType
+        val ultimateType = object.ultimateType
 
-        val codec_name = ultimate_type.codecName
-        MavenResolver.resolvePackage(ultimate_type, Optional.of(ProjectType.PROTOBUF)) +
-            TransformType.PACKAGE.separator + codec_name
+        MavenResolver.resolvePackage(ultimateType, Optional.of(ProjectType.PROTOBUF)) +
+            TransformType.PACKAGE.separator + ultimateType.codecName
     }
 
-    def public static String resolveFailableProtobufType(IQualifiedNameProvider qualified_name_provider,
-        EObject element, EObject container)
+    def public static String resolveFailableProtobufType(IQualifiedNameProvider qualifiedNameProvider, EObject element,
+        EObject container)
     {
         return MavenResolver.resolvePackage(container, Optional.of(ProjectType.PROTOBUF)) +
             TransformType.PACKAGE.separator + ( if (container instanceof ModuleDeclaration)
                 '''«Constants.FILE_NAME_TYPES».'''
             else
-                "" ) + container.containerName + GeneratorUtil.asFailable(element, container, qualified_name_provider)
+                "" ) + container.containerName + GeneratorUtil.asFailable(element, container, qualifiedNameProvider)
     }
 
     private def static String getContainerName(EObject container)
