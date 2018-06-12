@@ -49,23 +49,25 @@ class ProtobufUtil
                 return resolveProtobuf(typeResolver, object.referenceType, optProtobufType)
         }
 
+        typeResolver.addDependency(MavenResolver.resolveDependency(object))
+        return new ResolvedName(
+            MavenResolver.resolvePackage(object, Optional.of(ProjectType.PROTOBUF)) + Constants.SEPARATOR_PACKAGE +
+                getLocalName(object, optProtobufType), TransformType.PACKAGE)
+    }
+
+    private def static String getLocalName(EObject object, Optional<ProtobufType> optProtobufType)
+    {
         val scopeDeterminant = object.scopeDeterminant
 
-        var result = MavenResolver.resolvePackage(object, Optional.of(ProjectType.PROTOBUF))
-        result += Constants.SEPARATOR_PACKAGE
         if (object instanceof InterfaceDeclaration && Util.ensurePresentOrThrow(optProtobufType))
-            result += Names.plain(object) + "." + Names.plain(object) + "_" + optProtobufType.get.getName
+            Names.plain(object) + "." + Names.plain(object) + "_" + optProtobufType.get.getName
         else if (object instanceof FunctionDeclaration && Util.ensurePresentOrThrow(optProtobufType))
-            result +=
-                Names.plain(scopeDeterminant) + "_" + optProtobufType.get.getName + "_" + Names.plain(object) + "_" +
-                    optProtobufType.get.getName
+            Names.plain(scopeDeterminant) + "_" + optProtobufType.get.getName + "_" + Names.plain(object) + "_" +
+                optProtobufType.get.getName
         else if (scopeDeterminant instanceof ModuleDeclaration)
-            result += Constants.FILE_NAME_TYPES + "." + Names.plain(object)
+            Constants.FILE_NAME_TYPES + "." + Names.plain(object)
         else
-            result += Names.plain(scopeDeterminant) + "." + Names.plain(object)
-
-        typeResolver.addDependency(MavenResolver.resolveDependency(object))
-        return new ResolvedName(result, TransformType.PACKAGE)
+            Names.plain(scopeDeterminant) + "." + Names.plain(object)
     }
 
     def public static String asProtobufName(String name)
