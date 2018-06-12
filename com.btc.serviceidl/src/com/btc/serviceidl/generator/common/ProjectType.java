@@ -50,13 +50,12 @@ public enum ProjectType {
         return getFilePrefix(artifact_nature) + basic_name + getFileSuffix();
     }
 
+    // TODO the name of this method is confusing, as it does not only determine the
+    // file name
     private final String getFilePrefix(final ArtifactNature artifact_nature) {
         if (name.equals(Constants.PROJECT_NAME_SERVICE_API)) {
-            if (artifact_nature == ArtifactNature.CPP || artifact_nature == ArtifactNature.DOTNET) {
-                return "I";
-            } else {
-                return "";
-            }
+            // TODO this naming convention should be configurable
+            return "I";
         } else if (name.equals(Constants.PROJECT_NAME_PROTOBUF) || name.equals(Constants.PROJECT_NAME_COMMON)
                 || name.equals(Constants.PROJECT_NAME_TEST) || name.equals(Constants.PROJECT_NAME_SERVER_RUNNER)
                 || name.equals(Constants.PROJECT_NAME_CLIENT_CONSOLE)) {

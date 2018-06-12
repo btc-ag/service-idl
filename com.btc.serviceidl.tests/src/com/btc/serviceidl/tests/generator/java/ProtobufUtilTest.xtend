@@ -53,7 +53,7 @@ class ProtobufUtilTest
     @Before
     def void setUp()
     {
-        idl = parseHelper.parse("module Foo { struct Bar { string x }; interface IBar { struct Bar { string y }; } }");
+        idl = parseHelper.parse("module Foo { struct Bar { string x }; interface Bar { struct Bar { string y }; } }");
 
         dependencies = new HashSet<MavenDependency>()
         val paramBundle = new ParameterBundle.Builder().reset(ImmutableList.of(fooModule)).build()
@@ -72,10 +72,10 @@ class ProtobufUtilTest
     def void testResolveProtobufStructWithinInterface()
     {
         val result = ProtobufUtil.resolveProtobuf(typeResolver, fooModule.getModuleComponents().filter(
-            InterfaceDeclaration).findFirst[it.name == "IBar"].contains.filter(StructDeclaration).findFirst [
+            InterfaceDeclaration).findFirst[it.name == "Bar"].contains.filter(StructDeclaration).findFirst [
             it.name == "Bar"
         ], Optional.empty());
-        assertEquals("com.foo.ibar.protobuf.IBar.Bar", result.getFullyQualifiedName());
+        assertEquals("com.foo.bar.protobuf.BarOuterClass.Bar", result.getFullyQualifiedName());
     }
 
     @Test
