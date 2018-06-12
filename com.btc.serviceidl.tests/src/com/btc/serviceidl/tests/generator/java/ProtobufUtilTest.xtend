@@ -31,6 +31,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import static org.junit.Assert.assertEquals
+import com.btc.serviceidl.generator.common.ProtobufType
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -90,6 +91,22 @@ class ProtobufUtilTest
             InterfaceDeclaration).findFirst[it.name == "Bar"].contains.filter(StructDeclaration).findFirst [
             it.name == "Bar"
         ], Optional.empty());
-        assertEquals("com.foo.bar.protobuf.Bar.Bar", result.getFullyQualifiedName());
+        assertEquals("com.foo.bar.protobuf.BarOuterClass.Bar", result.getFullyQualifiedName());
+    }
+
+    @Test
+    def void testResolveProtobufMethodRequestInConflictedInterface()
+    {
+        idl = parseHelper.parse("module Foo { interface Bar { struct Bar { string x }; void MyRequest(int i); }");
+
+        dependencies = new HashSet<MavenDependency>()
+        val paramBundle = new ParameterBundle.Builder().reset(ImmutableList.of(fooModule)).build()
+        typeResolver = new TypeResolver(qualifiedNameProvider, paramBundle, dependencies)
+
+        val result = ProtobufUtil.resolveProtobuf(typeResolver, fooModule.getModuleComponents().filter(
+            InterfaceDeclaration).findFirst [
+            it.name == "Bar"
+        ], Optional.of(ProtobufType.REQUEST));
+        assertEquals("com.foo.bar.protobuf.BarOuterClass.Bar_Request", result.getFullyQualifiedName());
     }
 }

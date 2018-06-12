@@ -60,14 +60,30 @@ class ProtobufUtil
         val scopeDeterminant = object.scopeDeterminant
 
         if (object instanceof InterfaceDeclaration && Util.ensurePresentOrThrow(optProtobufType))
-            Names.plain(object) + "." + Names.plain(object) + "_" + optProtobufType.get.getName
+            getOuterClassName(object) + "." + Names.plain(object) + "_" + optProtobufType.get.getName
         else if (object instanceof FunctionDeclaration && Util.ensurePresentOrThrow(optProtobufType))
             Names.plain(scopeDeterminant) + "_" + optProtobufType.get.getName + "_" + Names.plain(object) + "_" +
                 optProtobufType.get.getName
         else if (scopeDeterminant instanceof ModuleDeclaration)
             Constants.FILE_NAME_TYPES + "." + Names.plain(object)
         else
-            Names.plain(scopeDeterminant) + "." + Names.plain(object)
+            getOuterClassName(scopeDeterminant) + "." + Names.plain(object)
+    }
+
+    private def static String getOuterClassName(EObject scopeDeterminant)
+    {
+        Names.plain(scopeDeterminant) + (if (scopeDeterminant.interfaceWithElementWithSameName) "OuterClass" else "")
+    }
+
+    def public static boolean interfaceWithElementWithSameName(EObject scopeDeterminant)
+    {
+        if (scopeDeterminant instanceof InterfaceDeclaration)
+        {
+            val name = Names.plain(scopeDeterminant)
+            return scopeDeterminant.contains.exists[Names.plain(it) == name]
+        }
+        else
+            false
     }
 
     def public static String asProtobufName(String name)
