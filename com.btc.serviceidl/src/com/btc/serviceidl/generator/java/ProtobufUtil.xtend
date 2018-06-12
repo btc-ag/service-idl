@@ -1,13 +1,13 @@
 /*********************************************************************
-* \author see AUTHORS file
-* \copyright 2015-2018 BTC Business Technology Consulting AG and others
-*
-* This program and the accompanying materials are made
-* available under the terms of the Eclipse Public License 2.0
-* which is available at https://www.eclipse.org/legal/epl-2.0/
-*
-* SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+ * \author see AUTHORS file
+ * \copyright 2015-2018 BTC Business Technology Consulting AG and others
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
+ **********************************************************************/
 package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.common.GeneratorUtil
@@ -41,10 +41,13 @@ class ProtobufUtil
             return resolveProtobuf(basicJavaSourceGenerator, object.ultimateType, protobuf_type)
         else if (object instanceof PrimitiveType)
             return new ResolvedName(basicJavaSourceGenerator.toText(object), TransformType.PACKAGE)
-        else if (object instanceof AbstractType && (object as AbstractType).primitiveType !== null)
-            return resolveProtobuf(basicJavaSourceGenerator, (object as AbstractType).primitiveType, protobuf_type)
-        else if (object instanceof AbstractType && (object as AbstractType).referenceType !== null)
-            return resolveProtobuf(basicJavaSourceGenerator, (object as AbstractType).referenceType, protobuf_type)
+        else if (object instanceof AbstractType)
+        {
+            if (object.primitiveType !== null)
+                return resolveProtobuf(basicJavaSourceGenerator, object.primitiveType, protobuf_type)
+            else if (object.referenceType !== null)
+                return resolveProtobuf(basicJavaSourceGenerator, object.referenceType, protobuf_type)
+        }
 
         val is_function = (object instanceof FunctionDeclaration)
         val is_interface = (object instanceof InterfaceDeclaration)
@@ -73,22 +76,27 @@ class ProtobufUtil
         name.toLowerCase.toFirstUpper
     }
 
-   // TODO reconsider placement of this method
-   def public static String resolveCodec(EObject object)
-   {
-      val ultimate_type = object.ultimateType
-      
-      val codec_name = ultimate_type.codecName
-      MavenResolver.resolvePackage(ultimate_type, Optional.of(ProjectType.PROTOBUF)) + TransformType.PACKAGE.separator + codec_name
-   }
-      
-   def public static String resolveFailableProtobufType(IQualifiedNameProvider qualified_name_provider, EObject element, EObject container)
-   {
-      val container_name = if (container instanceof InterfaceDeclaration) '''«container.name».''' else "" 
-      return MavenResolver.resolvePackage(container, Optional.of(ProjectType.PROTOBUF))
-         + TransformType.PACKAGE.separator
-         + ( if (container instanceof ModuleDeclaration) '''«Constants.FILE_NAME_TYPES».''' else "" )
-         + container_name
-         + GeneratorUtil.asFailable(element, container, qualified_name_provider)
-   }
+    // TODO reconsider placement of this method
+    def public static String resolveCodec(EObject object)
+    {
+        val ultimate_type = object.ultimateType
+
+        val codec_name = ultimate_type.codecName
+        MavenResolver.resolvePackage(ultimate_type, Optional.of(ProjectType.PROTOBUF)) +
+            TransformType.PACKAGE.separator + codec_name
+    }
+
+    def public static String resolveFailableProtobufType(IQualifiedNameProvider qualified_name_provider,
+        EObject element, EObject container)
+    {
+        val container_name = if (container instanceof InterfaceDeclaration)
+                '''«container.name».'''
+            else
+                ""
+        return MavenResolver.resolvePackage(container, Optional.of(ProjectType.PROTOBUF)) +
+            TransformType.PACKAGE.separator + ( if (container instanceof ModuleDeclaration)
+                '''«Constants.FILE_NAME_TYPES».'''
+            else
+                "" ) + container_name + GeneratorUtil.asFailable(element, container, qualified_name_provider)
+    }
 }
