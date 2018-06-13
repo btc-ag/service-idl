@@ -119,7 +119,8 @@ class ProjectGeneratorBaseBase
             val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
             val source_path = projectPath.append("source")
 
-            file_system_access.generateFile(source_path.append(dependency_file_name).toString, generateDependencies)
+            file_system_access.generateFile(source_path.append(dependency_file_name).toString, ArtifactNature.CPP.label,
+                generateDependencies)
             projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
 
             new VSProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
@@ -179,7 +180,7 @@ class ProjectGeneratorBaseBase
     protected def IPath getProjectPath()
     {
         // TODO at least the "modules" part is PRINS-specific and should be determined by PrinsModuleStructureStrategy  
-        new Path(ArtifactNature.CPP.label).append("modules").append(
+        new Path("modules").append(
             GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
     }
 

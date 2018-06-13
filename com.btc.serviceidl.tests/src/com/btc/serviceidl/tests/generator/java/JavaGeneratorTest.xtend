@@ -36,8 +36,8 @@ class JavaGeneratorTest extends AbstractGeneratorTest
     def void testBasicServiceApi()
     {
         val fileCount = 3 // TODO this includes the KeyValueStoreServiceFaultHandlerFactory, which should be generated to a different project, and not with these settings
-        val baseDirectory = IFileSystemAccess::DEFAULT_OUTPUT +
-            "java/btc.prins.infrastructure.servicehost.demo.api.keyvaluestore/"
+        val baseDirectory = ArtifactNature.JAVA.label +
+            "btc.prins.infrastructure.servicehost.demo.api.keyvaluestore/"
         val directory = baseDirectory +
             "src/main/java/com/btc/prins/infrastructure/servicehost/demo/api/keyvaluestore/serviceapi/"
         val contents = ImmutableMap.of(directory + "IKeyValueStore.java", '''

@@ -81,8 +81,8 @@ class VSSolution implements IProjectSet
     {
         // TODO this depends on the implementation of ProjectGeneratorBaseBase.getProjectPath
         // TODO check if the else branch is valid
-        var effectiveProjectPath = if (projectPath.segment(0) == ArtifactNature.CPP.label && projectPath.segment(1) == "modules")
-                projectPath.removeFirstSegments(2)
+        var effectiveProjectPath = if (projectPath.segment(0) == "modules")
+                projectPath.removeFirstSegments(1)
             else
                 projectPath
         ensureEntryExists(projectName, makeProjectPath(effectiveProjectPath, projectName))

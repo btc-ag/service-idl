@@ -34,14 +34,17 @@ class CMakeTopLevelProjectFileGenerator
     def generate()
     {
         // TODO this depends on the implementation of ProjectGeneratorBaseBase.getProjectPath
-        val topLevelPath = modulePath.append(ArtifactNature.CPP.label)
+        // TODO isn't modulePath always empty?
+        val topLevelPath = modulePath
         file_system_access.generateFile(
             topLevelPath.append("conanfile.py").toString,
+            ArtifactNature.CPP.label,
             generateConanfile().toString
         )
 
         file_system_access.generateFile(
             topLevelPath.append("CMakeLists.txt").toString,
+            ArtifactNature.CPP.label,
             generateCMakeLists().toString
         )
     }

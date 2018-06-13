@@ -83,16 +83,16 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       if (!common_types.empty)
       {
          val basic_file_name = Constants.FILE_NAME_ODB_COMMON
-         file_system_access.generateFile(odb_path + basic_file_name.hxx, generateCommonHxx(common_types))
+         file_system_access.generateFile(odb_path + basic_file_name.hxx, ArtifactNature.CPP.label, generateCommonHxx(common_types))
          projectFileSet.addToGroup(OdbConstants.ODB_FILE_GROUP, basic_file_name)
       }
       for ( struct : id_structs )
       {
          val basic_file_name = struct.name.toLowerCase
-         file_system_access.generateFile(odb_path + basic_file_name.hxx, generateHxx(struct))
+         file_system_access.generateFile(odb_path + basic_file_name.hxx, ArtifactNature.CPP.label, generateHxx(struct))
          projectFileSet.addToGroup(OdbConstants.ODB_FILE_GROUP, basic_file_name)
       }
-      file_system_access.generateFile(odb_path + Constants.FILE_NAME_ODB_TRAITS.hxx, generateODBTraits)
+      file_system_access.generateFile(odb_path + Constants.FILE_NAME_ODB_TRAITS.hxx, ArtifactNature.CPP.label, generateODBTraits)
       
       super.generate()
       

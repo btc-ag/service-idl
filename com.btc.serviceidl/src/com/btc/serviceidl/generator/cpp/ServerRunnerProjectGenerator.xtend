@@ -56,7 +56,8 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         // sub-folder "./include"
         val export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
-        file_system_access.generateFile(include_path.append(export_header_file_name).toString, generateExportHeader())
+        file_system_access.generateFile(include_path.append(export_header_file_name).toString, ArtifactNature.CPP.label,
+            generateExportHeader())
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
 
         // sub-folder "./source"
@@ -64,7 +65,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         {
             val cpp_file = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType,
                 interface_declaration.name).cpp
-            file_system_access.generateFile(source_path.append(cpp_file).toString,
+            file_system_access.generateFile(source_path.append(cpp_file).toString, ArtifactNature.CPP.label,
                 generateCppServerRunner(interface_declaration))
             projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cpp_file)
         }
@@ -93,7 +94,8 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
 
         // sub-folder "./etc"
         val ioc_file_name = "ServerFactory".xml
-        file_system_access.generateFile(etc_path.append(ioc_file_name).toString, generateIoCServerRunner())
+        file_system_access.generateFile(etc_path.append(ioc_file_name).toString, ArtifactNature.CPP.label,
+            generateIoCServerRunner())
     }
 
     private def String generateCppServerRunner(InterfaceDeclaration interface_declaration)
