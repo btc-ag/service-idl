@@ -148,7 +148,7 @@ class ProtobufGenerator
    private def void generateProtobufFile(ArtifactNature an, EObject container, String artifact_name, String file_content)
    {
       param_bundle.reset(ProjectType.PROTOBUF)
-      var project_path = an.label + Constants.SEPARATOR_FILE;
+      var project_path = "";
       // TODO this depends on the PRINS directory structure
       if (an == ArtifactNature.CPP)
          project_path += "modules" + Constants.SEPARATOR_FILE
@@ -160,7 +160,7 @@ class ProtobufGenerator
          + Constants.PROTOBUF_GENERATION_DIRECTORY_NAME
          + Constants.SEPARATOR_FILE
 
-      file_system_access.generateFile(project_path + artifact_name.proto, file_content)
+      file_system_access.generateFile(project_path + artifact_name.proto, an.label, file_content)
    }
    
    private def String getJavaProtoLocation(EObject container)

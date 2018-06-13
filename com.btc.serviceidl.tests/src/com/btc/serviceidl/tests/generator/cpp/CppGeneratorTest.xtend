@@ -44,8 +44,8 @@ class CppGeneratorTest extends AbstractGeneratorTest
         defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases        
         val fileCount = 6
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
-        val directory = IFileSystemAccess::DEFAULT_OUTPUT +
-            "cpp/modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
+        val directory = ArtifactNature.CPP.label +
+            "modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
         val contents = ImmutableMap.of(directory + "include/IKeyValueStore.h", '''
             #pragma once
             #include "modules/Commons/include/BeginPrinsModulesInclude.h"
@@ -131,10 +131,10 @@ class CppGeneratorTest extends AbstractGeneratorTest
         defaultGenerationSettingsProvider.moduleStructureStrategy = new CABModuleStructureStrategy
         val fileCount = 7
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
-        val directory = IFileSystemAccess::DEFAULT_OUTPUT +
-            "cpp/modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
+        val directory = ArtifactNature.CPP.label +
+            "modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
 
-        val contents = ImmutableMap.of(IFileSystemAccess::DEFAULT_OUTPUT + "cpp/conanfile.py", '''
+        val contents = ImmutableMap.of(ArtifactNature.CPP.label + "conanfile.py", '''
             from conan_template import *
             
             class Conan(ConanTemplate):
@@ -154,7 +154,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
                             )
                 generators = "cmake"
                 short_paths = True
-        ''', IFileSystemAccess::DEFAULT_OUTPUT + "cpp/CMakeLists.txt", '''
+        ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.4)
             
             project (Test CXX)

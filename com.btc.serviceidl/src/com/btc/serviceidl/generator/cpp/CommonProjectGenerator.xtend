@@ -60,15 +60,16 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
         val cpp_file = Constants.FILE_NAME_TYPES.cpp
 
         // sub-folder "./include"
-        file_system_access.generateFile(include_path.append(export_header_file_name).toString, generateExportHeader())
+        file_system_access.generateFile(include_path.append(export_header_file_name).toString, ArtifactNature.CPP.label,
+            generateExportHeader())
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
 
-        file_system_access.generateFile(include_path.append(header_file).toString,
+        file_system_access.generateFile(include_path.append(header_file).toString, ArtifactNature.CPP.label,
             generateHFileCommons(module, export_header_file_name))
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, header_file)
 
         // sub-folder "./source"
-        file_system_access.generateFile(source_path.append(cpp_file).toString,
+        file_system_access.generateFile(source_path.append(cpp_file).toString, ArtifactNature.CPP.label,
             generateCppCommons(module, export_header_file_name))
         projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cpp_file)
 

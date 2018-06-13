@@ -23,6 +23,7 @@ import com.btc.serviceidl.generator.cpp.CppGenerator
 import com.btc.serviceidl.generator.java.JavaGenerator
 import com.btc.serviceidl.generator.dotnet.DotNetGenerator
 import com.btc.serviceidl.generator.common.ProjectType
+import org.eclipse.xtext.generator.AbstractFileSystemAccess
 
 /**
  * Generates code from your model files on save.
@@ -82,10 +83,30 @@ class IdlGenerator implements IGenerator2
             protobuf_artifacts = protobuf_generator.generatedArtifacts
         }
 
+        // TODO workaround for generation from within editor, for a proper solution see https://stackoverflow.com/a/10396957
+        if (fsa instanceof AbstractFileSystemAccess)
+        {
+            for (artifactNature : languages)
+            {
+                try
+                {
+                    fsa.getURI("", artifactNature.label)
+                }
+                catch (IllegalArgumentException e)
+                {
+                    fsa.setOutputPath(
+                        artifactNature.label,
+                        fsa.getURI("").appendSegment(artifactNature.label).toFileString
+                    )
+                }
+            }
+        }
+
         if (languages.contains(ArtifactNature.CPP))
         {
             val cpp_generator = new CppGenerator
-            cpp_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, generation_settings_provider,
+            cpp_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider,
+                generation_settings_provider,
                 if (protobuf_generator !== null) protobuf_generator.getProjectReferences(ArtifactNature.CPP) else null)
         }
 

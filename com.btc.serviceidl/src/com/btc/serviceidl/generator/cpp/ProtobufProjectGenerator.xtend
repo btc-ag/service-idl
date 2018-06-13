@@ -59,19 +59,21 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES + ".cpp"
 
         // sub-folder "./include"
-        file_system_access.generateFile(include_path.append(export_header_file_name).toString, generateExportHeader())
+        file_system_access.generateFile(include_path.append(export_header_file_name).toString, ArtifactNature.CPP.label,
+            generateExportHeader())
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
 
         if (module.containsTypes)
         {
             val codec_header_name = GeneratorUtil.getCodecName(module).h
-            file_system_access.generateFile(include_path.append(codec_header_name).toString, generateHCodec(module))
+            file_system_access.generateFile(include_path.append(codec_header_name).toString, ArtifactNature.CPP.label,
+                generateHCodec(module))
             projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, codec_header_name)
         }
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
             val codec_header_name = GeneratorUtil.getCodecName(interface_declaration).h
-            file_system_access.generateFile(include_path.append(codec_header_name).toString,
+            file_system_access.generateFile(include_path.append(codec_header_name).toString, ArtifactNature.CPP.label,
                 generateHCodec(interface_declaration))
             projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, codec_header_name)
         }

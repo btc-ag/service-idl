@@ -167,16 +167,14 @@ class JavaGenerator
    private def void generatePOM(EObject container)
    {
       val pom_path = makeProjectRootPath(container) + "pom".xml
-      file_system_access.generateFile(pom_path, POMGenerator.generatePOMContents(container, dependencies, 
+      file_system_access.generateFile(pom_path, ArtifactNature.JAVA.label, POMGenerator.generatePOMContents(container, dependencies, 
           if (protobuf_artifacts !== null && protobuf_artifacts.containsKey(container)) protobuf_artifacts.get(container) else null))
    }
 
    private def String makeProjectRootPath(EObject container)
    {
       // TODO change return type to Path or something similar
-      ArtifactNature.JAVA.label
-         + Constants.SEPARATOR_FILE
-         + qualified_name_provider.getFullyQualifiedName(container).toLowerCase
+      qualified_name_provider.getFullyQualifiedName(container).toLowerCase
          + Constants.SEPARATOR_FILE
    }
    
@@ -326,6 +324,7 @@ class JavaGenerator
       
       file_system_access.generateFile(
          makeProjectSourcePath(interface_declaration, ProjectType.CLIENT_CONSOLE, MavenArtifactType.TEST_RESOURCES, PathType.ROOT) + log4j_name,
+         ArtifactNature.JAVA.label,
          ConfigFilesGenerator.generateLog4jProperties()
       )
    }
@@ -355,6 +354,7 @@ class JavaGenerator
       
       file_system_access.generateFile(
          makeProjectSourcePath(interface_declaration, ProjectType.CLIENT_CONSOLE, MavenArtifactType.TEST_RESOURCES, PathType.ROOT) + log4j_name,
+         ArtifactNature.JAVA.label,
          ConfigFilesGenerator.generateLog4jProperties()
       )
    }
@@ -378,11 +378,13 @@ class JavaGenerator
       val package_name = MavenResolver.resolvePackage(interface_declaration, Optional.of(param_bundle.projectType))
       file_system_access.generateFile(
          makeProjectSourcePath(interface_declaration, ProjectType.SERVER_RUNNER, MavenArtifactType.TEST_RESOURCES, PathType.ROOT) + beans_name,
+         ArtifactNature.JAVA.label,
          ConfigFilesGenerator.generateSpringBeans(package_name, program_name)
       )
       
       file_system_access.generateFile(
          makeProjectSourcePath(interface_declaration, ProjectType.SERVER_RUNNER, MavenArtifactType.TEST_RESOURCES, PathType.ROOT) + log4j_name,
+         ArtifactNature.JAVA.label,
          ConfigFilesGenerator.generateLog4jProperties()
       )
    }
@@ -421,7 +423,7 @@ class JavaGenerator
        // TODO T can be InterfaceDeclaration or ModuleDeclaration, the metamodel should be changed to introduce a common base type of these
       reinitializeFile
       
-      file_system_access.generateFile(fileName,
+      file_system_access.generateFile(fileName, ArtifactNature.JAVA.label, 
          generateSourceFile(declarator,
          generateBody.apply(this.basicJavaSourceGenerator)
          )
