@@ -299,7 +299,7 @@ class JavaGenerator
       // common service fault handler factory
       // TODO the service fault handler factory is ServiceComm-specific and should therefore not be generated to the service API package
       val service_fault_handler_factory_name = interface_declaration.asServiceFaultHandlerFactory
-      generateJavaFile(src_root_path + param_bundle.projectType.getClassName(ArtifactNature.JAVA, service_fault_handler_factory_name).java,
+      generateJavaFile(src_root_path + service_fault_handler_factory_name.java,
           interface_declaration, [basicJavaSourceGenerator|new ServiceFaultHandlerFactoryGenerator(basicJavaSourceGenerator).generateServiceFaultHandlerFactory(service_fault_handler_factory_name, interface_declaration ).toString]
       )
    }   

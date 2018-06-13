@@ -273,7 +273,7 @@ class ProtobufCodecGenerator
                      throw new NullPointerException();
                
                   «FOR data_type : data_types»
-                      if (encodedData instanceof «ProtobufUtil.resolveProtobuf(basicJavaSourceGenerator, data_type, Optional.empty)»)
+                      if (encodedData instanceof «ProtobufUtil.resolveProtobuf(typeResolver, data_type, Optional.empty)»)
                       {
                          «makeDecode(data_type)»
                       }
@@ -417,7 +417,7 @@ class ProtobufCodecGenerator
 
     def resolveProtobuf(EObject object, Optional<ProtobufType> optionaProtobufTypel)
     {
-        ProtobufUtil.resolveProtobuf(basicJavaSourceGenerator, object, optionaProtobufTypel)
+        ProtobufUtil.resolveProtobuf(typeResolver, object, optionaProtobufTypel)
     }
 
 }

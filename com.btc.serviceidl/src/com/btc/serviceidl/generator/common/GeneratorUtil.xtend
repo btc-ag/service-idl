@@ -69,6 +69,7 @@ class GeneratorUtil
         }
         else if (artifactNature == ArtifactNature.JAVA)
         {
+            // TODO this must be changed... prefixing "com" is not appropriate in general
             if (module.eContainer === null || (module.eContainer instanceof IDLSpecification))
                 Arrays.asList("com", module.name)
             else

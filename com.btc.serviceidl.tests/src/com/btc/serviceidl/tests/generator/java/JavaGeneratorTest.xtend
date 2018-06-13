@@ -40,15 +40,15 @@ class JavaGeneratorTest extends AbstractGeneratorTest
             "java/btc.prins.infrastructure.servicehost.demo.api.keyvaluestore/"
         val directory = baseDirectory +
             "src/main/java/com/btc/prins/infrastructure/servicehost/demo/api/keyvaluestore/serviceapi/"
-        val contents = ImmutableMap.of(directory + "KeyValueStore.java", '''
+        val contents = ImmutableMap.of(directory + "IKeyValueStore.java", '''
             package com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.serviceapi;
             
             import java.util.UUID;
             
-            public interface KeyValueStore {
+            public interface IKeyValueStore {
                 UUID TypeGuid = UUID.fromString("384E277A-C343-4F37-B910-C2CE6B37FC8E");
             }
-        ''', directory + "KeyValueStoreServiceFaultHandlerFactory.java", 
+        ''', directory + "KeyValueStoreServiceFaultHandlerFactory.java", // TODO this should not be placed in this module!
         '''
         package com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.serviceapi;
         

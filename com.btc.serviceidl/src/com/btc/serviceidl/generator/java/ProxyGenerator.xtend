@@ -90,10 +90,8 @@ class ProxyGenerator
     private def generateFunction(FunctionDeclaration function, ResolvedName api_name,
         InterfaceDeclaration interface_declaration)
     {
-        val protobuf_request = resolveProtobuf(basicJavaSourceGenerator, interface_declaration,
-            Optional.of(ProtobufType.REQUEST))
-        val protobuf_response = resolveProtobuf(basicJavaSourceGenerator, interface_declaration,
-            Optional.of(ProtobufType.RESPONSE))
+        val protobuf_request = resolveProtobuf(typeResolver, interface_declaration, Optional.of(ProtobufType.REQUEST))
+        val protobuf_response = resolveProtobuf(typeResolver, interface_declaration, Optional.of(ProtobufType.RESPONSE))
         val is_void = function.returnedType.isVoid
         val is_sync = function.sync
         val return_type = (if (is_void) "Void" else basicJavaSourceGenerator.toText(function.returnedType) )
@@ -117,13 +115,13 @@ class ProxyGenerator
                       «val is_sequence = param.paramType.isSequenceType»
                       «val is_failable = is_sequence && param.paramType.isFailable»
                       «val method_name = '''«IF is_sequence»addAll«ELSE»set«ENDIF»«param.paramName.asProtobufName»'''»
-                  .«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(basicJavaSourceGenerator, param.paramType, Optional.empty)») «ENDIF»«codec».encode«IF is_failable»Failable«ENDIF»(«ENDIF»«param.paramName»«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, param.paramType, interface_declaration)».class«ENDIF»«IF use_codec»)«ENDIF»)
+                  .«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(typeResolver, param.paramType, Optional.empty)») «ENDIF»«codec».encode«IF is_failable»Failable«ENDIF»(«ENDIF»«param.paramName»«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, param.paramType, interface_declaration)».class«ENDIF»«IF use_codec»)«ENDIF»)
                «ENDFOR»
                .build();
                
                «protobuf_request» request = «protobuf_request».newBuilder()
-                 .set«protobuf_function_name»«Constants.PROTOBUF_REQUEST»(request«function.name»)
-                 .build();
+              .set«protobuf_function_name»«Constants.PROTOBUF_REQUEST»(request«function.name»)
+              .build();
                
                «typeResolver.resolve("java.util.concurrent.Future")»<byte[]> requestFuture = «typeResolver.resolve("com.btc.cab.servicecomm.util.ClientEndpointExtensions")».RequestAsync(_endpoint, _serviceReference, _serializer, request);
                «typeResolver.resolve("java.util.concurrent.Callable")»<«return_type»> returnCallable = () -> {
@@ -162,8 +160,8 @@ class ProxyGenerator
                          return null; // it's a Void!
                      «ELSE»
                      «return_type» result = «IF use_codec»(«return_type») «codec».decode(«ENDIF»«IF is_byte || is_short || is_char»(«IF is_byte»byte«ELSEIF is_char»char«ELSE»short«ENDIF») «ENDIF»«response_name».get«protobuf_function_name»()«IF use_codec»)«ENDIF»;
-                   «ENDIF»
-                   «IF !is_void»return result;«ENDIF»
+               «ENDIF»
+               «IF !is_void»return result;«ENDIF»
                   };
             
                «IF !is_void || !is_sync»return «ENDIF»«typeResolver.resolve("com.btc.cab.commons.helper.AsyncHelper")».createAndRunFutureTask(returnCallable)«IF is_sync».get()«ENDIF»;

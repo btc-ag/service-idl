@@ -1,13 +1,13 @@
 /*********************************************************************
-* \author see AUTHORS file
-* \copyright 2015-2018 BTC Business Technology Consulting AG and others
-*
-* This program and the accompanying materials are made
-* available under the terms of the Eclipse Public License 2.0
-* which is available at https://www.eclipse.org/legal/epl-2.0/
-*
-* SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+ * \author see AUTHORS file
+ * \copyright 2015-2018 BTC Business Technology Consulting AG and others
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
+ **********************************************************************/
 package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.common.GeneratorUtil
@@ -32,40 +32,60 @@ import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufUtil
 {
-    def public static ResolvedName resolveProtobuf(BasicJavaSourceGenerator basicJavaSourceGenerator, EObject object,
-        Optional<ProtobufType> protobuf_type)
+    def public static ResolvedName resolveProtobuf(TypeResolver typeResolver, EObject object,
+        Optional<ProtobufType> optProtobufType)
     {
         if (object.isUUIDType)
-            return basicJavaSourceGenerator.typeResolver.resolve(object, ProjectType.PROTOBUF)
+            return typeResolver.resolve(object, ProjectType.PROTOBUF)
         else if (object.isAlias)
-            return resolveProtobuf(basicJavaSourceGenerator, object.ultimateType, protobuf_type)
+            return resolveProtobuf(typeResolver, object.ultimateType, optProtobufType)
         else if (object instanceof PrimitiveType)
-            return new ResolvedName(basicJavaSourceGenerator.toText(object), TransformType.PACKAGE)
-        else if (object instanceof AbstractType && (object as AbstractType).primitiveType !== null)
-            return resolveProtobuf(basicJavaSourceGenerator, (object as AbstractType).primitiveType, protobuf_type)
-        else if (object instanceof AbstractType && (object as AbstractType).referenceType !== null)
-            return resolveProtobuf(basicJavaSourceGenerator, (object as AbstractType).referenceType, protobuf_type)
+            return new ResolvedName(typeResolver.resolve(object).toString, TransformType.PACKAGE)
+        else if (object instanceof AbstractType)
+        {
+            if (object.primitiveType !== null)
+                return resolveProtobuf(typeResolver, object.primitiveType, optProtobufType)
+            else if (object.referenceType !== null)
+                return resolveProtobuf(typeResolver, object.referenceType, optProtobufType)
+        }
 
-        val is_function = (object instanceof FunctionDeclaration)
-        val is_interface = (object instanceof InterfaceDeclaration)
-        val scope_determinant = object.scopeDeterminant
+        typeResolver.addDependency(MavenResolver.resolveDependency(object))
+        return new ResolvedName(
+            MavenResolver.resolvePackage(object, Optional.of(ProjectType.PROTOBUF)) + Constants.SEPARATOR_PACKAGE +
+                getLocalName(object, optProtobufType), TransformType.PACKAGE)
+    }
 
-        var result = MavenResolver.resolvePackage(object, Optional.of(ProjectType.PROTOBUF))
-        result += Constants.SEPARATOR_PACKAGE
-        if (is_interface && Util.ensurePresentOrThrow(protobuf_type))
-            result += Names.plain(object) + "." + Names.plain(object) + "_" + protobuf_type.get.getName
-        else if (is_function && Util.ensurePresentOrThrow(protobuf_type))
-            result +=
-                Names.plain(scope_determinant) + "_" + protobuf_type.get.getName + "_" + Names.plain(object) + "_" +
-                    protobuf_type.get.getName
-        else if (scope_determinant instanceof ModuleDeclaration)
-            result += Constants.FILE_NAME_TYPES + "." + Names.plain(object)
+    private def static String getLocalName(EObject object, Optional<ProtobufType> optProtobufType)
+    {
+        val scopeDeterminant = object.scopeDeterminant
+
+        if (object instanceof InterfaceDeclaration && Util.ensurePresentOrThrow(optProtobufType))
+            getOuterClassName(object) + "." + Names.plain(object) + "_" + optProtobufType.get.getName
+        else if (object instanceof FunctionDeclaration && Util.ensurePresentOrThrow(optProtobufType))
+            Names.plain(scopeDeterminant) + "_" + optProtobufType.get.getName + "_" + Names.plain(object) + "_" +
+                optProtobufType.get.getName
+        else if (scopeDeterminant instanceof ModuleDeclaration)
+            Constants.FILE_NAME_TYPES + "." + Names.plain(object)
         else
-            result += Names.plain(scope_determinant) + "." + Names.plain(object)
+            getOuterClassName(scopeDeterminant) + "." + Names.plain(object)
+    }
 
-        val dependency = MavenResolver.resolveDependency(object)
-        basicJavaSourceGenerator.typeResolver.addDependency(dependency)
-        return new ResolvedName(result, TransformType.PACKAGE)
+    private def static String getOuterClassName(EObject scopeDeterminant)
+    {
+        Names.plain(scopeDeterminant) + (if (scopeDeterminant.interfaceWithElementWithSameName) "OuterClass" else "")
+    }
+
+    def public static boolean interfaceWithElementWithSameName(EObject scopeDeterminant)
+    {
+        if (scopeDeterminant instanceof InterfaceDeclaration)
+        {
+            val name = Names.plain(scopeDeterminant)
+            // TODO Not sure if this can really be true, while still producing valid generated code
+            // this might lead to other naming conflicts
+            return scopeDeterminant.contains.exists[Names.plain(it) == name]
+        }
+        else
+            false
     }
 
     def public static String asProtobufName(String name)
@@ -73,22 +93,30 @@ class ProtobufUtil
         name.toLowerCase.toFirstUpper
     }
 
-   // TODO reconsider placement of this method
-   def public static String resolveCodec(EObject object)
-   {
-      val ultimate_type = object.ultimateType
-      
-      val codec_name = ultimate_type.codecName
-      MavenResolver.resolvePackage(ultimate_type, Optional.of(ProjectType.PROTOBUF)) + TransformType.PACKAGE.separator + codec_name
-   }
-      
-   def public static String resolveFailableProtobufType(IQualifiedNameProvider qualified_name_provider, EObject element, EObject container)
-   {
-      val container_name = if (container instanceof InterfaceDeclaration) '''«container.name».''' else "" 
-      return MavenResolver.resolvePackage(container, Optional.of(ProjectType.PROTOBUF))
-         + TransformType.PACKAGE.separator
-         + ( if (container instanceof ModuleDeclaration) '''«Constants.FILE_NAME_TYPES».''' else "" )
-         + container_name
-         + GeneratorUtil.asFailable(element, container, qualified_name_provider)
-   }
+    // TODO reconsider placement of this method
+    def public static String resolveCodec(EObject object)
+    {
+        val ultimateType = object.ultimateType
+
+        MavenResolver.resolvePackage(ultimateType, Optional.of(ProjectType.PROTOBUF)) +
+            TransformType.PACKAGE.separator + ultimateType.codecName
+    }
+
+    def public static String resolveFailableProtobufType(IQualifiedNameProvider qualifiedNameProvider, EObject element,
+        EObject container)
+    {
+        return MavenResolver.resolvePackage(container, Optional.of(ProjectType.PROTOBUF)) +
+            TransformType.PACKAGE.separator + ( if (container instanceof ModuleDeclaration)
+                '''«Constants.FILE_NAME_TYPES».'''
+            else
+                "" ) + container.containerName + GeneratorUtil.asFailable(element, container, qualifiedNameProvider)
+    }
+
+    private def static String getContainerName(EObject container)
+    {
+        if (container instanceof InterfaceDeclaration)
+            '''«container.name».'''
+        else
+            ""
+    }
 }
