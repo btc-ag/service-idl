@@ -106,7 +106,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       generateVSProjectFiles(ProjectType.EXTERNAL_DB_IMPL, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)
    }
 
-   def private String generateCommonHxx(Iterable<StructDeclaration> common_types)
+   private def String generateCommonHxx(Iterable<StructDeclaration> common_types)
    {
       val basicCppGenerator = createBasicCppGenerator
       
@@ -114,7 +114,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       makeHxx(basicCppGenerator, file_content, false)
    }
    
-   def private String generateHxx(StructDeclaration struct)
+   private def String generateHxx(StructDeclaration struct)
    {
       val basicCppGenerator = createBasicCppGenerator
       
@@ -123,7 +123,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       makeHxx(basicCppGenerator, file_content, !underlying_types.empty)
    }
    
-   def private String generateODBTraits()
+   private def String generateODBTraits()
    {
       val basicCppGenerator = createBasicCppGenerator
       
@@ -132,7 +132,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       makeHxx(basicCppGenerator, file_content.toString, false)
    }
    
-   def private String makeHxx(BasicCppGenerator basicCppGenerator, String file_content, boolean use_common_types)
+   private def String makeHxx(BasicCppGenerator basicCppGenerator, String file_content, boolean use_common_types)
    {
       '''
       #pragma once

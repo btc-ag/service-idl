@@ -61,7 +61,7 @@ class CommandLineRunnerTest
         assertEquals(0, process.waitFor)
     }
 
-    def static Iterable<File> listFilesRecursively(File base)
+    static def Iterable<File> listFilesRecursively(File base)
     {
         if (base.directory)
             base.listFiles.map[it.listFilesRecursively].flatten

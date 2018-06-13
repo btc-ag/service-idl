@@ -224,7 +224,7 @@ class DispatcherGenerator extends BasicCppGenerator
             messagePart
     }
 
-    def private String makeEncodeResponse(EObject type, EObject container, String protobuf_name,
+    private def String makeEncodeResponse(EObject type, EObject container, String protobuf_name,
         Optional<String> output_param)
     {
         val api_input = if (output_param.present) output_param.get else "result"
@@ -330,7 +330,7 @@ class DispatcherGenerator extends BasicCppGenerator
         '''
     }
 
-    def private String makeDispatcherBaseTemplate(InterfaceDeclaration interface_declaration)
+    private def String makeDispatcherBaseTemplate(InterfaceDeclaration interface_declaration)
     {
         val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
         val protobuf_request = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)

@@ -26,7 +26,7 @@ class AssemblyResolver
         "Spring.Context.Support" -> "Spring.Core"
     }
 
-    def static String resolveReference(String namespace)
+    static def String resolveReference(String namespace)
     {
         val assembly = assemblies_mapper.get(namespace)
 

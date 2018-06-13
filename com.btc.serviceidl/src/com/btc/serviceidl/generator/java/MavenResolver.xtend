@@ -28,9 +28,9 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 class MavenResolver
 {
     // constants
-    val public static DEFAULT_VERSION = "0.0.1"
+    public static val DEFAULT_VERSION = "0.0.1"
 
-    def static MavenDependency resolveDependency(EObject element)
+    static def MavenDependency resolveDependency(EObject element)
     {
         val scope_determinant = Util.getScopeDeterminant(element)
         val name = resolvePackage(element, Optional.empty)
@@ -39,7 +39,7 @@ class MavenResolver
         return new MavenDependency.Builder().groupId(name).artifactId(name).version(version).build
     }
 
-    def static Optional<MavenDependency> resolveDependency(String class_name)
+    static def Optional<MavenDependency> resolveDependency(String class_name)
     {
         switch name : class_name.toLowerCase
         {
@@ -100,7 +100,7 @@ class MavenResolver
      * For a given element, which is expected to be either module or interface,
      * returns the appropriate version string (default is 0.0.1)
      */
-    def static String resolveVersion(EObject element)
+    static def String resolveVersion(EObject element)
     {
         if (element instanceof InterfaceDeclaration)
         {
@@ -110,7 +110,7 @@ class MavenResolver
         return DEFAULT_VERSION
     }
 
-    def static String resolvePackage(EObject element, Optional<ProjectType> project_type)
+    static def String resolvePackage(EObject element, Optional<ProjectType> project_type)
     {
         val scope_determinant = Util.getScopeDeterminant(element)
         return GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(Util.getModuleStack(scope_determinant)).build,

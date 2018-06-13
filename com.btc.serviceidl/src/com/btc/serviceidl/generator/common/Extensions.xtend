@@ -18,12 +18,12 @@ import com.btc.serviceidl.util.Util
 
 class Extensions
 {
-    def static ProjectType getProjectType(Builder param)
+    static def ProjectType getProjectType(Builder param)
     {
         param.read.getProjectType
     }
 
-    def static ProjectType getMainProjectType(EObject item)
+    static def ProjectType getMainProjectType(EObject item)
     {
         val scope_determinant = Util.getScopeDeterminant(item)
         if (scope_determinant instanceof InterfaceDeclaration)
@@ -39,7 +39,7 @@ class Extensions
      * Allows to print the given text for any object: useful, when we need
      * to resolve a type, but do not want/may not print the resulting string.
      */
-    def static String alias(ResolvedName object, String text)
+    static def String alias(ResolvedName object, String text)
     {
         text
     }

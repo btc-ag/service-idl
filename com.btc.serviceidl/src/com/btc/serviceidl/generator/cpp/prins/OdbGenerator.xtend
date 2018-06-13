@@ -125,7 +125,7 @@ class OdbGenerator
 
     }
 
-    def private dispatch String resolveODBType(PrimitiveType element)
+    private def dispatch String resolveODBType(PrimitiveType element)
     {
         if (element.integerType !== null)
         {
@@ -157,27 +157,27 @@ class OdbGenerator
         throw new IllegalArgumentException("Unknown PrimitiveType: " + element.class.toString)
     }
 
-    def private dispatch String resolveODBType(StructDeclaration element)
+    private def dispatch String resolveODBType(StructDeclaration element)
     {
         element.name
     }
 
-    def private dispatch String resolveODBType(AliasDeclaration element)
+    private def dispatch String resolveODBType(AliasDeclaration element)
     {
         resolveODBType(element.type)
     }
 
-    def private dispatch String resolveODBType(SequenceDeclaration element)
+    private def dispatch String resolveODBType(SequenceDeclaration element)
     {
         '''«resolveSymbol("std::vector")»<«resolveODBType(element.ultimateType)»>'''
     }
 
-    def private dispatch String resolveODBType(EnumDeclaration element)
+    private def dispatch String resolveODBType(EnumDeclaration element)
     {
         return "int"
     }
 
-    def private dispatch String resolveODBType(AbstractType element)
+    private def dispatch String resolveODBType(AbstractType element)
     {
         if (element.primitiveType !== null)
             return resolveODBType(element.primitiveType)
@@ -189,7 +189,7 @@ class OdbGenerator
         throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
     }
 
-    def private String makeODBColumn(MemberElementWrapper member, Set<String> existing_column_names)
+    private def String makeODBColumn(MemberElementWrapper member, Set<String> existing_column_names)
     {
         val column_name = member.name.toUpperCase
         val is_uuid = member.type.ultimateType.isUUIDType

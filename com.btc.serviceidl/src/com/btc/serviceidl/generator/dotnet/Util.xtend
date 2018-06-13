@@ -200,14 +200,14 @@ class Util
         element.primitiveType !== null && isNullable(element.primitiveType)
     }
 
-    def static String getLog4NetConfigFile(ParameterBundle param_bundle)
+    static def String getLog4NetConfigFile(ParameterBundle param_bundle)
     {
         GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.DOTNET, TransformType.PACKAGE).toLowerCase +
             ".log4net".config
 
     }
 
-    def static String makeDefaultValue(BasicCSharpSourceGenerator basicCSharpSourceGenerator, EObject element)
+    static def String makeDefaultValue(BasicCSharpSourceGenerator basicCSharpSourceGenerator, EObject element)
     {
         val typeResolver = basicCSharpSourceGenerator.typeResolver
         if (element instanceof PrimitiveType)
@@ -241,7 +241,7 @@ class Util
         return '''default(«basicCSharpSourceGenerator.toText(element, element)»)'''
     }
 
-    def static String makeReturnType(TypeResolver typeResolver, FunctionDeclaration function)
+    static def String makeReturnType(TypeResolver typeResolver, FunctionDeclaration function)
     {
         val is_void = function.returnedType.isVoid
         val is_sync = function.isSync
@@ -251,7 +251,7 @@ class Util
         '''«IF is_void»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»«ELSE»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»<«ENDIF»«effective_type»«IF !is_sync»>«ENDIF»«ENDIF»'''
     }
 
-    def static String resolveCodec(TypeResolver typeResolver, ParameterBundle param_bundle, EObject object)
+    static def String resolveCodec(TypeResolver typeResolver, ParameterBundle param_bundle, EObject object)
     {
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
 

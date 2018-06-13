@@ -60,7 +60,7 @@ class NuGetPackageResolver
 
     val nuget_packages = new HashSet<NuGetPackage>
 
-    def private static NuGetPackage resolvePackageInternal(String assemblyName)
+    private static def NuGetPackage resolvePackageInternal(String assemblyName)
     {
         val versions = validOrThrow(package_mapper.get(assemblyName), assemblyName, "package ID").map [
             new Pair(it, validOrThrow(version_mapper.get(it), it, "package version"))
@@ -74,7 +74,7 @@ class NuGetPackageResolver
 
     }
 
-    def private static <T> T validOrThrow(T value, String name, String info)
+    private static def <T> T validOrThrow(T value, String name, String info)
     {
         if (value === null)
             throw new IllegalArgumentException('''Inconsistent mapping! Not found: «info» of «name»!''')

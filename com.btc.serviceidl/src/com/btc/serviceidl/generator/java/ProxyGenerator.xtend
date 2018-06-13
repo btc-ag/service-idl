@@ -35,7 +35,7 @@ class ProxyGenerator
 {
     val BasicJavaSourceGenerator basicJavaSourceGenerator
 
-    def private getTypeResolver()
+    private def getTypeResolver()
     {
         basicJavaSourceGenerator.typeResolver
     }
@@ -195,7 +195,7 @@ class ProxyGenerator
        }
     «ENDIF»'''
 
-    def private String handleOutputParameter(ParameterElement element, String source_name, String target_name)
+    private def String handleOutputParameter(ParameterElement element, String source_name, String target_name)
     {
         val ultimate_type = element.paramType.ultimateType
         if (!(ultimate_type instanceof StructDeclaration))

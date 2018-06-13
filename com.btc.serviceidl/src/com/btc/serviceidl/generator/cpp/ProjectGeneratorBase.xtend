@@ -40,7 +40,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
 
     val ISourceGenerationStrategy sourceGenerationStrategy
 
-    def protected void generate()
+    protected def void generate()
     {
         // TODO check how to reflect this special handling of EXTERNAL_DB_IMPL
 //        if (project_type != ProjectType.EXTERNAL_DB_IMPL) // for ExternalDBImpl, keep both C++ and ODB artifacts
@@ -63,7 +63,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         }
     }
 
-    def private void generateProject(ProjectType pt, InterfaceDeclaration interface_declaration, IPath project_path,
+    private def void generateProject(ProjectType pt, InterfaceDeclaration interface_declaration, IPath project_path,
         String export_header_file_name)
     {
         val builder = new ParameterBundle.Builder(param_bundle)
@@ -97,7 +97,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
     }
 
     // TODO move this somewhere else
-    def protected static generateCppImpl(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
+    protected static def generateCppImpl(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
         ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
     {
         new ImplementationStubGenerator(typeResolver, targetVersionProvider, paramBundle).generateCppImpl(
@@ -105,7 +105,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
     }
 
     // TODO move this somewhere else
-    def protected static generateInterface(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
+    protected static def generateInterface(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
         ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
     {
         new ServiceAPIGenerator(typeResolver, targetVersionProvider, paramBundle).

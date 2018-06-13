@@ -6,7 +6,7 @@ import com.btc.serviceidl.util.Constants
 import java.util.Map
 
 class TypeResolverExtensions {
-    def static String makeEventGUIDImplementations(extension TypeResolver typeResolver,
+    static def String makeEventGUIDImplementations(extension TypeResolver typeResolver,
         Iterable<StructDeclaration> structs)
     {        
       '''
@@ -27,7 +27,7 @@ class TypeResolverExtensions {
       '''
     }
 
-   def static Map<String, String> getDefaultExceptionRegistration(extension TypeResolver typeResolver)
+   static def Map<String, String> getDefaultExceptionRegistration(extension TypeResolver typeResolver)
    {
       // TODO these must not be registered, the default must be empty
       #{

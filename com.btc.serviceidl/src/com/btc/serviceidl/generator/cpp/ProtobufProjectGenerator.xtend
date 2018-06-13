@@ -92,7 +92,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
             projectFileSet)
     }
 
-    def private String generateHCodec(EObject owner)
+    private def String generateHCodec(EObject owner)
     {
         val basicCppGenerator = createBasicCppGenerator
         val file_content = new CodecGenerator(basicCppGenerator.typeResolver, targetVersionProvider, param_bundle).

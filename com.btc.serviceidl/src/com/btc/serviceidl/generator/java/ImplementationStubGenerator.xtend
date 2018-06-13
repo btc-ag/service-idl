@@ -22,7 +22,7 @@ class ImplementationStubGenerator
 {
     val BasicJavaSourceGenerator basicJavaSourceGenerator
 
-    def private getTypeResolver()
+    private def getTypeResolver()
     {
         basicJavaSourceGenerator.typeResolver
     }

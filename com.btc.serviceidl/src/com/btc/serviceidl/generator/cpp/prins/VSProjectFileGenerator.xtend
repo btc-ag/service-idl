@@ -61,7 +61,7 @@ class VSProjectFileGenerator
         }
     }
 
-    def private generateVcxprojUser(ProjectType project_type)
+    private def generateVcxprojUser(ProjectType project_type)
     {
         new VcxProjGenerator(
             param_bundle,
@@ -90,7 +90,7 @@ class VSProjectFileGenerator
         project_references.downcast
     }
 
-    def static private downcast(extension Iterable<IProjectReference> set)
+    static def private downcast(extension Iterable<IProjectReference> set)
     {
         set.map[it as VSSolution.ProjectReference].toSet
     }
@@ -101,7 +101,7 @@ class VSProjectFileGenerator
         projectSet as VSSolution
     }
 
-    def private generateVcxprojFilters()
+    private def generateVcxprojFilters()
     {
         new VcxProjGenerator(
             param_bundle,
@@ -112,7 +112,7 @@ class VSProjectFileGenerator
         ).generateVcxprojFilters()
     }
 
-    def private String generateVcxproj(String project_name)
+    private def String generateVcxproj(String project_name)
     {
         new VcxProjGenerator(
             param_bundle,

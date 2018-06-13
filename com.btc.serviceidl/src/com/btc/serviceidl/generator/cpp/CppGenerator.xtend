@@ -90,7 +90,7 @@ class CppGenerator
         }
     }
 
-    def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
+    private def void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
     {
         if (!module.virtual)
         {

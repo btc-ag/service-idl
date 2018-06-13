@@ -18,7 +18,7 @@ package com.btc.serviceidl.generator.dotnet
 
 final class DotNetAssemblies
 {
-    def static String getAssemblyForNamespace(String namespace, DotNetFrameworkVersion framework_version)
+    static def String getAssemblyForNamespace(String namespace, DotNetFrameworkVersion framework_version)
     {
         switch (framework_version)
         {
@@ -38,7 +38,7 @@ final class DotNetAssemblies
      * \remark The assembly list belongs to the .NET 4.0 framework originating from
      * %PROGRAMFILES(X86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\RedistList\FrameworkList.xml
      */
-    def private static String getNet40AssemblyForNamespace(String namespace)
+    private static def String getNet40AssemblyForNamespace(String namespace)
     {
         val dotnet_assemblies = #[
             "Accessibility",
@@ -169,7 +169,7 @@ final class DotNetAssemblies
      * \remark The assembly list belongs to the .NET 4.5 framework originating from
      * %PROGRAMFILES(X86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\RedistList\FrameworkList.xml
      */
-    def private static String getNet45AssemblyForNamespace(String namespace)
+    private static def String getNet45AssemblyForNamespace(String namespace)
     {
         val dotnet_assemblies = #[
             "Accessibility",

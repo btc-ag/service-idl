@@ -327,12 +327,12 @@ class VcxProjGenerator
         </Project>'''
     }
 
-    def private String disableSpecfificWarnings()
+    private def String disableSpecfificWarnings()
     {
         '''<DisableSpecificWarnings>4068;4355;4800;4290;%(DisableSpecificWarnings)</DisableSpecificWarnings>'''
     }
 
-    def private String ignoreGCCWarnings()
+    private def String ignoreGCCWarnings()
     {
         '''-x -Wno-unknown-pragmas -x -Wno-pragmas -x -Wno-literal-suffix -x -Wno-attributes'''
     }

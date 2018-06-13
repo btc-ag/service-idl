@@ -23,7 +23,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 class ImplementationStubGenerator extends GeneratorBase
 {
 
-    def private makeImplementatonStub(FunctionDeclaration function)
+    private def makeImplementatonStub(FunctionDeclaration function)
     {
         val is_void = function.returnedType.isVoid
 

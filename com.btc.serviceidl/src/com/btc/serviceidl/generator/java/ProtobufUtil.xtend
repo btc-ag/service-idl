@@ -55,7 +55,7 @@ class ProtobufUtil
                 getLocalName(object, optProtobufType), TransformType.PACKAGE)
     }
 
-    private def static String getLocalName(EObject object, Optional<ProtobufType> optProtobufType)
+    private static def String getLocalName(EObject object, Optional<ProtobufType> optProtobufType)
     {
         val scopeDeterminant = object.scopeDeterminant
 
@@ -70,7 +70,7 @@ class ProtobufUtil
             getOuterClassName(scopeDeterminant) + "." + Names.plain(object)
     }
 
-    private def static String getOuterClassName(EObject scopeDeterminant)
+    private static def String getOuterClassName(EObject scopeDeterminant)
     {
         Names.plain(scopeDeterminant) + (if (scopeDeterminant.interfaceWithElementWithSameName) "OuterClass" else "")
     }
@@ -112,7 +112,7 @@ class ProtobufUtil
                 "" ) + container.containerName + GeneratorUtil.asFailable(element, container, qualifiedNameProvider)
     }
 
-    private def static String getContainerName(EObject container)
+    private static def String getContainerName(EObject container)
     {
         if (container instanceof InterfaceDeclaration)
             '''«container.name».'''

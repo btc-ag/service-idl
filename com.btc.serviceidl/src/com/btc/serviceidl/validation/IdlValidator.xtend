@@ -380,7 +380,7 @@ class IdlValidator extends AbstractIdlValidator
         }
     }
 
-    def private boolean isConstructible(EObject element, Collection<EObject> questionable_types)
+    private def boolean isConstructible(EObject element, Collection<EObject> questionable_types)
     {
         val non_primitive_types = element.effectiveMembers.filter[!optional].filter[!Util.isSequenceType(type)].filter [
             !Util.isPrimitive(type)

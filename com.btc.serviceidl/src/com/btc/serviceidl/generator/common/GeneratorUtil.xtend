@@ -60,7 +60,7 @@ class GeneratorUtil
             result
     }
 
-    def private static Iterable<String> getEffectiveModuleName(ModuleDeclaration module, ArtifactNature artifactNature)
+    private static def Iterable<String> getEffectiveModuleName(ModuleDeclaration module, ArtifactNature artifactNature)
     {
         if (artifactNature == ArtifactNature.DOTNET && module.main)
         {
@@ -84,12 +84,12 @@ class GeneratorUtil
         return name.replaceAll(Pattern.quote(Constants.SEPARATOR_PACKAGE), targetTransformType.getSeparator)
     }
 
-    def static String switchSeparator(String name, TransformType sourceTransformType, TransformType targetTransformType)
+    static def String switchSeparator(String name, TransformType sourceTransformType, TransformType targetTransformType)
     {
         name.replaceAll(Pattern.quote(sourceTransformType.separator), targetTransformType.separator)
     }
 
-    def static Iterable<EObject> getFailableTypes(EObject container)
+    static def Iterable<EObject> getFailableTypes(EObject container)
     {
         var objects = new HashSet<EObject>
 
@@ -118,14 +118,14 @@ class GeneratorUtil
 
     static val FAILABLE_SEPARATOR = "_"
 
-    def static String asFailable(EObject element, EObject container, IQualifiedNameProvider qualifiedNameProvider)
+    static def String asFailable(EObject element, EObject container, IQualifiedNameProvider qualifiedNameProvider)
     {
         Arrays.asList(Arrays.asList("Failable"),
             qualifiedNameProvider.getFullyQualifiedName(container).segments, getTypeName(Util.getUltimateType(element),
                 qualifiedNameProvider).map[toFirstUpper]).flatten.join(FAILABLE_SEPARATOR)
     }
 
-    private def static Iterable<String> getTypeName(EObject type, IQualifiedNameProvider qualifiedNameProvider)
+    private static def Iterable<String> getTypeName(EObject type, IQualifiedNameProvider qualifiedNameProvider)
     {
         if (type.isPrimitive)
             Arrays.asList(Names.plain(type))
@@ -133,7 +133,7 @@ class GeneratorUtil
             qualifiedNameProvider.getFullyQualifiedName(type).segments
     }
 
-    def static Iterable<EObject> getEncodableTypes(EObject owner)
+    static def Iterable<EObject> getEncodableTypes(EObject owner)
     {
         val nestedTypes = new HashSet<EObject>
         nestedTypes.addAll(owner.eContents.filter(StructDeclaration))
@@ -142,12 +142,12 @@ class GeneratorUtil
         return nestedTypes.sortBy[e|Names.plain(e)]
     }
 
-    def static String getClassName(ArtifactNature artifactNature, ProjectType projectType, String basicName)
+    static def String getClassName(ArtifactNature artifactNature, ProjectType projectType, String basicName)
     {
         projectType.getClassName(artifactNature, basicName)
     }
 
-    def static boolean useCodec(EObject element, ArtifactNature artifactNature)
+    static def boolean useCodec(EObject element, ArtifactNature artifactNature)
     {
         if (element instanceof PrimitiveType)
         {
@@ -181,12 +181,12 @@ class GeneratorUtil
         return true;
     }
 
-    def static String getCodecName(EObject object)
+    static def String getCodecName(EObject object)
     {
         '''«getPbFileName(object)»«Constants.FILE_NAME_CODEC»'''
     }
 
-    def static String getPbFileName(EObject object)
+    static def String getPbFileName(EObject object)
     {
         if (object instanceof ModuleDeclaration)
             Constants.FILE_NAME_TYPES
@@ -214,7 +214,7 @@ class GeneratorUtil
         return paths
     }
 
-    def static asPath(ParameterBundle bundle, ArtifactNature nature)
+    static def asPath(ParameterBundle bundle, ArtifactNature nature)
     {
         new Path(getTransformedModuleName(bundle, nature, TransformType.FILE_SYSTEM))
     }

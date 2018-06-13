@@ -21,7 +21,7 @@ class FileTypeExtensions
     /**
      * C++ source file extension (*.cpp)
      */
-    def static String cpp(String file_name)
+    static def String cpp(String file_name)
     {
         file_name + ".cpp"
     }
@@ -29,7 +29,7 @@ class FileTypeExtensions
     /**
      * C++ header file extension (*.h)
      */
-    def static String h(String file_name)
+    static def String h(String file_name)
     {
         file_name + ".h"
     }
@@ -37,7 +37,7 @@ class FileTypeExtensions
     /**
      * Visual Studio C++ project file extension (*.vcxproj)
      */
-    def static String vcxproj(String file_name)
+    static def String vcxproj(String file_name)
     {
         file_name + ".vcxproj"
     }
@@ -45,7 +45,7 @@ class FileTypeExtensions
     /**
      * Visual Studio project filter file extension (*.filters)
      */
-    def static String filters(String file_name)
+    static def String filters(String file_name)
     {
         file_name + ".filters"
     }
@@ -53,7 +53,7 @@ class FileTypeExtensions
     /**
      * Visual Studio user setting file extension (*.user)
      */
-    def static String user(String file_name)
+    static def String user(String file_name)
     {
         file_name + ".user"
     }
@@ -61,7 +61,7 @@ class FileTypeExtensions
     /**
      * C# source file (*.cs)
      */
-    def static String cs(String file_name)
+    static def String cs(String file_name)
     {
         file_name + ".cs"
     }
@@ -69,7 +69,7 @@ class FileTypeExtensions
     /**
      * Visual Studio C# project file extension (*.csproj)
      */
-    def static String csproj(String file_name)
+    static def String csproj(String file_name)
     {
         file_name + ".csproj"
     }
@@ -77,7 +77,7 @@ class FileTypeExtensions
     /**
      * Visual Studio configuration file extension (*.config)
      */
-    def static String config(String file_name)
+    static def String config(String file_name)
     {
         file_name + ".config"
     }
@@ -85,7 +85,7 @@ class FileTypeExtensions
     /**
      * XML file (*.xml)
      */
-    def static String xml(String file_name)
+    static def String xml(String file_name)
     {
         file_name + ".xml"
     }
@@ -93,7 +93,7 @@ class FileTypeExtensions
     /**
      * ODB header file (*.hxx)
      */
-    def static String hxx(String file_name)
+    static def String hxx(String file_name)
     {
         file_name + ".hxx"
     }
@@ -101,7 +101,7 @@ class FileTypeExtensions
     /**
      * ODB generated inline header file (*.ixx)
      */
-    def static String ixx(String file_name)
+    static def String ixx(String file_name)
     {
         file_name + ".ixx"
     }
@@ -109,7 +109,7 @@ class FileTypeExtensions
     /**
      * ODB generated source file (*.cxx)
      */
-    def static String cxx(String file_name)
+    static def String cxx(String file_name)
     {
         file_name + ".cxx"
     }
@@ -117,7 +117,7 @@ class FileTypeExtensions
     /**
      * Protobuf file (*.proto)
      */
-    def static String proto(String file_name)
+    static def String proto(String file_name)
     {
         file_name + ".proto"
     }
@@ -125,7 +125,7 @@ class FileTypeExtensions
     /**
      * Apache Maven Project Object Model file (*.pom)
      */
-    def static String pom(String file_name)
+    static def String pom(String file_name)
     {
         file_name + ".pom"
     }
@@ -133,7 +133,7 @@ class FileTypeExtensions
     /**
      * Java source file (*.java)
      */
-    def static String java(String file_name)
+    static def String java(String file_name)
     {
         file_name + ".java"
     }
@@ -141,7 +141,7 @@ class FileTypeExtensions
     /**
      * Properties file (*.properties)
      */
-    def static String properties(String file_name)
+    static def String properties(String file_name)
     {
         file_name + ".properties"
     }
@@ -149,7 +149,7 @@ class FileTypeExtensions
     /**
      * Protoc-generated artifact (*.pb.XX)
      */
-    def static String pb(String file_name)
+    static def String pb(String file_name)
     {
         file_name + ".pb"
     }

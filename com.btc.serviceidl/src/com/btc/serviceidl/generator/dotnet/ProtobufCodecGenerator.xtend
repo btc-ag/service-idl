@@ -168,7 +168,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
         '''
     }
 
-    def private dispatch String makeEncode(EnumDeclaration element, EObject owner)
+    private def dispatch String makeEncode(EnumDeclaration element, EObject owner)
     {
         val api_type_name = resolve(element)
         val protobuf_type_name = resolve(element, ProjectType.PROTOBUF)
@@ -184,23 +184,23 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
         '''
     }
 
-    def private dispatch String makeEncode(StructDeclaration element, EObject owner)
+    private def dispatch String makeEncode(StructDeclaration element, EObject owner)
     {
         makeEncodeStructOrException(element, element.allMembers, element.typeDecls)
     }
 
-    def private dispatch String makeEncode(ExceptionDeclaration element, EObject owner)
+    private def dispatch String makeEncode(ExceptionDeclaration element, EObject owner)
     {
         makeEncodeStructOrException(element, element.allMembers, Arrays.asList)
     }
 
-    def private dispatch String makeEncode(AbstractType element, EObject owner)
+    private def dispatch String makeEncode(AbstractType element, EObject owner)
     {
         if (element.referenceType !== null)
             return makeEncode(element.referenceType, owner)
     }
 
-    def private String makeEncodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
+    private def String makeEncodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
         Iterable<AbstractTypeDeclaration> type_declarations)
     {
         val api_type_name = resolve(element)
@@ -243,7 +243,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
         '''
     }
 
-    def private dispatch String makeDecode(EnumDeclaration element, EObject owner)
+    private def dispatch String makeDecode(EnumDeclaration element, EObject owner)
     {
         val api_type_name = resolve(element)
         val protobuf_type_name = resolve(element, ProjectType.PROTOBUF)
@@ -259,17 +259,17 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
         '''
     }
 
-    def private dispatch String makeDecode(StructDeclaration element, EObject owner)
+    private def dispatch String makeDecode(StructDeclaration element, EObject owner)
     {
         makeDecodeStructOrException(element, element.allMembers, element.typeDecls)
     }
 
-    def private dispatch String makeDecode(ExceptionDeclaration element, EObject owner)
+    private def dispatch String makeDecode(ExceptionDeclaration element, EObject owner)
     {
         makeDecodeStructOrException(element, element.allMembers, Arrays.asList)
     }
 
-    def private String makeDecodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
+    private def String makeDecodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
         Iterable<AbstractTypeDeclaration> type_declarations)
     {
         val api_type_name = resolve(element)
@@ -304,7 +304,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
         '''
     }
 
-    def private dispatch String makeDecode(AbstractType element, EObject owner)
+    private def dispatch String makeDecode(AbstractType element, EObject owner)
     {
         if (element.referenceType !== null)
             return makeDecode(element.referenceType, owner)

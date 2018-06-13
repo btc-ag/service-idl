@@ -110,41 +110,41 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
                 Optional.of(export_header))
         }
 
-        def private generateCppServiceAPI(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
+        private def generateCppServiceAPI(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
             ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
         {
             new ServiceAPIGenerator(typeResolver, targetVersionProvider, paramBundle).generateImplFileBody(
                 interface_declaration)
         }
 
-        def private generateCppProxy(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
+        private def generateCppProxy(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
             ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
         {
             new ProxyGenerator(typeResolver, targetVersionProvider, paramBundle).
                 generateImplementationFileBody(interface_declaration)
         }
 
-        def private generateCppTest(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
+        private def generateCppTest(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
             ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
         {
             new TestGenerator(typeResolver, targetVersionProvider, paramBundle).generateCppTest(interface_declaration)
         }
 
-        def private generateCppDispatcher(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
+        private def generateCppDispatcher(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
             ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
         {
             new DispatcherGenerator(typeResolver, targetVersionProvider, paramBundle).
                 generateImplementationFileBody(interface_declaration)
         }
 
-        def private generateHFileDispatcher(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
+        private def generateHFileDispatcher(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
             ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
         {
             new DispatcherGenerator(typeResolver, targetVersionProvider, paramBundle).
                 generateHeaderFileBody(interface_declaration)
         }
 
-        def private generateCppReflection(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
+        private def generateCppReflection(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
             ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
         {
             new ReflectionGenerator(typeResolver, targetVersionProvider, paramBundle).generateImplFileBody(

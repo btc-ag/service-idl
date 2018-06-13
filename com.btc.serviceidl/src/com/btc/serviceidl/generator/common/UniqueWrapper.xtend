@@ -35,7 +35,7 @@ class UniqueWrapper
         type = t
     }
 
-    def static UniqueWrapper from(EObject e)
+    static def UniqueWrapper from(EObject e)
     {
         new UniqueWrapper(e)
     }

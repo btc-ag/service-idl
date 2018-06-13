@@ -97,7 +97,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         file_system_access.generateFile(etc_path.append(ioc_file_name).toString, generateIoCServerRunner())
     }
 
-    def private String generateCppServerRunner(InterfaceDeclaration interface_declaration)
+    private def String generateCppServerRunner(InterfaceDeclaration interface_declaration)
     {
         val basicCppGenerator = createBasicCppGenerator
 
@@ -110,7 +110,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         '''
     }
 
-    def private generateIoCServerRunner()
+    private def generateIoCServerRunner()
     {
         // TODO for generating the IoC file, none of the arguments are required
         new ServerRunnerGenerator(createTypeResolver, targetVersionProvider, param_bundle).generateIoC()

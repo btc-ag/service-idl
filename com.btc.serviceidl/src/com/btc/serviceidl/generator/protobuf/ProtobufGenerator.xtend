@@ -127,7 +127,7 @@ class ProtobufGenerator
       }
    }
    
-   def private String generateModuleContent(ArtifactNature an, ModuleDeclaration module, Iterable<EObject> module_contents)
+   private def String generateModuleContent(ArtifactNature an, ModuleDeclaration module, Iterable<EObject> module_contents)
    {
       referenced_files.clear
       
@@ -146,7 +146,7 @@ class ProtobufGenerator
       return file_header + file_body
    }
    
-   def private void generateProtobufFile(ArtifactNature an, EObject container, String artifact_name, String file_content)
+   private def void generateProtobufFile(ArtifactNature an, EObject container, String artifact_name, String file_content)
    {
       param_bundle.reset(ProjectType.PROTOBUF)
       var project_path = an.label + Constants.SEPARATOR_FILE;
@@ -164,7 +164,7 @@ class ProtobufGenerator
       file_system_access.generateFile(project_path + artifact_name.proto, file_content)
    }
    
-   def private String getJavaProtoLocation(EObject container)
+   private def String getJavaProtoLocation(EObject container)
    {
       qualified_name_provider.getFullyQualifiedName(container).toLowerCase
          + Constants.SEPARATOR_FILE
@@ -176,7 +176,7 @@ class ProtobufGenerator
          + Constants.SEPARATOR_FILE
    }
    
-   def private String generateInterface(ArtifactNature an, InterfaceDeclaration interface_declaration)
+   private def String generateInterface(ArtifactNature an, InterfaceDeclaration interface_declaration)
    {
       var request_part_id = 1
       var response_part_id = 1
@@ -244,7 +244,7 @@ class ProtobufGenerator
       return file_header + file_body
    }
    
-   def private String generateFailable(ArtifactNature artifactNature, EObject container)
+   private def String generateFailable(ArtifactNature artifactNature, EObject container)
    {
       val failable_types = GeneratorUtil.getFailableTypes(container)
       if (!failable_types.empty)
@@ -270,7 +270,7 @@ class ProtobufGenerator
       }
    }
    
-   def private String generatePackageName(ArtifactNature artifact_nature, EObject container)
+   private def String generatePackageName(ArtifactNature artifact_nature, EObject container)
    {
       '''
       syntax = "proto2";
@@ -282,7 +282,7 @@ class ProtobufGenerator
       '''
    }
    
-   def private String generateImports(ArtifactNature artifact_nature, EObject container)
+   private def String generateImports(ArtifactNature artifact_nature, EObject container)
    {
       '''
       «FOR import_file : referenced_files»
@@ -291,7 +291,7 @@ class ProtobufGenerator
       '''
    }
    
-   def private String generateReturnType(ArtifactNature artifactNature, FunctionDeclaration function, EObject context, EObject container, AtomicInteger id)
+   private def String generateReturnType(ArtifactNature artifactNature, FunctionDeclaration function, EObject context, EObject container, AtomicInteger id)
    {
       val element = function.returnedType
       '''
@@ -309,7 +309,7 @@ class ProtobufGenerator
       '''
    }
    
-   def private dispatch String toText(StructDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
+   private def dispatch String toText(StructDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
       if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
          '''
@@ -332,7 +332,7 @@ class ProtobufGenerator
       }
    }
    
-   def private dispatch String toText(ExceptionDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
+   private def dispatch String toText(ExceptionDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
       if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
          '''
@@ -348,7 +348,7 @@ class ProtobufGenerator
          '''«resolve(artifactNature, element, context, container)»'''
    }
    
-   def private dispatch String toText(MemberElementWrapper element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
+   private def dispatch String toText(MemberElementWrapper element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
       '''
       «IF element.isOptional && !Util.isSequenceType(element.type)»
@@ -363,7 +363,7 @@ class ProtobufGenerator
       '''
    }
    
-   def private String makeSequence(ArtifactNature artifactNature, EObject nested_type, boolean is_failable, EObject context, EObject container, String name, AtomicInteger id)
+   private def String makeSequence(ArtifactNature artifactNature, EObject nested_type, boolean is_failable, EObject context, EObject container, String name, AtomicInteger id)
    {
       '''
       «IF is_failable»
@@ -375,12 +375,12 @@ class ProtobufGenerator
       '''
    }
    
-   def private dispatch String toText(SequenceDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
+   private def dispatch String toText(SequenceDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
       '''«makeSequence(artifactNature, Util.getUltimateType(element.type), element.failable, context, container, Names.plain(context), id)»'''
    }
    
-   def private dispatch String toText(TupleDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
+   private def dispatch String toText(TupleDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
       val tuple_name = ( if (context instanceof TupleDeclaration || context instanceof SequenceDeclaration) "Tuple" else Names.plain(context).toFirstUpper ) + "Wrapper"
       
@@ -400,7 +400,7 @@ class ProtobufGenerator
       '''
    }
    
-   def private dispatch String toText(ParameterElement element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
+   private def dispatch String toText(ParameterElement element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
       val sequence = Util.tryGetSequence(element)
       '''
@@ -412,7 +412,7 @@ class ProtobufGenerator
       '''
    }
    
-   def private dispatch String toText(EnumDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
+   private def dispatch String toText(EnumDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
       if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
       {
@@ -430,7 +430,7 @@ class ProtobufGenerator
          '''«resolve(artifactNature, element, context, container)»'''
    }
    
-   def private dispatch String toText(AliasDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
+   private def dispatch String toText(AliasDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
       if (requiresNewMessageType(element.type))
       {
@@ -454,7 +454,7 @@ class ProtobufGenerator
       }
    }
    
-   def private dispatch String toText(AbstractType element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
+   private def dispatch String toText(AbstractType element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
       if (element.primitiveType !== null)
          return toText(element.primitiveType, artifactNature, context, container, id)
@@ -466,7 +466,7 @@ class ProtobufGenerator
       throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
    }
    
-   def private dispatch String toText(PrimitiveType element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
+   private def dispatch String toText(PrimitiveType element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
       id.incrementAndGet
       
@@ -497,7 +497,7 @@ class ProtobufGenerator
       throw new IllegalArgumentException("Unknown PrimitiveType: " + element.class.toString)
    }
    
-   def private boolean requiresNewMessageType(EObject element)
+   private def boolean requiresNewMessageType(EObject element)
    {
       return (element instanceof TupleDeclaration 
          || (element instanceof AbstractType && (element as AbstractType).collectionType !== null && requiresNewMessageType((element as AbstractType).collectionType))
@@ -505,7 +505,7 @@ class ProtobufGenerator
       )
    }
    
-   def private String resolve(ArtifactNature artifactNature, EObject object, EObject context, EObject container)
+   private def String resolve(ArtifactNature artifactNature, EObject object, EObject context, EObject container)
    {
       if (Util.isSequenceType(object))
          return toText(object, artifactNature, context, container, new AtomicInteger)
@@ -563,7 +563,7 @@ class ProtobufGenerator
       }
    }
    
-   def private String generateTypes(ArtifactNature artifactNature, EObject container, Collection<? extends EObject> contents)
+   private def String generateTypes(ArtifactNature artifactNature, EObject container, Collection<? extends EObject> contents)
    {
       '''
       «FOR typedef : contents.filter(AliasDeclaration).filter[requiresNewMessageType(type)] SEPARATOR System.lineSeparator»
@@ -584,7 +584,7 @@ class ProtobufGenerator
       '''
    }
    
-   def private String makeImportPath(ArtifactNature artifact_nature, EObject container, String file_name)
+   private def String makeImportPath(ArtifactNature artifact_nature, EObject container, String file_name)
     {
         if (artifact_nature == ArtifactNature.JAVA)
         {

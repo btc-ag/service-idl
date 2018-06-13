@@ -248,7 +248,7 @@ class IdlFormatter extends AbstractFormatter2
     * curly bracket of an arbitrary element; brackets themselves will be
     * positioned on separate lines.
     */
-   def private void indentBlock(EObject element, extension IFormattableDocument document)
+   private def void indentBlock(EObject element, extension IFormattableDocument document)
    {
       val start = element.regionFor.keyword("{").prepend[newLine]
       val end = element.regionFor.keyword("}")
@@ -258,7 +258,7 @@ class IdlFormatter extends AbstractFormatter2
    /**
     * Remove spaces before the last semicolon keyword for a given element.
     */
-   def private void formatClosingSemicolon(EObject element, extension IFormattableDocument document)
+   private def void formatClosingSemicolon(EObject element, extension IFormattableDocument document)
    {
       element.regionFor.keywords(";").last.surround[noSpace]
    }
@@ -266,7 +266,7 @@ class IdlFormatter extends AbstractFormatter2
    /**
     * Separate given elements by an empty line (except the last one).
     */
-   def private void separateByEmptyLines(Iterable<? extends EObject> elements, extension IFormattableDocument document)
+   private def void separateByEmptyLines(Iterable<? extends EObject> elements, extension IFormattableDocument document)
    {
       val lastElement = elements.last
       elements.filter[it !== lastElement].forEach[append[newLines = 2]]

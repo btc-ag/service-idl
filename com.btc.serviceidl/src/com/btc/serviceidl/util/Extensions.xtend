@@ -35,65 +35,65 @@ import org.eclipse.emf.ecore.EObject
 
 class Extensions
 {
-    def static boolean isByte(PrimitiveType primitive_type)
+    static def boolean isByte(PrimitiveType primitive_type)
     {
         (primitive_type !== null && primitive_type.integerType !== null && primitive_type.integerType.equals("byte"))
     }
 
-    def static boolean isInt16(PrimitiveType primitive_type)
+    static def boolean isInt16(PrimitiveType primitive_type)
     {
         (primitive_type !== null && primitive_type.integerType !== null && primitive_type.integerType.equals("int16"))
     }
 
-    def static boolean isInt32(PrimitiveType primitive_type)
+    static def boolean isInt32(PrimitiveType primitive_type)
     {
         (primitive_type !== null && primitive_type !== null && primitive_type.integerType !== null &&
             primitive_type.integerType.equals("int32"))
     }
 
-    def static boolean isInt64(PrimitiveType primitive_type)
+    static def boolean isInt64(PrimitiveType primitive_type)
     {
         (primitive_type !== null && primitive_type.integerType !== null && primitive_type.integerType.equals("int64"))
     }
 
-    def static boolean isChar(PrimitiveType primitive_type)
+    static def boolean isChar(PrimitiveType primitive_type)
     {
         (primitive_type !== null && primitive_type.charType !== null)
     }
 
-    def static boolean isString(PrimitiveType primitive_type)
+    static def boolean isString(PrimitiveType primitive_type)
     {
         (primitive_type !== null && primitive_type.stringType !== null)
     }
 
-    def static boolean isUUID(PrimitiveType primitive_type)
+    static def boolean isUUID(PrimitiveType primitive_type)
     {
         (primitive_type !== null && primitive_type.uuidType !== null)
     }
 
-    def static boolean isBoolean(PrimitiveType primitive_type)
+    static def boolean isBoolean(PrimitiveType primitive_type)
     {
         (primitive_type !== null && primitive_type.booleanType !== null)
     }
 
-    def static boolean isDouble(PrimitiveType primitive_type)
+    static def boolean isDouble(PrimitiveType primitive_type)
     {
         (primitive_type !== null && primitive_type.floatingPointType !== null &&
             primitive_type.floatingPointType.equals("double"))
     }
 
-    def static boolean isFloat(PrimitiveType primitive_type)
+    static def boolean isFloat(PrimitiveType primitive_type)
     {
         (primitive_type !== null && primitive_type.floatingPointType !== null &&
             primitive_type.floatingPointType.equals("float"))
     }
 
-    def static boolean containsTypes(ModuleDeclaration module)
+    static def boolean containsTypes(ModuleDeclaration module)
     {
         module.moduleComponents.exists[o|!(o instanceof ModuleDeclaration) && !(o instanceof InterfaceDeclaration)]
     }
 
-    def static boolean containsInterfaces(ModuleDeclaration module)
+    static def boolean containsInterfaces(ModuleDeclaration module)
     {
         module.moduleComponents.exists[o|o instanceof InterfaceDeclaration]
     }
@@ -104,7 +104,7 @@ class Extensions
      * 
      * \return true, if yes, false otherwise (also e.g. if such an owner could not be found at all)
      */
-    def static boolean isOutputParameter(EObject element)
+    static def boolean isOutputParameter(EObject element)
     {
         var container = element.eContainer
 
@@ -124,7 +124,7 @@ class Extensions
      * For a given interface, return all function it offers, i.e. own functions
      * as well as functions from all super classes.
      */
-    def static Iterable<FunctionDeclaration> functions(InterfaceDeclaration interface_declaration)
+    static def Iterable<FunctionDeclaration> functions(InterfaceDeclaration interface_declaration)
     {
         val function_collection = new HashSet<FunctionDeclaration>
 
@@ -141,7 +141,7 @@ class Extensions
      * For a given interface, return all function it offers, i.e. own functions
      * as well as functions from all super classes.
      */
-    def static Iterable<EventDeclaration> events(InterfaceDeclaration interface_declaration)
+    static def Iterable<EventDeclaration> events(InterfaceDeclaration interface_declaration)
     {
         val event_collection = new HashSet<EventDeclaration>
 
@@ -159,7 +159,7 @@ class Extensions
      * to resolve a type, but do not want/may not print the resulting string.
      */
     @Deprecated
-    def static String alias(Object object, String text)
+    static def String alias(Object object, String text)
     {
         text
     }
@@ -168,7 +168,7 @@ class Extensions
      * Requirements are all elements, which are essentially needed by the given
      * element, no matter if defined externally or internally.
      */
-    def static dispatch Collection<EObject> requirements(StructDeclaration element)
+    static def dispatch Collection<EObject> requirements(StructDeclaration element)
     {
         val result = new HashSet<EObject>(element.members.size)
         for (member : element.members)
@@ -179,7 +179,7 @@ class Extensions
         return result
     }
 
-    def static dispatch Collection<EObject> requirements(ExceptionDeclaration element)
+    static def dispatch Collection<EObject> requirements(ExceptionDeclaration element)
     {
         val result = new HashSet<EObject>(element.members.size)
         for (member : element.members)
@@ -190,12 +190,12 @@ class Extensions
         return result
     }
 
-    def static dispatch Collection<EObject> requirements(EObject element)
+    static def dispatch Collection<EObject> requirements(EObject element)
     {
         return #[] // default: none
     }
 
-    def private static dispatch void getUnderlyingTypes(StructDeclaration element, HashSet<EObject> all_types)
+    private static def dispatch void getUnderlyingTypes(StructDeclaration element, HashSet<EObject> all_types)
     {
         for (type : element.members)
         {
@@ -204,7 +204,7 @@ class Extensions
         }
     }
 
-    def private static dispatch void getUnderlyingTypes(AliasDeclaration element, HashSet<EObject> all_types)
+    private static def dispatch void getUnderlyingTypes(AliasDeclaration element, HashSet<EObject> all_types)
     {
         val type = Util.getUltimateType(element)
 
@@ -215,7 +215,7 @@ class Extensions
             all_types.add(type)
     }
 
-    def private static dispatch void getUnderlyingTypes(ExceptionDeclaration element, HashSet<EObject> all_types)
+    private static def dispatch void getUnderlyingTypes(ExceptionDeclaration element, HashSet<EObject> all_types)
     {
         for (type : element.members)
         {
@@ -224,17 +224,17 @@ class Extensions
         }
     }
 
-    def private static dispatch void getUnderlyingTypes(EObject element, HashSet<EObject> all_types)
+    private static def dispatch void getUnderlyingTypes(EObject element, HashSet<EObject> all_types)
     {
         // do nothing by default
     }
 
-    def static boolean isAllUpperCase(String text)
+    static def boolean isAllUpperCase(String text)
     {
         return text.chars.allMatch(c|Character.isUpperCase(c))
     }
 
-    def static dispatch Collection<StructDeclaration> getBaseTypes(StructDeclaration element)
+    static def dispatch Collection<StructDeclaration> getBaseTypes(StructDeclaration element)
     {
         val base_types = new HashSet<StructDeclaration>
         var current_type = element.supertype
@@ -246,14 +246,14 @@ class Extensions
         return base_types
     }
 
-    def static dispatch Collection<InterfaceDeclaration> getBaseTypes(InterfaceDeclaration element)
+    static def dispatch Collection<InterfaceDeclaration> getBaseTypes(InterfaceDeclaration element)
     {
         val base_types = new HashSet<InterfaceDeclaration>
         collectBaseTypes(element, base_types)
         return base_types
     }
 
-    def private static void collectBaseTypes(InterfaceDeclaration element, HashSet<InterfaceDeclaration> base_types)
+    private static def void collectBaseTypes(InterfaceDeclaration element, HashSet<InterfaceDeclaration> base_types)
     {
         for (base_type : element.derivesFrom)
         {
@@ -265,7 +265,7 @@ class Extensions
         }
     }
 
-    def static dispatch Collection<AbstractException> getBaseTypes(ExceptionDeclaration element)
+    static def dispatch Collection<AbstractException> getBaseTypes(ExceptionDeclaration element)
     {
         val base_types = new HashSet<AbstractException>
         var current_type = element.supertype
@@ -284,7 +284,7 @@ class Extensions
      * For a given element, return all members it offers, i.e. own members
      * as well as members from all super classes.
      */
-    def static dispatch Iterable<MemberElementWrapper> allMembers(StructDeclaration element)
+    static def dispatch Iterable<MemberElementWrapper> allMembers(StructDeclaration element)
     {
         if (element.supertype !== null)
         {
@@ -299,7 +299,7 @@ class Extensions
         }
     }
 
-    def static dispatch Iterable<MemberElementWrapper> allMembers(ExceptionDeclaration element)
+    static def dispatch Iterable<MemberElementWrapper> allMembers(ExceptionDeclaration element)
     {
         if (element.supertype !== null)
         {
@@ -331,7 +331,7 @@ class Extensions
      * The result will be [mem1, mem2].
      * 
      */
-    def static dispatch Iterable<MemberElementWrapper> effectiveMembers(StructDeclaration element)
+    static def dispatch Iterable<MemberElementWrapper> effectiveMembers(StructDeclaration element)
     {
         val result = new ArrayList<MemberElementWrapper>
         result.addAll(element.members.map[e|e.wrapMember])
@@ -340,32 +340,32 @@ class Extensions
         return result
     }
 
-    def static dispatch Iterable<MemberElementWrapper> effectiveMembers(ExceptionDeclaration element)
+    static def dispatch Iterable<MemberElementWrapper> effectiveMembers(ExceptionDeclaration element)
     {
         return element.members.map[e|e.wrapMember]
     }
 
-    def static dispatch Iterable<MemberElementWrapper> effectiveMembers(EObject element)
+    static def dispatch Iterable<MemberElementWrapper> effectiveMembers(EObject element)
     {
         return #[] // default case: no members
     }
 
-    def private static dispatch MemberElementWrapper wrapMember(MemberElement member)
+    private static def dispatch MemberElementWrapper wrapMember(MemberElement member)
     {
         return new MemberElementWrapper(member)
     }
 
-    def private static dispatch MemberElementWrapper wrapMember(StructDeclaration struct)
+    private static def dispatch MemberElementWrapper wrapMember(StructDeclaration struct)
     {
         return new MemberElementWrapper(struct)
     }
 
-    def private static dispatch MemberElementWrapper wrapMember(EnumDeclaration enum_declaration)
+    private static def dispatch MemberElementWrapper wrapMember(EnumDeclaration enum_declaration)
     {
         return new MemberElementWrapper(enum_declaration)
     }
 
-    def static namedEvents(InterfaceDeclaration interfaceDeclaration)
+    static def namedEvents(InterfaceDeclaration interfaceDeclaration)
     {
         // TODO the events function also includes inherited events, check whether these 
         // should be included here as well. Adjust naming of the methods. 

@@ -291,7 +291,7 @@ class BasicCppGenerator
             toUpperCase + Constants.SEPARATOR_CPP_HEADER + "EXPORT"
     }
 
-    def private String makeBaseExceptionType(ExceptionDeclaration exception)
+    private def String makeBaseExceptionType(ExceptionDeclaration exception)
     {
         '''«IF exception.supertype === null»«resolveSymbol("BTC::Commons::Core::Exception")»«ELSE»«resolve(exception.supertype)»«ENDIF»'''
     }

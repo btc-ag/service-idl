@@ -39,7 +39,7 @@ class FeatureProfile<T extends EObject>
             evaluate(c)
     }
 
-    def private void evaluate(T element)
+    private def void evaluate(T element)
     {
         var contents = element.eAllContents.toList
         contents.add(element)

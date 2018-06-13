@@ -39,7 +39,7 @@ class ReferenceResolver
     static val MODULES_HEADER_INCLUDE_SEGMENT = "include"
     static val MODULES_MODULE_NAME_PREFIX = "BTC.PRINS."
 
-    def static VSProjectInfo getProjectReference(HeaderResolver.GroupedHeader header)
+    static def VSProjectInfo getProjectReference(HeaderResolver.GroupedHeader header)
     {
         if (header.includeGroup == TypeResolver.MODULES_INCLUDE_GROUP)
         {
@@ -53,7 +53,7 @@ class ReferenceResolver
         throw new IllegalArgumentException("Could not find project reference mapping for header: " + header.toString)
     }
 
-    public def static String modulesHeaderPathToModuleName(IPath headerPath)
+    static def String modulesHeaderPathToModuleName(IPath headerPath)
     {
         if (headerPath.segment(0) != MODULES_HEADER_PATH_PREFIX)
             throw new IllegalArgumentException(

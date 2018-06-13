@@ -162,7 +162,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
       '''
    }
    
-   def private String generateHClassSignature(InterfaceDeclaration interface_declaration)
+   private def String generateHClassSignature(InterfaceDeclaration interface_declaration)
    {
       val is_api = paramBundle.projectType == ProjectType.SERVICE_API
       val is_proxy = paramBundle.projectType == ProjectType.PROXY
