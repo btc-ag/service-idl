@@ -79,7 +79,6 @@ class HeaderResolver
         "BTC::Commons::Core::UInt32" -> "Commons/Core/include/StdTypes.h",
         "BTC::Commons::Core::UniquePtr" -> "Commons/Core/include/UniquePtr.h",
         "BTC::Commons::Core::UnsupportedOperationException" -> "Commons/Core/include/UnsupportedOperationException.h",
-        "BTC::Commons::Core::Vector" -> "Commons/Core/include/Vector.h",
         "BTC::Commons::CoreExtras::CDefaultObservable" -> "Commons/CoreExtras/include/CDefaultObservable.h",
         "BTC::Commons::CoreExtras::FailableHandle" -> "Commons/CoreExtras/include/FailableHandle.h",
         "BTC::Commons::CoreExtras::Future" -> "Commons/CoreExtras/include/Future.h",
@@ -92,6 +91,7 @@ class HeaderResolver
         "BTC::Commons::CoreExtras::ReflectedClass" -> "Commons/CoreExtras/include/ReflectedClass.h",
         "BTC::Commons::CoreExtras::StringBuilder" -> "Commons/CoreExtras/include/StringBuilder.h",
         "BTC::Commons::CoreExtras::UUID" -> "Commons/CoreExtras/include/UUID.h",
+        "BTC::Commons::CoreStd::Collection" -> "Commons/CoreStd/include/Collection.h",
         "BTC::Commons::CoreYacl::Context" -> "Commons/CoreYacl/include/Context.h",
         "BTC::Commons::FutureUtil::CreateDefaultAsyncInsertable" -> "Commons/FutureUtil/include/AsyncInsertable.h",
         "BTC::Commons::FutureUtil::GetOrCreateDefaultInsertable" -> "Commons/FutureUtil/include/AsyncInsertable.h",
@@ -114,6 +114,7 @@ class HeaderResolver
         "BTC::ServiceComm::Commons::CMessagePartPool" -> "ServiceComm/Commons/include/MessagePools.h",
         "BTC::ServiceComm::Commons::ConstMessagePartPtr" -> "ServiceComm/Commons/include/IMessagePart.h",
         "BTC::ServiceComm::Commons::ConstSharedMessageSharedPtr" -> "ServiceComm/Commons/include/CSharedMessage.h",
+        "BTC::ServiceComm::Commons::EndpointIdentity" -> "ServiceComm/Commons/include/EndpointIdentity.h", // from SC 0.11
         "BTC::ServiceComm::Commons::IMessagePartPool" -> "ServiceComm/Commons/include/IMessagePartPool.h",
         "BTC::ServiceComm::Commons::MessageMovingPtr" -> "ServiceComm/Commons/include/CMessage.h",
         "BTC::ServiceComm::Commons::MessagePtr" -> "ServiceComm/Commons/include/CMessage.h",

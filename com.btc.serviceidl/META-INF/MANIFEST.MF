@@ -34,4 +34,5 @@ Export-Package: com.btc.serviceidl,
  com.btc.serviceidl.serializer,
  com.btc.serviceidl.services,
  com.btc.serviceidl.validation
-Import-Package: org.apache.log4j
+Import-Package: com.google.common.collect;version="15.0.0",
+ org.apache.log4j

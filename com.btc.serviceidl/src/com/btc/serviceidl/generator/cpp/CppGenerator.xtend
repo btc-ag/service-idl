@@ -36,6 +36,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
+import com.btc.serviceidl.generator.ITargetVersionProvider
 
 class CppGenerator
 {
@@ -52,6 +53,8 @@ class CppGenerator
     private var protobuf_project_references = new HashMap<String, Set<IProjectReference>>
 
     val smart_pointer_map = new HashMap<EObject, Collection<EObject>>
+
+    var ITargetVersionProvider targetVersionProvider
 
     def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp,
         IGenerationSettingsProvider generationSettingsProvider, Map<String, HashMap<String, String>> pr)
@@ -71,16 +74,18 @@ class CppGenerator
 
         vsSolution = generationSettingsProvider.projectSetFactory.create
         moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
+        targetVersionProvider = generationSettingsProvider
 
         // iterate module by module and generate included content
         for (module : idl.modules)
         {
             processModule(module, generationSettingsProvider.projectTypes)
-            
+
             // only for the top-level modules, produce a parent project file
             if (vsSolution instanceof CMakeProjectSet)
             {
-                new CMakeTopLevelProjectFileGenerator(file_system_access, vsSolution, module).generate()
+                new CMakeTopLevelProjectFileGenerator(file_system_access, generationSettingsProvider, vsSolution,
+                    module).generate()
             }
         }
     }
@@ -100,6 +105,7 @@ class CppGenerator
                     idl,
                     vsSolution,
                     moduleStructureStrategy,
+                    targetVersionProvider,
                     protobuf_project_references,
                     smart_pointer_map,
                     module
@@ -126,6 +132,7 @@ class CppGenerator
                         idl,
                         vsSolution,
                         moduleStructureStrategy,
+                        targetVersionProvider,
                         protobuf_project_references,
                         smart_pointer_map,
                         projectType,
@@ -143,6 +150,7 @@ class CppGenerator
                         idl,
                         vsSolution,
                         moduleStructureStrategy,
+                        targetVersionProvider,
                         protobuf_project_references,
                         smart_pointer_map,
                         module
@@ -162,6 +170,7 @@ class CppGenerator
                     idl,
                     vsSolution,
                     moduleStructureStrategy,
+                    targetVersionProvider,
                     protobuf_project_references,
                     smart_pointer_map,
                     module
@@ -179,6 +188,7 @@ class CppGenerator
                     idl,
                     vsSolution,
                     moduleStructureStrategy,
+                    targetVersionProvider,
                     protobuf_project_references,
                     smart_pointer_map,
                     module

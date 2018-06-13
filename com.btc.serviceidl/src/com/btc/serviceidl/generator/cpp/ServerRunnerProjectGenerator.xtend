@@ -31,18 +31,20 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
+import com.btc.serviceidl.generator.ITargetVersionProvider
 
 @Accessors(PROTECTED_GETTER)
 class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
 {
     new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
-        IModuleStructureStrategy moduleStructureStrategy,
+        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
         Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ModuleDeclaration module)
     {
         super(resource, file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
-            moduleStructureStrategy, protobuf_project_references, smart_pointer_map, ProjectType.SERVER_RUNNER, module)
+            moduleStructureStrategy, targetVersionProvider, protobuf_project_references, smart_pointer_map,
+            ProjectType.SERVER_RUNNER, module)
     }
 
     def generate()
@@ -99,8 +101,8 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
     {
         val basicCppGenerator = createBasicCppGenerator
 
-        val file_content = new ServerRunnerGenerator(basicCppGenerator.typeResolver, param_bundle).generateImplFileBody(
-            interface_declaration)
+        val file_content = new ServerRunnerGenerator(basicCppGenerator.typeResolver, targetVersionProvider,
+            param_bundle).generateImplFileBody(interface_declaration)
 
         '''
             «basicCppGenerator.generateIncludes(false)»
@@ -111,7 +113,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
     def private generateIoCServerRunner()
     {
         // TODO for generating the IoC file, none of the arguments are required
-        new ServerRunnerGenerator(createTypeResolver, param_bundle).generateIoC()
+        new ServerRunnerGenerator(createTypeResolver, targetVersionProvider, param_bundle).generateIoC()
     }
 
 }

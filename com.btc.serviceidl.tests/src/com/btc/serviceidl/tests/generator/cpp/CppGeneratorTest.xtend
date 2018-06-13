@@ -147,10 +147,10 @@ class CppGeneratorTest extends AbstractGeneratorTest
                 
                 build_requires = "CMakeMacros/0.3.latest@cab/testing"
                 requires = ( 
-                            ("BTC.CAB.Commons/1.8.latest@cab/testing"),
-                            ("BTC.CAB.IoC/1.7.latest@cab/testing"),
-                            ("BTC.CAB.Logging/1.7.latest@cab/testing"),
-                            ("BTC.CAB.ServiceComm/0.10.latest@cab/testing")
+                            ("BTC.CAB.Commons/1.9.latest@cab/testing"),
+                            ("BTC.CAB.IoC/1.8.latest@cab/testing"),
+                            ("BTC.CAB.Logging/1.8.latest@cab/testing"),
+                            ("BTC.CAB.ServiceComm/0.12.latest@cab/testing")
                             )
                 generators = "cmake"
                 short_paths = True

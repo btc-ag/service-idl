@@ -24,6 +24,7 @@ class LibResolver
     static val cab_lib_mapper = #{
         "Commons/Core" -> "BTC.CAB.Commons.Core.lib",
         "Commons/CoreExtras" -> "BTC.CAB.Commons.CoreExtras.lib",
+        "Commons/CoreStd" -> "BTC.CAB.Commons.CoreStd.lib",
         "Commons/CoreYacl" -> "BTC.CAB.Commons.CoreYacl.lib",
         "Commons/FutureUtil" -> "BTC.CAB.Commons.FutureUtil.lib",
         "Commons/TestFW/API/CPP" -> "BTC.CAB.Commons.TestFW.API.CPP.lib",
