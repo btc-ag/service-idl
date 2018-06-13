@@ -88,3 +88,9 @@ Ensure proper formatting of all files. For Java and Xtend, use the Eclipse forma
 
 Currently, this is not automatically checked and it is hard to check this manually, so please handle this responsibly.
 
+### Xtend code style
+
+There are some specific conventions regarding Xtend code style:
+* Access and storage class modifiers for members
+** Order: Always place the access modifier ('public', 'protected', 'private') first (if any), then maybe the storage class modifier 'static', and then 'def', 'override', 'val' or 'var'.
+** DO NOT specify the default access modifier explicitly. Attributes are private by default, methods are public by default.
