@@ -602,6 +602,7 @@ class ProtobufGenerator
                 build
             val root_path = GeneratorUtil.getTransformedModuleName(temp_bundle, artifact_nature, TransformType.FILE_SYSTEM)
 
+            // TODO this depends on the PRINS module structure!
             (if (artifact_nature == ArtifactNature.CPP) "modules/" else "") + root_path + "/gen/" + file_name.proto
         }
     }
