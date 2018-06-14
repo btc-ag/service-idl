@@ -52,8 +52,10 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
+import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.google.common.base.CaseFormat
 
 class ProtobufGenerator
 {
@@ -347,29 +349,35 @@ class ProtobufGenerator
          '''«resolve(artifactNature, element, context, container)»'''
    }
    
+   private static def protobufName(MemberElementWrapper element)
+   {
+       // TODO why is toLowerCase required here?
+       asProtobufName(element.name, CaseFormat.LOWER_UNDERSCORE).toLowerCase
+   }
+   
    private def dispatch String toText(MemberElementWrapper element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
       '''
       «IF element.isOptional && !Util.isSequenceType(element.type)»
-         optional «toText(element.type, artifactNature, element.type, container, new AtomicInteger)» «element.name.toLowerCase» = «id.incrementAndGet»;
+         optional «toText(element.type, artifactNature, element.type, container, new AtomicInteger)» «element.protobufName» = «id.incrementAndGet»;
       «ELSEIF Util.isSequenceType(element.type)»
-         «makeSequence(artifactNature, Util.getUltimateType(element.type), Util.isFailable(element.type), element.type, container, element.name, id)»
+         «makeSequence(artifactNature, Util.getUltimateType(element.type), Util.isFailable(element.type), element.type, container, element.protobufName, id)»
       «ELSEIF requiresNewMessageType(element.type)»
          «toText(element.type, artifactNature, element.type, container, id)»
       «ELSE»
-         required «toText(element.type, artifactNature, element.type, container, new AtomicInteger)» «element.name.toLowerCase» = «id.incrementAndGet»;
+         required «toText(element.type, artifactNature, element.type, container, new AtomicInteger)» «element.protobufName» = «id.incrementAndGet»;
       «ENDIF»
       '''
    }
    
-   private def String makeSequence(ArtifactNature artifactNature, EObject nested_type, boolean is_failable, EObject context, EObject container, String name, AtomicInteger id)
+   private def String makeSequence(ArtifactNature artifactNature, EObject nested_type, boolean is_failable, EObject context, EObject container, String protobufName, AtomicInteger id)
    {
       '''
       «IF is_failable»
          «val failable_type = resolve(artifactNature, nested_type, context, container).alias(GeneratorUtil.asFailable(nested_type, container, qualified_name_provider))»
-         «IF !(context instanceof InterfaceDeclaration || context instanceof AliasDeclaration)»repeated «failable_type» «name.toLowerCase» = «id.incrementAndGet»;«ENDIF»
+         «IF !(context instanceof InterfaceDeclaration || context instanceof AliasDeclaration)»repeated «failable_type» «protobufName» = «id.incrementAndGet»;«ENDIF»
       «ELSE»
-         repeated «toText(nested_type, artifactNature, context, container, new AtomicInteger)» «name.toLowerCase» = «id.incrementAndGet»;
+         repeated «toText(nested_type, artifactNature, context, container, new AtomicInteger)» «protobufName» = «id.incrementAndGet»;
       «ENDIF»
       '''
    }
