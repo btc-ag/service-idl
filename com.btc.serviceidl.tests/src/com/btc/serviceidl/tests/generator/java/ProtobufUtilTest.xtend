@@ -109,4 +109,46 @@ class ProtobufUtilTest
         ], Optional.of(ProtobufType.REQUEST));
         assertEquals("com.foo.bar.protobuf.BarOuterClass.Bar_Request", result.getFullyQualifiedName());
     }
+    
+    @Test
+    def void testAsProtobufNameFromUpperCamel()
+    {
+        assertEquals("UpperCamel", ProtobufUtil.asProtobufName("UpperCamel"))
+    }
+
+    @Test
+    def void testAsProtobufNameFromLowerCamel()
+    {
+        assertEquals("LowerCamel", ProtobufUtil.asProtobufName("lowerCamel"))
+    }
+
+    @Test
+    def void testAsProtobufNameFromUpperCamelAbbrev()
+    {
+        assertEquals("Abc", ProtobufUtil.asProtobufName("ABC"))
+    }
+
+    @Test
+    def void testAsProtobufNameFromLowerSnake()
+    {
+        assertEquals("LowerSnake", ProtobufUtil.asProtobufName("lower_snake"))
+    }
+
+    @Test
+    def void testAsProtobufNameFromMixedSnake()
+    {
+        assertEquals("MixedSnake", ProtobufUtil.asProtobufName("mixed_Snake"))
+    }
+    
+    @Test
+    def void testAsProtobufNameFromMixedSnakeAbbrev()
+    {
+        assertEquals("MixedAbc", ProtobufUtil.asProtobufName("mixed_ABC"))
+    }
+
+    @Test
+    def void testAsProtobufNameFromMixedSnakeAbbrev2()
+    {
+        assertEquals("PMw", ProtobufUtil.asProtobufName("p_MW"))
+    }
 }

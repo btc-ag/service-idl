@@ -28,15 +28,16 @@ import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
+import com.google.common.base.CaseFormat
 import java.util.Arrays
 import java.util.HashSet
 import java.util.regex.Pattern
+import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import org.eclipse.core.runtime.Path
 
 class GeneratorUtil
 {
@@ -219,4 +220,48 @@ class GeneratorUtil
         new Path(getTransformedModuleName(bundle, nature, TransformType.FILE_SYSTEM))
     }
 
+
+    static def String asProtobufName(String name, CaseFormat targetFormat) 
+    { 
+        // TODO instead of applying a heuristic, this should be configured explicitly, see 
+        // https://github.com/btc-ag/service-idl/issues/90
+        val caseFormat = if (name.contains('_'))
+                CaseFormat.LOWER_UNDERSCORE
+            else (if (Character.isUpperCase(name.charAt(0)))
+                CaseFormat.UPPER_CAMEL
+            else
+                CaseFormat.LOWER_CAMEL)
+
+        caseFormat.to(targetFormat, name.fixAbbreviation)       
+    }
+    
+    private def static String fixAbbreviation(String intermediate) {
+        val res = new StringBuilder
+        var StringBuilder currentAbbrev = null
+        for (c : intermediate.toCharArray)
+        {
+            if (Character.isUpperCase(c))
+            {
+                if (currentAbbrev !== null)
+                    currentAbbrev.append(Character.toLowerCase(c))
+                else
+                {
+                    currentAbbrev = new StringBuilder
+                    currentAbbrev.append(c)
+                }
+            }
+            else
+            {
+                if (currentAbbrev !== null)
+                {
+                    res.append(currentAbbrev)
+                    currentAbbrev = null
+                }
+                res.append(c)
+            }
+        }
+        if (currentAbbrev !== null) res.append(currentAbbrev)
+        
+        res.toString
+    }
 }
