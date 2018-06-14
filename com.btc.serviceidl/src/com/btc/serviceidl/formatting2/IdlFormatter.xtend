@@ -196,7 +196,7 @@ class IdlFormatter extends AbstractFormatter2
    
    def dispatch void format(SequenceDeclaration element, extension IFormattableDocument document)
    {
-      element.regionFor.keyword("<").prepend[oneSpace].append[noSpace]
+      element.regionFor.keyword("<").surround[noSpace]
       element.regionFor.keyword("failable").append[oneSpace]
       element.regionFor.keyword("raises").surround[oneSpace]
       element.regionFor.keywords(",").forEach[prepend[noSpace].append[oneSpace]]
@@ -209,7 +209,7 @@ class IdlFormatter extends AbstractFormatter2
    
    def dispatch void format(TupleDeclaration element, extension IFormattableDocument document)
    {
-      element.regionFor.keyword("<").prepend[oneSpace].append[noSpace]
+      element.regionFor.keyword("<").surround[noSpace]
       element.regionFor.keywords(",").forEach[prepend[noSpace].append[oneSpace]]
       element.regionFor.keyword(">").prepend[noSpace]
       element.types.forEach[format]
