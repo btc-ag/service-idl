@@ -40,3 +40,8 @@ Contributing
 ============
 
 See the [contribution guidelines](CONTRIBUTING.md).
+
+Frequently Asked Questions
+==========================
+
+See [FAQ](FAQ.md).
