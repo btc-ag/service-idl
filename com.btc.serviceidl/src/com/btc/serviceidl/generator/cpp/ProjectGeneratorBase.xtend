@@ -10,19 +10,18 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.util.Constants
+import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import org.eclipse.core.runtime.IPath
-import com.btc.serviceidl.generator.ITargetVersionProvider
 
 @Accessors(PROTECTED_GETTER)
 abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
@@ -40,7 +39,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
 
     val ISourceGenerationStrategy sourceGenerationStrategy
 
-    def protected void generate()
+    protected def void generate()
     {
         // TODO check how to reflect this special handling of EXTERNAL_DB_IMPL
 //        if (project_type != ProjectType.EXTERNAL_DB_IMPL) // for ExternalDBImpl, keep both C++ and ODB artifacts
@@ -63,7 +62,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         }
     }
 
-    def private void generateProject(ProjectType pt, InterfaceDeclaration interface_declaration, IPath project_path,
+    private def void generateProject(ProjectType pt, InterfaceDeclaration interface_declaration, IPath project_path,
         String export_header_file_name)
     {
         val builder = new ParameterBundle.Builder(param_bundle)
@@ -97,7 +96,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
     }
 
     // TODO move this somewhere else
-    def protected static generateCppImpl(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
+    protected static def generateCppImpl(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
         ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
     {
         new ImplementationStubGenerator(typeResolver, targetVersionProvider, paramBundle).generateCppImpl(
@@ -105,7 +104,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
     }
 
     // TODO move this somewhere else
-    def protected static generateInterface(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
+    protected static def generateInterface(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
         ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
     {
         new ServiceAPIGenerator(typeResolver, targetVersionProvider, paramBundle).

@@ -9,7 +9,7 @@ package com.btc.serviceidl
 class IdlStandaloneSetup extends IdlStandaloneSetupGenerated
 {
 
-    def static void doSetup()
+    static def void doSetup()
     {
         new IdlStandaloneSetup().createInjectorAndDoEMFRegistration()
     }

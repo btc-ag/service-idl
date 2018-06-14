@@ -473,12 +473,12 @@ class Util
      * This method generates a consistent name for exceptions used on all sides
      * of the ServiceComm framework in order to correctly resolve the type.
      */
-    def static String getCommonExceptionName(AbstractException exception, IQualifiedNameProvider name_provider)
+    static def String getCommonExceptionName(AbstractException exception, IQualifiedNameProvider name_provider)
     {
         return name_provider.getFullyQualifiedName(exception).toString
     }
 
-    def static <T> boolean ensurePresentOrThrow(Optional<T> optional)
+    static def <T> boolean ensurePresentOrThrow(Optional<T> optional)
     {
         if (!optional.present)
             throw new IllegalArgumentException("Optional value missing!")
@@ -486,7 +486,7 @@ class Util
         return true
     }
 
-    def static Iterable<AbstractException> getFailableExceptions(EObject container)
+    static def Iterable<AbstractException> getFailableExceptions(EObject container)
     {
         var exceptions = new HashSet<AbstractException>
 

@@ -71,7 +71,7 @@ class LibResolver
                 "BTC.CAB.ServiceComm.SQ.Default.lib", "BTC.CAB.ServiceComm.SQ.ImportAPI.lib"]
     }
 
-    def static Iterable<String> getCABLibs(IPath header_file)
+    static def Iterable<String> getCABLibs(IPath header_file)
     {
         val result = new HashSet<String>
 

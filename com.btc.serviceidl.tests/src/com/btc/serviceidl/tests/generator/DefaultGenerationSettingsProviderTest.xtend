@@ -10,27 +10,15 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator
 
-import com.btc.serviceidl.idl.IDLSpecification
-import com.btc.serviceidl.tests.IdlInjectorProvider
-import com.btc.serviceidl.tests.testdata.TestData
-import com.google.inject.Inject
-import org.eclipse.xtext.generator.GeneratorContext
-import org.eclipse.xtext.generator.IGenerator2
-import org.eclipse.xtext.generator.InMemoryFileSystemAccess
-import org.eclipse.xtext.testing.InjectWith
-import org.eclipse.xtext.testing.XtextRunner
-import org.eclipse.xtext.testing.util.ParseHelper
-import org.junit.Test
-import org.junit.runner.RunWith
-
-import static org.junit.Assert.*
 import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
-import com.btc.serviceidl.generator.IGenerationSettingsProvider
-import com.google.common.collect.ImmutableSet
+import com.btc.serviceidl.generator.Main
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.cpp.CppConstants
-import com.btc.serviceidl.generator.Main
+import com.google.common.collect.ImmutableSet
 import java.util.HashMap
+import org.junit.Test
+
+import static org.junit.Assert.*
 
 class DefaultGenerationSettingsProviderTest
 {

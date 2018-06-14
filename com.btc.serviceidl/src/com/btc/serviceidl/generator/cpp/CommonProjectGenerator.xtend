@@ -75,7 +75,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
         generateVSProjectFiles(ProjectType.COMMON, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)
     }
 
-    def private String generateHFileCommons(ModuleDeclaration module, String export_header)
+    private def String generateHFileCommons(ModuleDeclaration module, String export_header)
     {
         val basicCppGenerator = createBasicCppGenerator
         val file_content = new CommonsGenerator(basicCppGenerator.typeResolver, targetVersionProvider, param_bundle).
@@ -83,7 +83,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
         generateHeader(basicCppGenerator, moduleStructureStrategy, file_content.toString, Optional.of(export_header))
     }
 
-    def private String generateCppCommons(ModuleDeclaration module, String export_header)
+    private def String generateCppCommons(ModuleDeclaration module, String export_header)
     {
         val basicCppGenerator = createBasicCppGenerator
         val file_content = new CommonsGenerator(basicCppGenerator.typeResolver, targetVersionProvider, param_bundle).

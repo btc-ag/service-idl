@@ -67,7 +67,7 @@ class CMakeProjectFileGenerator
         project_references.downcast
     }
 
-    def static private downcast(extension Iterable<IProjectReference> set)
+    static def private downcast(extension Iterable<IProjectReference> set)
     {
         set.map[it as CMakeProjectSet.ProjectReference].toSet
     }
@@ -78,7 +78,7 @@ class CMakeProjectFileGenerator
         projectSet as CMakeProjectSet
     }
 
-    def private generateCMakeLists()
+    private def generateCMakeLists()
     {
         new CMakeGenerator(
             param_bundle,
@@ -89,7 +89,7 @@ class CMakeProjectFileGenerator
         ).generateCMakeLists(project_name, project_path)
     }
 
-    def private generateCMakeSet()
+    private def generateCMakeSet()
     {
         new CMakeGenerator(
             param_bundle,

@@ -162,7 +162,7 @@ class ProxyGenerator extends BasicCppGenerator {
         '''
     }
 
-   def private String makeDecodeResponse(EObject type, EObject container, String protobuf_name)
+   private def String makeDecodeResponse(EObject type, EObject container, String protobuf_name)
    {
       val use_codec = GeneratorUtil.useCodec(type, ArtifactNature.CPP)
       '''«IF use_codec»«typeResolver.resolveDecode(paramBundle, type, container)»( «ENDIF»concreteResponse.«protobuf_name»()«IF use_codec» )«ENDIF»;'''

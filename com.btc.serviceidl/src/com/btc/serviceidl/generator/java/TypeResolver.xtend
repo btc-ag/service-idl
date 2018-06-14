@@ -178,7 +178,7 @@ class TypeResolver
         }
     }
 
-    def private static String getObservableName(EventDeclaration event)
+    private static def String getObservableName(EventDeclaration event)
     {
         if (event.name === null)
             throw new IllegalArgumentException("No named observable for anonymous events!")

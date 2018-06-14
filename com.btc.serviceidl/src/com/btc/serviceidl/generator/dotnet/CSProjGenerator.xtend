@@ -19,7 +19,7 @@ import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import com.btc.serviceidl.generator.common.ArtifactNature
 
 class CSProjGenerator {
-  def static generateCSProj(String project_name, VSSolution vsSolution, ParameterBundle param_bundle, Iterable<String> referenced_assemblies, Iterable<NuGetPackage> nuget_packages, Map<String, String> project_references, Iterable<String> cs_files, Iterable<String> protobuf_files)
+  static def generateCSProj(String project_name, VSSolution vsSolution, ParameterBundle param_bundle, Iterable<String> referenced_assemblies, Iterable<NuGetPackage> nuget_packages, Map<String, String> project_references, Iterable<String> cs_files, Iterable<String> protobuf_files)
   {
       // Please do NOT edit line indents in the code below (even though they
       // may look misplaced) unless you are fully aware of what you are doing!!!
@@ -170,7 +170,7 @@ class CSProjGenerator {
       
   }
     
-    def static makeProtobufFilePath(ParameterBundle parameterBundle, String protobufFileBasename)
+    static def makeProtobufFilePath(ParameterBundle parameterBundle, String protobufFileBasename)
     {
         '''$(SolutionDir)/«GeneratorUtil.getTransformedModuleName(parameterBundle, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM)»/gen/«protobufFileBasename».proto'''
     }
@@ -180,7 +180,7 @@ class CSProjGenerator {
     * EXE, therefore here we have the chance to do some special handling to
     * retrieve the correct file extension of the reference.
     */
-   def private static String getReferenceExtension(String assembly)
+   private static def String getReferenceExtension(String assembly)
    {
       switch (assembly)
       {

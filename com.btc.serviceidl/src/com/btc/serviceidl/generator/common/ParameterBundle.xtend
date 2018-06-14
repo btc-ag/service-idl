@@ -94,7 +94,7 @@ class ParameterBundle
         projectType = builder.master_data.projectType
     }
 
-    def static Builder createBuilder(Iterable<ModuleDeclaration> module_stack)
+    static def Builder createBuilder(Iterable<ModuleDeclaration> module_stack)
     {
         val builder = new Builder
         builder.reset(module_stack)

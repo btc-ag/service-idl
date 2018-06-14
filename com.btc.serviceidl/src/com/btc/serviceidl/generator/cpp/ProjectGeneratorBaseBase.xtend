@@ -89,29 +89,29 @@ class ProjectGeneratorBaseBase
         this.param_bundle = param_bundle_builder.build
     }
 
-    def protected createTypeResolver()
+    protected def createTypeResolver()
     {
         createTypeResolver(this.param_bundle)
     }
 
-    def protected createTypeResolver(ParameterBundle param_bundle)
+    protected def createTypeResolver(ParameterBundle param_bundle)
     {
         new TypeResolver(qualified_name_provider, vsSolution, moduleStructureStrategy, project_references, cab_libs,
             smart_pointer_map)
     }
 
-    def protected createBasicCppGenerator()
+    protected def createBasicCppGenerator()
     {
         createBasicCppGenerator(this.param_bundle)
     }
 
-    def protected createBasicCppGenerator(ParameterBundle param_bundle)
+    protected def createBasicCppGenerator(ParameterBundle param_bundle)
     {
         new BasicCppGenerator(createTypeResolver(param_bundle), targetVersionProvider, param_bundle)
     }
 
     // TODO move this to com.btc.serviceidl.generator.cpp.prins resp. use a factory for the ProjectFileGenerator implementation
-    def protected void generateVSProjectFiles(ProjectType project_type, IPath project_path, String project_name,
+    protected def void generateVSProjectFiles(ProjectType project_type, IPath project_path, String project_name,
         ProjectFileSet projectFileSet)
     {
         if (vsSolution instanceof VSSolution)
@@ -137,17 +137,17 @@ class ProjectGeneratorBaseBase
     }
 
     // TODO move this to com.btc.serviceidl.generator.cpp.prins
-    def private generateDependencies()
+    private def generateDependencies()
     {
         new DependenciesGenerator(createTypeResolver, param_bundle).generate()
     }
 
-    def protected generateExportHeader()
+    protected def generateExportHeader()
     {
         new ExportHeaderGenerator(param_bundle).generateExportHeader()
     }
 
-    def static String generateHeader(BasicCppGenerator basicCppGenerator,
+    static def String generateHeader(BasicCppGenerator basicCppGenerator,
         IModuleStructureStrategy moduleStructureStrategy, String file_content, Optional<String> export_header)
     {
         '''
@@ -164,7 +164,7 @@ class ProjectGeneratorBaseBase
         '''
     }
 
-    def static String generateSource(BasicCppGenerator basicCppGenerator, String file_content,
+    static def String generateSource(BasicCppGenerator basicCppGenerator, String file_content,
         Optional<String> file_tail)
     {
         '''
@@ -176,7 +176,7 @@ class ProjectGeneratorBaseBase
         '''
     }
 
-    def protected IPath getProjectPath()
+    protected def IPath getProjectPath()
     {
         // TODO at least the "modules" part is PRINS-specific and should be determined by PrinsModuleStructureStrategy  
         new Path(ArtifactNature.CPP.label).append("modules").append(

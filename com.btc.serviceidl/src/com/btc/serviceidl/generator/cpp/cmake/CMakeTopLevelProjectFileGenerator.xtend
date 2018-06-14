@@ -1,19 +1,18 @@
 package com.btc.serviceidl.generator.cpp.cmake
 
+import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.idl.ModuleDeclaration
+import org.eclipse.core.runtime.Path
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.util.Constants
-import org.eclipse.core.runtime.Path
-import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.generator.cpp.CppConstants
-import com.btc.serviceidl.generator.IGenerationSettingsProvider
 
 @Accessors(NONE)
 class CMakeTopLevelProjectFileGenerator

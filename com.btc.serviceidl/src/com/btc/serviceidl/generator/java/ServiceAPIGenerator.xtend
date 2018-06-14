@@ -28,7 +28,7 @@ class ServiceAPIGenerator
     val BasicJavaSourceGenerator basicJavaSourceGenerator
     val ParameterBundle param_bundle
 
-    def private getTypeResolver()
+    private def getTypeResolver()
     {
         basicJavaSourceGenerator.typeResolver
     }

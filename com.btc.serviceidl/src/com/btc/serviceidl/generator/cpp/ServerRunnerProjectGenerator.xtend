@@ -10,6 +10,7 @@
  */
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
@@ -18,7 +19,6 @@ import com.btc.serviceidl.generator.cpp.prins.OdbConstants
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
-import com.btc.serviceidl.util.Constants
 import java.util.Arrays
 import java.util.Collection
 import java.util.Map
@@ -31,7 +31,6 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
-import com.btc.serviceidl.generator.ITargetVersionProvider
 
 @Accessors(PROTECTED_GETTER)
 class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
@@ -97,7 +96,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         file_system_access.generateFile(etc_path.append(ioc_file_name).toString, generateIoCServerRunner())
     }
 
-    def private String generateCppServerRunner(InterfaceDeclaration interface_declaration)
+    private def String generateCppServerRunner(InterfaceDeclaration interface_declaration)
     {
         val basicCppGenerator = createBasicCppGenerator
 
@@ -110,7 +109,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         '''
     }
 
-    def private generateIoCServerRunner()
+    private def generateIoCServerRunner()
     {
         // TODO for generating the IoC file, none of the arguments are required
         new ServerRunnerGenerator(createTypeResolver, targetVersionProvider, param_bundle).generateIoC()

@@ -16,26 +16,26 @@ import com.google.common.collect.ImmutableSet
 
 class TestExtensions
 {
-    def static <T> setOf(T... elements)  
+    static def <T> setOf(T... elements)  
     { ImmutableSet.copyOf(elements) }
 
-    def static <T> asSet(Iterable<T> iterable)  
+    static def <T> asSet(Iterable<T> iterable)  
     { ImmutableSet.copyOf(iterable) }
 
-    def static normalize(String arg)
+    static def normalize(String arg)
     { arg.replaceAll("\\s+", " ").trim }
 
-    def static assertEqualsNormalized(String expected, String actual)
+    static def assertEqualsNormalized(String expected, String actual)
     {
         assertEquals(expected.normalize, actual.normalize)
     }
 
-    def static assertEqualsNormalized(CharSequence expected, CharSequence actual)
+    static def assertEqualsNormalized(CharSequence expected, CharSequence actual)
     {
         assertEquals(expected.toString.normalize, actual.toString.normalize)
     }
 
-    def static void checkFile(InMemoryFileSystemAccess fsa, String headerLocation, String content)
+    static def void checkFile(InMemoryFileSystemAccess fsa, String headerLocation, String content)
     {
         assertTrue(headerLocation, fsa.textFiles.containsKey(headerLocation))
 

@@ -39,7 +39,7 @@ import static extension com.btc.serviceidl.util.Util.*
 
 class CppExtensions
 {
-    def static IPath getIncludeFilePath(EObject referenced_object, ProjectType project_type,
+    static def IPath getIncludeFilePath(EObject referenced_object, ProjectType project_type,
         IModuleStructureStrategy moduleStructureStrategy)
     {
         val scope_determinant = if (referenced_object instanceof InterfaceDeclaration)
@@ -62,7 +62,7 @@ class CppExtensions
      * forwardDeclarations collection, so that they can be handled in a specific
      * way.
      */
-    def static Iterable<TypeWrapper> getTopologicallySortedTypes(EObject owner)
+    static def Iterable<TypeWrapper> getTopologicallySortedTypes(EObject owner)
     {
         // aggregate enums, typedefs, structs and exceptions into the same collection
         // TODO change metamodel such that these types have a common supertype (besides EObject)
@@ -90,7 +90,7 @@ class CppExtensions
      * generation of ODB files to resolve dependencies by sorting the types in
      * the topological order.
      */
-    def static Iterable<TypeWrapper> resolveAllDependencies(Iterable<? extends EObject> elements)
+    static def Iterable<TypeWrapper> resolveAllDependencies(Iterable<? extends EObject> elements)
     {
         // construct a directed graph representation; a dependency relation between two
         // elements is represented as a pair X -> Y (meaning: X depends on Y)
@@ -110,7 +110,7 @@ class CppExtensions
     /**
      * Execute topological sorting based on Kahn's algorithm
      */
-    def private static Iterable<TypeWrapper> applyKahnsAlgorithm(HashSet<Pair<EObject, EObject>> graph,
+    private static def Iterable<TypeWrapper> applyKahnsAlgorithm(HashSet<Pair<EObject, EObject>> graph,
         List<EObject> independent_elements)
     {
         // list finally containing the sorted elements
@@ -180,7 +180,7 @@ class CppExtensions
      * headers are NOT among the predecessors, since they are resolved based
      * on the #include directive. 
      */
-    def static dispatch Iterable<EObject> predecessors(StructDeclaration element)
+    static def dispatch Iterable<EObject> predecessors(StructDeclaration element)
     {
         val result = new HashSet<EObject>(element.members.size)
         for (member : element.members)
@@ -195,12 +195,12 @@ class CppExtensions
         return result
     }
 
-    def static dispatch Iterable<EObject> predecessors(AliasDeclaration element)
+    static def dispatch Iterable<EObject> predecessors(AliasDeclaration element)
     {
         resolvePredecessor(element.type)
     }
 
-    def static dispatch Iterable<EObject> predecessors(ExceptionDeclaration element)
+    static def dispatch Iterable<EObject> predecessors(ExceptionDeclaration element)
     {
         val result = new HashSet<EObject>(element.members.size)
         for (member : element.members)
@@ -215,7 +215,7 @@ class CppExtensions
         return result
     }
 
-    def private static Iterable<EObject> resolvePredecessor(EObject element)
+    private static def Iterable<EObject> resolvePredecessor(EObject element)
     {
         val type = com.btc.serviceidl.util.Util.getUltimateType(element, false)
         if (declaredInternally(element, type))
@@ -224,18 +224,18 @@ class CppExtensions
             Arrays.asList
     }
 
-    def static dispatch Iterable<EObject> predecessors(EObject element)
+    static def dispatch Iterable<EObject> predecessors(EObject element)
     {
         return new ArrayList<EObject> // by default, never need an external include
     }
 
-    def static private boolean declaredInternally(EObject element, EObject type)
+    static def private boolean declaredInternally(EObject element, EObject type)
     {
         return (!(type instanceof PrimitiveType) && com.btc.serviceidl.util.Util.getScopeDeterminant(type) ==
             com.btc.serviceidl.util.Util.getScopeDeterminant(element))
     }
 
-    def private static dispatch void getUnderlyingTypes(StructDeclaration struct, HashSet<EObject> all_types)
+    private static def dispatch void getUnderlyingTypes(StructDeclaration struct, HashSet<EObject> all_types)
     {
         val contained_types = struct.members.filter [
             com.btc.serviceidl.util.Util.getUltimateType(type) instanceof StructDeclaration
@@ -252,7 +252,7 @@ class CppExtensions
         all_types.addAll(contained_types)
     }
 
-    def private static dispatch void getUnderlyingTypes(ExceptionDeclaration element, HashSet<EObject> all_types)
+    private static def dispatch void getUnderlyingTypes(ExceptionDeclaration element, HashSet<EObject> all_types)
     {
         val contained_types = element.members.filter [
             com.btc.serviceidl.util.Util.getUltimateType(type) instanceof ExceptionDeclaration
@@ -269,7 +269,7 @@ class CppExtensions
         all_types.addAll(contained_types)
     }
 
-    def private static dispatch void getUnderlyingTypes(EObject element, HashSet<EObject> all_types)
+    private static def dispatch void getUnderlyingTypes(EObject element, HashSet<EObject> all_types)
     {
         // default: no operation
     }

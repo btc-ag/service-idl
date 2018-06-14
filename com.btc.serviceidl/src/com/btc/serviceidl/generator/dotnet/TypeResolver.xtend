@@ -125,7 +125,7 @@ class TypeResolver
         return new ResolvedName(result, TransformType.PACKAGE, fully_qualified)
     }
 
-    def private static String resolveException(String name)
+    private static def String resolveException(String name)
     {
         // temporarily some special handling for exceptions, because not all
         // C++ CAB exceptions are supported by the .NET CAB
@@ -138,7 +138,7 @@ class TypeResolver
         }
     }
 
-    def private boolean isSameProject(QualifiedName referenced_package)
+    private def boolean isSameProject(QualifiedName referenced_package)
     {
         GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.DOTNET, TransformType.PACKAGE) ==
             referenced_package.toString

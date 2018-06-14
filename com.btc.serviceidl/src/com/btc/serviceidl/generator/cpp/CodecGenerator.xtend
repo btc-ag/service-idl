@@ -30,7 +30,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors
 class CodecGenerator extends BasicCppGenerator
 {
-    def private generateHCodecInline(EObject owner, Iterable<EObject> nested_types)
+    private def generateHCodecInline(EObject owner, Iterable<EObject> nested_types)
     {
         val cab_uuid = resolveSymbol("BTC::Commons::CoreExtras::UUID")
         val forward_const_iterator = resolveSymbol("BTC::Commons::Core::ForwardConstIterator")
@@ -496,7 +496,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    def private dispatch String makeDecode(StructDeclaration element, EObject container)
+    private def dispatch String makeDecode(StructDeclaration element, EObject container)
     {
         '''
             «resolve(element)» api_output;
@@ -507,7 +507,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    def private dispatch String makeDecode(ExceptionDeclaration element, EObject container)
+    private def dispatch String makeDecode(ExceptionDeclaration element, EObject container)
     {
         throw new UnsupportedOperationException("Decode for exception types with custom attributes is unsupported right now")
 
@@ -521,7 +521,7 @@ class CodecGenerator extends BasicCppGenerator
 //        '''
     }
 
-    def private dispatch String makeDecode(EnumDeclaration element, EObject container)
+    private def dispatch String makeDecode(EnumDeclaration element, EObject container)
     {
         '''
             «FOR enum_value : element.containedIdentifiers»
@@ -533,7 +533,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    def private String makeDecodeMember(MemberElementWrapper element, EObject container)
+    private def String makeDecodeMember(MemberElementWrapper element, EObject container)
     {
         val use_codec = GeneratorUtil.useCodec(element.type, ArtifactNature.CPP)
         val is_pointer = useSmartPointer(element.container, element.type)
@@ -549,13 +549,13 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    def private dispatch String makeDecode(AbstractType element, EObject container)
+    private def dispatch String makeDecode(AbstractType element, EObject container)
     {
         if (element.referenceType !== null)
             return makeDecode(element.referenceType, container)
     }
 
-    def private dispatch String makeEncode(StructDeclaration element)
+    private def dispatch String makeEncode(StructDeclaration element)
     {
         '''
             «FOR member : element.allMembers»
@@ -564,7 +564,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    def private dispatch String makeEncode(ExceptionDeclaration element)
+    private def dispatch String makeEncode(ExceptionDeclaration element)
     {
         '''
             «FOR member : element.allMembers»
@@ -573,7 +573,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    def private dispatch String makeEncode(EnumDeclaration element)
+    private def dispatch String makeEncode(EnumDeclaration element)
     {
         '''
             «FOR enum_value : element.containedIdentifiers»
@@ -585,7 +585,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    def private String makeEncodeMember(MemberElementWrapper element)
+    private def String makeEncodeMember(MemberElementWrapper element)
     {
         val use_codec = GeneratorUtil.useCodec(element.type, ArtifactNature.CPP)
         val optional = element.optional
@@ -601,13 +601,13 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    def private dispatch String makeEncode(AbstractType element)
+    private def dispatch String makeEncode(AbstractType element)
     {
         if (element.referenceType !== null)
             return makeEncode(element.referenceType)
     }
 
-    def private String resolveEncode(EObject element)
+    private def String resolveEncode(EObject element)
     {
         val is_failable = com.btc.serviceidl.util.Util.isFailable(element)
         if (is_failable)
@@ -619,7 +619,7 @@ class CodecGenerator extends BasicCppGenerator
         return '''«typeResolver.resolveCodecNS(paramBundle, element)»::Encode'''
     }
 
-    def private static boolean isMutableField(EObject type)
+    private static def boolean isMutableField(EObject type)
     {
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(type)
         val use_codec = GeneratorUtil.useCodec(ultimate_type, ArtifactNature.CPP)

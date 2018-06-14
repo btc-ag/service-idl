@@ -71,7 +71,7 @@ class JavaGenerator
    
    private var param_bundle = new ParameterBundle.Builder()    
    
-   def private getTypeResolver()
+   private def getTypeResolver()
    {
        basicJavaSourceGenerator.typeResolver
    }
@@ -93,7 +93,7 @@ class JavaGenerator
       }
    }
 
-   def private void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
+   private def void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
       param_bundle = ParameterBundle.createBuilder(Util.getModuleStack(module))
       
@@ -113,7 +113,7 @@ class JavaGenerator
          processModule(nested_module, projectTypes)
    }
 
-   def private void generateModuleContents(ModuleDeclaration module, Set<ProjectType> projectTypes)
+   private def void generateModuleContents(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
       reinitializeAll
       param_bundle.reset(Util.getModuleStack(module))
@@ -127,7 +127,7 @@ class JavaGenerator
       generatePOM(module)
    }
 
-   def private void generateInterfaceProjects(ModuleDeclaration module, Set<ProjectType> projectTypes)
+   private def void generateInterfaceProjects(ModuleDeclaration module, Set<ProjectType> projectTypes)
     {
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
@@ -164,14 +164,14 @@ class JavaGenerator
         }
     }
 
-   def private void generatePOM(EObject container)
+   private def void generatePOM(EObject container)
    {
       val pom_path = makeProjectRootPath(container) + "pom".xml
       file_system_access.generateFile(pom_path, POMGenerator.generatePOMContents(container, dependencies, 
           if (protobuf_artifacts !== null && protobuf_artifacts.containsKey(container)) protobuf_artifacts.get(container) else null))
    }
 
-   def private String makeProjectRootPath(EObject container)
+   private def String makeProjectRootPath(EObject container)
    {
       // TODO change return type to Path or something similar
       ArtifactNature.JAVA.label
@@ -180,7 +180,7 @@ class JavaGenerator
          + Constants.SEPARATOR_FILE
    }
    
-   def private String makeProjectSourcePath(EObject container, ProjectType project_type, MavenArtifactType maven_type, PathType path_type)
+   private def String makeProjectSourcePath(EObject container, ProjectType project_type, MavenArtifactType maven_type, PathType path_type)
    {
       val temp_param = new ParameterBundle.Builder()
       temp_param.reset(Util.getModuleStack(container))
@@ -202,7 +202,7 @@ class JavaGenerator
       result.toString
    }
    
-   def private void generateProject(ProjectType project_type, InterfaceDeclaration interface_declaration)
+   private def void generateProject(ProjectType project_type, InterfaceDeclaration interface_declaration)
    {
       param_bundle.reset(project_type)
       val maven_type =
@@ -239,7 +239,7 @@ class JavaGenerator
       }
    }
    
-   def private generateSourceFile(EObject container, String main_content)
+   private def generateSourceFile(EObject container, String main_content)
    {
       '''
       package «MavenResolver.resolvePackage(container, Optional.of(param_bundle.projectType))»;
@@ -251,7 +251,7 @@ class JavaGenerator
       '''
    }
    
-   def private void generateCommon(String src_root_path, ModuleDeclaration module)
+   private def void generateCommon(String src_root_path, ModuleDeclaration module)
    {
       param_bundle.reset(ProjectType.COMMON)
       
@@ -271,7 +271,7 @@ class JavaGenerator
       )
    }
    
-   def private void generateServiceAPI(String src_root_path, InterfaceDeclaration interface_declaration)
+   private def void generateServiceAPI(String src_root_path, InterfaceDeclaration interface_declaration)
    {      
       // generate all contained types
       for (abstract_type : interface_declaration.contains.filter(AbstractTypeDeclaration).filter[e | !(e instanceof AliasDeclaration)])
@@ -304,7 +304,7 @@ class JavaGenerator
       )
    }   
    
-   def private void generateTest(String src_root_path, InterfaceDeclaration interface_declaration)
+   private def void generateTest(String src_root_path, InterfaceDeclaration interface_declaration)
    {
       val log4j_name = "log4j.Test".properties
       
@@ -330,7 +330,7 @@ class JavaGenerator
       )
    }
    
-   def private void generateProtobuf(String src_root_path, EObject container)
+   private def void generateProtobuf(String src_root_path, EObject container)
    {
       // TODO param_bundle should also be converted into a local
       param_bundle.reset(ProjectType.PROTOBUF)      
@@ -343,7 +343,7 @@ class JavaGenerator
       )  
    }
    
-   def private void generateClientConsole(String src_root_path, InterfaceDeclaration interface_declaration)
+   private def void generateClientConsole(String src_root_path, InterfaceDeclaration interface_declaration)
    {
       val program_name = "Program"
       val log4j_name = "log4j.ClientConsole".properties
@@ -359,7 +359,7 @@ class JavaGenerator
       )
    }
    
-   def private void generateServerRunner(String src_root_path, InterfaceDeclaration interface_declaration)
+   private def void generateServerRunner(String src_root_path, InterfaceDeclaration interface_declaration)
    {
       val program_name = "Program"
       val server_runner_name = ProjectType.SERVER_RUNNER.getClassName(ArtifactNature.JAVA, interface_declaration.name)
@@ -387,7 +387,7 @@ class JavaGenerator
       )
    }
    
-   def private void generateProxy(String src_root_path, InterfaceDeclaration interface_declaration)
+   private def void generateProxy(String src_root_path, InterfaceDeclaration interface_declaration)
    {
       val proxy_factory_name = param_bundle.projectType.getClassName(ArtifactNature.JAVA, interface_declaration.name) + "Factory"
       generateJavaFile(src_root_path + proxy_factory_name.java,
@@ -402,21 +402,21 @@ class JavaGenerator
       )
    }
       
-   def private void generateDispatcher(String src_root_path, InterfaceDeclaration interface_declaration)
+   private def void generateDispatcher(String src_root_path, InterfaceDeclaration interface_declaration)
    {
       val dispatcher_class_name = param_bundle.projectType.getClassName(ArtifactNature.JAVA, interface_declaration.name)
       
       generateJavaFile(src_root_path + dispatcher_class_name.java, interface_declaration, [basicJavaSourceGenerator|new DispatcherGenerator(basicJavaSourceGenerator).generateDispatcherBody(dispatcher_class_name, interface_declaration).toString])
    }
    
-   def private void generateImplementationStub(String src_root_path, InterfaceDeclaration interface_declaration)
+   private def void generateImplementationStub(String src_root_path, InterfaceDeclaration interface_declaration)
    {
       val impl_name = param_bundle.projectType.getClassName(ArtifactNature.JAVA, interface_declaration.name)
 
       generateJavaFile(src_root_path + impl_name.java, interface_declaration, [basicJavaSourceGenerator|new ImplementationStubGenerator(basicJavaSourceGenerator).generateImplementationStubBody(impl_name, interface_declaration).toString])   
    }
    
-   def private <T extends EObject> void generateJavaFile(String fileName, T declarator, (BasicJavaSourceGenerator)=>String generateBody)
+   private def <T extends EObject> void generateJavaFile(String fileName, T declarator, (BasicJavaSourceGenerator)=>String generateBody)
    {
        // TODO T can be InterfaceDeclaration or ModuleDeclaration, the metamodel should be changed to introduce a common base type of these
       reinitializeFile
@@ -429,13 +429,13 @@ class JavaGenerator
    }
    
    // TODO remove this function
-   def private void reinitializeFile()
+   private def void reinitializeFile()
    {
       val typeResolver = new TypeResolver(qualified_name_provider, param_bundle.build, dependencies)
       basicJavaSourceGenerator = new BasicJavaSourceGenerator(qualified_name_provider, typeResolver, idl, typedef_table)
    }
    
-   def private void reinitializeAll()
+   private def void reinitializeAll()
    {
       reinitializeFile
       dependencies.clear

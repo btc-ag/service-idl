@@ -36,7 +36,7 @@ class ProtobufCodecGenerator
 {
     val BasicJavaSourceGenerator basicJavaSourceGenerator
 
-    def private getTypeResolver()
+    private def getTypeResolver()
     {
         basicJavaSourceGenerator.typeResolver
     }
@@ -285,13 +285,13 @@ class ProtobufCodecGenerator
         '''
     }
 
-    def private dispatch String makeDecode(AbstractType element)
+    private def dispatch String makeDecode(AbstractType element)
     {
         if (element.referenceType !== null)
             return makeDecode(element.referenceType)
     }
 
-    def private dispatch String makeDecode(EnumDeclaration element)
+    private def dispatch String makeDecode(EnumDeclaration element)
     {
         val api_type_name = typeResolver.resolve(element)
         val protobuf_type_name = resolveProtobuf(element, Optional.empty)
@@ -307,17 +307,17 @@ class ProtobufCodecGenerator
         '''
     }
 
-    def private dispatch String makeDecode(StructDeclaration element)
+    private def dispatch String makeDecode(StructDeclaration element)
     {
         makeDecodeStructOrException(element, element.allMembers, Optional.of(element.typeDecls))
     }
 
-    def private dispatch String makeDecode(ExceptionDeclaration element)
+    private def dispatch String makeDecode(ExceptionDeclaration element)
     {
         makeDecodeStructOrException(element, element.allMembers, Optional.empty)
     }
 
-    def private String makeDecodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
+    private def String makeDecodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
         Optional<Collection<AbstractTypeDeclaration>> type_declarations)
     {
         val api_type_name = typeResolver.resolve(element)
@@ -355,13 +355,13 @@ class ProtobufCodecGenerator
         '''
     }
 
-    def private dispatch String makeEncode(AbstractType element)
+    private def dispatch String makeEncode(AbstractType element)
     {
         if (element.referenceType !== null)
             return makeEncode(element.referenceType)
     }
 
-    def private dispatch String makeEncode(EnumDeclaration element)
+    private def dispatch String makeEncode(EnumDeclaration element)
     {
         val api_type_name = typeResolver.resolve(element)
         val protobuf_type_name = resolveProtobuf(element, Optional.empty)
@@ -377,17 +377,17 @@ class ProtobufCodecGenerator
         '''
     }
 
-    def private dispatch String makeEncode(StructDeclaration element)
+    private def dispatch String makeEncode(StructDeclaration element)
     {
         makeEncodeStructOrException(element, element.allMembers, Optional.of(element.typeDecls))
     }
 
-    def private dispatch String makeEncode(ExceptionDeclaration element)
+    private def dispatch String makeEncode(ExceptionDeclaration element)
     {
         makeEncodeStructOrException(element, element.allMembers, Optional.empty)
     }
 
-    def private String makeEncodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
+    private def String makeEncodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
         Optional<Collection<AbstractTypeDeclaration>> type_declarations)
     {
         val protobuf_type = resolveProtobuf(element, Optional.empty)

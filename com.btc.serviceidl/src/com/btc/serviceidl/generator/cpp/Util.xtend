@@ -16,19 +16,19 @@ class Util
     /**
      * Returns the name of the include directory within a module for a header of the given type.
      */
-    def static getIncludeDirectoryName(HeaderType headerType)
+    static def getIncludeDirectoryName(HeaderType headerType)
     {
         // TODO probably, this should also be made part of a strategy, at least the non-protobuf folder name may be chosen arbitrarily
          if (headerType == HeaderType.PROTOBUF_HEADER) CppConstants.PROTOBUF_INCLUDE_DIRECTORY_NAME else "include"
     }
     
-    def static getFileExtension(HeaderType headerType)
+    static def getFileExtension(HeaderType headerType)
     {
         // TODO probably, this should also be made part of a strategy, at least the non-protobuf folder name may be chosen arbitrarily
         if (headerType == HeaderType.PROTOBUF_HEADER) "pb.h" else "h"
     }
 
-    def static Iterable<StructDeclaration> getUnderlyingTypes(StructDeclaration struct)
+    static def Iterable<StructDeclaration> getUnderlyingTypes(StructDeclaration struct)
     {
         val all_types = new HashSet<StructDeclaration>
         val contained_types = struct.members.filter[type.ultimateType instanceof StructDeclaration].map [
@@ -49,7 +49,7 @@ class Util
      * Make a C++ member variable name according to BTC naming conventions
      * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
      */
-    def static String asMember(String name)
+    static def String asMember(String name)
     {
         if (name.allUpperCase)
             name.toLowerCase // it looks better, if ID --> id and not ID --> iD
@@ -61,39 +61,39 @@ class Util
      * Make a C++ parameter name according to BTC naming conventions
      * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
      */
-    def static String asParameter(String name)
+    static def String asParameter(String name)
     {
         asMember(name) // currently the same convention
     }
 
-    def static String asBaseName(InterfaceDeclaration interface_declaration)
+    static def String asBaseName(InterfaceDeclaration interface_declaration)
     {
         '''«interface_declaration.name»Base'''
     }
 
-    def static String getRegisterServerFaults(InterfaceDeclaration interface_declaration, Optional<String> namespace)
+    static def String getRegisterServerFaults(InterfaceDeclaration interface_declaration, Optional<String> namespace)
     {
         '''«IF namespace.present»«namespace.get»::«ENDIF»Register«interface_declaration.name»ServiceFaults'''
     }
 
-    def static String getObservableName(EventDeclaration event)
+    static def String getObservableName(EventDeclaration event)
     {
         var basic_name = event.name ?: ""
         basic_name += "Observable"
         '''m_«basic_name.asMember»'''
     }
 
-    def static String getObservableRegistrationName(EventDeclaration event)
+    static def String getObservableRegistrationName(EventDeclaration event)
     {
         event.observableName + "Registration"
     }
 
-    def static String getEventParamsName(EventDeclaration event)
+    static def String getEventParamsName(EventDeclaration event)
     {
         (event.name ?: "") + "EventParams"
     }
 
-    def static int calculateMaximalNameLength(MemberElementWrapper member)
+    static def int calculateMaximalNameLength(MemberElementWrapper member)
     {
         val result = member.name.length
         var max = 0

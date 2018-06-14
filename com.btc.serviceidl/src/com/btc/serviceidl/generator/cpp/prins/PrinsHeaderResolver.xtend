@@ -31,7 +31,7 @@ class PrinsHeaderResolver
         "BTC::PRINS::Commons::Utilities::GUIDHelper" -> "modules/Commons/Utilities/include/GUIDHelper.h"
     }
 
-    private def static withPrinsGroups(HeaderResolver.Builder builder)
+    private static def withPrinsGroups(HeaderResolver.Builder builder)
     {
         builder.withBasicGroups.withGroup(odb_header_mapper, ODB_INCLUDE_GROUP).withGroup(modules_header_mapper,
             TypeResolver.MODULES_INCLUDE_GROUP).configureGroup(
@@ -50,7 +50,7 @@ class PrinsHeaderResolver
          ''', true)
     }
 
-    public def static create()
+    public static def create()
     {
         new HeaderResolver.Builder().withPrinsGroups.build
     }

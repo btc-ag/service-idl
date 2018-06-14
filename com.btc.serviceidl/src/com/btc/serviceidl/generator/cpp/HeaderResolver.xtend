@@ -240,7 +240,7 @@ class HeaderResolver
             new HeaderResolver(headerMap, implementationHeaderMap, outputConfiguration)
         }
 
-        def static withBasicGroups(Builder builder)
+        static def withBasicGroups(Builder builder)
         {
             builder.withGroup(stl_header_mapper, TypeResolver.STL_INCLUDE_GROUP).withGroup(boost_header_mapper,
                 TypeResolver.BOOST_INCLUDE_GROUP).withGroup(cab_header_mapper, TypeResolver.CAB_INCLUDE_GROUP).
@@ -265,7 +265,7 @@ class HeaderResolver
 
     }
 
-    def static Iterable<Pair<String, GroupedHeader>> transformHeaderMap(Map<String, String> map, IncludeGroup group)
+    static def Iterable<Pair<String, GroupedHeader>> transformHeaderMap(Map<String, String> map, IncludeGroup group)
     {
         map.entrySet.map[new Pair(it.key, new GroupedHeader(group, new Path(it.value)))]
     }

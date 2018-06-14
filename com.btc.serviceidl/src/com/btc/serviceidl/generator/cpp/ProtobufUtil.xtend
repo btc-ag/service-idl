@@ -31,7 +31,7 @@ import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufUtil
 {
-    def static ResolvedName resolveProtobuf(extension TypeResolver typeResolver, EObject object,
+    static def ResolvedName resolveProtobuf(extension TypeResolver typeResolver, EObject object,
         ProtobufType protobuf_type)
     {
         if (com.btc.serviceidl.util.Util.isUUIDType(object))
@@ -69,13 +69,13 @@ class ProtobufUtil
         return new ResolvedName(result, TransformType.NAMESPACE)
     }
 
-    def static String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject element,
+    static def String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject element,
         EObject container)
     {
         resolveDecode(typeResolver, paramBundle, element, container, true)
     }
 
-    def static String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject element,
+    static def String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject element,
         EObject container, boolean use_codec_ns)
     {
         // handle sequence first, because it may include UUIDs and other types from below
@@ -137,12 +137,12 @@ class ProtobufUtil
         return '''«typeResolver.resolveCodecNS(paramBundle, element)»::Decode'''
     }
 
-    def static String resolveCodecNS(TypeResolver typeResolver, ParameterBundle paramBundle, EObject object)
+    static def String resolveCodecNS(TypeResolver typeResolver, ParameterBundle paramBundle, EObject object)
     {
         resolveCodecNS(typeResolver, paramBundle, object, false, Optional.empty)
     }
 
-    def static String resolveCodecNS(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject object,
+    static def String resolveCodecNS(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject object,
         boolean is_failable, Optional<EObject> container)
     {
         val ultimate_type = object.ultimateType
@@ -165,7 +165,7 @@ class ProtobufUtil
             TransformType.NAMESPACE.separator + codec_name
     }
 
-    def static String resolveFailableProtobufType(extension TypeResolver typeResolver, EObject element,
+    static def String resolveFailableProtobufType(extension TypeResolver typeResolver, EObject element,
         EObject container)
     {
         // TODO isn't there a specific type that is used from that library? Is it really required?

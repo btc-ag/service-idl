@@ -306,7 +306,7 @@ class BasicJavaSourceGenerator
         return '''0'''
     }
 
-    def private static String makeGetterSetter(String type_name, String var_name)
+    private static def String makeGetterSetter(String type_name, String var_name)
     {
         '''
             «makeGetter(type_name, var_name)»
@@ -324,7 +324,7 @@ class BasicJavaSourceGenerator
         '''
     }
 
-    def private static String makeSetter(String type_name, String var_name)
+    private static def String makeSetter(String type_name, String var_name)
     {
         '''
             public void set«var_name.toFirstUpper»(«type_name» «var_name») {
