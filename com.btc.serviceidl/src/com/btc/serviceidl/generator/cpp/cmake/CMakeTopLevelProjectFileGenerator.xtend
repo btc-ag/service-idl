@@ -34,7 +34,6 @@ class CMakeTopLevelProjectFileGenerator
     def generate()
     {
         // TODO this depends on the implementation of ProjectGeneratorBaseBase.getProjectPath
-        // TODO isn't modulePath always empty?
         val topLevelPath = modulePath
         file_system_access.generateFile(
             topLevelPath.append("conanfile.py").toString,
@@ -57,7 +56,9 @@ class CMakeTopLevelProjectFileGenerator
 
     private def modulePath()
     {
-        GeneratorUtil.asPath(new ParameterBundle.Builder().reset(module.moduleStack).build, ArtifactNature.CPP)
+        // TODO the commented-out version worked only when the moduleStack was empty. Something is inconsistent here        
+        // GeneratorUtil.asPath(new ParameterBundle.Builder().reset(module.moduleStack).build, ArtifactNature.CPP)
+        Path.fromOSString("")
     }
 
     def generateConanfile()
