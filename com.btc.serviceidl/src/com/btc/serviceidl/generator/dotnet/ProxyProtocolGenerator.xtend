@@ -15,10 +15,9 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
-import com.google.common.base.CaseFormat
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
+import static extension com.btc.serviceidl.generator.dotnet.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
@@ -54,19 +53,19 @@ class ProxyProtocolGenerator extends ProxyDispatcherGeneratorBase
                              «val codec = resolveCodec(typeResolver, param_bundle, param.paramType)»
                              «val use_codec = GeneratorUtil.useCodec(param, ArtifactNature.DOTNET)»
                              «val encodeMethod = getEncodeMethod(param.paramType)»
-                             .«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»AddRange«ELSE»Set«ENDIF»«param.paramName.asProtobufName(CaseFormat.UPPER_CAMEL)»(«IF use_codec»(«resolveEncode(param.paramType)») «codec».«encodeMethod»(«ENDIF»arg.«param.paramName.asProperty»«IF use_codec»)«ENDIF»)
+                             .«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»AddRange«ELSE»Set«ENDIF»«param.paramName.asDotNetProtobufName»(«IF use_codec»(«resolveEncode(param.paramType)») «codec».«encodeMethod»(«ENDIF»arg.«param.paramName.asProperty»«IF use_codec»)«ENDIF»)
                          «ENDFOR»
                          ;
                          
                       return new «protobuf_request»
-                         .Builder { «function.name.asProtobufName(CaseFormat.UPPER_CAMEL)»Request = resultBuilder.Build() }
+                         .Builder { «function.name.asDotNetProtobufName»Request = resultBuilder.Build() }
                          .Build();
                    }
                «ENDFOR»
                
                «FOR function : interface_declaration.functions.filter[!returnedType.isVoid] SEPARATOR System.lineSeparator»
                    «val response_name = getDataContractName(interface_declaration, function, ProtobufType.RESPONSE)»
-                   «val protobuf_message = function.name.asProtobufName(CaseFormat.UPPER_CAMEL)»
+                   «val protobuf_message = function.name.asDotNetProtobufName»
                    «val use_codec = GeneratorUtil.useCodec(function.returnedType, ArtifactNature.DOTNET)»
                    «val decodeMethod = getDecodeMethod(function.returnedType)»
                    «val return_type = toText(function.returnedType, function)»

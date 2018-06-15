@@ -20,13 +20,11 @@ import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
-import com.google.common.base.CaseFormat
 import java.util.Arrays
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static com.btc.serviceidl.generator.common.GeneratorUtil.*
-
+import static extension com.btc.serviceidl.generator.dotnet.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
@@ -203,11 +201,6 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
             return makeEncode(element.referenceType, owner)
     }
     
-    private static def getProtobufName(MemberElementWrapper element)
-    {
-        asProtobufName(element.name, CaseFormat.UPPER_CAMEL)
-    } 
-
     private def String makeEncodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
         Iterable<AbstractTypeDeclaration> type_declarations)
     {
