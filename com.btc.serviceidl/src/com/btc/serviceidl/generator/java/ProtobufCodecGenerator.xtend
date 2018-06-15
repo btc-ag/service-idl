@@ -344,7 +344,7 @@ class ProtobufCodecGenerator
                 «val is_optional = member.optional»
                 «val api_type = basicJavaSourceGenerator.toText(member.type)»
                 «val parameterName = member.name.asParameter»
-                «basicJavaSourceGenerator.formatMaybeOptional(is_optional, api_type)» «parameterName» = «IF is_optional»(typedData.«IF is_sequence»get«ELSE»has«ENDIF»«member.name.asProtobufName»«IF is_sequence»Count«ENDIF»()«IF is_sequence» > 0«ENDIF») ? «ENDIF»«IF is_optional»Optional.of(«ENDIF»«IF use_codec»«IF !is_sequence»(«api_type») «ENDIF»«codec».decode«IF is_failable»Failable«ENDIF»(«ENDIF»«IF is_short || is_byte || is_char»(«IF is_byte»byte«ELSEIF is_char»char«ELSE»short«ENDIF») «ENDIF»typedData.get«member.name.asProtobufName»«IF is_sequence»List«ENDIF»()«IF use_codec»)«ENDIF»«IF is_optional»)«ENDIF»«IF is_optional» : Optional.empty()«ENDIF»;
+                «basicJavaSourceGenerator.formatMaybeOptional(is_optional, api_type)» «parameterName» = «IF is_optional»(typedData.«IF is_sequence»get«ELSE»has«ENDIF»«member.name.asJavaProtobufName»«IF is_sequence»Count«ENDIF»()«IF is_sequence» > 0«ENDIF») ? «ENDIF»«IF is_optional»Optional.of(«ENDIF»«IF use_codec»«IF !is_sequence»(«api_type») «ENDIF»«codec».decode«IF is_failable»Failable«ENDIF»(«ENDIF»«IF is_short || is_byte || is_char»(«IF is_byte»byte«ELSEIF is_char»char«ELSE»short«ENDIF») «ENDIF»typedData.get«member.name.asJavaProtobufName»«IF is_sequence»List«ENDIF»()«IF use_codec»)«ENDIF»«IF is_optional»)«ENDIF»«IF is_optional» : Optional.empty()«ENDIF»;
             «ENDFOR»
             
             return new «api_type_name» (
@@ -401,7 +401,7 @@ class ProtobufCodecGenerator
                 «val use_codec = GeneratorUtil.useCodec(member.type, ArtifactNature.JAVA)»
                 «val is_sequence = member.type.isSequenceType»
                 «val is_failable = is_sequence && member.type.isFailable»
-                «val protobufName = member.name.asProtobufName»
+                «val protobufName = member.name.asJavaProtobufName»
                 «val commonName = member.commonName»
                 «val method_name = '''«IF is_sequence»addAll«ELSE»set«ENDIF»«protobufName»'''»
                 «IF member.optional»

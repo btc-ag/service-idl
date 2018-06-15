@@ -106,7 +106,7 @@ class ProxyGenerator
                «val request_message = protobuf_request + Constants.SEPARATOR_PACKAGE + function.name.asRequest»
                «val response_message = protobuf_response + Constants.SEPARATOR_PACKAGE + function.name.asResponse»
                «val response_name = '''response«function.name»'''»
-               «val protobuf_function_name = function.name.asProtobufName»
+               «val protobuf_function_name = function.name.asJavaProtobufName»
                «request_message» request«function.name» = 
                   «request_message».newBuilder()
                   «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
@@ -114,7 +114,7 @@ class ProxyGenerator
                       «var codec = resolveCodec(param.paramType)»
                       «val is_sequence = param.paramType.isSequenceType»
                       «val is_failable = is_sequence && param.paramType.isFailable»
-                      «val method_name = '''«IF is_sequence»addAll«ELSE»set«ENDIF»«param.paramName.asProtobufName»'''»
+                      «val method_name = '''«IF is_sequence»addAll«ELSE»set«ENDIF»«param.paramName.asJavaProtobufName»'''»
                   .«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(typeResolver, param.paramType, Optional.empty)») «ENDIF»«codec».encode«IF is_failable»Failable«ENDIF»(«ENDIF»«param.paramName»«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, param.paramType, interface_declaration)».class«ENDIF»«IF use_codec»)«ENDIF»)
                «ENDFOR»
                .build();
@@ -137,11 +137,11 @@ class ProxyGenerator
                              «val param_name = out_param.paramName.asParameter»
                              «IF !out_param.paramType.isSequenceType»
                                  «val out_param_type = basicJavaSourceGenerator.toText(out_param.paramType)»
-                                 «out_param_type» «temp_param_name» = («out_param_type») «codec».decode( «response_name».get«out_param.paramName.asProtobufName»() );
+                                 «out_param_type» «temp_param_name» = («out_param_type») «codec».decode( «response_name».get«out_param.paramName.asJavaProtobufName»() );
                                  «handleOutputParameter(out_param, temp_param_name, param_name)»
                              «ELSE»
                                  «val is_failable = out_param.paramType.isFailable»
-                                 «typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«basicJavaSourceGenerator.toText(out_param.paramType.ultimateType)»«IF is_failable»>«ENDIF»> «temp_param_name» = «codec».decode«IF is_failable»Failable«ENDIF»( «response_name».get«out_param.paramName.asProtobufName»List() );
+                                 «typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«basicJavaSourceGenerator.toText(out_param.paramType.ultimateType)»«IF is_failable»>«ENDIF»> «temp_param_name» = «codec».decode«IF is_failable»Failable«ENDIF»( «response_name».get«out_param.paramName.asJavaProtobufName»List() );
                                  «param_name».addAll( «temp_param_name» );
                              «ENDIF»
                              
