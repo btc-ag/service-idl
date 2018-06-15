@@ -254,7 +254,9 @@ class GeneratorUtil
             {
                 if (currentAbbrev !== null)
                 {
-                    res.append(currentAbbrev)
+                    val tmp = currentAbbrev.toString
+                    res.append(tmp.substring(0, tmp.length - 1))
+                    res.append(Character.toUpperCase(tmp.charAt(tmp.length - 1)))
                     currentAbbrev = null
                 }
                 res.append(c)
