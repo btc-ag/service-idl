@@ -247,11 +247,6 @@ class DispatcherGenerator extends BasicCppGenerator
         '''
     }
 
-    private def getTargetVersion()
-    {
-        targetVersionProvider.getTargetVersion(CppConstants.SERVICECOMM_VERSION_KIND)
-    }
-
     private def getClientIdentityType()
     {
         if (targetVersion.equals("0.10"))

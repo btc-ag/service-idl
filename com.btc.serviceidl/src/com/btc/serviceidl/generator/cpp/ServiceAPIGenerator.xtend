@@ -143,7 +143,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
                      static «resolveSymbol("BTC::Commons::CoreExtras::UUID")» GetEventTypeGuid();
                      static «resolveSymbol("BTC::ServiceComm::API::EventKind")» GetEventKind();
                      static «resolveSymbol("BTC::Commons::Core::String")» GetEventTypeDescription();
-                     static «resolveSymbol("std::function")»<EventDataType const ( «resolveSymbol("BTC::ServiceComm::Commons::ConstSharedMessageSharedPtr")» const & )> GetUnmarshalFunction();
+                     static «resolveSymbol("std::function")»<EventDataType const ( «resolveSymbol("BTC::ServiceComm::API::IEventSubscriberManager::ObserverType::OnNextParamType")» )> GetUnmarshalFunction();
                   };
                   «resolveSymbol("BTC::ServiceComm::Util::CDefaultObservableRegistrationProxy")»<«event_params_name»> «event.observableRegistrationName»;
                «ENDFOR»

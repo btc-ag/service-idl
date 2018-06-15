@@ -104,6 +104,7 @@ class HeaderResolver
         "BTC::ServiceComm::API::EventKind" -> "ServiceComm/API/include/IEventRegistry.h",
         "BTC::ServiceComm::API::IClientEndpoint" -> "ServiceComm/API/include/IClientEndpoint.h",
         "BTC::ServiceComm::API::IEventSubscriberManager" -> "ServiceComm/API/include/IEventRegistry.h",
+        "BTC::ServiceComm::API::IEventSubscriberManager::ObserverType::OnNextParamType" -> "ServiceComm/API/include/IEventRegistry.h",
         "BTC::ServiceComm::API::InvalidMessageReceivedException" -> "ServiceComm/API/include/ServiceHostException.h",
         "BTC::ServiceComm::API::InvalidRequestReceivedException" -> "ServiceComm/API/include/ServiceHostException.h",
         "BTC::ServiceComm::API::IServerEndpoint" -> "ServiceComm/API/include/IServerEndpoint.h",
