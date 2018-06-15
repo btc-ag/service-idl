@@ -19,13 +19,10 @@ import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
-import com.btc.serviceidl.util.Constants
-import com.google.common.base.CaseFormat
 import java.util.Optional
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
-import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
@@ -122,7 +119,7 @@ class ProxyGenerator extends BasicCppGenerator {
            «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «protobuf_request_message» > request( BorrowRequestMessage() );
 
            // encode request -->
-           auto * const concreteRequest( request->mutable_«function.name.asRequest.asProtobufName(CaseFormat.LOWER_UNDERSCORE)»() );
+           auto * const concreteRequest( request->mutable_«function.name.asRequest.asCppProtobufName»() );
            «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
               «IF GeneratorUtil.useCodec(param.paramType, ArtifactNature.CPP) && !(com.btc.serviceidl.util.Util.isByte(param.paramType) || com.btc.serviceidl.util.Util.isInt16(param.paramType) || com.btc.serviceidl.util.Util.isChar(param.paramType))»
                  «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
@@ -148,7 +145,7 @@ class ProxyGenerator extends BasicCppGenerator {
               return RequestAsyncUnmarshal< «toText(function.returnedType, interface_declaration)» >( *request, [&]( «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «protobuf_response_message» > response )
               {
                  // decode response -->
-                 auto const& concreteResponse( response->«function.name.asResponse.asProtobufName(CaseFormat.LOWER_UNDERSCORE)»() );
+                 auto const& concreteResponse( response->«function.name.asResponse.asCppProtobufName»() );
                  «val output_parameters = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
                  «IF !output_parameters.empty»
                     // handle [out] parameters

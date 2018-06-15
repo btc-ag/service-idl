@@ -24,9 +24,11 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
+import com.google.common.base.CaseFormat
 import java.util.Optional
 import org.eclipse.emf.ecore.EObject
 
+import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufUtil
@@ -183,4 +185,8 @@ class ProtobufUtil
             GeneratorUtil.asFailable(element, container, qualified_name_provider)
     }
 
+    static def asCppProtobufName(String name)
+    {
+        name.asProtobufName(CaseFormat.LOWER_UNDERSCORE)
+    }
 }
