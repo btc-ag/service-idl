@@ -28,7 +28,7 @@ class ProxyGenerator extends ProxyDispatcherGeneratorBase {
     def generate(String class_name, InterfaceDeclaration interface_declaration)
     {
       val api_fully_qualified_name = resolve(interface_declaration)
-      val protocol_name = interface_declaration.name + "Protocol"
+      val protocol_name = interface_declaration.proxyProtocolName
       val feature_profile = new FeatureProfile(interface_declaration)
       if (feature_profile.uses_futures)
          resolve("BTC.CAB.ServiceComm.NET.Util.ClientEndpointExtensions")

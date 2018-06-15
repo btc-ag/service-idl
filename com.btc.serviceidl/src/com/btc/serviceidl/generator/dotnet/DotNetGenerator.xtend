@@ -203,9 +203,7 @@ class DotNetGenerator
       '''
 
       val common_file_name = Constants.FILE_NAME_TYPES
-      cs_files.add(common_file_name)
-      
-      file_system_access.generateFile(project_root_path + common_file_name.cs, ArtifactNature.DOTNET.label, generateSourceFile(file_content))
+      generateProjectSourceFile(project_root_path, common_file_name, file_content)
       
       generateVSProjectFiles(project_root_path)
    }
@@ -218,8 +216,7 @@ class DotNetGenerator
       file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + project_name.csproj, ArtifactNature.DOTNET.label, generateCsproj(cs_files))
       
       // generate mandatory AssemblyInfo.cs file
-      file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "Properties" + Constants.SEPARATOR_FILE + "AssemblyInfo.cs", ArtifactNature.DOTNET.label, generateAssemblyInfo(project_name))
-   
+      file_system_access.generateFile(project_root_path + Constants.SEPARATOR_FILE + "Properties" + Constants.SEPARATOR_FILE + "AssemblyInfo.cs", ArtifactNature.DOTNET.label, generateAssemblyInfo(project_name))   
    
       // NuGet (optional)
       if (!nuget_packages.resolvedPackages.empty)
@@ -279,9 +276,9 @@ class DotNetGenerator
       }     
    }
    
-   private def String generateAssemblyInfo(String project_name)
+   private def generateAssemblyInfo(String project_name)
    {
-       new AssemblyInfoGenerator(param_bundle.build).generate(project_name).toString
+       new AssemblyInfoGenerator(param_bundle.build).generate(project_name)
    }
    
    private def void reinitializeFile()
@@ -315,15 +312,11 @@ class DotNetGenerator
    private def void generateImpl(String src_root_path, InterfaceDeclaration interface_declaration)
    {
       val impl_class_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)
-      
-      cs_files.add(impl_class_name)
-      file_system_access.generateFile(
-         src_root_path + impl_class_name.cs, ArtifactNature.DOTNET.label,
-         generateSourceFile(
-             new ImplementationStubGenerator(basicCSharpSourceGenerator).generate(interface_declaration, impl_class_name).toString
-         )
-      )
-      
+      generateProjectSourceFile(
+        src_root_path,
+        impl_class_name,
+        new ImplementationStubGenerator(basicCSharpSourceGenerator).generate(interface_declaration, impl_class_name)
+      )      
    }
    
    private def void generateDispatcher(String src_root_path, InterfaceDeclaration interface_declaration)
@@ -331,10 +324,10 @@ class DotNetGenerator
       reinitializeFile
 
       val dispatcher_class_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)
-      cs_files.add(dispatcher_class_name)
-      file_system_access.generateFile(
-         src_root_path + dispatcher_class_name.cs, ArtifactNature.DOTNET.label,
-         generateSourceFile(new DispatcherGenerator(basicCSharpSourceGenerator).generate(dispatcher_class_name, interface_declaration).toString)
+      generateProjectSourceFile(
+        src_root_path,
+        dispatcher_class_name,
+        new DispatcherGenerator(basicCSharpSourceGenerator).generate(dispatcher_class_name, interface_declaration)
       )
    }
    
@@ -360,9 +353,7 @@ class DotNetGenerator
    private def void generateProtobufProjectContent(EObject owner, String project_root_path)
    {
       val codec_name = GeneratorUtil.getCodecName(owner)
-      cs_files.add(codec_name)
-      file_system_access.generateFile(project_root_path + codec_name.cs, ArtifactNature.DOTNET.label,
-         generateSourceFile(generateProtobufCodec(owner, codec_name)))
+      generateProjectSourceFile(project_root_path, codec_name, generateProtobufCodec(owner, codec_name))
       if (owner instanceof ModuleDeclaration)
       {
          protobuf_files.add(Constants.FILE_NAME_TYPES)
@@ -422,11 +413,11 @@ class DotNetGenerator
          resolveProtobufDependencies(element.referenceType, owner)
    }
    
-   private def String generateProtobufCodec(EObject owner, String class_name)
+   private def generateProtobufCodec(EObject owner, String class_name)
    {
       reinitializeFile
       
-      new ProtobufCodecGenerator(basicCSharpSourceGenerator).generate(owner, class_name).toString
+      new ProtobufCodecGenerator(basicCSharpSourceGenerator).generate(owner, class_name)
    }
 
    private def void generateClientConsole(ModuleDeclaration module)
@@ -436,9 +427,10 @@ class DotNetGenerator
       val project_root_path = getProjectRootPath()
       
       val program_name = "Program"
-      cs_files.add(program_name)
-      file_system_access.generateFile(project_root_path + program_name.cs, ArtifactNature.DOTNET.label,
-         generateSourceFile(generateCsClientConsoleProgram(program_name, module).toString)
+      generateProjectSourceFile(
+        project_root_path,
+        program_name,
+        generateCsClientConsoleProgram(program_name, module)
       )
       
       file_system_access.generateFile(project_root_path + "App".config, ArtifactNature.DOTNET.label, generateAppConfig(module))
@@ -463,10 +455,7 @@ class DotNetGenerator
       val project_root_path = getProjectRootPath()
       
       val program_name = "Program"
-      cs_files.add(program_name)
-      file_system_access.generateFile(project_root_path + program_name.cs, ArtifactNature.DOTNET.label,
-         generateSourceFile(generateCsServerRunnerProgram(program_name, module))
-      )
+      generateProjectSourceFile(project_root_path, program_name, generateCsServerRunnerProgram(program_name, module))      
       
       file_system_access.generateFile(project_root_path + "App".config, ArtifactNature.DOTNET.label, generateAppConfig(module))
       
@@ -476,18 +465,18 @@ class DotNetGenerator
       generateVSProjectFiles(project_root_path)
    }
    
-   private def String generateLog4NetConfig(ModuleDeclaration module)
+   private def generateLog4NetConfig(ModuleDeclaration module)
    {
-       new Log4NetConfigGenerator(param_bundle.build).generate().toString
+       new Log4NetConfigGenerator(param_bundle.build).generate()
    }
    
-   private def String generateCsServerRunnerProgram(String class_name, ModuleDeclaration module)
+   private def generateCsServerRunnerProgram(String class_name, ModuleDeclaration module)
    {
       reinitializeFile
       
       nuget_packages.resolvePackage("CommandLine")
 
-      new ServerRunnerGenerator(basicCSharpSourceGenerator).generate(class_name).toString      
+      new ServerRunnerGenerator(basicCSharpSourceGenerator).generate(class_name)      
    }
 
    private def generateAppConfig(ModuleDeclaration module)
@@ -495,123 +484,116 @@ class DotNetGenerator
       reinitializeFile
       new AppConfigGenerator(basicCSharpSourceGenerator).generateAppConfig(module)
    }
+   
+   private def void generateProjectSourceFile(String project_root_path, String fileBaseName, CharSequence content)
+    {
+        cs_files.add(fileBaseName)
+        file_system_access.generateFile(
+            project_root_path + fileBaseName.cs,
+            ArtifactNature.DOTNET.label,
+            generateSourceFile(content.toString)
+        )
+    }
 
    private def void generateTest(String project_root_path, InterfaceDeclaration interface_declaration)
+    {
+        val test_name = getTestClassName(interface_declaration)
+        generateProjectSourceFile(project_root_path, test_name, generateCsTest(test_name, interface_declaration))
+
+        val impl_test_name = interface_declaration.name + "ImplTest"
+        generateProjectSourceFile(project_root_path, impl_test_name,
+            generateCsImplTest(impl_test_name, interface_declaration))
+
+        val server_registration_name = getServerRegistrationName(interface_declaration)
+        generateProjectSourceFile(
+            project_root_path,
+            server_registration_name,
+            generateCsServerRegistration(server_registration_name, interface_declaration)
+        )
+
+        val zmq_integration_test_name = interface_declaration.name + "ZeroMQIntegrationTest"
+        generateProjectSourceFile(project_root_path, zmq_integration_test_name,
+            generateCsZeroMQIntegrationTest(zmq_integration_test_name, interface_declaration))        
+    }
+   
+   private def generateCsTest(String class_name, InterfaceDeclaration interface_declaration)
    {
-      val test_name = getTestClassName(interface_declaration)
-      cs_files.add(test_name)
-      file_system_access.generateFile(project_root_path + test_name.cs, ArtifactNature.DOTNET.label,
-         generateSourceFile(generateCsTest(test_name, interface_declaration))
-      )
-      
-      val impl_test_name = interface_declaration.name + "ImplTest"
-      cs_files.add(impl_test_name)
-      file_system_access.generateFile(project_root_path + impl_test_name.cs, ArtifactNature.DOTNET.label,
-         generateSourceFile(generateCsImplTest(impl_test_name, interface_declaration))
-      )
-      
-      val server_registration_name = getServerRegistrationName(interface_declaration)
-      cs_files.add(server_registration_name)
-      file_system_access.generateFile(project_root_path + server_registration_name.cs, ArtifactNature.DOTNET.label,
-         generateSourceFile(generateCsServerRegistration(server_registration_name, interface_declaration))
-      )
-      
-      val zmq_integration_test_name = interface_declaration.name + "ZeroMQIntegrationTest"
-      cs_files.add(zmq_integration_test_name)
-      file_system_access.generateFile(project_root_path + zmq_integration_test_name.cs, ArtifactNature.DOTNET.label,
-         generateSourceFile(generateCsZeroMQIntegrationTest(zmq_integration_test_name, interface_declaration))
-      )
+      reinitializeFile
+      new TestGenerator(basicCSharpSourceGenerator).generateCsTest(interface_declaration, class_name)
    }
    
-   private def String generateCsTest(String class_name, InterfaceDeclaration interface_declaration)
-   {
-      reinitializeFile
-      new TestGenerator(basicCSharpSourceGenerator).generateCsTest(interface_declaration, class_name).toString
-   }
-   
-   private def String generateCsServerRegistration(String class_name, InterfaceDeclaration interface_declaration)
+   private def generateCsServerRegistration(String class_name, InterfaceDeclaration interface_declaration)
    {
       reinitializeFile
 
-      new ServerRegistrationGenerator(basicCSharpSourceGenerator).generate(interface_declaration, class_name).toString      
+      new ServerRegistrationGenerator(basicCSharpSourceGenerator).generate(interface_declaration, class_name)      
    }
 
-   private def String generateCsZeroMQIntegrationTest(String class_name, InterfaceDeclaration interface_declaration)
+   private def generateCsZeroMQIntegrationTest(String class_name, InterfaceDeclaration interface_declaration)
    {
       reinitializeFile
-      new TestGenerator(basicCSharpSourceGenerator).generateIntegrationTest(interface_declaration, class_name).toString      
+      new TestGenerator(basicCSharpSourceGenerator).generateIntegrationTest(interface_declaration, class_name)      
    }
 
-   private def String generateCsImplTest(String class_name, InterfaceDeclaration interface_declaration)
+   private def generateCsImplTest(String class_name, InterfaceDeclaration interface_declaration)
    {
       reinitializeFile
       
-      new TestGenerator(basicCSharpSourceGenerator).generateImplTestStub(interface_declaration, class_name).toString      
+      new TestGenerator(basicCSharpSourceGenerator).generateImplTestStub(interface_declaration, class_name)      
    }
 
    private def void generateProxy(String project_root_path, InterfaceDeclaration interface_declaration)
    {
       val proxy_factory_name = getProxyFactoryName(interface_declaration)
-      cs_files.add(proxy_factory_name)
-      file_system_access.generateFile(project_root_path + proxy_factory_name.cs, ArtifactNature.DOTNET.label,
-         generateSourceFile(generateProxyFactory(proxy_factory_name, interface_declaration))
-      )
+      generateProjectSourceFile(project_root_path, proxy_factory_name,
+         generateProxyFactory(proxy_factory_name, interface_declaration))      
 
-      val proxy_protocol_name = interface_declaration.name + "Protocol"
-      cs_files.add(proxy_protocol_name)
-      file_system_access.generateFile(project_root_path + proxy_protocol_name.cs, ArtifactNature.DOTNET.label,
-         generateSourceFile(generateProxyProtocol(proxy_protocol_name, interface_declaration))
-      )
-
-      val proxy_data_name = interface_declaration.name + "Data"
-      cs_files.add(proxy_data_name)
-      file_system_access.generateFile(project_root_path + proxy_data_name.cs, ArtifactNature.DOTNET.label,
-         generateSourceFile(generateProxyData(proxy_data_name, interface_declaration))
-      )
-
+      val proxy_protocol_name = interface_declaration.proxyProtocolName
+      generateProjectSourceFile(project_root_path, proxy_protocol_name,
+            generateProxyProtocol(proxy_protocol_name, interface_declaration))
+      
+      val proxy_data_name = interface_declaration.proxyDataName
+      generateProjectSourceFile(project_root_path, proxy_data_name,
+            generateProxyData(proxy_data_name, interface_declaration))
+      
       val proxy_class_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)
-      cs_files.add(proxy_class_name)
-      file_system_access.generateFile(
-         project_root_path + proxy_class_name.cs, ArtifactNature.DOTNET.label,
-         generateSourceFile(generateProxyImplementation(proxy_class_name, interface_declaration))
-      )
+      generateProjectSourceFile(project_root_path, proxy_class_name,
+            generateProxyImplementation(proxy_class_name, interface_declaration))
       
       // generate named events
       for (event : interface_declaration.events.filter[name !== null])
       {
          val file_name = toText(event, interface_declaration) + "Impl"
-         cs_files.add(file_name)
-         file_system_access.generateFile(project_root_path + file_name.cs, ArtifactNature.DOTNET.label, 
-             generateSourceFile(new ProxyEventGenerator(basicCSharpSourceGenerator).generateProxyEvent(event, interface_declaration))
-         )
+         generateProjectSourceFile(project_root_path, file_name,
+            new ProxyEventGenerator(basicCSharpSourceGenerator).generateProxyEvent(event, interface_declaration))         
       }
    }
       
-   private def String generateProxyFactory(String class_name, InterfaceDeclaration interface_declaration)
+   private def generateProxyFactory(String class_name, InterfaceDeclaration interface_declaration)
    {
       reinitializeFile
-      new ProxyFactoryGenerator(basicCSharpSourceGenerator).generate(interface_declaration, class_name).toString
+      new ProxyFactoryGenerator(basicCSharpSourceGenerator).generate(interface_declaration, class_name)
    }
    
-   private def String generateProxyImplementation(String class_name, InterfaceDeclaration interface_declaration)
-   {
-      reinitializeFile
-      
-      new ProxyGenerator(basicCSharpSourceGenerator).generate(class_name, interface_declaration).toString
-   }
-   
-   private def String generateProxyData(String class_name, InterfaceDeclaration interface_declaration)
+   private def generateProxyImplementation(String class_name, InterfaceDeclaration interface_declaration)
    {
       reinitializeFile
       
-      new ProxyDataGenerator(basicCSharpSourceGenerator).generate(interface_declaration).toString
+      new ProxyGenerator(basicCSharpSourceGenerator).generate(class_name, interface_declaration)
    }
    
-   private def String generateProxyProtocol(String class_name, InterfaceDeclaration interface_declaration)
+   private def generateProxyData(String class_name, InterfaceDeclaration interface_declaration)
+   {
+      reinitializeFile
+      
+      new ProxyDataGenerator(basicCSharpSourceGenerator).generate(interface_declaration)
+   }
+   
+   private def generateProxyProtocol(String class_name, InterfaceDeclaration interface_declaration)
    {
       reinitializeFile
 
-      new ProxyProtocolGenerator(basicCSharpSourceGenerator).generate(class_name, interface_declaration).toString      
+      new ProxyProtocolGenerator(basicCSharpSourceGenerator).generate(class_name, interface_declaration)      
    }
    
    private def void generateServiceAPI(String project_root_path, InterfaceDeclaration interface_declaration)
@@ -634,7 +616,7 @@ class DotNetGenerator
          val file_name = Names.plain(abstract_type)
          cs_files.add(file_name)
          file_system_access.generateFile(project_root_path + file_name.cs, ArtifactNature.DOTNET.label,
-             generateSourceFile(new ServiceAPIGenerator(basicCSharpSourceGenerator).generate(interface_declaration, abstract_type).toString
+             generateSourceFile(new ServiceAPIGenerator(basicCSharpSourceGenerator).generate(interface_declaration, abstract_type)
          ))
       }
       
@@ -642,25 +624,18 @@ class DotNetGenerator
       for (event : interface_declaration.events.filter[name !== null])
       {
          val file_name = toText(event, interface_declaration)
-         cs_files.add(file_name)
-         file_system_access.generateFile(project_root_path + file_name.cs, ArtifactNature.DOTNET.label, generateSourceFile(generateEvent(event)))
+         generateProjectSourceFile(project_root_path, file_name,generateEvent(event))
       }
       
       // generate static class for interface-related constants
       var file_name = getConstName(interface_declaration)
-      cs_files.add(file_name)
-      file_system_access.generateFile(project_root_path + file_name.cs, ArtifactNature.DOTNET.label,
-      generateSourceFile(
-          new ServiceAPIGenerator(basicCSharpSourceGenerator).generateConstants(interface_declaration, file_name).toString
-      ))
+      generateProjectSourceFile(project_root_path, file_name,
+          new ServiceAPIGenerator(basicCSharpSourceGenerator).generateConstants(interface_declaration, file_name))
       
       reinitializeFile
       file_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)
-      cs_files.add(file_name)
-      file_system_access.generateFile(project_root_path + file_name.cs, ArtifactNature.DOTNET.label,
-        generateSourceFile(
-          new ServiceAPIGenerator(basicCSharpSourceGenerator).generateInterface(interface_declaration, file_name).toString
-      ))
+      generateProjectSourceFile(project_root_path, file_name,
+          new ServiceAPIGenerator(basicCSharpSourceGenerator).generateInterface(interface_declaration, file_name))
    }
    
    private def String generateSourceFile(String main_content)
@@ -699,11 +674,11 @@ class DotNetGenerator
       )      
    }
    
-   private def String generateEvent(EventDeclaration event)
+   private def generateEvent(EventDeclaration event)
    {
       reinitializeFile
       
-      new ServiceAPIGenerator(basicCSharpSourceGenerator).generateEvent(event).toString
+      new ServiceAPIGenerator(basicCSharpSourceGenerator).generateEvent(event)
    }
          
    private def void addGoogleProtocolBuffersReferences()

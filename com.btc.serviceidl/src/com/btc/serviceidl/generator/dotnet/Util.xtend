@@ -274,4 +274,14 @@ class Util
             throw new «typeResolver.resolve("System.NotSupportedException")»("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»");
         '''
     }
+    
+    def static getProxyProtocolName(InterfaceDeclaration interfaceDeclaration)
+    {
+        interfaceDeclaration.name + "Protocol"
+    }
+
+    def static getProxyDataName(InterfaceDeclaration interfaceDeclaration)
+    {
+        interfaceDeclaration.name + "Data"
+    }
 }
