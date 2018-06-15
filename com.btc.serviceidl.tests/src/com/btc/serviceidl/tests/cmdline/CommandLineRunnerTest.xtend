@@ -128,6 +128,21 @@ class CommandLineRunnerTest
     }
 
     @Test
+    def void testWithValidInputInProcessJavaOnly()
+    {
+        val file = new File(TEST_DATA_DIR + "base.idl")
+        val path = Files.createTempDirectory("test-gen")
+        assertEquals(0,
+            Main.mainBackend(Arrays.asList(file.absolutePath, "-javaOutputPath", path.toString + "/java")))
+        assertExpectedFiles(
+            #["java/btc.commons.core/pom.xml",
+                "java/btc.commons.core/src/main/java/com/btc/commons/core/common/InvalidArgumentException.java",
+                "java/btc.commons.core/src/main/java/com/btc/commons/core/common/ServiceFaultHandlerFactory.java",
+                "java/btc.commons.core/src/main/java/com/btc/commons/core/protobuf/TypesCodec.java",
+                "java/btc.commons.core/src/main/proto/Types.proto"], path)
+    }
+
+    @Test
     def void testWithValidInputWithWarningsInProcess()
     {
         val file = new File(TEST_DATA_DIR + "failable.idl")
