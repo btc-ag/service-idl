@@ -61,9 +61,9 @@ class ProtobufUtil
         val scopeDeterminant = object.scopeDeterminant
 
         if (object instanceof InterfaceDeclaration && Util.ensurePresentOrThrow(optProtobufType))
-            getOuterClassName(object) + "." + Names.plain(object) + "_" + optProtobufType.get.getName
+            getOuterClassName(object) + "." + Names.plain(object) + optProtobufType.get.getName
         else if (object instanceof FunctionDeclaration && Util.ensurePresentOrThrow(optProtobufType))
-            Names.plain(scopeDeterminant) + "_" + optProtobufType.get.getName + "_" + Names.plain(object) + "_" +
+            Names.plain(scopeDeterminant) + "_" + optProtobufType.get.getName + "_" + Names.plain(object) +
                 optProtobufType.get.getName
         else if (scopeDeterminant instanceof ModuleDeclaration)
             Constants.FILE_NAME_TYPES + "." + Names.plain(object)
@@ -93,7 +93,7 @@ class ProtobufUtil
     {
         // TODO change this function to accept a model construct rather than a bare name
         asProtobufName(name, CaseFormat.UPPER_CAMEL)
-    }        
+    }
 
     // TODO reconsider placement of this method
     def public static String resolveCodec(EObject object)
