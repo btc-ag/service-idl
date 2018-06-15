@@ -60,30 +60,31 @@ class Util
         '''
     }
 
+    // TODO this method is only used in the cpp generator. move it there or maybe generalize and use in all generators
     def public static String makeProtobufMethodName(String method_name, String type)
     {
         return method_name.toLowerCase + "_" + type.toLowerCase
     }
 
-    def public static String makeBasicMessageName(String name, String message_type)
+    def private static String makeBasicMessageName(String name, String message_type)
     {
-        return name + "_" + message_type
+        return name + message_type
     }
 
     /**
-     * Converts the given name into Protobuf request name.
+     * Converts the given name into Protobuf request message name.
      */
     def public static String asRequest(String name)
     {
-        return name + "_" + Constants.PROTOBUF_REQUEST
+        makeBasicMessageName(name, Constants.PROTOBUF_REQUEST)
     }
 
     /**
-     * Converts given name into Protobuf response name.
+     * Converts given name into Protobuf response message name.
      */
     def public static String asResponse(String name)
     {
-        return name + "_" + Constants.PROTOBUF_RESPONSE
+        makeBasicMessageName(name, Constants.PROTOBUF_RESPONSE)
     }
 
     def public static Deque<ModuleDeclaration> getModuleStack(EObject element)

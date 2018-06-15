@@ -47,7 +47,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         val export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
         file_system_access.generateFile(projectPath.append("include").append(export_header_file_name).toString,
-            generateExportHeader())
+            ArtifactNature.CPP.label, generateExportHeader())
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
 
         for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
@@ -83,13 +83,14 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         if (pt != ProjectType.TEST)
         {
             file_system_access.generateFile(include_path.append(main_header_file_name).toString,
+                ArtifactNature.CPP.label,
                 sourceGenerationStrategy.generateProjectHeader(createBasicCppGenerator(localParamBundle),
                     moduleStructureStrategy, interface_declaration, export_header_file_name))
             projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, main_header_file_name)
         }
 
         // sub-folder "./source"
-        file_system_access.generateFile(source_path.append(main_cpp_file_name).toString,
+        file_system_access.generateFile(source_path.append(main_cpp_file_name).toString, ArtifactNature.CPP.label,
             sourceGenerationStrategy.generateProjectSource(createBasicCppGenerator(localParamBundle),
                 interface_declaration))
         projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, main_cpp_file_name)

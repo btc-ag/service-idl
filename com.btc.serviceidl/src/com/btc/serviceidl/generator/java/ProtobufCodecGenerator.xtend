@@ -343,13 +343,13 @@ class ProtobufCodecGenerator
                 «val use_codec = GeneratorUtil.useCodec(member.type, ArtifactNature.JAVA)»
                 «val is_optional = member.optional»
                 «val api_type = basicJavaSourceGenerator.toText(member.type)»
-                «val member_name = member.name.asParameter»
-               «IF is_optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«api_type»«IF is_optional»>«ENDIF» «member_name» = «IF is_optional»(typedData.«IF is_sequence»get«ELSE»has«ENDIF»«member.name.asProtobufName»«IF is_sequence»Count«ENDIF»()«IF is_sequence» > 0«ENDIF») ? «ENDIF»«IF is_optional»Optional.of(«ENDIF»«IF use_codec»«IF !is_sequence»(«api_type») «ENDIF»«codec».decode«IF is_failable»Failable«ENDIF»(«ENDIF»«IF is_short || is_byte || is_char»(«IF is_byte»byte«ELSEIF is_char»char«ELSE»short«ENDIF») «ENDIF»typedData.get«member.name.asProtobufName»«IF is_sequence»List«ENDIF»()«IF use_codec»)«ENDIF»«IF is_optional»)«ENDIF»«IF is_optional» : Optional.empty()«ENDIF»;
+                «val parameterName = member.name.asParameter»
+                «basicJavaSourceGenerator.formatMaybeOptional(is_optional, api_type)» «parameterName» = «IF is_optional»(typedData.«IF is_sequence»get«ELSE»has«ENDIF»«member.name.asProtobufName»«IF is_sequence»Count«ENDIF»()«IF is_sequence» > 0«ENDIF») ? «ENDIF»«IF is_optional»Optional.of(«ENDIF»«IF use_codec»«IF !is_sequence»(«api_type») «ENDIF»«codec».decode«IF is_failable»Failable«ENDIF»(«ENDIF»«IF is_short || is_byte || is_char»(«IF is_byte»byte«ELSEIF is_char»char«ELSE»short«ENDIF») «ENDIF»typedData.get«member.name.asProtobufName»«IF is_sequence»List«ENDIF»()«IF use_codec»)«ENDIF»«IF is_optional»)«ENDIF»«IF is_optional» : Optional.empty()«ENDIF»;
             «ENDFOR»
             
             return new «api_type_name» (
                «FOR member : members SEPARATOR ","»
-                   «member.name.toFirstLower»
+                   «member.name.asParameter»
                «ENDFOR»
             );
         '''
@@ -401,18 +401,27 @@ class ProtobufCodecGenerator
                 «val use_codec = GeneratorUtil.useCodec(member.type, ArtifactNature.JAVA)»
                 «val is_sequence = member.type.isSequenceType»
                 «val is_failable = is_sequence && member.type.isFailable»
-                «val method_name = '''«IF is_sequence»addAll«ELSE»set«ENDIF»«member.name.asProtobufName»'''»
+                «val protobufName = member.name.asProtobufName»
+                «val commonName = member.commonName»
+                «val method_name = '''«IF is_sequence»addAll«ELSE»set«ENDIF»«protobufName»'''»
                 «IF member.optional»
-                    if (typedData.get«typeResolver.resolve(JavaClassNames.OPTIONAL).alias(member.name.toFirstUpper)»().isPresent())
+                    if (typedData.get«typeResolver.resolve(JavaClassNames.OPTIONAL).alias(commonName)»().isPresent())
                     {
-                        builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«member.name.toFirstUpper»().get()«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF use_codec»)«ENDIF»);
+                        builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«protobufName»().get()«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF use_codec»)«ENDIF»);
                     }
                 «ELSE»
-                builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«member.name.toFirstUpper»()«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF use_codec»)«ENDIF»);
+                builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«commonName»()«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF use_codec»)«ENDIF»);
                «ENDIF»
             «ENDFOR»
             return builder.build();
         '''
+    }
+    
+    // TODO change this to accept an IDL element rather than a bare string
+    private static def getCommonName(MemberElementWrapper member)
+    {
+        // TODO use a proper naming convention transformation
+        member.name.toFirstUpper
     }
 
     def resolveProtobuf(EObject object, Optional<ProtobufType> optionaProtobufTypel)

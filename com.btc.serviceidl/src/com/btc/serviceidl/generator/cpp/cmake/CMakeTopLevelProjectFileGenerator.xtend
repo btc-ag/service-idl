@@ -34,14 +34,16 @@ class CMakeTopLevelProjectFileGenerator
     def generate()
     {
         // TODO this depends on the implementation of ProjectGeneratorBaseBase.getProjectPath
-        val topLevelPath = modulePath.append(ArtifactNature.CPP.label)
+        val topLevelPath = modulePath
         file_system_access.generateFile(
             topLevelPath.append("conanfile.py").toString,
+            ArtifactNature.CPP.label,
             generateConanfile().toString
         )
 
         file_system_access.generateFile(
             topLevelPath.append("CMakeLists.txt").toString,
+            ArtifactNature.CPP.label,
             generateCMakeLists().toString
         )
     }
@@ -54,7 +56,9 @@ class CMakeTopLevelProjectFileGenerator
 
     private def modulePath()
     {
-        GeneratorUtil.asPath(new ParameterBundle.Builder().reset(module.moduleStack).build, ArtifactNature.CPP)
+        // TODO the commented-out version worked only when the moduleStack was empty. Something is inconsistent here        
+        // GeneratorUtil.asPath(new ParameterBundle.Builder().reset(module.moduleStack).build, ArtifactNature.CPP)
+        Path.fromOSString("")
     }
 
     def generateConanfile()

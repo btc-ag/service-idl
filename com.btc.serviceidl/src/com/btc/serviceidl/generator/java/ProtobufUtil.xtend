@@ -23,6 +23,7 @@ import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
+import com.google.common.base.CaseFormat
 import java.util.Optional
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -60,9 +61,9 @@ class ProtobufUtil
         val scopeDeterminant = object.scopeDeterminant
 
         if (object instanceof InterfaceDeclaration && Util.ensurePresentOrThrow(optProtobufType))
-            getOuterClassName(object) + "." + Names.plain(object) + "_" + optProtobufType.get.getName
+            getOuterClassName(object) + "." + Names.plain(object) + optProtobufType.get.getName
         else if (object instanceof FunctionDeclaration && Util.ensurePresentOrThrow(optProtobufType))
-            Names.plain(scopeDeterminant) + "_" + optProtobufType.get.getName + "_" + Names.plain(object) + "_" +
+            Names.plain(scopeDeterminant) + "_" + optProtobufType.get.getName + "_" + Names.plain(object) +
                 optProtobufType.get.getName
         else if (scopeDeterminant instanceof ModuleDeclaration)
             Constants.FILE_NAME_TYPES + "." + Names.plain(object)
@@ -88,9 +89,10 @@ class ProtobufUtil
             false
     }
 
-    def public static String asProtobufName(String name)
+    public static def String asProtobufName(String name)
     {
-        name.toLowerCase.toFirstUpper
+        // TODO change this function to accept a model construct rather than a bare name
+        asProtobufName(name, CaseFormat.UPPER_CAMEL)
     }
 
     // TODO reconsider placement of this method

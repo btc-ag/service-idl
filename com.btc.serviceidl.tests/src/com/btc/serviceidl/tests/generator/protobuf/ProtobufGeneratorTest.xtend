@@ -33,17 +33,66 @@ class ProtobufGeneratorTest extends AbstractGeneratorTest
     def void testBasic()
     {
         val fileCount = 3 // TODO why is the proto file generated for each language? 
-        val contents = ImmutableMap.of(IFileSystemAccess::DEFAULT_OUTPUT +
-            "cpp/modules/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/KeyValueStore.proto", '''
+        val contents = ImmutableMap.of(ArtifactNature.CPP.label +
+            "modules/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/KeyValueStore.proto", '''
             syntax = "proto2";
             package BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf;
-            message KeyValueStore_Request {
+            message KeyValueStoreRequest {
             }
-            message KeyValueStore_Response {
+            message KeyValueStoreResponse {
             }
         ''')
 
         checkGenerators(TestData.basic, fileCount, contents)
+    }
+
+    @Test
+    def void testFull()
+    {
+        val fileCount = 6 // TODO why is the proto file generated for each language?
+        
+        // TODO the exception message type is probably not used anywhere, and should be removed (if there were custom attributes, something like this might be required) 
+        val contents = ImmutableMap.of(ArtifactNature.CPP.label +
+            "modules/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/Types.proto", '''
+            syntax = "proto2";
+            package BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf;
+            
+            message EntryType
+            {
+               required bytes id = 1;
+               required string name = 2;
+            }
+            
+            message MyException
+            {
+            }
+        ''', ArtifactNature.CPP.label +
+            "modules/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/DemoX.proto", '''
+            syntax = "proto2";
+            package BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf;
+            import "modules/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/Types.proto";
+            
+            message DemoXRequest
+            {
+               message AddEntriesRequest
+               {
+                  repeated BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf.EntryType entries = 1;
+               }
+            
+               optional AddEntriesRequest add_entries_request = 1;
+            }
+            
+            message DemoXResponse
+            {
+               message AddEntriesResponse
+               {
+               }
+            
+               optional AddEntriesResponse add_entries_response = 1;
+            }
+        ''')
+
+        checkGenerators(TestData.full, fileCount, contents)
     }
 
     def void checkGenerators(CharSequence input, int fileCount, Map<String, String> contents)

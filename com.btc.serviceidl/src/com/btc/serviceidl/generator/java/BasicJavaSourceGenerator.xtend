@@ -28,6 +28,7 @@ import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
+import com.btc.serviceidl.util.MemberElementWrapper
 import com.btc.serviceidl.util.Util
 import java.util.ArrayList
 import java.util.Map
@@ -72,7 +73,17 @@ class BasicJavaSourceGenerator
 
     def public dispatch String toText(MemberElement element)
     {
-        '''«IF element.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(element.type)»«IF element.optional»>«ENDIF»'''
+        new MemberElementWrapper(element).format.toString
+    }
+    
+    private def format(MemberElementWrapper element)
+    {
+        formatMaybeOptional(element.optional, toText(element.type))
+    }
+
+    public def formatMaybeOptional(boolean isOptional, String typeName)
+    {
+        '''«IF isOptional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«typeName»«IF isOptional»>«ENDIF»'''       
     }
 
     def public dispatch String toText(ReturnTypeElement element)
@@ -192,17 +203,11 @@ class BasicJavaSourceGenerator
     {
         val class_members = new ArrayList<Pair<String, String>>
         for (member : element.effectiveMembers)
-            class_members.add(
-                Pair.of(
-                    member.
-                        name, '''«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(member.type)»«IF member.optional»>«ENDIF»'''))
+            class_members.add(Pair.of(member.name, member.format.toString))
 
         val all_class_members = new ArrayList<Pair<String, String>>
         for (member : element.allMembers)
-            all_class_members.add(
-                Pair.of(
-                    member.
-                        name, '''«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«toText(member.type)»«IF member.optional»>«ENDIF»'''))
+            all_class_members.add(Pair.of(member.name, member.format.toString))
 
         val is_derived = ( element.supertype !== null )
         val related_event = element.getRelatedEvent
