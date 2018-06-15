@@ -107,7 +107,7 @@ class ProtobufUtilTest
             InterfaceDeclaration).findFirst [
             it.name == "Bar"
         ], Optional.of(ProtobufType.REQUEST));
-        assertEquals("com.foo.bar.protobuf.BarOuterClass.Bar_Request", result.getFullyQualifiedName());
+        assertEquals("com.foo.bar.protobuf.BarOuterClass.BarRequest", result.getFullyQualifiedName());
     }
     
     @Test

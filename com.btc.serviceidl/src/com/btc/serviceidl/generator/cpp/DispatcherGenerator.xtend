@@ -19,14 +19,17 @@ import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.util.Constants
+import com.google.common.base.CaseFormat
 import java.util.Optional
 import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
+import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors
 class DispatcherGenerator extends BasicCppGenerator
@@ -83,10 +86,10 @@ class DispatcherGenerator extends BasicCppGenerator
                ParseRequestOrLogAndThrow( «class_name.shortName»::GetLogger(), *protoBufRequest, «IF targetVersion == "0.10"»(*request)[0]«ELSE»*request«ENDIF» );
                
                «FOR function : interface_declaration.functions»
-                   «val protobuf_request_method = com.btc.serviceidl.util.Util.makeProtobufMethodName(function.name, Constants.PROTOBUF_REQUEST)»
+                   «val protobuf_request_method = function.name.asRequest.asProtobufName(CaseFormat.LOWER_UNDERSCORE)»
                    «val is_sync = function.isSync»
                    «val is_void = function.returnedType.isVoid»
-                   «val protobuf_response_method = com.btc.serviceidl.util.Util.makeProtobufMethodName(function.name, Constants.PROTOBUF_RESPONSE)»
+                   «val protobuf_response_method = function.name.asResponse.asProtobufName(CaseFormat.LOWER_UNDERSCORE)»
                    «val output_parameters = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
                    if ( protoBufRequest->has_«protobuf_request_method»() )
                    {
@@ -103,12 +106,12 @@ class DispatcherGenerator extends BasicCppGenerator
                                          «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.REQUEST).fullyQualifiedName»
                                          < «IF is_failable»«typeResolver.resolveFailableProtobufType(param.paramType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF», «resolve(ulimate_type)» >
                                      «ENDIF»
-                                     (concreteRequest.«param.paramName.toLowerCase»()) );
+                                     (concreteRequest.«param.paramName.asProtobufName(CaseFormat.LOWER_UNDERSCORE)»()) );
                               «ELSE»
-                                  auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Decode«IF com.btc.serviceidl.util.Util.isUUIDType(param.paramType)»UUID«ENDIF»(concreteRequest.«param.paramName.toLowerCase»()) );
+                                  auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Decode«IF com.btc.serviceidl.util.Util.isUUIDType(param.paramType)»UUID«ENDIF»(concreteRequest.«param.paramName.asProtobufName(CaseFormat.LOWER_UNDERSCORE)»()) );
                               «ENDIF»
                           «ELSE»
-                              auto «param.paramName»( concreteRequest.«param.paramName.toLowerCase»() );
+                              auto «param.paramName»( concreteRequest.«param.paramName.asProtobufName(CaseFormat.LOWER_UNDERSCORE)»() );
                           «ENDIF»
                       «ENDFOR»
                       // decode request <--
@@ -139,11 +142,11 @@ class DispatcherGenerator extends BasicCppGenerator
                «IF !is_void || !output_parameters.empty»
                    // encode response -->
                    auto * const concreteResponse( response->mutable_«protobuf_response_method»() );
-                   «IF !is_void»«makeEncodeResponse(function.returnedType, interface_declaration, function.name.toLowerCase, Optional.empty)»«ENDIF»
+                   «IF !is_void»«makeEncodeResponse(function.returnedType, interface_declaration, function.name.asProtobufName(CaseFormat.LOWER_UNDERSCORE), Optional.empty)»«ENDIF»
                    «IF !output_parameters.empty»
                        // handle [out] parameters
                        «FOR param : output_parameters»
-                           «makeEncodeResponse(param.paramType, interface_declaration, param.paramName.toLowerCase, Optional.of(param.paramName))»
+                           «makeEncodeResponse(param.paramType, interface_declaration, param.paramName.asProtobufName(CaseFormat.LOWER_UNDERSCORE), Optional.of(param.paramName))»
                        «ENDFOR»
                    «ENDIF»
                    // encode response <--

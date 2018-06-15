@@ -16,9 +16,11 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.util.Constants
+import com.google.common.base.CaseFormat
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
+import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
@@ -88,7 +90,7 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
            var request = «protobuf_request».ParseFrom(requestBuffer.PopFront());
            
            «FOR func : interface_declaration.functions»
-           «val request_name = func.name.toLowerCase.toFirstUpper + Constants.PROTOBUF_REQUEST»
+           «val request_name = func.name.asProtobufName(CaseFormat.UPPER_CAMEL) + Constants.PROTOBUF_REQUEST»
            «val is_void = func.returnedType.isVoid»
            «IF func != interface_declaration.functions.head»else «ENDIF»if (request.Has«request_name»)
            {
@@ -108,7 +110,7 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
                        «val use_codec = GeneratorUtil.useCodec(param, ArtifactNature.DOTNET)»
                        «val decodeMethod = getDecodeMethod(param.paramType)»
                        «IF is_input»
-                          «IF use_codec»(«resolveDecode(param.paramType)») «resolveCodec(typeResolver, param_bundle, param.paramType)».«decodeMethod»(«ENDIF»«IF use_codec»«resolve(param.paramType, ProjectType.PROTOBUF).alias("request")»«ELSE»request«ENDIF».«request_name».«param.paramName.toLowerCase.toFirstUpper»«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»List«ENDIF»«IF use_codec»)«ENDIF»
+                          «IF use_codec»(«resolveDecode(param.paramType)») «resolveCodec(typeResolver, param_bundle, param.paramType)».«decodeMethod»(«ENDIF»«IF use_codec»«resolve(param.paramType, ProjectType.PROTOBUF).alias("request")»«ELSE»request«ENDIF».«request_name».«param.paramName.asProtobufName(CaseFormat.UPPER_CAMEL)»«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»List«ENDIF»«IF use_codec»)«ENDIF»
                        «ELSE»
                           out «param.paramName.asParameter»
                        «ENDIF»
@@ -118,19 +120,19 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
               // deliver response
               var responseBuilder = «protobuf_response».Types.«com.btc.serviceidl.util.Util.asResponse(func.name)».CreateBuilder()
                  «val use_codec = GeneratorUtil.useCodec(func.returnedType, ArtifactNature.DOTNET)»
-                 «val method_name = if (com.btc.serviceidl.util.Util.isSequenceType(func.returnedType)) "AddRange" + func.name.toLowerCase.toFirstUpper else "Set" + func.name.toLowerCase.toFirstUpper»
+                 «val method_name = if (com.btc.serviceidl.util.Util.isSequenceType(func.returnedType)) "AddRange" + func.name.asProtobufName(CaseFormat.UPPER_CAMEL) else "Set" + func.name.asProtobufName(CaseFormat.UPPER_CAMEL)»
                  «val encodeMethod = getEncodeMethod(func.returnedType)»
                  «IF !is_void».«method_name»(«IF use_codec»(«resolveEncode(func.returnedType)») «resolveCodec(typeResolver, param_bundle, func.returnedType)».«encodeMethod»(«ENDIF»«IF use_codec»«resolve(func.returnedType).alias("result")»«ELSE»result«ENDIF»«IF use_codec»)«ENDIF»)«ENDIF»
                  «FOR param : out_params»
                     «val param_name = param.paramName.asParameter»
                     «val use_codec_param = GeneratorUtil.useCodec(param.paramType, ArtifactNature.DOTNET)»
-                    «val method_name_param = if (com.btc.serviceidl.util.Util.isSequenceType(param.paramType)) "AddRange" + param.paramName.toLowerCase.toFirstUpper else "Set" + param.paramName.toLowerCase.toFirstUpper»
+                    «val method_name_param = if (com.btc.serviceidl.util.Util.isSequenceType(param.paramType)) "AddRange" + param.paramName.asProtobufName(CaseFormat.UPPER_CAMEL)»
                     «val encode_method_param = getEncodeMethod(param.paramType)»
                     .«method_name_param»(«IF use_codec_param»(«resolveEncode(param.paramType)») «resolveCodec(typeResolver, param_bundle, param.paramType)».«encode_method_param»(«ENDIF»«IF use_codec_param»«resolve(param.paramType).alias(param_name)»«ELSE»«param_name»«ENDIF»«IF use_codec_param»)«ENDIF»)
                  «ENDFOR»
                  ;
               
-              var response = «protobuf_response».CreateBuilder().Set«func.name.toLowerCase.toFirstUpper»Response(responseBuilder).Build();
+              var response = «protobuf_response».CreateBuilder().Set«func.name.asProtobufName(CaseFormat.UPPER_CAMEL)»Response(responseBuilder).Build();
               return new «resolve("BTC.CAB.ServiceComm.NET.Common.MessageBuffer")»(response.ToByteArray());
            }
            «ENDFOR»

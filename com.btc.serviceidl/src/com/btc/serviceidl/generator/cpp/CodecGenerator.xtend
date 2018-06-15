@@ -19,9 +19,11 @@ import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.MemberElementWrapper
+import com.google.common.base.CaseFormat
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
+import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.TypeResolverExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
@@ -539,7 +541,7 @@ class CodecGenerator extends BasicCppGenerator
         val is_pointer = useSmartPointer(element.container, element.type)
         val is_optional = element.optional
         val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(element.type)
-        val protobuf_name = element.name.toLowerCase
+        val protobuf_name = element.name.asProtobufName(CaseFormat.LOWER_UNDERSCORE)
         val is_failable = com.btc.serviceidl.util.Util.isFailable(element.type)
         val codec_name = if (use_codec) typeResolver.resolveDecode(paramBundle, element.type, container, !is_failable)
 
@@ -594,9 +596,9 @@ class CodecGenerator extends BasicCppGenerator
         '''
             «IF optional»if (api_input.«element.name.asMember»«IF is_pointer» !== nullptr«ELSE».GetIsPresent()«ENDIF»)«ENDIF»
             «IF use_codec && !(com.btc.serviceidl.util.Util.isByte(element.type) || com.btc.serviceidl.util.Util.isInt16(element.type) || com.btc.serviceidl.util.Util.isChar(element.type) || is_enum)»
-                «IF optional»   «ENDIF»«resolveEncode(element.type)»( «IF optional»*( «ENDIF»api_input.«element.name.asMember»«IF optional && !is_pointer».GetValue()«ENDIF»«IF optional» )«ENDIF», protobuf_output->mutable_«element.name.toLowerCase»() );
+                «IF optional»   «ENDIF»«resolveEncode(element.type)»( «IF optional»*( «ENDIF»api_input.«element.name.asMember»«IF optional && !is_pointer».GetValue()«ENDIF»«IF optional» )«ENDIF», protobuf_output->mutable_«element.name.asProtobufName(CaseFormat.LOWER_UNDERSCORE)»() );
             «ELSE»
-                «IF optional»   «ENDIF»protobuf_output->set_«element.name.toLowerCase»(«IF is_enum»«resolveEncode(element.type)»( «ENDIF»«IF optional»*«ENDIF»api_input.«element.name.asMember»«IF optional && !is_pointer».GetValue()«ENDIF» «IF is_enum»)«ENDIF»);
+                «IF optional»   «ENDIF»protobuf_output->set_«element.name.asProtobufName(CaseFormat.LOWER_UNDERSCORE)»(«IF is_enum»«resolveEncode(element.type)»( «ENDIF»«IF optional»*«ENDIF»api_input.«element.name.asMember»«IF optional && !is_pointer».GetValue()«ENDIF» «IF is_enum»)«ENDIF»);
             «ENDIF»
         '''
     }

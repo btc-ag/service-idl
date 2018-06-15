@@ -48,12 +48,13 @@ class ProtobufUtil
 
         val paramBundle = ParameterBundle.createBuilder(scope_determinant.moduleStack).with(ProjectType.PROTOBUF).build
 
+        // TODO this is cloned by java.ProtobufUtil(.getLocalName?) 
         var result = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.NAMESPACE)
         result += Constants.SEPARATOR_NAMESPACE
         if (object instanceof InterfaceDeclaration)
-            result += Names.plain(object) + "_" + protobuf_type.getName
+            result += Names.plain(object) + protobuf_type.getName
         else if (object instanceof FunctionDeclaration)
-            result += Names.plain(scope_determinant) + "_" + protobuf_type.getName + "_" + Names.plain(object) + "_" +
+            result += Names.plain(scope_determinant) + "_" + protobuf_type.getName + "_" + Names.plain(object) +
                 protobuf_type.getName
         else
             result += Names.plain(object)
