@@ -129,6 +129,12 @@ class ProtobufUtilTest
     }
 
     @Test
+    def void testAsProtobufNameFromUpperCamelAbbrevFollowedByWord()
+    {
+        assertEquals("AbcWord", ProtobufUtil.asProtobufName("ABCWord"))
+    }
+
+    @Test
     def void testAsProtobufNameFromLowerSnake()
     {
         assertEquals("LowerSnake", ProtobufUtil.asProtobufName("lower_snake"))
