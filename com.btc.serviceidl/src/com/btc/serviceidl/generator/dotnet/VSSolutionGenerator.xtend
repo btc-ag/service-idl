@@ -3,7 +3,6 @@ package com.btc.serviceidl.generator.dotnet
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 import com.btc.serviceidl.generator.common.ArtifactNature
-import com.btc.serviceidl.util.Constants
 
 @Accessors(NONE)
 class VSSolutionGenerator
@@ -14,8 +13,7 @@ class VSSolutionGenerator
 
     def generateSolutionFile()
     {
-        fileSystemAccess.generateFile(ArtifactNature.DOTNET.label + Constants.SEPARATOR_FILE + projectName + ".sln",
-            generateContent)
+        fileSystemAccess.generateFile(projectName + ".sln", ArtifactNature.DOTNET.label, generateContent)
     }
 
     def generateContent()

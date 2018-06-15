@@ -16,6 +16,7 @@ package com.btc.serviceidl.generator;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,6 +27,8 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -39,6 +42,7 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.validation.Issue;
 
 import com.btc.serviceidl.IdlStandaloneSetup;
+import com.btc.serviceidl.generator.common.ArtifactNature;
 import com.btc.serviceidl.generator.common.ProjectType;
 import com.btc.serviceidl.generator.cpp.cab.CABModuleStructureStrategy;
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSetFactory;
@@ -50,6 +54,9 @@ import com.google.inject.Provider;
 public class Main {
 
     public static final String OPTION_OUTPUT_PATH                            = "outputPath";
+    public static final String OPTION_CPP_OUTPUT_PATH                        = "cppOutputPath";
+    public static final String OPTION_JAVA_OUTPUT_PATH                       = "javaOutputPath";
+    public static final String OPTION_DOTNET_OUTPUT_PATH                     = "dotnetOutputPath";
     public static final String OPTION_CPP_PROJECT_SYSTEM                     = "cppProjectSystem";
     public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE         = "cmake";
     public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ = "prins-vcxproj";
@@ -75,9 +82,36 @@ public class Main {
         Main main = injector.getInstance(Main.class);
 
         CommandLine commandLine = parseCommandLine(args);
-        boolean res = main.tryRunGenerator(commandLine.getArgs(),
-                commandLine.hasOption(OPTION_OUTPUT_PATH) ? commandLine.getOptionValue(OPTION_OUTPUT_PATH)
-                        : System.getProperty("user.dir"),
+
+        final boolean genericOutputPath = commandLine.hasOption(OPTION_OUTPUT_PATH);
+        final boolean specificOutputPath = commandLine.hasOption(OPTION_CPP_OUTPUT_PATH)
+                || commandLine.hasOption(OPTION_JAVA_OUTPUT_PATH) || commandLine.hasOption(OPTION_DOTNET_OUTPUT_PATH);
+
+        if (genericOutputPath == specificOutputPath) {
+            System.err.println("You must specify *either* a generic output path using -" + OPTION_OUTPUT_PATH
+                    + ", or one or more technology-specific output paths using -" + OPTION_CPP_OUTPUT_PATH + ", -"
+                    + OPTION_JAVA_OUTPUT_PATH + ", -" + OPTION_DOTNET_OUTPUT_PATH);
+            return EXIT_CODE_INVALID_ARGUMENTS;
+        }
+        Map<ArtifactNature, IPath> outputPaths = new HashMap<ArtifactNature, IPath>();
+        if (genericOutputPath) {
+            IPath baseOutputPath = new Path(commandLine.getOptionValue(OPTION_OUTPUT_PATH));
+            for (ArtifactNature artifactNature : ArtifactNature.values()) {
+                outputPaths.put(artifactNature, baseOutputPath.append(artifactNature.getLabel()));
+            }
+        } else {
+            if (commandLine.hasOption(OPTION_CPP_OUTPUT_PATH)) {
+                outputPaths.put(ArtifactNature.CPP, new Path(commandLine.getOptionValue(OPTION_CPP_OUTPUT_PATH)));
+            }
+            if (commandLine.hasOption(OPTION_JAVA_OUTPUT_PATH)) {
+                outputPaths.put(ArtifactNature.JAVA, new Path(commandLine.getOptionValue(OPTION_JAVA_OUTPUT_PATH)));
+            }
+            if (commandLine.hasOption(OPTION_DOTNET_OUTPUT_PATH)) {
+                outputPaths.put(ArtifactNature.DOTNET, new Path(commandLine.getOptionValue(OPTION_DOTNET_OUTPUT_PATH)));
+            }
+        }
+
+        final boolean res = main.tryRunGenerator(commandLine.getArgs(), outputPaths,
                 commandLine.hasOption(OPTION_CPP_PROJECT_SYSTEM) ? commandLine.getOptionValue(OPTION_CPP_PROJECT_SYSTEM)
                         : OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT,
                 commandLine.hasOption(OPTION_VERSIONS) ? splitVersions(commandLine.getOptionValue(OPTION_VERSIONS))
@@ -101,7 +135,10 @@ public class Main {
 
     private static Options createOptions() {
         Options options = new Options();
-        options.addOption(OPTION_OUTPUT_PATH, true, "base path for generated output files");
+        options.addOption(OPTION_OUTPUT_PATH, true, "base path for generated output files (all technologies)");
+        options.addOption(OPTION_CPP_OUTPUT_PATH, true, "base path for generated C++ output files");
+        options.addOption(OPTION_JAVA_OUTPUT_PATH, true, "base path for generated Java output files");
+        options.addOption(OPTION_DOTNET_OUTPUT_PATH, true, "base path for generated .NET output files");
         options.addOption(OPTION_CPP_PROJECT_SYSTEM, true, "C++ project system ("
                 + OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE + "," + OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ + ")");
         options.addOption(OPTION_VERSIONS, true, "target Version overrides");
@@ -134,7 +171,7 @@ public class Main {
     @Inject
     private IGenerationSettingsProvider generationSettingsProvider;
 
-    private boolean tryRunGenerator(String[] inputFiles, String outputPath, String projectSystem,
+    private boolean tryRunGenerator(String[] inputFiles, Map<ArtifactNature, IPath> outputPaths, String projectSystem,
             Iterable<Map.Entry<String, String>> versions) {
         // Load the resource
         ResourceSet set = resourceSetProvider.get();
@@ -169,7 +206,16 @@ public class Main {
         }
 
         // Configure and start the generator
-        fileAccess.setOutputPath(outputPath);
+        for (ArtifactNature artifactNature : outputPaths.keySet()) {
+            final IPath outputPath = outputPaths.get(artifactNature);
+            System.out
+                    .println("Configuring generation of " + artifactNature.getLabel() + " artifacts to " + outputPath);
+            fileAccess.setOutputPath(artifactNature.getLabel(), outputPath.toOSString());
+        }
+
+        DefaultGenerationSettingsProvider defaultGenerationSettingsProvider = (DefaultGenerationSettingsProvider) generationSettingsProvider;
+        defaultGenerationSettingsProvider.languages = outputPaths.keySet();
+
         GeneratorContext context = new GeneratorContext();
         context.setCancelIndicator(CancelIndicator.NullImpl);
 

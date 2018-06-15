@@ -13,9 +13,14 @@ Using the standalone command line generator
 
 There is no release yet, but you can download the current snapshot from https://oss.jfrog.org/artifactory/oss-snapshot-local/com/btc/serviceidl/com.btc.serviceidl.plainjava/1.0.0-SNAPSHOT/com.btc.serviceidl.plainjava-1.0.0-SNAPSHOT.jar
 
-When you downloaded it, you need to specify an IDL input file and an output directory, which must already exist:
+When you downloaded it, you need to specify an IDL input file and output directories, which must already exist. You can either specify a common output directory for all target technologies:
 ```
 java -jar com.btc.serviceidl.plainjava-1.0.0-SNAPSHOT.jar input.idl -outputPath out -cppProjectSystem cmake
+```
+Alternatively, you can specify specific output directories for each target technology, in which case only the generators for target technologies with a specified output directory will be used. 
+For example, the following command will only generate .NET artifacts:
+```
+java -jar com.btc.serviceidl.plainjava-1.0.0-SNAPSHOT.jar input.idl -dotnetOutputPath outDotNet
 ```
 
 Currently, the generator generates all artifacts (API, Proxy, Dispatcher, ...) for all target technologies (C++, C#/.NET, Java). This will be made configurable in the future.

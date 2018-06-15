@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp.prins
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.IProjectReference
@@ -45,10 +46,12 @@ class VSProjectFileGenerator
         // root folder of the project
         file_system_access.generateFile(
             project_path + Constants.SEPARATOR_FILE + project_name.vcxproj,
+            ArtifactNature.CPP.label,
             generateVcxproj(project_name)
         )
         file_system_access.generateFile(
             project_path + Constants.SEPARATOR_FILE + project_name.vcxproj.filters,
+            ArtifactNature.CPP.label,
             generateVcxprojFilters()
         )
         // *.vcxproj.user file for executable projects
@@ -56,6 +59,7 @@ class VSProjectFileGenerator
         {
             file_system_access.generateFile(
                 project_path + Constants.SEPARATOR_FILE + project_name.vcxproj.user,
+                ArtifactNature.CPP.label,
                 generateVcxprojUser(project_type)
             )
         }

@@ -21,6 +21,7 @@ import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
+import com.btc.serviceidl.generator.common.ArtifactNature
 
 @Accessors(NONE)
 class CMakeProjectFileGenerator
@@ -41,10 +42,12 @@ class CMakeProjectFileGenerator
     {
         file_system_access.generateFile(
             project_path.append("build").append("make.cmakeset").toString,
+            ArtifactNature.CPP.label,
             generateCMakeSet().toString
         )
         file_system_access.generateFile(
             project_path.append("build").append("CMakeLists.txt").toString,
+            ArtifactNature.CPP.label,
             generateCMakeLists().toString
         )
     }
