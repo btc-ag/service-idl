@@ -1,0 +1,8 @@
+module Test {
+
+struct ModificationEvent {
+    string key;
+    optional string value;
+};
+
+}

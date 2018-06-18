@@ -33,69 +33,6 @@ class IdlParsingTest
     @Inject Provider<ResourceSet> rsp
 
     @Test
-    def void testParsing()
-    {
-        val spec = '''
-            virtual module BTC {
-            virtual module PRINS { 
-            module Infrastructure {
-            module ServiceHost {
-            module Demo { 
-            module API {
-            
-            interface KeyValueStore[version=1.0.0] { 
-            };
-            }
-            }
-            }
-            }
-            }
-            }
-        '''.parse
-
-        spec.assertNoErrors;
-
-    /*
-     * val interface = ((((((spec.defintions.get(0) as module).defintions.get(0) as module).defintions.get(0) as module).defintions.get(0) as module)
-     *                    .defintions.get(0) as module).defintions.get(0) as module).defintions.get(0) as interface_decl;
-     * Assert::assertEquals("KeyValueStore", interface.name);
-     */
-    }
-
-    @Test
-    def void testInhertiance()
-    {
-        val spec = '''
-            virtual module BTC {
-            virtual module PRINS { 
-            module Infrastructure {
-            module ServiceHost {
-            module Demo { 
-            module API {
-            
-            interface KeyValueStore[version=1.0.0] { 
-            };
-            
-            interface IntfB : KeyValueStore {
-            };
-            }
-            }
-            }
-            }
-            }
-            }
-        '''.parse
-
-        spec.assertNoErrors;
-
-    /*
-     * val interface = ((((((spec.defintions.get(0) as module).defintions.get(0) as module).defintions.get(0) as module).defintions.get(0) as module)
-     *                    .defintions.get(0) as module).defintions.get(0) as module).defintions.get(0) as interface_decl;
-     * Assert::assertEquals("KeyValueStore", interface.name);
-     */
-    }
-
-    @Test
     def void testExceptionDecl()
     {
 
@@ -128,22 +65,6 @@ class IdlParsingTest
      */
     }
 
-    @Test
-    def void testTypeDefs()
-    {
-        val spec = '''
-            
-            module Test {
-            
-            		typedef string KeyType;
-            		typedef string ValueType;
-            }
-        '''.parse;
-
-        spec.assertNoErrors;
-
-    }
-
     @Ignore
     @Test
     def void testTemplates()
@@ -167,102 +88,6 @@ class IdlParsingTest
 //		val typedef = spec.defintions.get(0).module.defintions.get(0).interfaceDecl.contains.get(0).typeDecl.aliasType;
 //		Assert::assertEquals("KeyType", typedef.name);
 //		Assert::assertEquals("string", typedef.containedType.baseType.primitive.charstrType.stringType.PK_STRING);
-    }
-
-    @Test
-    def void testStructs()
-    {
-        val spec = '''
-            
-            module Test {
-            
-            interface KeyValueStore {
-            	
-            		typedef string KeyType;
-            		 		typedef string ValueType;
-            		
-            
-            	struct ModificationEvent {
-            	     	KeyType key;
-            		optional ValueType value;
-            		 };
-            
-            };
-            }
-        '''.parse;
-
-        spec.assertNoErrors;
-    }
-
-    @Test
-    def void testEnums()
-    {
-        val spec = '''
-            
-            module Test {
-            
-            interface KeyValueStore {
-            	
-            	enum ModificationKind {
-            						ModificationKind_Added,
-            							ModificationKind_Modified,
-            							ModificationKind_Removed
-            					};
-            					
-            	struct ModificationEvent {
-            		 ModificationKind modificationKind;
-            		 };
-            
-            };
-            }
-        '''.parse;
-
-        spec.assertNoErrors;
-    }
-
-    @Test
-    def void testOperations()
-    {
-        val spec = '''
-            
-            module Test {
-            
-            interface KeyValueStore {
-            	
-            	typedef string KeyType;
-            	typedef string ValueType;
-            	
-            	struct EntryType 
-            	{
-            		KeyType key;
-            		ValueType value;
-            	};
-            	 
-            
-            		enum ModificationKind {
-            			ModificationKind_Added,
-            				ModificationKind_Modified,
-            				ModificationKind_Removed
-            		};
-            
-            	struct ModificationEvent {
-            	     	KeyType key;
-            		optional ValueType value;
-            		
-            		ModificationKind modificationKind;
-            		 };
-            		 
-            		 AddEntries(in sequence<EntryType> entries) returns void;
-            
-            /** Queries the keys of entries with a given prefix asynchronously. */
-               QueryKeysWithPrefix(in KeyType prefix) returns sequence<KeyType> ; // async keyword? nein! Default ist async. sync als spezielles Keyword
-               //Wie das Reingeben eines Inseratables machen?
-            
-            };
-            }
-        '''.parse;
-
-        spec.assertNoErrors;
     }
 
     @Test
