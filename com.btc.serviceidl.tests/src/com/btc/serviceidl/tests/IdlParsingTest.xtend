@@ -7,7 +7,6 @@ import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.tests.testdata.TestData
 import com.google.inject.Inject
 import com.google.inject.Provider
-import java.util.ArrayList
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
@@ -23,8 +22,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import static com.google.common.collect.Iterables.isEmpty
-import java.util.Map.Entry
-import java.util.List
+import static extension com.btc.serviceidl.tests.TestExtensions.*
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -167,26 +165,6 @@ class IdlParsingTest
                     #[]
             ]
         )
-    }
-
-    static def doForEachTestCase(Iterable<Entry<String, CharSequence>> entries,
-        (Entry<String, CharSequence>)=>Iterable<String> runTestCase)
-    {
-        val errors = new ArrayList<String>
-        for (testCase : TestData.goodTestCases)
-        {
-            System.out.println("Test case '" + testCase.key + "'")
-            try
-            {
-                errors.addAll(runTestCase.apply(testCase))
-            }
-            catch (Exception e)
-            {
-                errors.add("Test case '" + testCase.key + "': Exception when parsing: " + e.toString)
-            }
-        }
-
-        Assert.assertTrue(String.join("\n", errors), errors.empty)
     }
 
 }
