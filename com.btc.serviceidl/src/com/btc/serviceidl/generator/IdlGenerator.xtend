@@ -79,7 +79,7 @@ class IdlGenerator implements IGenerator2
         if (projectTypes.contains(ProjectType.PROTOBUF))
         {
             protobuf_generator = new ProtobufGenerator
-            protobuf_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider)
+            protobuf_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, languages)
             protobuf_artifacts = protobuf_generator.generatedArtifacts
         }
 

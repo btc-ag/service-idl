@@ -86,7 +86,7 @@ class ProtobufGenerator
       return generated_artifacts
    }
    
-   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp)
+   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Iterable<ArtifactNature> languages)
    {
       resource = res
       file_system_access = fsa
@@ -117,9 +117,8 @@ class ProtobufGenerator
             param_bundle.reset(ProjectType.PROTOBUF)
             val artifact_name = Constants.FILE_NAME_TYPES
             
-            generateProtobufFile(ArtifactNature.CPP, module, artifact_name, generateModuleContent(ArtifactNature.CPP, module, module_contents))
-            generateProtobufFile(ArtifactNature.JAVA, module, artifact_name, generateModuleContent(ArtifactNature.JAVA, module, module_contents))
-            generateProtobufFile(ArtifactNature.DOTNET, module, artifact_name, generateModuleContent(ArtifactNature.DOTNET, module, module_contents))
+            for (language : languages) 
+                generateProtobufFile(language, module, artifact_name, generateModuleContent(language, module, module_contents))
             
             generated_artifacts.put(module, artifact_name)
          }
