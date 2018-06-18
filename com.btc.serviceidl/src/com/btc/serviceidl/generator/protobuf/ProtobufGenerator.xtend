@@ -52,8 +52,10 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
+import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.google.common.base.CaseFormat
 
 class ProtobufGenerator
 {
@@ -100,9 +102,9 @@ class ProtobufGenerator
          param_bundle.reset(ProjectType.PROTOBUF)
          val artifact_name = interface_declaration.name
 
-         generateProtobufFile(ArtifactNature.CPP, interface_declaration, artifact_name, generateInterface(ArtifactNature.CPP, interface_declaration))
-         generateProtobufFile(ArtifactNature.JAVA, interface_declaration, artifact_name, generateInterface(ArtifactNature.JAVA, interface_declaration))
-         generateProtobufFile(ArtifactNature.DOTNET, interface_declaration, artifact_name, generateInterface(ArtifactNature.DOTNET, interface_declaration))
+         // TODO why is the proto file generated for each language?
+         for (language : languages) 
+             generateProtobufFile(language, interface_declaration, artifact_name, generateInterface(language, interface_declaration))
          
          generated_artifacts.put(interface_declaration, artifact_name)
       }
@@ -186,32 +188,32 @@ class ProtobufGenerator
       «generateFailable(an, interface_declaration)»
       «generateTypes(an, interface_declaration, interface_declaration.contains.toList)»
       
-      message «Util.makeBasicMessageName(interface_declaration.name, Constants.PROTOBUF_REQUEST)»
+      message «interface_declaration.name.asRequest»
       {
          «FOR function : interface_declaration.functions SEPARATOR System.lineSeparator»
-         message «Util.makeBasicMessageName(function.name, Constants.PROTOBUF_REQUEST)»
+         message «function.name.asRequest»
          {
             «var field_id = new AtomicInteger»
             «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
                «IF Util.isSequenceType(param.paramType)»
-                  «makeSequence(an, Util.getUltimateType(param.paramType), Util.isFailable(param.paramType), param, interface_declaration, param.paramName, field_id)»
+                  «makeSequence(an, Util.getUltimateType(param.paramType), Util.isFailable(param.paramType), param, interface_declaration, param.paramName.asProtoFileAttributeName, field_id)»
                «ELSE»
-                  required «resolve(an, param.paramType, interface_declaration, interface_declaration)» «param.paramName.toLowerCase» = «field_id.incrementAndGet»;
+                  required «resolve(an, param.paramType, interface_declaration, interface_declaration)» «param.paramName.asProtoFileAttributeName» = «field_id.incrementAndGet»;
                «ENDIF»
             «ENDFOR»
          }
          «ENDFOR»
 
          «FOR function : interface_declaration.functions»
-            «val message_part = Util.makeBasicMessageName(function.name, Constants.PROTOBUF_REQUEST)»
-            optional «message_part» «message_part.toLowerCase» = «request_part_id++»;
+            «val message_part = function.name.asRequest»
+            optional «message_part» «message_part.asProtoFileAttributeName» = «request_part_id++»;
          «ENDFOR»
       }
       
-      message «interface_declaration.name + "_" + Constants.PROTOBUF_RESPONSE»
+      message «interface_declaration.name.asResponse»
       {
          «FOR function : interface_declaration.functions SEPARATOR System.lineSeparator»
-         message «Util.makeBasicMessageName(function.name, Constants.PROTOBUF_RESPONSE)»
+         message «function.name.asResponse»
          {
             «var field_id = new AtomicInteger»
             «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
@@ -219,7 +221,7 @@ class ProtobufGenerator
                   «val sequence = Util.tryGetSequence(param.paramType).get»
                   «toText(sequence, an, param, interface_declaration, field_id)»
                «ELSE»
-                  required «resolve(an, param.paramType, interface_declaration, interface_declaration)» «param.paramName.toLowerCase» = «field_id.incrementAndGet»;
+                  required «resolve(an, param.paramType, interface_declaration, interface_declaration)» «param.paramName.asProtoFileAttributeName» = «field_id.incrementAndGet»;
                «ENDIF»
             «ENDFOR»
             «generateReturnType(an, function, interface_declaration, interface_declaration, field_id)»
@@ -227,8 +229,8 @@ class ProtobufGenerator
          «ENDFOR»
 
          «FOR function : interface_declaration.functions»
-            «val message_part = Util.makeBasicMessageName(function.name, Constants.PROTOBUF_RESPONSE)»
-            optional «message_part» «message_part.toLowerCase» = «response_part_id++»;
+            «val message_part = function.name.asResponse»
+            optional «message_part» «message_part.asProtoFileAttributeName» = «response_part_id++»;
          «ENDFOR»
       }
       '''
@@ -300,7 +302,7 @@ class ProtobufGenerator
             «IF Util.isSequenceType(element)»
                «toText(element, artifactNature, function, container, id)»
             «ELSE»
-               required «resolve(artifactNature, element, context, container)» «function.name.toLowerCase» = «id.incrementAndGet»;
+               required «resolve(artifactNature, element, context, container)» «function.name.asProtoFileAttributeName» = «id.incrementAndGet»;
             «ENDIF»
          «ENDIF»
       «ENDIF»
@@ -346,36 +348,48 @@ class ProtobufGenerator
          '''«resolve(artifactNature, element, context, container)»'''
    }
    
+   // TODO change to accept model elements instead, at least do not call this directly
+   private static def asProtoFileAttributeName(String name)
+   {
+        asProtobufName(name, CaseFormat.LOWER_UNDERSCORE)   
+   }
+   
+   private static def protoFileAttributeName(MemberElementWrapper element)
+   {
+       // TODO why is toLowerCase required here? Probably it can be removed
+       asProtoFileAttributeName(element.name).toLowerCase
+   }
+   
    private def dispatch String toText(MemberElementWrapper element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
       '''
       «IF element.isOptional && !Util.isSequenceType(element.type)»
-         optional «toText(element.type, artifactNature, element.type, container, new AtomicInteger)» «element.name.toLowerCase» = «id.incrementAndGet»;
+         optional «toText(element.type, artifactNature, element.type, container, new AtomicInteger)» «element.protoFileAttributeName» = «id.incrementAndGet»;
       «ELSEIF Util.isSequenceType(element.type)»
-         «makeSequence(artifactNature, Util.getUltimateType(element.type), Util.isFailable(element.type), element.type, container, element.name, id)»
+         «makeSequence(artifactNature, Util.getUltimateType(element.type), Util.isFailable(element.type), element.type, container, element.protoFileAttributeName, id)»
       «ELSEIF requiresNewMessageType(element.type)»
          «toText(element.type, artifactNature, element.type, container, id)»
       «ELSE»
-         required «toText(element.type, artifactNature, element.type, container, new AtomicInteger)» «element.name.toLowerCase» = «id.incrementAndGet»;
+         required «toText(element.type, artifactNature, element.type, container, new AtomicInteger)» «element.protoFileAttributeName» = «id.incrementAndGet»;
       «ENDIF»
       '''
    }
    
-   private def String makeSequence(ArtifactNature artifactNature, EObject nested_type, boolean is_failable, EObject context, EObject container, String name, AtomicInteger id)
+   private def String makeSequence(ArtifactNature artifactNature, EObject nested_type, boolean is_failable, EObject context, EObject container, String protobufName, AtomicInteger id)
    {
       '''
       «IF is_failable»
          «val failable_type = resolve(artifactNature, nested_type, context, container).alias(GeneratorUtil.asFailable(nested_type, container, qualified_name_provider))»
-         «IF !(context instanceof InterfaceDeclaration || context instanceof AliasDeclaration)»repeated «failable_type» «name.toLowerCase» = «id.incrementAndGet»;«ENDIF»
+         «IF !(context instanceof InterfaceDeclaration || context instanceof AliasDeclaration)»repeated «failable_type» «protobufName» = «id.incrementAndGet»;«ENDIF»
       «ELSE»
-         repeated «toText(nested_type, artifactNature, context, container, new AtomicInteger)» «name.toLowerCase» = «id.incrementAndGet»;
+         repeated «toText(nested_type, artifactNature, context, container, new AtomicInteger)» «protobufName» = «id.incrementAndGet»;
       «ENDIF»
       '''
    }
    
    private def dispatch String toText(SequenceDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
-      '''«makeSequence(artifactNature, Util.getUltimateType(element.type), element.failable, context, container, Names.plain(context), id)»'''
+      '''«makeSequence(artifactNature, Util.getUltimateType(element.type), element.failable, context, container, Names.plain(context).asProtoFileAttributeName, id)»'''
    }
    
    private def dispatch String toText(TupleDeclaration element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
@@ -394,7 +408,7 @@ class ProtobufGenerator
             «ENDIF»
          «ENDFOR»
       }
-      «IF !(context instanceof SequenceDeclaration)»required «tuple_name» «Names.plain(context).toLowerCase» = «id.incrementAndGet»;«ENDIF»
+      «IF !(context instanceof SequenceDeclaration)»required «tuple_name» «Names.plain(context).asProtoFileAttributeName» = «id.incrementAndGet»;«ENDIF»
       '''
    }
    
@@ -405,7 +419,7 @@ class ProtobufGenerator
       «IF sequence.present»
          «toText(sequence.get, artifactNature, element, container, id)»
       «ELSE»
-         required «toText(element.paramType, artifactNature, element, container, new AtomicInteger)» «element.paramName.toLowerCase» = «id.incrementAndGet»;
+         required «toText(element.paramType, artifactNature, element, container, new AtomicInteger)» «element.paramName.asProtoFileAttributeName» = «id.incrementAndGet»;
       «ENDIF»
       '''
    }
@@ -594,6 +608,7 @@ class ProtobufGenerator
                 build
             val root_path = GeneratorUtil.getTransformedModuleName(temp_bundle, artifact_nature, TransformType.FILE_SYSTEM)
 
+            // TODO this depends on the PRINS module structure!
             (if (artifact_nature == ArtifactNature.CPP) "modules/" else "") + root_path + "/gen/" + file_name.proto
         }
     }

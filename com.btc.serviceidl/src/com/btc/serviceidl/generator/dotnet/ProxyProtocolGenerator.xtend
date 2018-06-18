@@ -17,6 +17,7 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import org.eclipse.xtend.lib.annotations.Accessors
 
+import static extension com.btc.serviceidl.generator.dotnet.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
@@ -52,19 +53,19 @@ class ProxyProtocolGenerator extends ProxyDispatcherGeneratorBase
                              «val codec = resolveCodec(typeResolver, param_bundle, param.paramType)»
                              «val use_codec = GeneratorUtil.useCodec(param, ArtifactNature.DOTNET)»
                              «val encodeMethod = getEncodeMethod(param.paramType)»
-                             .«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»AddRange«ELSE»Set«ENDIF»«param.paramName.toLowerCase.toFirstUpper»(«IF use_codec»(«resolveEncode(param.paramType)») «codec».«encodeMethod»(«ENDIF»arg.«param.paramName.asProperty»«IF use_codec»)«ENDIF»)
+                             .«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»AddRange«ELSE»Set«ENDIF»«param.paramName.asDotNetProtobufName»(«IF use_codec»(«resolveEncode(param.paramType)») «codec».«encodeMethod»(«ENDIF»arg.«param.paramName.asProperty»«IF use_codec»)«ENDIF»)
                          «ENDFOR»
                          ;
                          
                       return new «protobuf_request»
-                         .Builder { «function.name.toLowerCase.toFirstUpper»Request = resultBuilder.Build() }
+                         .Builder { «function.name.asDotNetProtobufName»Request = resultBuilder.Build() }
                          .Build();
                    }
                «ENDFOR»
                
                «FOR function : interface_declaration.functions.filter[!returnedType.isVoid] SEPARATOR System.lineSeparator»
                    «val response_name = getDataContractName(interface_declaration, function, ProtobufType.RESPONSE)»
-                   «val protobuf_message = function.name.toLowerCase.toFirstUpper»
+                   «val protobuf_message = function.name.asDotNetProtobufName»
                    «val use_codec = GeneratorUtil.useCodec(function.returnedType, ArtifactNature.DOTNET)»
                    «val decodeMethod = getDecodeMethod(function.returnedType)»
                    «val return_type = toText(function.returnedType, function)»

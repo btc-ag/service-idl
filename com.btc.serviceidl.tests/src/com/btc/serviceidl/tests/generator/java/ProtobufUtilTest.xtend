@@ -107,6 +107,54 @@ class ProtobufUtilTest
             InterfaceDeclaration).findFirst [
             it.name == "Bar"
         ], Optional.of(ProtobufType.REQUEST));
-        assertEquals("com.foo.bar.protobuf.BarOuterClass.Bar_Request", result.getFullyQualifiedName());
+        assertEquals("com.foo.bar.protobuf.BarOuterClass.BarRequest", result.getFullyQualifiedName());
+    }
+    
+    @Test
+    def void testAsProtobufNameFromUpperCamel()
+    {
+        assertEquals("UpperCamel", ProtobufUtil.asJavaProtobufName("UpperCamel"))
+    }
+
+    @Test
+    def void testAsProtobufNameFromLowerCamel()
+    {
+        assertEquals("LowerCamel", ProtobufUtil.asJavaProtobufName("lowerCamel"))
+    }
+
+    @Test
+    def void testAsProtobufNameFromUpperCamelAbbrev()
+    {
+        assertEquals("Abc", ProtobufUtil.asJavaProtobufName("ABC"))
+    }
+
+    @Test
+    def void testAsProtobufNameFromUpperCamelAbbrevFollowedByWord()
+    {
+        assertEquals("AbcWord", ProtobufUtil.asJavaProtobufName("ABCWord"))
+    }
+
+    @Test
+    def void testAsProtobufNameFromLowerSnake()
+    {
+        assertEquals("LowerSnake", ProtobufUtil.asJavaProtobufName("lower_snake"))
+    }
+
+    @Test
+    def void testAsProtobufNameFromMixedSnake()
+    {
+        assertEquals("MixedSnake", ProtobufUtil.asJavaProtobufName("mixed_Snake"))
+    }
+    
+    @Test
+    def void testAsProtobufNameFromMixedSnakeAbbrev()
+    {
+        assertEquals("MixedAbc", ProtobufUtil.asJavaProtobufName("mixed_ABC"))
+    }
+
+    @Test
+    def void testAsProtobufNameFromMixedSnakeAbbrev2()
+    {
+        assertEquals("PMw", ProtobufUtil.asJavaProtobufName("p_MW"))
     }
 }

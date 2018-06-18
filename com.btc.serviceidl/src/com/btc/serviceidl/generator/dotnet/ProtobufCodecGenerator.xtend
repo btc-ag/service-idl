@@ -24,6 +24,7 @@ import java.util.Arrays
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
+import static extension com.btc.serviceidl.generator.dotnet.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
@@ -199,7 +200,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
         if (element.referenceType !== null)
             return makeEncode(element.referenceType, owner)
     }
-
+    
     private def String makeEncodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
         Iterable<AbstractTypeDeclaration> type_declarations)
     {
@@ -213,7 +214,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                 «val codec = resolveCodec(typeResolver, param_bundle, member.type)»
                 «val useCodec = GeneratorUtil.useCodec(member.type, ArtifactNature.DOTNET)»
                 «val encodeMethod = getEncodeMethod(member.type)»
-                «val method_name = if (com.btc.serviceidl.util.Util.isSequenceType(member.type)) "AddRange" + member.name.toLowerCase.toFirstUpper else "Set" + member.name.toLowerCase.toFirstUpper»
+                «val method_name = if (com.btc.serviceidl.util.Util.isSequenceType(member.type)) "AddRange" + member.protobufName else "Set" + member.protobufName»
                 «IF com.btc.serviceidl.util.Util.isAbstractCrossReferenceType(member.type) && !(com.btc.serviceidl.util.Util.isEnumType(member.type))»
                     if (typedData.«member.name.asProperty» != null)
                     {
@@ -231,13 +232,11 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
             «ENDFOR»
                 «FOR struct_decl : type_declarations.filter(StructDeclaration).filter[declarator !== null]»
                 «val codec = resolveCodec(typeResolver, param_bundle, struct_decl)»
-                «val member_name = struct_decl.declarator»
-                builder.Set«member_name.toLowerCase.toFirstUpper»((«protobuf_type_name».Types.«struct_decl.name») «codec».encode(typedData.«member_name.asProperty»));
+                builder.Set«new MemberElementWrapper(struct_decl).protobufName»((«protobuf_type_name».Types.«struct_decl.name») «codec».encode(typedData.«struct_decl.declarator.asProperty»));
                 «ENDFOR»
                 «FOR enum_decl : type_declarations.filter(EnumDeclaration).filter[declarator !== null]»
                 «val codec = resolveCodec(typeResolver, param_bundle, enum_decl)»
-                «val member_name = enum_decl.declarator»
-                builder.Set«member_name.toLowerCase.toFirstUpper»((«protobuf_type_name».Types.«enum_decl.name») «codec».encode(typedData.«member_name»));
+                builder.Set«new MemberElementWrapper(enum_decl).protobufName»((«protobuf_type_name».Types.«enum_decl.name») «codec».encode(typedData.«enum_decl.declarator»));
                 «ENDFOR»
             return builder.BuildPartial();
         '''
@@ -284,21 +283,19 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                    «val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(member.type)»
                    «val is_optional = member.optional»
                    «IF com.btc.serviceidl.util.Util.isByte(member.type) || com.btc.serviceidl.util.Util.isInt16(member.type) || com.btc.serviceidl.util.Util.isChar(member.type)»
-                       «member.name.asParameter»: «IF is_optional»(typedData.«hasField(member)») ? «ENDIF»(«resolve(member.type)») typedData.«member.name.toLowerCase.toFirstUpper»«IF is_optional» : («toText(member.type, null)»?) null«ENDIF»
+                       «member.name.asParameter»: «IF is_optional»(typedData.«hasField(member)») ? «ENDIF»(«resolve(member.type)») typedData.«member.protobufName»«IF is_optional» : («toText(member.type, null)»?) null«ENDIF»
                    «ELSE»
                        «val decode_method = getDecodeMethod(member.type)»
-                   «member.name.asParameter»: «IF is_optional»(typedData.«hasField(member)») ? «ENDIF»«IF useCodec»(«resolveDecode(member.type)») «codec».«decode_method»(«ENDIF»typedData.«member.name.toLowerCase.toFirstUpper»«IF is_sequence»List«ENDIF»«IF useCodec»)«ENDIF»«IF is_optional» : «IF member.type.isNullable»(«toText(member.type, null)»?) «ENDIF»null«ENDIF»
+                   «member.name.asParameter»: «IF is_optional»(typedData.«hasField(member)») ? «ENDIF»«IF useCodec»(«resolveDecode(member.type)») «codec».«decode_method»(«ENDIF»typedData.«member.protobufName»«IF is_sequence»List«ENDIF»«IF useCodec»)«ENDIF»«IF is_optional» : «IF member.type.isNullable»(«toText(member.type, null)»?) «ENDIF»null«ENDIF»
                «ENDIF»
                «ENDFOR»
                 «FOR struct_decl : type_declarations.filter(StructDeclaration).filter[declarator !== null] SEPARATOR ","»
                     «val codec = resolveCodec(typeResolver, param_bundle, struct_decl)»
-                    «val member_name = struct_decl.declarator»
-                    «member_name.asParameter»: («resolve(struct_decl)») «codec».decode(typedData.«member_name.toLowerCase.toFirstUpper»)
+                    «struct_decl.declarator.asParameter»: («resolve(struct_decl)») «codec».decode(typedData.«new MemberElementWrapper(struct_decl).protobufName»)
                 «ENDFOR»
                 «FOR enum_decl : type_declarations.filter(EnumDeclaration).filter[declarator !== null] SEPARATOR ","»
                     «val codec = resolveCodec(typeResolver, param_bundle, enum_decl)»
-                    «val member_name = enum_decl.declarator»
-                    «member_name.asParameter»: («api_type_name + Constants.SEPARATOR_PACKAGE + enum_decl.name») «codec».decode(typedData.«member_name.toLowerCase.toFirstUpper»)
+                    «enum_decl.declarator.asParameter»: («api_type_name + Constants.SEPARATOR_PACKAGE + enum_decl.name») «codec».decode(typedData.«new MemberElementWrapper(enum_decl).protobufName»)
                 «ENDFOR»
                );
         '''

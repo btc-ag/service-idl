@@ -24,9 +24,11 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
+import com.google.common.base.CaseFormat
 import java.util.Optional
 import org.eclipse.emf.ecore.EObject
 
+import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufUtil
@@ -48,12 +50,13 @@ class ProtobufUtil
 
         val paramBundle = ParameterBundle.createBuilder(scope_determinant.moduleStack).with(ProjectType.PROTOBUF).build
 
+        // TODO this is cloned by java.ProtobufUtil(.getLocalName?) 
         var result = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.NAMESPACE)
         result += Constants.SEPARATOR_NAMESPACE
         if (object instanceof InterfaceDeclaration)
-            result += Names.plain(object) + "_" + protobuf_type.getName
+            result += Names.plain(object) + protobuf_type.getName
         else if (object instanceof FunctionDeclaration)
-            result += Names.plain(scope_determinant) + "_" + protobuf_type.getName + "_" + Names.plain(object) + "_" +
+            result += Names.plain(scope_determinant) + "_" + protobuf_type.getName + "_" + Names.plain(object) +
                 protobuf_type.getName
         else
             result += Names.plain(object)
@@ -182,4 +185,8 @@ class ProtobufUtil
             GeneratorUtil.asFailable(element, container, qualified_name_provider)
     }
 
+    static def asCppProtobufName(String name)
+    {
+        name.asProtobufName(CaseFormat.LOWER_UNDERSCORE)
+    }
 }
