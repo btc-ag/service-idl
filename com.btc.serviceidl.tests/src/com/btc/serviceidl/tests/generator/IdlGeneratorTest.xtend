@@ -60,4 +60,17 @@ class IdlGeneratorTest
         println(fsa.textFiles.keySet.join("\n"))
         assertEquals(139, fsa.textFiles.size)
     }
+
+    @Test
+    def void testEvent()
+    {
+        val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
+        defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases        
+        val spec = TestData.eventTestCase.parse
+        val fsa = new InMemoryFileSystemAccess()
+        val generatorContext = new GeneratorContext()
+        underTest.doGenerate(spec.eResource, fsa, generatorContext)
+        println(fsa.textFiles.keySet.join("\n"))
+        assertEquals(117, fsa.textFiles.size)
+    }
 }

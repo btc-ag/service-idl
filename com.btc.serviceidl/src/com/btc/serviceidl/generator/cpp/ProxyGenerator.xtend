@@ -70,9 +70,11 @@ class ProxyGenerator extends BasicCppGenerator {
             {
                «/* TODO remove ProtobufType argument */»
                «typeResolver.resolveProtobuf(event.data, ProtobufType.REQUEST)» eventProtobuf;
+               «IF targetVersion == "0.10"»
                if (!(event->GetNumElements() == 1))
                   «resolveSymbol("CABTHROW_V2")»(«resolveSymbol("BTC::ServiceComm::API::InvalidMessageReceivedException")»("Event message has not exactly one part"));
-               «resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ParseMessageOrThrow<«resolveSymbol("BTC::ServiceComm::API::InvalidMessageReceivedException")»>(eventProtobuf, (*event)[0]);
+               «ENDIF»
+               «resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ParseMessageOrThrow<«resolveSymbol("BTC::ServiceComm::API::InvalidMessageReceivedException")»>(eventProtobuf, «IF targetVersion == "0.10"»(*event)[0]«ELSE»*event«ENDIF»);
 
                return «typeResolver.resolveCodecNS(paramBundle, event.data)»::Decode( eventProtobuf );
             }
@@ -95,7 +97,7 @@ class ProxyGenerator extends BasicCppGenerator {
            return «resolveSymbol("CABTYPENAME")»(«event_type»);
          }
          
-         «resolveSymbol("std::function")»<«class_name.shortName»::«event_params_name»::EventDataType const ( «resolveSymbol("BTC::ServiceComm::Commons::ConstSharedMessageSharedPtr")» const & )> «class_name»::«event_params_name»::GetUnmarshalFunction( )
+         «resolveSymbol("std::function")»<«class_name.shortName»::«event_params_name»::EventDataType const ( «resolveSymbol("BTC::ServiceComm::API::IEventSubscriberManager::ObserverType::OnNextParamType")»)> «class_name»::«event_params_name»::GetUnmarshalFunction( )
          {
            return &Unmarshal«event_name»;
          }
