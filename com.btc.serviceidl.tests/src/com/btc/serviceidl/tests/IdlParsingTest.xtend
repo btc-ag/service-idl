@@ -23,6 +23,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import static com.google.common.collect.Iterables.isEmpty
+import java.util.Map.Entry
+import java.util.List
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -153,17 +155,30 @@ class IdlParsingTest
     @Test
     def void testParsingSmokeTest()
     {
+        doForEachTestCase(
+            TestData.goodTestCases,
+            [ testCase |
+                val spec = testCase.value.parse
+                val issues = validate(spec);
+                if (!isEmpty(issues))
+                    #["Test case '" + testCase.key + "': Expected no issues, but got :" +
+                        getIssuesAsString(spec, issues, new StringBuilder())]
+                else
+                    #[]
+            ]
+        )
+    }
+
+    static def doForEachTestCase(Iterable<Entry<String, CharSequence>> entries,
+        (Entry<String, CharSequence>)=>Iterable<String> runTestCase)
+    {
         val errors = new ArrayList<String>
         for (testCase : TestData.goodTestCases)
         {
             System.out.println("Test case '" + testCase.key + "'")
             try
             {
-                val spec = testCase.value.parse
-                val issues = validate(spec);
-                if (!isEmpty(issues))
-                    errors.add("Test case '" + testCase.key + "': Expected no issues, but got :" +
-                        getIssuesAsString(spec, issues, new StringBuilder()));
+                errors.addAll(runTestCase.apply(testCase))
             }
             catch (Exception e)
             {
@@ -173,4 +188,5 @@ class IdlParsingTest
 
         Assert.assertTrue(String.join("\n", errors), errors.empty)
     }
+
 }
