@@ -75,6 +75,14 @@ class MavenResolver
                 return Optional.of(
                     new MavenDependency.Builder().groupId("com.btc.cab.servicecomm").artifactId("singlequeue.core").
                         version("${servicecomm.version}").build)
+            case name.startsWith("com.btc.cab.servicecomm.singlequeue.jeromq"):
+                return Optional.of(
+                    new MavenDependency.Builder().groupId("com.btc.cab.servicecomm").artifactId("singlequeue.zeromq.jeromq").
+                        version("${servicecomm.version}").build)
+            case name.startsWith("com.btc.cab.servicecomm.singlequeue.zeromq.jzmq"):
+                return Optional.of(
+                    new MavenDependency.Builder().groupId("com.btc.cab.servicecomm").artifactId("singlequeue.zeromq.jzmq").
+                        version("${servicecomm.version}").build)
             case name.startsWith("com.btc.cab.servicecomm.singlequeue.zeromq"):
                 return Optional.of(
                     new MavenDependency.Builder().groupId("com.btc.cab.servicecomm").artifactId("singlequeue.zeromq").

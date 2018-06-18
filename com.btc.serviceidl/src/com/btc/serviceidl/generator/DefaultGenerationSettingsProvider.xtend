@@ -22,6 +22,7 @@ import java.util.Set
 import java.util.Map
 import java.util.HashMap
 import com.btc.serviceidl.generator.cpp.CppConstants
+import com.btc.serviceidl.generator.java.JavaConstants
 
 class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 {
@@ -33,6 +34,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
     val Map<String, String> versionMap
 
     new()
+    
     {
         versionMap = createBareVersionMap
         reset
@@ -43,6 +45,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         val res = new HashMap<String, Set<String>>
         // TODO these should be registered by the respective generator plugins instead
         res.put(CppConstants.SERVICECOMM_VERSION_KIND, CppConstants.SERVICECOMM_VERSIONS)
+        res.put(JavaConstants.SERVICECOMM_VERSION_KIND, JavaConstants.SERVICECOMM_VERSIONS)
         return res.immutableCopy
     }
 
@@ -77,6 +80,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         projectSetFactory = new VSSolutionFactory
         moduleStructureStrategy = new PrinsModuleStructureStrategy
         setVersion(CppConstants.SERVICECOMM_VERSION_KIND, "0.12")
+        setVersion(JavaConstants.SERVICECOMM_VERSION_KIND, "0.5")
     }
 
     def getVersionKinds()
