@@ -100,9 +100,9 @@ class ProtobufGenerator
          param_bundle.reset(ProjectType.PROTOBUF)
          val artifact_name = interface_declaration.name
 
-         generateProtobufFile(ArtifactNature.CPP, interface_declaration, artifact_name, generateInterface(ArtifactNature.CPP, interface_declaration))
-         generateProtobufFile(ArtifactNature.JAVA, interface_declaration, artifact_name, generateInterface(ArtifactNature.JAVA, interface_declaration))
-         generateProtobufFile(ArtifactNature.DOTNET, interface_declaration, artifact_name, generateInterface(ArtifactNature.DOTNET, interface_declaration))
+         // TODO why is the proto file generated for each language?
+         for (language : languages) 
+             generateProtobufFile(language, interface_declaration, artifact_name, generateInterface(language, interface_declaration))
          
          generated_artifacts.put(interface_declaration, artifact_name)
       }
