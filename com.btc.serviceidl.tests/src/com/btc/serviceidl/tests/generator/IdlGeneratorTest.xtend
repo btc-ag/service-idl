@@ -10,6 +10,8 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator
 
+import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
+import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.tests.testdata.TestData
@@ -17,15 +19,15 @@ import com.google.inject.Inject
 import org.eclipse.xtext.generator.GeneratorContext
 import org.eclipse.xtext.generator.IGenerator2
 import org.eclipse.xtext.generator.InMemoryFileSystemAccess
+import org.eclipse.xtext.resource.SaveOptions
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.Test
 import org.junit.runner.RunWith
 
+import static com.btc.serviceidl.tests.TestExtensions.*
 import static org.junit.Assert.*
-import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
-import com.btc.serviceidl.generator.IGenerationSettingsProvider
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -73,4 +75,23 @@ class IdlGeneratorTest
         println(fsa.textFiles.keySet.join("\n"))
         assertEquals(117, fsa.textFiles.size)
     }
+
+    @Test
+    def void testGenerationSmokeTest()
+    {
+        doForEachTestCase(
+            TestData.goodTestCases,
+            [ testCase |
+                val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
+                defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases        
+                val spec = testCase.value.parse
+                val fsa = new InMemoryFileSystemAccess()
+                val generatorContext = new GeneratorContext()
+                underTest.doGenerate(spec.eResource, fsa, generatorContext)
+                #[]
+            ]
+        )
+
+    }
+
 }
