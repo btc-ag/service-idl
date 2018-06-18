@@ -37,23 +37,36 @@ class ClientConsoleGenerator
         val api_name = typeResolver.resolve(interface_declaration)
         val connection_string = '''tcp://127.0.0.1:«Constants.DEFAULT_PORT»'''
 
+        val loggerFactoryType = basicJavaSourceGenerator.resolveLoggerFactory 
+        val loggerType = basicJavaSourceGenerator.resolveLogger 
+
         '''
         public class «class_name» {
         
            private final static String connectionString = "«connection_string»";
-           private static final «typeResolver.resolve("org.apache.log4j.Logger")» logger = Logger.getLogger(«class_name».class);
+           private static final «loggerType» logger = «loggerFactoryType».getLogger(«class_name».class);
            
            public static void main(String[] args) {
               
               «typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» client = null;
               «api_name» proxy = null;
+              «IF basicJavaSourceGenerator.targetVersion == "0.3"»
               «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
+              «ENDIF»
         
               logger.info("Client trying to connect to " + connectionString);
-              «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» connectionFactory = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqClientConnectionFactory")»(logger);
+              «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» connectionFactory = new «basicJavaSourceGenerator.resolveZeroMqClientConnectionFactory»(
+                 «IF basicJavaSourceGenerator.targetVersion == "0.3"»
+                     logger
+                 «ENDIF» 
+                        );
               
               try {
-           client = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ClientEndpointFactory")»(logger, connectionFactory).create(connectionString);
+                client = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ClientEndpointFactory")»(
+                     «IF basicJavaSourceGenerator.targetVersion == "0.3"»
+                         logger,
+                     «ENDIF» 
+                     connectionFactory).create(connectionString);
               } catch (Exception e)
               {
                  logger.error("Client could not start! Is there a server running on «connection_string»? Error: " + e.toString());
@@ -75,7 +88,7 @@ class ClientConsoleGenerator
               if (client != null)
               {
                  logger.info("Client closing...");
-                 try { client.close(); } catch (Exception e) { logger.error(e); }
+                 try { client.close(); } catch (Exception e) { logger.error("Exception while closing client", e); }
               }
               
               logger.info("Exit...");

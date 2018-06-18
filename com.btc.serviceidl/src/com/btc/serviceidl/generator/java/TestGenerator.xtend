@@ -121,12 +121,17 @@ class TestGenerator
         val junit_assert = typeResolver.resolve(JavaClassNames.JUNIT_ASSERT)
         val server_runner_name = typeResolver.resolve(interface_declaration, ProjectType.SERVER_RUNNER)
 
-        // TODO this is definitely outdated, as log4j is no longer used
+        val loggerFactoryType = basicJavaSourceGenerator.resolveLoggerFactory 
+        val loggerType = basicJavaSourceGenerator.resolveLogger 
+                
+        val zeroMqServerConnectionFactoryType = basicJavaSourceGenerator.resolveZeroMqServerConnectionFactory
+        val zeroMqClientConnectionFactoryType = basicJavaSourceGenerator.resolveZeroMqClientConnectionFactory 
+         
         '''
         public class «class_name» extends «super_class» {
         
            private final static String connectionString = "tcp://127.0.0.1:«Constants.DEFAULT_PORT»";
-           private static final «typeResolver.resolve("org.apache.log4j.Logger")» logger = Logger.getLogger(«class_name».class);
+           private static final «loggerType» logger = «loggerFactoryType».getLogger(«class_name».class);
            
            private «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
            private «typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» _clientEndpoint;
@@ -139,21 +144,38 @@ class TestGenerator
            public void setupEndpoints() throws Exception {
               super.setUp();
         
+              «IF basicJavaSourceGenerator.targetVersion == "0.3"»
               «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
+              «ENDIF»
         
               // Start Server
               try {
-                 «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqServerConnectionFactory")» _serverConnectionFactory = new ZeroMqServerConnectionFactory(logger);
-                 _serverEndpoint = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ServerEndpointFactory")»(logger, _serverConnectionFactory).create(connectionString);
+                 «zeroMqServerConnectionFactoryType» _serverConnectionFactory = new «zeroMqServerConnectionFactoryType»(
+                    «IF basicJavaSourceGenerator.targetVersion == "0.3"»
+                    logger
+                    «ENDIF» 
+                    );
+                 _serverEndpoint = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ServerEndpointFactory")»(
+                    «IF basicJavaSourceGenerator.targetVersion == "0.3"»
+                    logger,
+                    «ENDIF» 
+                    _serverConnectionFactory).create(connectionString);
                  _serverRunner = new «server_runner_name»(_serverEndpoint);
                  _serverRunner.registerService();
         
                  logger.debug("Server started...");
                  
                  // start client
-                 «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» connectionFactory = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqClientConnectionFactory")»(
-                       logger);
-                 _clientEndpoint = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ClientEndpointFactory")»(logger, connectionFactory).create(connectionString);
+                 «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» connectionFactory = new «zeroMqClientConnectionFactoryType»(
+                        «IF basicJavaSourceGenerator.targetVersion == "0.3"»
+                        logger
+                        «ENDIF» 
+                       );
+                 _clientEndpoint = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ClientEndpointFactory")»(
+                    «IF basicJavaSourceGenerator.targetVersion == "0.3"»
+                    logger,
+                    «ENDIF»
+                    connectionFactory).create(connectionString);
         
                  logger.debug("Client started...");
                  testSubject = «typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.PROXY)) + '''.«interface_declaration.name»ProxyFactory''')»

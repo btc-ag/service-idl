@@ -51,10 +51,15 @@ class ServerRunnerGenerator
                   serviceDescriptor
                .setServiceInstanceDescription("«api_name.fullyQualifiedName» instance for integration tests");
             
-                  // Create dispatcher and dispatchee instances
-                  «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")» protoBufServerHelper = new ProtoBufServerHelper();
+                  // Create dispatcher and dispatchee instances                  
                   «impl_name» dispatchee = new «impl_name»();
-                  «dispatcher_name» dispatcher = new «dispatcher_name»(dispatchee, protoBufServerHelper);
+                  «dispatcher_name» dispatcher = new «dispatcher_name»(dispatchee, 
+                      new «IF basicJavaSourceGenerator.targetVersion == "0.3"»
+                              «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")»
+                           «ELSE»
+                              «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtobufSerializer")»
+                           «ENDIF»()
+                      );
             
                   // Register dispatcher
                   _serviceRegistration = _serverEndpoint
@@ -80,18 +85,21 @@ class ServerRunnerGenerator
     {
         val resources_location = MavenArtifactType.TEST_RESOURCES.directoryLayout
 
+        val loggerFactoryType = basicJavaSourceGenerator.resolveLoggerFactory
+        val loggerType = basicJavaSourceGenerator.resolveLogger 
         '''
             public class «class_name» {
                
                private static String _connectionString;
                private static «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
                private static «server_runner_class_name» _serverRunner;
-               private static final «typeResolver.resolve("org.apache.log4j.Logger")» logger = Logger.getLogger(Program.class);
+               private static final «loggerType» logger = «loggerFactoryType».getLogger(«class_name».class);
                private static String _file;
                
-               public static void main(String[] args) {
-                  
+               public static void main(String[] args) {                  
+                  «IF basicJavaSourceGenerator.targetVersion == "0.3"»
                   «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
+                  «ENDIF»
                   // Parse Parameters
                   int i = 0;
                   while (i < args.length && args[i].startsWith("-")) {
@@ -124,10 +132,18 @@ class ServerRunnerGenerator
                   «typeResolver.resolve("org.springframework.context.ApplicationContext")» ctx = new «typeResolver.resolve("org.springframework.context.support.FileSystemXmlApplicationContext")»(_file);
                   
                   «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» _serverConnectionFactory = (IConnectionFactory) ctx
-                        .getBean("ServerFactory", logger);
+                        .getBean("ServerFactory"
+                        «IF basicJavaSourceGenerator.targetVersion == "0.3"»
+                        , logger
+                        «ENDIF»
+                        );
                   
                   try {
-                     _serverEndpoint = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ServerEndpointFactory")»(logger,_serverConnectionFactory).create(_connectionString);
+                     _serverEndpoint = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ServerEndpointFactory")»(
+                         «IF basicJavaSourceGenerator.targetVersion == "0.3"»
+                         logger,
+                         «ENDIF»
+                         _serverConnectionFactory).create(_connectionString);
                      
                      _serverRunner = new «server_runner_class_name»(_serverEndpoint);
                      _serverRunner.registerService();

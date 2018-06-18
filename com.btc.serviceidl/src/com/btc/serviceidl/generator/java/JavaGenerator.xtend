@@ -16,6 +16,8 @@
 
 package com.btc.serviceidl.generator.java
 
+import com.btc.serviceidl.generator.IGenerationSettingsProvider
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
@@ -65,6 +67,7 @@ class JavaGenerator
    private var IDLSpecification idl
    
    private var BasicJavaSourceGenerator basicJavaSourceGenerator 
+   var ITargetVersionProvider targetVersionProvider
    
    val typedef_table = new HashMap<String, ResolvedName>
    val dependencies = new HashSet<MavenDependency>
@@ -76,13 +79,14 @@ class JavaGenerator
        basicJavaSourceGenerator.typeResolver
    }
    
-   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Set<ProjectType> projectTypes, Map<EObject, String> pa)
+   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes, Map<EObject, String> pa)
    {
       resource = res
       file_system_access = fsa
       qualified_name_provider = qnp
       scope_provider = sp
       protobuf_artifacts = pa
+      targetVersionProvider = generationSettingsProvider
       
       idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
       
@@ -167,7 +171,7 @@ class JavaGenerator
    private def void generatePOM(EObject container)
    {
       val pom_path = makeProjectRootPath(container) + "pom".xml
-      file_system_access.generateFile(pom_path, ArtifactNature.JAVA.label, POMGenerator.generatePOMContents(container, dependencies, 
+      file_system_access.generateFile(pom_path, ArtifactNature.JAVA.label, new POMGenerator(targetVersionProvider).generatePOMContents(container, dependencies, 
           if (protobuf_artifacts !== null && protobuf_artifacts.containsKey(container)) protobuf_artifacts.get(container) else null))
    }
 
@@ -434,7 +438,7 @@ class JavaGenerator
    private def void reinitializeFile()
    {
       val typeResolver = new TypeResolver(qualified_name_provider, param_bundle.build, dependencies)
-      basicJavaSourceGenerator = new BasicJavaSourceGenerator(qualified_name_provider, typeResolver, idl, typedef_table)
+      basicJavaSourceGenerator = new BasicJavaSourceGenerator(qualified_name_provider, targetVersionProvider, typeResolver, idl, typedef_table)
    }
    
    private def void reinitializeAll()

@@ -41,19 +41,37 @@ class DispatcherGenerator
             Optional.of(ProtobufType.REQUEST))
         val protobuf_response = resolveProtobuf(typeResolver, interface_declaration,
             Optional.of(ProtobufType.RESPONSE))
+            
+        val serializerType = typeResolver.resolve("com.btc.cab.servicecomm.serialization.ISerializer")
+        val messageType = if (basicJavaSourceGenerator.targetVersion == "0.3") typeResolver.resolve(
+                "com.btc.cab.servicecomm.common.IMessageBuffer").toString else "byte[]" 
 
         '''
             public class «dispatcher_class_name» implements «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceDispatcher")» {
                
                private final «api_class_name» _dispatchee;
             
+               «IF basicJavaSourceGenerator.targetVersion == "0.3"»
                private final «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")» _protoBufHelper;
+               «ELSE»
+               private final «serializerType» _serializer;
+               «ENDIF»
             
                private final «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceFaultHandlerManager")» _faultHandlerManager;
                
-               public «dispatcher_class_name»(«api_class_name» dispatchee, ProtoBufServerHelper protoBufHelper) {
+               public «dispatcher_class_name»(«api_class_name» dispatchee, 
+               «IF basicJavaSourceGenerator.targetVersion == "0.3"»
+               ProtoBufServerHelper protoBufHelper
+               «ELSE»
+               «serializerType» serializer
+               «ENDIF»
+               ) {
                _dispatchee = dispatchee;
+               «IF basicJavaSourceGenerator.targetVersion == "0.3"»
                _protoBufHelper = protoBufHelper;
+               «ELSE»
+               _serializer = serializer;
+               «ENDIF»
             
                   // ServiceFaultHandlerManager
                   _faultHandlerManager = new «typeResolver.resolve("com.btc.cab.servicecomm.faulthandling.ServiceFaultHandlerManager")»();
@@ -66,10 +84,15 @@ class DispatcherGenerator
                   @see com.btc.cab.servicecomm.api.IServiceDispatcher#processRequest
                */
                @Override
-               public «typeResolver.resolve("com.btc.cab.servicecomm.common.IMessageBuffer")» processRequest(
-                  IMessageBuffer requestBuffer, «typeResolver.resolve("com.btc.cab.servicecomm.common.IPeerIdentity")» peerIdentity, «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» serverEndpoint) throws Exception {
+               public «messageType» processRequest(
+                  «messageType» requestBuffer, «typeResolver.resolve("com.btc.cab.servicecomm.common.IPeerIdentity")» peerIdentity, «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» serverEndpoint) throws Exception {
                   
-                  byte[] requestByte = _protoBufHelper.deserializeRequest(requestBuffer);
+                  byte[] requestByte = 
+                  «IF basicJavaSourceGenerator.targetVersion == "0.3"»
+                  _protoBufHelper.deserializeRequest(requestBuffer)
+                  «ELSE»
+                  requestBuffer
+                  «ENDIF»;
                   «protobuf_request» request
                      = «protobuf_request».parseFrom(requestByte);
                   
@@ -128,7 +151,11 @@ class DispatcherGenerator
                .set«function.name.asJavaProtobufName»Response(methodResponse)
                .build();
                
+               «IF basicJavaSourceGenerator.targetVersion == "0.3"»
                return _protoBufHelper.serializeResponse(response);
+               «ELSE»
+               return _serializer.serialize(response);
+               «ENDIF»
                }
                «ENDFOR»
                

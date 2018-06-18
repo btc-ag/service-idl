@@ -113,8 +113,8 @@ class IdlGenerator implements IGenerator2
         if (languages.contains(ArtifactNature.JAVA))
         {
             val java_generator = new JavaGenerator
-            java_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider, projectTypes,
-                protobuf_artifacts)
+            java_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider,
+                generation_settings_provider, projectTypes, protobuf_artifacts)
         }
 
         if (languages.contains(ArtifactNature.DOTNET))

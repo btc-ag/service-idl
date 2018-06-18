@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.java
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.idl.AbstractType
@@ -43,9 +44,15 @@ import static extension com.btc.serviceidl.util.Util.*
 class BasicJavaSourceGenerator
 {
     val IQualifiedNameProvider qualified_name_provider
+    val ITargetVersionProvider targetVersionProvider
     val TypeResolver typeResolver
     val IDLSpecification idl
     val Map<String, ResolvedName> typedef_table
+
+    def getTargetVersion()
+    {
+        targetVersionProvider.getTargetVersion(JavaConstants.SERVICECOMM_VERSION_KIND)
+    }
 
     def public dispatch String toText(ExceptionDeclaration element)
     {
@@ -75,7 +82,7 @@ class BasicJavaSourceGenerator
     {
         new MemberElementWrapper(element).format.toString
     }
-    
+
     private def format(MemberElementWrapper element)
     {
         formatMaybeOptional(element.optional, toText(element.type))
@@ -83,7 +90,7 @@ class BasicJavaSourceGenerator
 
     public def formatMaybeOptional(boolean isOptional, String typeName)
     {
-        '''«IF isOptional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«typeName»«IF isOptional»>«ENDIF»'''       
+        '''«IF isOptional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«typeName»«IF isOptional»>«ENDIF»'''
     }
 
     def public dispatch String toText(ReturnTypeElement element)
@@ -367,6 +374,40 @@ class BasicJavaSourceGenerator
             // TODO Auto-generated method stub
             throw new UnsupportedOperationException("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»");
         '''
+    }
+
+    def resolveZeroMqServerConnectionFactory()
+    {
+        if (targetVersion == "0.3")
+            typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqServerConnectionFactory")
+        else
+            // typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.jzmq.JzmqServerConnectionFactory")
+            typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.jeromq.JeroMqServerConnectionFactory")
+    }
+
+    def resolveZeroMqClientConnectionFactory()
+    {
+        if (targetVersion == "0.3")
+            typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqClientConnectionFactory")
+        else
+            // typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.jzmq.JzmqClientConnectionFactory")
+            typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.jeromq.JeroMqClientConnectionFactory")
+    }
+
+    def resolveLoggerFactory()
+    {
+        if (targetVersion == "0.3")
+            typeResolver.resolve("org.apache.log4j.Logger")
+        else
+            typeResolver.resolve("org.slf4j.LoggerFactory")
+    }
+
+    def resolveLogger()
+    {
+        if (targetVersion == "0.3")
+            typeResolver.resolve("org.apache.log4j.Logger")
+        else
+            typeResolver.resolve("org.slf4j.Logger")
     }
 
 }

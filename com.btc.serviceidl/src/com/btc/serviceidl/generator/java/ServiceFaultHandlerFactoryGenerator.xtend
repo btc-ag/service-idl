@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.java
 
+import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.idl.AbstractException
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
@@ -41,6 +42,8 @@ class ServiceFaultHandlerFactoryGenerator
         val exceptions = new HashSet<AbstractException>
         exceptions.addAll(raised_exceptions)
         exceptions.addAll(failable_exceptions)
+        
+        val errorMapValueType = if (basicJavaSourceGenerator.targetVersion == "0.3") "Exception" else "Class"
 
         // TODO except for the static initializer, this can be extracted into a reusable class, which can be provided 
         // from com.btc.cab.servicecomm
@@ -51,17 +54,17 @@ class ServiceFaultHandlerFactoryGenerator
         {
            «// TODO the map should not use exception instances as values, but their types/Classes
            »
-           private static final «typeResolver.resolve("org.apache.commons.collections4.BidiMap")»<String, Exception> errorMap = new «typeResolver.resolve("org.apache.commons.collections4.bidimap.DualHashBidiMap")»<>();
+           private static final «typeResolver.resolve("org.apache.commons.collections4.BidiMap")»<String, «errorMapValueType»> errorMap = new «typeResolver.resolve("org.apache.commons.collections4.bidimap.DualHashBidiMap")»<>();
            
            static
            {
               «FOR exception : exceptions.sortBy[name]»
-                  errorMap.put("«Util.getCommonExceptionName(exception, basicJavaSourceGenerator.qualified_name_provider)»", new «typeResolver.resolve(exception)»());
+                  errorMap.put("«Util.getCommonExceptionName(exception, basicJavaSourceGenerator.qualified_name_provider)»", «getClassOrObject(typeResolver.resolve(exception))»);
               «ENDFOR»
               
               // most commonly used exception types
-              errorMap.put("«Constants.INVALID_ARGUMENT_EXCEPTION_FAULT_HANDLER»", new IllegalArgumentException());
-              errorMap.put("«Constants.UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER»", new UnsupportedOperationException());
+              errorMap.put("«Constants.INVALID_ARGUMENT_EXCEPTION_FAULT_HANDLER»", «getClassOrObject(typeResolver.resolve("java.lang.IllegalArgumentException"))»);
+              errorMap.put("«Constants.UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER»", «getClassOrObject(typeResolver.resolve("java.lang.UnsupportedOperationException"))»);
            }
            
            public static final «typeResolver.resolve(JavaClassNames.SERVICE_FAULT_HANDLER)» createServiceFaultHandler()
@@ -76,18 +79,22 @@ class ServiceFaultHandlerFactoryGenerator
            {
               if (errorMap.containsKey(errorType))
               {
-                 Exception exception = errorMap.get(errorType);
+                 «errorMapValueType» exception = errorMap.get(errorType);
                  try
                  {
-                    «typeResolver.resolve("java.lang.reflect.Constructor")»<?> constructor = exception.getClass().getConstructor(String.class);
+                    «typeResolver.resolve("java.lang.reflect.Constructor")»<?> constructor = exception.«IF basicJavaSourceGenerator.targetVersion == "0.3"»getClass().«ENDIF»getConstructor(String.class);
                     return (Exception) constructor.newInstance( new Object[] {message} );
                  } catch (Exception ex)
                  {
+                    «IF basicJavaSourceGenerator.targetVersion == "0.3"»
                     «// TODO this looks strange. What kind of Exception is intended to be caught here? Any exception is swallowed here.
                      // one typical case might be that the exception type has no constructor accepting a String message. In that case
                      // the element from the map is returned. However, this is certainly not thread-safe.
                     »
                     return exception;
+                    «ELSE»
+                    throw new RuntimeException("Exception when trying to instantiate exception", ex);
+                    «ENDIF»
                  }
               }
               
@@ -97,9 +104,9 @@ class ServiceFaultHandlerFactoryGenerator
            public static final «i_error» createError(Exception exception)
            {
               «optional»<String> errorType = «optional».empty();
-              for (Exception e : errorMap.values())
+              for («errorMapValueType» e : errorMap.values())
               {
-                 if (e.getClass().equals(exception.getClass()))
+                 if (e.«IF basicJavaSourceGenerator.targetVersion == "0.3"»getClass().«ENDIF»equals(exception.getClass()))
                  {
                     errorType = «optional».of(errorMap.inverseBidiMap().get(e));
                     break;
@@ -114,4 +121,12 @@ class ServiceFaultHandlerFactoryGenerator
         }
         '''
     }
+    
+    def getClassOrObject(ResolvedName name) {
+        if (basicJavaSourceGenerator.targetVersion == "0.3")
+            '''new «name»()'''
+        else
+            name + ".class"
+    }
+    
 }
