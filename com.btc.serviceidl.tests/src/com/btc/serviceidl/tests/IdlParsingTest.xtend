@@ -4,19 +4,25 @@
 package com.btc.serviceidl.tests
 
 import com.btc.serviceidl.idl.IDLSpecification
+import com.btc.serviceidl.tests.testdata.TestData
 import com.google.inject.Inject
+import com.google.inject.Provider
+import java.util.ArrayList
+import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.eclipse.xtext.testing.util.ParseHelper
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import org.eclipse.xtext.validation.Issue
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import org.eclipse.emf.ecore.resource.ResourceSet
-import com.google.inject.Provider
-import org.eclipse.emf.common.util.URI
-import org.junit.Ignore
-import com.btc.serviceidl.tests.testdata.TestData
+
+import static com.google.common.collect.Iterables.isEmpty
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -276,5 +282,70 @@ class IdlParsingTest
         val spec = TestData.full.parse;
 
         spec.assertNoErrors;
+    }
+
+    // copied from ValidationTestHelper, where doGetIssuesAsString and getIssuesAsString are protected unfortunately 
+    static def StringBuilder doGetIssuesAsString(Resource spec, Iterable<Issue> issues, StringBuilder result)
+    {
+        for (issue : issues)
+        {
+            val uri = issue.getUriToProblem();
+            result.append(issue.getSeverity());
+            result.append(" (");
+            result.append(issue.getCode());
+            result.append(") '");
+            result.append(issue.getMessage());
+            result.append("'");
+            if (uri !== null)
+            {
+                val eObject = spec.getResourceSet().getEObject(uri, true);
+                result.append(" on ");
+                result.append(eObject.eClass().getName());
+            }
+            result.append(", offset " + issue.getOffset() + ", length " + issue.getLength());
+            result.append("\n");
+        }
+        return result;
+    }
+
+    static def StringBuilder getIssuesAsString(EObject model, Iterable<Issue> issues, StringBuilder result)
+    {
+        return doGetIssuesAsString(model.eResource(), issues, result);
+    }
+
+    static def StringBuilder getIssuesAsString(Resource resource, Iterable<Issue> issues, StringBuilder result)
+    {
+        // keep the original impl of #getIssuesAsString(EObject, ..) in the call graph  
+        val contents = resource.getContents();
+        if (contents.size() > 1)
+        {
+            return getIssuesAsString(contents.get(0), issues, result);
+        }
+        return doGetIssuesAsString(resource, issues, result);
+    }
+
+    // TODO this should be implemented as some parameterized test, but the XtextRunner does not support this. May the XpectRunner can be used instead 
+    @Test
+    def void testParsingSmokeTest()
+    {
+        val errors = new ArrayList<String>
+        for (testCase : TestData.goodTestCases)
+        {
+            System.out.println("Test case '" + testCase.key + "'")
+            try
+            {
+                val spec = testCase.value.parse
+                val issues = validate(spec);
+                if (!isEmpty(issues))
+                    errors.add("Test case '" + testCase.key + "': Expected no issues, but got :" +
+                        getIssuesAsString(spec, issues, new StringBuilder()));
+            }
+            catch (Exception e)
+            {
+                errors.add("Test case '" + testCase.key + "': Exception when parsing: " + e.toString)
+            }
+        }
+
+        Assert.assertTrue(String.join("\n", errors), errors.empty)
     }
 }
