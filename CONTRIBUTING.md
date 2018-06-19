@@ -86,6 +86,12 @@ The changes in a PR should be covered by tests. In case of an internal refactori
 
 Ensure proper formatting of all files. For Java and Xtend, use the Eclipse formatter.
 
+Use the following workspace settings for the Java formatter, which are used by the Xtend formatter:
+* Tab policy: Spaces only
+* Indentation size: 4
+
+Unfortunately, they cannot be set in the project settings as of Xtend 2.14 (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=405956).
+
 Currently, this is not automatically checked and it is hard to check this manually, so please handle this responsibly.
 
 ### Xtend code style
