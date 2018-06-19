@@ -4,19 +4,25 @@
 package com.btc.serviceidl.tests
 
 import com.btc.serviceidl.idl.IDLSpecification
+import com.btc.serviceidl.tests.testdata.TestData
 import com.google.inject.Inject
+import com.google.inject.Provider
+import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.eclipse.xtext.testing.util.ParseHelper
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import org.eclipse.xtext.validation.Issue
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import org.eclipse.emf.ecore.resource.ResourceSet
-import com.google.inject.Provider
-import org.eclipse.emf.common.util.URI
-import org.junit.Ignore
-import com.btc.serviceidl.tests.testdata.TestData
+
+import static com.google.common.collect.Iterables.isEmpty
+import static extension com.btc.serviceidl.tests.TestExtensions.*
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -25,69 +31,6 @@ class IdlParsingTest
     @Inject extension ParseHelper<IDLSpecification> parseHelper
     @Inject extension ValidationTestHelper
     @Inject Provider<ResourceSet> rsp
-
-    @Test
-    def void testParsing()
-    {
-        val spec = '''
-            virtual module BTC {
-            virtual module PRINS { 
-            module Infrastructure {
-            module ServiceHost {
-            module Demo { 
-            module API {
-            
-            interface KeyValueStore[version=1.0.0] { 
-            };
-            }
-            }
-            }
-            }
-            }
-            }
-        '''.parse
-
-        spec.assertNoErrors;
-
-    /*
-     * val interface = ((((((spec.defintions.get(0) as module).defintions.get(0) as module).defintions.get(0) as module).defintions.get(0) as module)
-     *                    .defintions.get(0) as module).defintions.get(0) as module).defintions.get(0) as interface_decl;
-     * Assert::assertEquals("KeyValueStore", interface.name);
-     */
-    }
-
-    @Test
-    def void testInhertiance()
-    {
-        val spec = '''
-            virtual module BTC {
-            virtual module PRINS { 
-            module Infrastructure {
-            module ServiceHost {
-            module Demo { 
-            module API {
-            
-            interface KeyValueStore[version=1.0.0] { 
-            };
-            
-            interface IntfB : KeyValueStore {
-            };
-            }
-            }
-            }
-            }
-            }
-            }
-        '''.parse
-
-        spec.assertNoErrors;
-
-    /*
-     * val interface = ((((((spec.defintions.get(0) as module).defintions.get(0) as module).defintions.get(0) as module).defintions.get(0) as module)
-     *                    .defintions.get(0) as module).defintions.get(0) as module).defintions.get(0) as interface_decl;
-     * Assert::assertEquals("KeyValueStore", interface.name);
-     */
-    }
 
     @Test
     def void testExceptionDecl()
@@ -122,22 +65,6 @@ class IdlParsingTest
      */
     }
 
-    @Test
-    def void testTypeDefs()
-    {
-        val spec = '''
-            
-            module Test {
-            
-            		typedef string KeyType;
-            		typedef string ValueType;
-            }
-        '''.parse;
-
-        spec.assertNoErrors;
-
-    }
-
     @Ignore
     @Test
     def void testTemplates()
@@ -164,102 +91,6 @@ class IdlParsingTest
     }
 
     @Test
-    def void testStructs()
-    {
-        val spec = '''
-            
-            module Test {
-            
-            interface KeyValueStore {
-            	
-            		typedef string KeyType;
-            		 		typedef string ValueType;
-            		
-            
-            	struct ModificationEvent {
-            	     	KeyType key;
-            		optional ValueType value;
-            		 };
-            
-            };
-            }
-        '''.parse;
-
-        spec.assertNoErrors;
-    }
-
-    @Test
-    def void testEnums()
-    {
-        val spec = '''
-            
-            module Test {
-            
-            interface KeyValueStore {
-            	
-            	enum ModificationKind {
-            						ModificationKind_Added,
-            							ModificationKind_Modified,
-            							ModificationKind_Removed
-            					};
-            					
-            	struct ModificationEvent {
-            		 ModificationKind modificationKind;
-            		 };
-            
-            };
-            }
-        '''.parse;
-
-        spec.assertNoErrors;
-    }
-
-    @Test
-    def void testOperations()
-    {
-        val spec = '''
-            
-            module Test {
-            
-            interface KeyValueStore {
-            	
-            	typedef string KeyType;
-            	typedef string ValueType;
-            	
-            	struct EntryType 
-            	{
-            		KeyType key;
-            		ValueType value;
-            	};
-            	 
-            
-            		enum ModificationKind {
-            			ModificationKind_Added,
-            				ModificationKind_Modified,
-            				ModificationKind_Removed
-            		};
-            
-            	struct ModificationEvent {
-            	     	KeyType key;
-            		optional ValueType value;
-            		
-            		ModificationKind modificationKind;
-            		 };
-            		 
-            		 AddEntries(in sequence<EntryType> entries) returns void;
-            
-            /** Queries the keys of entries with a given prefix asynchronously. */
-               QueryKeysWithPrefix(in KeyType prefix) returns sequence<KeyType> ; // async keyword? nein! Default ist async. sync als spezielles Keyword
-               //Wie das Reingeben eines Inseratables machen?
-            
-            };
-            }
-        '''.parse;
-
-        spec.assertNoErrors;
-    }
-
-    @Test
     def void loadModel()
     {
         val result = parseHelper.parse('''
@@ -277,4 +108,63 @@ class IdlParsingTest
 
         spec.assertNoErrors;
     }
+
+    // copied from ValidationTestHelper, where doGetIssuesAsString and getIssuesAsString are protected unfortunately 
+    static def StringBuilder doGetIssuesAsString(Resource spec, Iterable<Issue> issues, StringBuilder result)
+    {
+        for (issue : issues)
+        {
+            val uri = issue.getUriToProblem();
+            result.append(issue.getSeverity());
+            result.append(" (");
+            result.append(issue.getCode());
+            result.append(") '");
+            result.append(issue.getMessage());
+            result.append("'");
+            if (uri !== null)
+            {
+                val eObject = spec.getResourceSet().getEObject(uri, true);
+                result.append(" on ");
+                result.append(eObject.eClass().getName());
+            }
+            result.append(", offset " + issue.getOffset() + ", length " + issue.getLength());
+            result.append("\n");
+        }
+        return result;
+    }
+
+    static def StringBuilder getIssuesAsString(EObject model, Iterable<Issue> issues, StringBuilder result)
+    {
+        return doGetIssuesAsString(model.eResource(), issues, result);
+    }
+
+    static def StringBuilder getIssuesAsString(Resource resource, Iterable<Issue> issues, StringBuilder result)
+    {
+        // keep the original impl of #getIssuesAsString(EObject, ..) in the call graph  
+        val contents = resource.getContents();
+        if (contents.size() > 1)
+        {
+            return getIssuesAsString(contents.get(0), issues, result);
+        }
+        return doGetIssuesAsString(resource, issues, result);
+    }
+
+    // TODO this should be implemented as some parameterized test, but the XtextRunner does not support this. May the XpectRunner can be used instead 
+    @Test
+    def void testParsingSmokeTest()
+    {
+        doForEachTestCase(
+            TestData.goodTestCases,
+            [ testCase |
+                val spec = testCase.value.parse
+                val issues = validate(spec);
+                if (!isEmpty(issues))
+                    #["Test case '" + testCase.key + "': Expected no issues, but got :" +
+                        getIssuesAsString(spec, issues, new StringBuilder())]
+                else
+                    #[]
+            ]
+        )
+    }
+
 }

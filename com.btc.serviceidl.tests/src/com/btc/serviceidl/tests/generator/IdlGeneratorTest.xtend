@@ -10,6 +10,8 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator
 
+import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
+import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.tests.testdata.TestData
@@ -23,9 +25,8 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.Test
 import org.junit.runner.RunWith
 
+import static com.btc.serviceidl.tests.TestExtensions.*
 import static org.junit.Assert.*
-import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
-import com.btc.serviceidl.generator.IGenerationSettingsProvider
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -35,42 +36,49 @@ class IdlGeneratorTest
     @Inject IGenerator2 underTest
     @Inject IGenerationSettingsProvider generationSettingsProvider
 
-    @Test
-    def void testBasic()
+    private def doGenerate(CharSequence input)
     {
         val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases		
-        val spec = TestData.basic.parse
+        defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases        
+        val spec = input.parse
         val fsa = new InMemoryFileSystemAccess()
         val generatorContext = new GeneratorContext()
         underTest.doGenerate(spec.eResource, fsa, generatorContext)
         println(fsa.textFiles.keySet.join("\n"))
+        fsa
+    }
+
+    @Test
+    def void testBasic()
+    {
+        val fsa = doGenerate(TestData.basic)
         assertEquals(112, fsa.textFiles.size)
     }
 
     @Test
     def void testFull()
     {
-        val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases        
-        val spec = TestData.full.parse
-        val fsa = new InMemoryFileSystemAccess()
-        val generatorContext = new GeneratorContext()
-        underTest.doGenerate(spec.eResource, fsa, generatorContext)
-        println(fsa.textFiles.keySet.join("\n"))
+        val fsa = doGenerate(TestData.full)
         assertEquals(139, fsa.textFiles.size)
     }
 
     @Test
     def void testEvent()
     {
-        val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases        
-        val spec = TestData.eventTestCase.parse
-        val fsa = new InMemoryFileSystemAccess()
-        val generatorContext = new GeneratorContext()
-        underTest.doGenerate(spec.eResource, fsa, generatorContext)
-        println(fsa.textFiles.keySet.join("\n"))
+        val fsa = doGenerate(TestData.eventTestCase)
         assertEquals(117, fsa.textFiles.size)
     }
+
+    @Test
+    def void testGenerationSmokeTest()
+    {
+        doForEachTestCase(
+            TestData.goodTestCases,
+            [ testCase |
+                doGenerate(testCase.value)
+                #[]
+            ]
+        )
+    }
+
 }

@@ -10,16 +10,19 @@
  **********************************************************************/
 package com.btc.serviceidl.tests
 
-import static org.junit.Assert.*
-import org.eclipse.xtext.generator.InMemoryFileSystemAccess
 import com.google.common.collect.ImmutableSet
+import java.util.ArrayList
+import java.util.Map.Entry
+import org.eclipse.xtext.generator.InMemoryFileSystemAccess
+
+import static org.junit.Assert.*
 
 class TestExtensions
 {
-    static def <T> setOf(T... elements)  
+    static def <T> setOf(T... elements)
     { ImmutableSet.copyOf(elements) }
 
-    static def <T> asSet(Iterable<T> iterable)  
+    static def <T> asSet(Iterable<T> iterable)
     { ImmutableSet.copyOf(iterable) }
 
     static def normalize(String arg)
@@ -45,6 +48,26 @@ class TestExtensions
             content,
             fsa.textFiles.get(headerLocation)
         )
+    }
+
+    static def doForEachTestCase(Iterable<Entry<String, CharSequence>> entries,
+        (Entry<String, CharSequence>)=>Iterable<String> runTestCase)
+    {
+        val errors = new ArrayList<String>
+        for (testCase : entries)
+        {
+            System.out.println("Test case '" + testCase.key + "'")
+            try
+            {
+                errors.addAll(runTestCase.apply(testCase))
+            }
+            catch (Exception e)
+            {
+                errors.add("Test case '" + testCase.key + "': Exception when parsing: " + e.toString)
+            }
+        }
+
+        assertTrue(String.join("\n", errors), errors.empty)
     }
 
 }

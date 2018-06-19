@@ -46,6 +46,10 @@ import static extension com.btc.serviceidl.util.Extensions.*
 
 class IdlValidator extends AbstractIdlValidator
 {
+    // TODO add a warning for interfaces without any operation
+    
+    // TODO add an error if interface or event GUIDs are not unique
+    
 //	public static val INVALID_NAME = 'invalidName'
 //
 //	@Check
