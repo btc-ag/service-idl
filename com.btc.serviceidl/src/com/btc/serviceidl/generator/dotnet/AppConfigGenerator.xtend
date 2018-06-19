@@ -118,7 +118,7 @@ class AppConfigGenerator {
         </spring>
         
         <startup>
-          <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.0"/>
+          <supportedRuntime version="v4.0" sku=".NETFramework,Version=v«DotNetGenerator.DOTNET_FRAMEWORK_VERSION.toString»"/>
         </startup>
       </configuration>
       '''      

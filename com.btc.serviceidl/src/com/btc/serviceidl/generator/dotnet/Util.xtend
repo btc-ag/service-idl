@@ -14,7 +14,7 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.common.ProtobufType
+import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
@@ -30,7 +30,6 @@ import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
-import static extension com.btc.serviceidl.util.Util.*
 
 // TODO reorganize this according to logical aspects
 class Util
@@ -38,15 +37,6 @@ class Util
     def public static String hasField(MemberElementWrapper member)
     {
         return '''Has«member.name.toLowerCase.toFirstUpper»'''
-    }
-
-    def public static String getDataContractName(InterfaceDeclaration interface_declaration,
-        FunctionDeclaration function_declaration, ProtobufType protobuf_type)
-    {
-        interface_declaration.name + "_" + if (protobuf_type == ProtobufType.REQUEST)
-            function_declaration.name.asRequest
-        else
-            function_declaration.name.asResponse
     }
 
     /**
@@ -126,11 +116,6 @@ class Util
         "EventTypeGuid".asMember
     }
 
-    def public static getReturnValueProperty()
-    {
-        "ReturnValue".asMember
-    }
-
     def public static getTypeGuidProperty()
     {
         "TypeGuid".asMember
@@ -187,7 +172,7 @@ class Util
     def public static dispatch boolean isNullable(PrimitiveType element)
     {
         element.booleanType !== null || element.integerType !== null || element.charType !== null ||
-            element.floatingPointType !== null
+            element.floatingPointType !== null || element.uuidType !== null
     }
 
     def public static dispatch boolean isNullable(AliasDeclaration element)
@@ -230,8 +215,12 @@ class Util
         }
         else if (element instanceof SequenceDeclaration)
         {
-            val type = basicCSharpSourceGenerator.toText(element.type, element)
-            return '''new «typeResolver.resolve("System.Collections.Generic.List")»<«type»>() as «typeResolver.resolve("System.IEnumerable")»<«type»>'''
+            var type = basicCSharpSourceGenerator.toText(element.type, element)
+            if (element.failable)
+            {
+                type = typeResolver.resolveFailableType(type)
+            }
+            return '''new «typeResolver.resolve("System.Collections.Generic.List")»<«type»>()«typeResolver.asEnumerable»'''
         }
         else if (element instanceof StructDeclaration)
         {
@@ -245,10 +234,17 @@ class Util
     {
         val is_void = function.returnedType.isVoid
         val is_sync = function.isSync
-        val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)
-        val effective_type = '''«IF is_sequence»«typeResolver.resolve("System.Collections.Generic.IEnumerable")»<«typeResolver.resolve(com.btc.serviceidl.util.Util.getUltimateType(function.returnedType))»>«ELSE»«typeResolver.resolve(function.returnedType)»«ENDIF»'''
-
-        '''«IF is_void»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»«ELSE»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»<«ENDIF»«effective_type»«IF !is_sync»>«ENDIF»«ENDIF»'''
+        val isSequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)
+        val isFailable = isSequence && com.btc.serviceidl.util.Util.isFailable(function.returnedType)
+        val basicType = typeResolver.resolve(com.btc.serviceidl.util.Util.getUltimateType(function.returnedType))
+        var effectiveType = basicType.toString
+        
+        if (isSequence)
+        {
+            effectiveType = '''«typeResolver.resolve("System.Collections.Generic.IEnumerable")»<«IF isFailable»«typeResolver.resolveFailableType(basicType.fullyQualifiedName)»«ELSE»«basicType»«ENDIF»>'''
+        }
+  
+        '''«IF is_void»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»«ELSE»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»<«ENDIF»«effectiveType»«IF !is_sync»>«ENDIF»«ENDIF»'''
     }
 
     static def String resolveCodec(TypeResolver typeResolver, ParameterBundle param_bundle, EObject object)
@@ -273,6 +269,23 @@ class Util
             // TODO Auto-generated method stub
             throw new «typeResolver.resolve("System.NotSupportedException")»("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»");
         '''
+    }
+    
+    static def ResolvedName resolveServiceFaultHandling(TypeResolver typeResolver, EObject owner)
+    {
+        var prefix = ""
+        if (owner instanceof InterfaceDeclaration)
+        {
+            prefix = owner.name
+        }
+        val namespace = typeResolver.resolve(owner, ProjectType.PROTOBUF).namespace
+        return new ResolvedName('''«namespace».«prefix»ServiceFaultHandling''', TransformType.PACKAGE)
+    }
+   
+    static def String asEnumerable(TypeResolver typeResolver)
+    {
+        typeResolver.resolve("System.Linq.Enumerable")
+        '''.AsEnumerable()'''
     }
     
     def static getProxyProtocolName(InterfaceDeclaration interfaceDeclaration)

@@ -27,14 +27,25 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import static extension com.btc.serviceidl.generator.dotnet.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(NONE)
 class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
 {
     def generate(EObject owner, String class_name)
     {
-        resolve("System.Collections.Generic.IEnumerable")
+        val enumerable = resolve("System.Collections.Generic.IEnumerable")
         resolve("System.Linq.Enumerable")
+        val task = resolve("System.Threading.Tasks.Task")
+        val string = resolve("System.string")
+        val object = resolve("System.object")
+        val type = resolve("System.Type")
+        val guid = resolve("System.Guid")
+        val byteString = resolve("Google.ProtocolBuffers.ByteString")
+        val bindingFlags = resolve("System.Reflection.BindingFlags")
+        
+        // reference main project for common fault handling
+        val serviceFaultHandling = Util.resolveServiceFaultHandling(typeResolver, owner).fullyQualifiedName
 
         // collect all data types which are relevant for encoding
         val data_types = GeneratorUtil.getEncodableTypes(owner)
@@ -45,6 +56,37 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                public static IEnumerable<TOut> encodeEnumerable<TOut, TIn>(IEnumerable<TIn> plainData)
                {
                   return plainData.Select(item => (TOut) encode(item)).ToList();
+               }
+               
+               public static «enumerable»<TOut> encodeFailable<TOut, TIn>(«enumerable»<«task»<TIn>> plainData)
+               {
+                  return plainData.Select(item => encodeFailable<TOut, TIn>(item)).ToList();
+               }
+               
+               private static TOut encodeFailable<TOut, TIn>(«task»<TIn> plainData)
+               {
+                  var builder = typeof(TOut).GetMethod("CreateBuilder", new «type»[0]).Invoke(null, null);
+                  var builderType = builder.GetType();
+                  if (plainData.IsFaulted)
+                  {
+                     // encode error from exception
+                     var exception = plainData.Exception.Flatten().InnerException;
+                     builderType.GetMethod("SetException").Invoke(builder, new «object»[] { «serviceFaultHandling».resolveError(exception) });
+                     builderType.GetMethod("SetMessage").Invoke(builder, new «object»[] { exception.Message ?? «string».Empty });
+                     builderType.GetMethod("SetStacktrace").Invoke(builder, new «object»[] { exception.StackTrace ?? «string».Empty });
+                  }
+                  else
+                  {
+                     // encode value
+                     TIn value = plainData.Result;
+                     «object» encodedValue = default(TOut);
+                     if (typeof(TIn) == typeof(«guid»))
+                        encodedValue = encodeUUID((«guid»)(«object») value);
+                     else
+                        encodedValue = encode(value);
+                     builderType.GetProperty("Value", «bindingFlags».Public | «bindingFlags».Instance).SetValue(builder, encodedValue);
+                  }
+                  return (TOut) builderType.GetMethod("Build").Invoke(builder, null);
                }
             
                public static int encodeByte(byte plainData)
@@ -109,6 +151,36 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                public static IEnumerable<TOut> decodeEnumerable<TOut, TIn>(IEnumerable<TIn> encodedData)
                {
                   return encodedData.Select(item => (TOut) decode(item)).ToList();
+               }
+               
+               public static «enumerable»<«task»<TOut>> decodeFailable<TOut, TIn>(«enumerable»<TIn> encodedData)
+               {
+                  return encodedData.Select(item => decodeFailable<TOut, TIn>(item)).ToList();
+               }
+               
+               private static «task»<TOut> decodeFailable<TOut, TIn>(TIn encodedData)
+               {
+                  var encodedType = encodedData.GetType();
+                  bool hasValue = (bool) encodedType.GetProperty("HasValue").GetValue(encodedData);
+                  if (hasValue)
+                  {
+                     // get encoded value and decode it
+                     var value = encodedType.GetProperty("Value").GetValue(encodedData);
+                     «object» decodedValue = default(TOut);
+                     if (typeof(TOut) == typeof(«guid») && value.GetType() == typeof(«byteString»))
+                        decodedValue = decodeUUID((«byteString»)(«object») value);
+                     else
+                        decodedValue = decode(value);
+                     return «task».FromResult<TOut>((TOut) decodedValue);
+                  }
+                  else
+                  {
+                     // get error and map it to proper exception
+                     var exception = («string») encodedType.GetProperty("Exception").GetValue(encodedData);
+                     var message = («string») encodedType.GetProperty("Message").GetValue(encodedData);
+                     var stacktrace = («string») encodedType.GetProperty("Stacktrace").GetValue(encodedData);
+                     return «task».FromException<TOut>(«serviceFaultHandling».resolveError(exception, message, stacktrace));
+                  }
                }
                
                public static IEnumerable<byte> decodeEnumerableByte(IEnumerable<int> encodedData)
@@ -206,19 +278,22 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
     {
         val api_type_name = resolve(element)
         val protobuf_type_name = resolve(element, ProjectType.PROTOBUF)
+        val container = element.scopeDeterminant
 
         '''
             «api_type_name» typedData = («api_type_name») plainData;
             var builder = «protobuf_type_name».CreateBuilder();
             «FOR member : members»
                 «val codec = resolveCodec(typeResolver, param_bundle, member.type)»
-                «val useCodec = GeneratorUtil.useCodec(member.type, ArtifactNature.DOTNET)»
-                «val encodeMethod = getEncodeMethod(member.type)»
-                «val method_name = if (com.btc.serviceidl.util.Util.isSequenceType(member.type)) "AddRange" + member.protobufName else "Set" + member.protobufName»
+                «val isFailable = member.type.isFailable»
+                «val useCodec = isFailable || GeneratorUtil.useCodec(member.type, ArtifactNature.DOTNET)»
+                «val useCast = useCodec && !isFailable»
+                «val encodeMethod = getEncodeMethod(member.type, container)»
+                «val method_name = if (com.btc.serviceidl.util.Util.isSequenceType(member.type)) "AddRange" + member.name.asDotNetProtobufName else "Set" + member.name.asDotNetProtobufName»
                 «IF com.btc.serviceidl.util.Util.isAbstractCrossReferenceType(member.type) && !(com.btc.serviceidl.util.Util.isEnumType(member.type))»
                     if (typedData.«member.name.asProperty» != null)
                     {
-                        builder.«method_name»(«IF useCodec»(«resolveEncode(member.type)») «codec».«encodeMethod»(«ENDIF»typedData.«member.name.asProperty»«IF useCodec»)«ENDIF»);
+                        builder.«method_name»(«IF useCodec»«IF useCast»(«resolveEncode(member.type)») «ENDIF»«codec».«encodeMethod»(«ENDIF»typedData.«member.name.asProperty»«IF useCodec»)«ENDIF»);
                     }
                 «ELSE»
                     «val is_nullable = (member.optional && member.type.valueType)»
@@ -226,7 +301,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                     «IF com.btc.serviceidl.util.Util.isByte(member.type) || com.btc.serviceidl.util.Util.isInt16(member.type) || com.btc.serviceidl.util.Util.isChar(member.type)»
                         «IF is_nullable»if (typedData.«member.name.asProperty».HasValue) «ENDIF»builder.«method_name»(typedData.«member.name.asProperty»«IF is_nullable».Value«ENDIF»);
                     «ELSE»
-                        «IF is_nullable»if (typedData.«member.name.asProperty».HasValue) «ENDIF»«IF is_optional_reference»if (typedData.«member.name.asProperty» != null) «ENDIF»builder.«method_name»(«IF useCodec»(«resolveEncode(member.type)») «codec».«encodeMethod»(«ENDIF»typedData.«member.name.asProperty»«IF is_nullable».Value«ENDIF»«IF useCodec»)«ENDIF»);
+                        «IF is_nullable»if (typedData.«member.name.asProperty».HasValue) «ENDIF»«IF is_optional_reference»if (typedData.«member.name.asProperty» != null) «ENDIF»builder.«method_name»(«IF useCodec»«IF useCast»(«resolveEncode(member.type)») «ENDIF»«codec».«encodeMethod»(«ENDIF»typedData.«member.name.asProperty»«IF is_nullable».Value«ENDIF»«IF useCodec»)«ENDIF»);
                     «ENDIF»
                 «ENDIF»
             «ENDFOR»
@@ -273,21 +348,24 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
     {
         val api_type_name = resolve(element)
         val protobuf_type_name = resolve(element, ProjectType.PROTOBUF)
+        val container = com.btc.serviceidl.util.Util.getScopeDeterminant(element)
 
         '''
             «protobuf_type_name» typedData = («protobuf_type_name») encodedData;
             return new «api_type_name» (
                «FOR member : members SEPARATOR ","»
                    «val codec = resolveCodec(typeResolver, param_bundle, member.type)»
-                   «val useCodec = GeneratorUtil.useCodec(member.type, ArtifactNature.DOTNET)»
+                   «val isFailable = com.btc.serviceidl.util.Util.isFailable(member.type)»
+                   «val useCodec = isFailable || GeneratorUtil.useCodec(member.type, ArtifactNature.DOTNET)»
                    «val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(member.type)»
-                   «val is_optional = member.optional»
+                   «val is_optional = member.optional && !is_sequence»
+                   «val useCast = useCodec && !isFailable»
                    «IF com.btc.serviceidl.util.Util.isByte(member.type) || com.btc.serviceidl.util.Util.isInt16(member.type) || com.btc.serviceidl.util.Util.isChar(member.type)»
                        «member.name.asParameter»: «IF is_optional»(typedData.«hasField(member)») ? «ENDIF»(«resolve(member.type)») typedData.«member.protobufName»«IF is_optional» : («toText(member.type, null)»?) null«ENDIF»
                    «ELSE»
-                       «val decode_method = getDecodeMethod(member.type)»
-                   «member.name.asParameter»: «IF is_optional»(typedData.«hasField(member)») ? «ENDIF»«IF useCodec»(«resolveDecode(member.type)») «codec».«decode_method»(«ENDIF»typedData.«member.protobufName»«IF is_sequence»List«ENDIF»«IF useCodec»)«ENDIF»«IF is_optional» : «IF member.type.isNullable»(«toText(member.type, null)»?) «ENDIF»null«ENDIF»
-               «ENDIF»
+                       «val decode_method = getDecodeMethod(member.type, container)»
+                       «member.name.asParameter»: «IF is_optional»(typedData.«hasField(member)») ? «ENDIF»«IF useCodec»«IF useCast»(«resolveDecode(member.type)») «ENDIF»«codec».«decode_method»(«ENDIF»typedData.«member.protobufName»«IF is_sequence»List«ENDIF»«IF useCodec»)«ENDIF»«IF is_optional» : «IF member.type.isNullable»(«toText(member.type, null)»?) «ENDIF»null«ENDIF»
+                   «ENDIF»
                «ENDFOR»
                 «FOR struct_decl : type_declarations.filter(StructDeclaration).filter[declarator !== null] SEPARATOR ","»
                     «val codec = resolveCodec(typeResolver, param_bundle, struct_decl)»

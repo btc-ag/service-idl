@@ -41,6 +41,8 @@ The default version is always the most recent version. An older version may be s
 java -jar com.btc.serviceidl.plainjava-1.0.0-SNAPSHOT.jar input.idl -outputPath out -cppProjectSystem cmake -versions cpp.servicecomm=0.10
 ```
 
+Currently generated .NET code is targeting .NET Framework version 4.6 or any compatible version.
+
 Contributing
 ============
 
