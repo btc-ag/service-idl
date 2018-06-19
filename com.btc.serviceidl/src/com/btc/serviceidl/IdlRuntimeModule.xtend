@@ -16,6 +16,8 @@ package com.btc.serviceidl
 import com.google.inject.Binder
 import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
+import com.btc.serviceidl.generator.IdlOutputConfigurationProvider
+import org.eclipse.xtext.generator.IOutputConfigurationProvider
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -26,5 +28,6 @@ class IdlRuntimeModule extends AbstractIdlRuntimeModule
     {
         super.configure(binder);
         binder.bind(IGenerationSettingsProvider).toInstance(new DefaultGenerationSettingsProvider)
+        binder.bind(IOutputConfigurationProvider).to(IdlOutputConfigurationProvider)
     }
 }

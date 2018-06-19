@@ -83,25 +83,6 @@ class IdlGenerator implements IGenerator2
             protobuf_artifacts = protobuf_generator.generatedArtifacts
         }
 
-        // TODO workaround for generation from within editor, for a proper solution see https://stackoverflow.com/a/10396957
-        if (fsa instanceof AbstractFileSystemAccess)
-        {
-            for (artifactNature : languages)
-            {
-                try
-                {
-                    fsa.getURI("", artifactNature.label)
-                }
-                catch (IllegalArgumentException e)
-                {
-                    fsa.setOutputPath(
-                        artifactNature.label,
-                        fsa.getURI("").appendSegment(artifactNature.label).toFileString
-                    )
-                }
-            }
-        }
-
         if (languages.contains(ArtifactNature.CPP))
         {
             val cpp_generator = new CppGenerator
