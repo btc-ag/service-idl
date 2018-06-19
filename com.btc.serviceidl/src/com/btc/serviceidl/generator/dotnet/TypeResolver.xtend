@@ -30,6 +30,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.naming.QualifiedName
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
+import com.btc.serviceidl.idl.AliasDeclaration
 
 @Accessors(PACKAGE_GETTER)
 class TypeResolver
@@ -39,6 +40,7 @@ class TypeResolver
     val DotNetFrameworkVersion frameworkVersion
     val IQualifiedNameProvider qualified_name_provider
     val Set<String> namespace_references
+    val Set<FailableAlias> failableAliases
     val Set<String> referenced_assemblies
     val Map<String, String> project_references
     val NuGetPackageResolver nugetPackageResolver
@@ -73,6 +75,12 @@ class TypeResolver
     {
         var name = qualified_name_provider.getFullyQualifiedName(element)
         val fully_qualified = true
+
+        // use the underlying type for typedefs
+        if (element instanceof AliasDeclaration)
+        {
+            return resolve(com.btc.serviceidl.util.Util.getUltimateType(element))
+        }
 
         if (name === null)
         {
@@ -209,4 +217,27 @@ class TypeResolver
         throw new IllegalArgumentException("Unknown PrimitiveType: " + element.class.toString)
     }
 
+    def String resolveFailableProtobufType(EObject element, EObject container)
+    {
+        val namespace = GeneratorUtil.getTransformedModuleName
+        (
+            ParameterBundle
+            .createBuilder(com.btc.serviceidl.util.Util.getModuleStack(com.btc.serviceidl.util.Util.getScopeDeterminant(container)))
+            .with(ProjectType.PROTOBUF)
+            .build
+            , ArtifactNature.DOTNET
+            , TransformType.PACKAGE
+        )
+        return namespace
+            + TransformType.PACKAGE.separator
+            + GeneratorUtil.asFailable(element, container, qualified_name_provider)
+    }
+
+    def String resolveFailableType(String basicType)
+    {
+        resolve(FailableAlias.CONTAINER_TYPE)
+        val failableAlias = new FailableAlias(basicType)
+        failableAliases.add(failableAlias)
+        return failableAlias.aliasName
+    }
 }

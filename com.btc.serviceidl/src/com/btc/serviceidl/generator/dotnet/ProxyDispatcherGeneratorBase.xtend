@@ -15,7 +15,6 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.idl.AbstractException
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
@@ -45,12 +44,19 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
             com.btc.serviceidl.util.Util.asResponse(interface_declaration.name)
     }
 
-    protected def String getEncodeMethod(EObject type)
+    protected def String getEncodeMethod(EObject type, EObject container)
     {
         val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(type)
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(type)
         if (is_sequence)
-            "encodeEnumerable<" + resolveEncode(ultimate_type) + ", " + toText(ultimate_type, null) + ">"
+        {
+            if (com.btc.serviceidl.util.Util.isFailable(type))
+            {
+                '''encodeFailable<«resolveFailableProtobufType(ultimate_type, container)», «toText(ultimate_type, null)»>'''
+            }
+            else
+                "encodeEnumerable<" + resolveEncode(ultimate_type) + ", " + toText(ultimate_type, null) + ">"
+        }
         else if (com.btc.serviceidl.util.Util.isByte(type))
             "encodeByte"
         else if (com.btc.serviceidl.util.Util.isInt16(type))
@@ -76,13 +82,18 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
             resolve(element, ProjectType.PROTOBUF).toString
     }
 
-    protected def String getDecodeMethod(EObject type)
+    protected def String getDecodeMethod(EObject type, EObject container)
     {
         val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(type)
         if (is_sequence)
         {
             val ultimateType = com.btc.serviceidl.util.Util.getUltimateType(type)
-            if (ultimateType instanceof PrimitiveType && (ultimateType as PrimitiveType).integerType !== null)
+            val isFailable = com.btc.serviceidl.util.Util.isFailable(type)
+            if (isFailable)
+            {
+                '''decodeFailable<«toText(ultimateType, type)», «resolveFailableProtobufType(ultimateType, container)»>'''
+            }
+            else if (ultimateType instanceof PrimitiveType && (ultimateType as PrimitiveType).integerType !== null)
             {
                 if ((ultimateType as PrimitiveType).isByte)
                     "decodeEnumerableByte"
@@ -130,18 +141,15 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
         resolve(element, ProjectType.PROTOBUF)
     }
 
-    protected def String makeExceptionRegistration(String service_fault_handler_name,
-        Iterable<AbstractException> exceptions)
+    protected def String makeExceptionRegistration(String serviceFaultHandler, InterfaceDeclaration interfaceDeclaration)
     {
         '''
-            «FOR exception : exceptions.sortBy[name] SEPARATOR System.lineSeparator»
-                «service_fault_handler_name».RegisterException("«com.btc.serviceidl.util.Util.getCommonExceptionName(exception, qualified_name_provider)»", typeof («resolve(exception)»));
-            «ENDFOR»
-                  
-            // most commonly used exception types
-            «service_fault_handler_name».RegisterException("«Constants.INVALID_ARGUMENT_EXCEPTION_FAULT_HANDLER»", typeof(«"System.ArgumentException"»));
-            
-            «service_fault_handler_name».RegisterException("«Constants.UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER»", typeof(«"System.NotSupportedException"»));
+        // service fault handling
+        var «serviceFaultHandler» = new «resolve("BTC.CAB.ServiceComm.NET.FaultHandling.MultipleExceptionTypesServiceFaultHandler")»();
+        foreach (var item in «Util.resolveServiceFaultHandling(typeResolver, interfaceDeclaration).fullyQualifiedName».getErrorMappings())
+        {
+           «serviceFaultHandler».RegisterException(item.Key, item.Value);
+        }
         '''
     }
 

@@ -34,7 +34,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
     @Test
     def void testBasicServiceApi()
     {
-        val fileCount = 5
+        val fileCount = 6
         val baseDirectory = ArtifactNature.DOTNET.label + "Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
         val directory = baseDirectory
         val contents = #{ArtifactNature.DOTNET.label + "__synthetic0.sln" -> '''
@@ -87,7 +87,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                 <OutputType>Library</OutputType>
                 <RootNamespace>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI</RootNamespace>
                 <AssemblyName>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI</AssemblyName>
-                <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+                <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
                 <TargetFrameworkProfile />
               </PropertyGroup>
               <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -156,6 +156,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
               <ItemGroup>
                 <Compile Include="IKeyValueStore.cs" />
                 <Compile Include="KeyValueStoreConst.cs" />
+                <Compile Include="KeyValueStoreServiceFaultHandling.cs" />
                 <Compile Include="Properties\AssemblyInfo.cs" />
               </ItemGroup>
             
