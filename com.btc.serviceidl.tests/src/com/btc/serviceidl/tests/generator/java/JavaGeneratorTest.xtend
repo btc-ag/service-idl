@@ -316,6 +316,8 @@ public class TypesCodec {
             import com.btc.cab.servicecomm.api.IServiceFaultHandler;
             import com.btc.cab.servicecomm.faulthandling.DefaultServiceFaultHandler;
             import com.btc.cab.servicecomm.faulthandling.ErrorMessage;
+            import java.lang.IllegalArgumentException;
+            import java.lang.UnsupportedOperationException;
             import java.lang.reflect.Constructor;
             import java.util.Optional;
             import org.apache.commons.collections4.BidiMap;
@@ -324,14 +326,14 @@ public class TypesCodec {
             
             public class KeyValueStoreServiceFaultHandlerFactory
             {
-               private static final BidiMap<String, Exception> errorMap = new DualHashBidiMap<>();
+               private static final BidiMap<String, Class> errorMap = new DualHashBidiMap<>();
                
                static
                {
                   
                   // most commonly used exception types
-                  errorMap.put("BTC.Commons.Core.InvalidArgumentException", new IllegalArgumentException());
-                  errorMap.put("BTC.Commons.Core.UnsupportedOperationException", new UnsupportedOperationException());
+                  errorMap.put("BTC.Commons.Core.InvalidArgumentException", IllegalArgumentException.class);
+                  errorMap.put("BTC.Commons.Core.UnsupportedOperationException", UnsupportedOperationException.class);
                }
                
                public static final IServiceFaultHandler createServiceFaultHandler()
@@ -346,14 +348,14 @@ public class TypesCodec {
                {
                   if (errorMap.containsKey(errorType))
                   {
-                     Exception exception = errorMap.get(errorType);
+                     Class exception = errorMap.get(errorType);
                      try
                      {
-                        Constructor<?> constructor = exception.getClass().getConstructor(String.class);
+                        Constructor<?> constructor = exception.getConstructor(String.class);
                         return (Exception) constructor.newInstance( new Object[] {message} );
                      } catch (Exception ex)
                      {
-                        return exception;
+                        throw new RuntimeException("Exception when trying to instantiate exception", ex);
                      }
                   }
                   
@@ -363,9 +365,9 @@ public class TypesCodec {
                public static final IError createError(Exception exception)
                {
                   Optional<String> errorType = Optional.empty();
-                  for (Exception e : errorMap.values())
+                  for (Class e : errorMap.values())
                   {
-                     if (e.getClass().equals(exception.getClass()))
+                     if (e.equals(exception.getClass()))
                      {
                         errorType = Optional.of(errorMap.inverseBidiMap().get(e));
                         break;
@@ -392,7 +394,7 @@ public class TypesCodec {
             
                <properties>
                   <!-- ServiceComm properties -->
-                  <servicecomm.version>0.3.0</servicecomm.version>
+                  <servicecomm.version>0.5.0</servicecomm.version>
                   
                   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
                   <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

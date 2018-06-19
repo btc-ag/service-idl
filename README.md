@@ -34,7 +34,7 @@ Note: All generated C++ code, and the Proxy/Dispatcher/Codec modules generated b
 | ----------------- | ---------------          | ------------------ |
 | C++               | BTC.CAB.ServiceComm[.SQ] | cpp.servicecomm: 0.10, 0.11, 0.12 |
 | .NET              | BTC.CAB.ServiceComm.NET  | 0.6 |
-| Java              | BTC.CAB.ServiceComm.Java | 0.3 |
+| Java              | BTC.CAB.ServiceComm.Java | java.servicecomm: 0.3, 0.5 |
 
 The default version is always the most recent version. An older version may be specified for the command line generator with the `-versions` parameter, e.g.
 ```

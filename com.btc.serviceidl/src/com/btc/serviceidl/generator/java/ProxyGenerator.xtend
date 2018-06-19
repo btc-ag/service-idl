@@ -44,13 +44,24 @@ class ProxyGenerator
     {
         val anonymous_event = interface_declaration.anonymousEvent
         val api_name = typeResolver.resolve(interface_declaration)
+        
+        val serializerType = if (basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3) typeResolver.resolve(
+                "com.btc.cab.servicecomm.serialization.IMessageBufferSerializer") else typeResolver.resolve(
+                "com.btc.cab.servicecomm.serialization.ISerializer")
+        val deserializerType = if (basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3)
+                null
+            else
+                typeResolver.resolve("com.btc.cab.servicecomm.serialization.IDeserializer")
 
         '''
             public class «class_name» implements «api_name» {
                
                private final «typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» _endpoint;
                private final «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceReference")» _serviceReference;
-               private final «typeResolver.resolve("com.btc.cab.servicecomm.serialization.IMessageBufferSerializer")» _serializer;
+               private final «serializerType» _serializer;
+               «IF deserializerType !== null»
+               private final «deserializerType» _deserializer;
+               «ENDIF»
                
                public «class_name»(IClientEndpoint endpoint) throws Exception {
                   _endpoint = endpoint;
@@ -58,13 +69,45 @@ class ProxyGenerator
                   _serviceReference = _endpoint
                .connectService(«api_name».TypeGuid);
             
-                  _serializer = new «typeResolver.resolve("com.btc.cab.servicecomm.serialization.SinglePartMessageBufferSerializer")»(new «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtobufSerializer")»());
+                  _serializer = 
+                    «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»new «typeResolver.resolve("com.btc.cab.servicecomm.serialization.SinglePartMessageBufferSerializer")»(«ENDIF»
+                    new «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtobufSerializer")»()
+                    «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»)«ENDIF»
+                    ;
+                   «IF deserializerType !== null»
+                   _deserializer = initializeDeserializer();
+                   «ENDIF»
             
                   // ServiceFaultHandler
                   _serviceReference
                .getServiceFaultHandlerManager()
                .registerHandler(«typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.SERVICE_API)) + '''.«interface_declaration.asServiceFaultHandlerFactory»''')».createServiceFaultHandler());
                }
+               
+               «IF deserializerType !== null»
+               private «deserializerType» initializeDeserializer() {
+                   «deserializerType» dummyDeserializer =
+                       new «deserializerType»() {
+                         @Override
+                         public <T> T deserialize(byte[] inputStream, Class<T> deserializeClass) {
+                           return null;
+                         }
+                       };
+                   «typeResolver.resolve("java.util.Map")»<Class<?>, «deserializerType»> deserializerMap = new «typeResolver.resolve("java.util.HashMap")»<>();
+                   deserializerMap.put(«resolveProtobuf(typeResolver, interface_declaration, Optional.of(ProtobufType.REQUEST))».class, dummyDeserializer);
+                   deserializerMap.put(«resolveProtobuf(typeResolver, interface_declaration, Optional.of(ProtobufType.RESPONSE))».class, dummyDeserializer);
+               
+                   «IF anonymous_event !== null»
+                       «val eventTypeName = typeResolver.resolve(anonymous_event.data)»
+                       «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.MarshallingDeserializer")»<«eventTypeName», byte[]> netProtoBufStream =
+                           new MarshallingDeserializer<>(new UnmarshalProtobufFunction());
+                       
+                       deserializerMap.put(«eventTypeName».class, netProtoBufStream);
+                   «ENDIF»
+                              
+                   return new «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.CompositeDeserializer")»(deserializerMap);
+                 }
+               «ENDIF»
                
                «FOR function : interface_declaration.functions SEPARATOR BasicJavaSourceGenerator.newLine»
                    «generateFunction(function, api_name, interface_declaration)»
@@ -123,7 +166,10 @@ class ProxyGenerator
               .set«protobuf_function_name»«Constants.PROTOBUF_REQUEST»(request«function.name»)
               .build();
                
-               «typeResolver.resolve("java.util.concurrent.Future")»<byte[]> requestFuture = «typeResolver.resolve("com.btc.cab.servicecomm.util.ClientEndpointExtensions")».RequestAsync(_endpoint, _serviceReference, _serializer, request);
+               «typeResolver.resolve("java.util.concurrent.Future")»<byte[]> requestFuture 
+                 = «typeResolver.resolve("com.btc.cab.servicecomm.util.ClientEndpointExtensions")».
+                   «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»RequestAsync«ELSE»requestAsync«ENDIF»
+                   (_endpoint, _serviceReference, _serializer, request);
                «typeResolver.resolve("java.util.concurrent.Callable")»<«return_type»> returnCallable = () -> {
                    byte[] bytes = requestFuture.get();
                    «protobuf_response» response = «protobuf_response».parseFrom(bytes);
@@ -182,7 +228,7 @@ class ProxyGenerator
                 «typeResolver.resolve("com.btc.cab.servicecomm.api.EventKind")».EVENTKINDPUBLISHSUBSCRIBE,
                 «event_type_name».EventTypeGuid.toString());
           return «typeResolver.resolve("com.btc.cab.servicecomm.util.EventRegistryExtensions")».subscribe(_endpoint.getEventRegistry()
-                .getSubscriberManager(), _serializerDeserializer,
+                .getSubscriberManager(), «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»_serializerDeserializer«ELSE»_deserializer«ENDIF»,
                 «event_type_name».EventTypeGuid,
                 EventKind.EVENTKINDPUBLISHSUBSCRIBE, observer);
        }

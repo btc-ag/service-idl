@@ -10,13 +10,22 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.java
 
-import org.eclipse.emf.ecore.EObject
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import java.util.Optional
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtend.lib.annotations.Accessors
 
+@Accessors(NONE)
 class POMGenerator
 {
-    def public static String generatePOMContents(EObject container, Iterable<MavenDependency> dependencies,
-        String protobuf_file)
+    val ITargetVersionProvider targetVersionProvider
+
+    private def getTargetVersion()
+    {
+        targetVersionProvider.getTargetVersion(JavaConstants.SERVICECOMM_VERSION_KIND)
+    }
+
+    def String generatePOMContents(EObject container, Iterable<MavenDependency> dependencies, String protobuf_file)
     {
         val root_name = MavenResolver.resolvePackage(container, Optional.empty)
         val version = MavenResolver.resolveVersion(container)
@@ -39,7 +48,7 @@ class POMGenerator
             
                <properties>
                <!-- ServiceComm properties -->
-               <servicecomm.version>0.3.0</servicecomm.version>
+               <servicecomm.version>«targetVersion».0</servicecomm.version>
                
                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
                <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -51,23 +60,23 @@ class POMGenerator
                <protobuf.outputDirectory>${project.build.sourceDirectory}</protobuf.outputDirectory>
                <!-- *.proto source files (default = /src/main/proto) -->
                <protobuf.sourceDirectory>${basedir}/src/main/proto</protobuf.sourceDirectory>
-
+            
                <maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
                <os-maven-plugin.version>1.4.1.Final</os-maven-plugin.version>
                <protobuf.version>3.1.0</protobuf.version>
                </properties>
                
                <repositories>
-                  <repository>
-                     <id>cab-maven-resolver</id>
-                     <url>https://artifactory.bop-dev.de/artifactory/cab-maven-resolver/</url>
-                     <releases>
-                        <enabled>true</enabled>
-                     </releases>
-                     <snapshots>
-                         <enabled>false</enabled>
-                     </snapshots>
-                  </repository>
+               <repository>
+                  <id>cab-maven-resolver</id>
+                  <url>https://artifactory.bop-dev.de/artifactory/cab-maven-resolver/</url>
+                  <releases>
+                     <enabled>true</enabled>
+                  </releases>
+                  <snapshots>
+                      <enabled>false</enabled>
+                  </snapshots>
+               </repository>
                </repositories>
                
                <pluginRepositories>
@@ -82,13 +91,13 @@ class POMGenerator
                      </snapshots>
                   </pluginRepository>
                </pluginRepositories>
-
+            
                <distributionManagement>
-                  <repository>
-                     <id>cab-maven</id>
-                     <name>CAB Main Maven Repository</name>
-                     <url>https://artifactory.bop-dev.de/artifactory/cab-maven/</url>
-                  </repository>
+               <repository>
+                  <id>cab-maven</id>
+                  <name>CAB Main Maven Repository</name>
+                  <url>https://artifactory.bop-dev.de/artifactory/cab-maven/</url>
+               </repository>
                </distributionManagement>
                
                <dependencies>
