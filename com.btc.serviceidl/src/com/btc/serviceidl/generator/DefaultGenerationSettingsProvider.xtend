@@ -80,7 +80,8 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         moduleStructureStrategy = new PrinsModuleStructureStrategy
         setVersion(CppConstants.SERVICECOMM_VERSION_KIND,
             com.btc.serviceidl.generator.cpp.ServiceCommVersion.V0_12.label)
-        setVersion(JavaConstants.SERVICECOMM_VERSION_KIND, "0.5")
+        setVersion(JavaConstants.SERVICECOMM_VERSION_KIND,
+            com.btc.serviceidl.generator.java.ServiceCommVersion.V0_5.label)
     }
 
     def getVersionKinds()
