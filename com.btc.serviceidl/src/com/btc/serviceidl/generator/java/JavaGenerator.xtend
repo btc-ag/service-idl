@@ -179,8 +179,7 @@ class JavaGenerator
    private def String makeProjectRootPath(EObject container)
    {
       // TODO change return type to Path or something similar
-      qualified_name_provider.getFullyQualifiedName(container).toLowerCase
-         + Constants.SEPARATOR_FILE
+      MavenResolver.getArtifactId(container) + Constants.SEPARATOR_FILE
    }
    
    private def String makeProjectSourcePath(EObject container, ProjectType project_type, MavenArtifactType maven_type, PathType path_type)

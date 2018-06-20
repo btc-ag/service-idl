@@ -120,11 +120,11 @@ class CommandLineRunnerTest
                 "dotnet/BTC/Commons/Core/Protobuf/Properties/AssemblyInfo.cs",
                 "dotnet/BTC/Commons/Core/Protobuf/TypesCodec.cs", "dotnet/BTC/Commons/Core/Protobuf/gen/Types.proto",
                 "dotnet/BTC/Commons/Core/Protobuf/packages.config", "dotnet/BTC/Commons/Core/Protobuf/paket.references",
-                "dotnet/base.sln", "dotnet/paket.dependencies", "java/btc.commons.core/pom.xml",
-                "java/btc.commons.core/src/main/java/com/btc/commons/core/common/InvalidArgumentException.java",
-                "java/btc.commons.core/src/main/java/com/btc/commons/core/common/ServiceFaultHandlerFactory.java",
-                "java/btc.commons.core/src/main/java/com/btc/commons/core/protobuf/TypesCodec.java",
-                "java/btc.commons.core/src/main/proto/Types.proto"], path)
+                "dotnet/base.sln", "dotnet/paket.dependencies", "java/com.btc.commons.core/pom.xml",
+                "java/com.btc.commons.core/src/main/java/com/btc/commons/core/common/InvalidArgumentException.java",
+                "java/com.btc.commons.core/src/main/java/com/btc/commons/core/common/ServiceFaultHandlerFactory.java",
+                "java/com.btc.commons.core/src/main/java/com/btc/commons/core/protobuf/TypesCodec.java",
+                "java/com.btc.commons.core/src/main/proto/Types.proto"], path)
     }
 
     @Test
@@ -132,14 +132,13 @@ class CommandLineRunnerTest
     {
         val file = new File(TEST_DATA_DIR + "base.idl")
         val path = Files.createTempDirectory("test-gen")
-        assertEquals(0,
-            Main.mainBackend(Arrays.asList(file.absolutePath, "-javaOutputPath", path.toString + "/java")))
+        assertEquals(0, Main.mainBackend(Arrays.asList(file.absolutePath, "-javaOutputPath", path.toString + "/java")))
         assertExpectedFiles(
-            #["java/btc.commons.core/pom.xml",
-                "java/btc.commons.core/src/main/java/com/btc/commons/core/common/InvalidArgumentException.java",
-                "java/btc.commons.core/src/main/java/com/btc/commons/core/common/ServiceFaultHandlerFactory.java",
-                "java/btc.commons.core/src/main/java/com/btc/commons/core/protobuf/TypesCodec.java",
-                "java/btc.commons.core/src/main/proto/Types.proto"], path)
+            #["java/com.btc.commons.core/pom.xml",
+                "java/com.btc.commons.core/src/main/java/com/btc/commons/core/common/InvalidArgumentException.java",
+                "java/com.btc.commons.core/src/main/java/com/btc/commons/core/common/ServiceFaultHandlerFactory.java",
+                "java/com.btc.commons.core/src/main/java/com/btc/commons/core/protobuf/TypesCodec.java",
+                "java/com.btc.commons.core/src/main/proto/Types.proto"], path)
     }
 
     @Test
@@ -232,25 +231,25 @@ class CommandLineRunnerTest
                 "dotnet/BTC/Commons/Core/Test/FooTest.cs", "dotnet/BTC/Commons/Core/Test/FooZeroMQIntegrationTest.cs",
                 "dotnet/BTC/Commons/Core/Test/Properties/AssemblyInfo.cs",
                 "dotnet/BTC/Commons/Core/Test/packages.config", "dotnet/BTC/Commons/Core/Test/paket.references",
-                "dotnet/failable.sln", "dotnet/paket.dependencies", "java/btc.commons.core.foo/pom.xml",
-                "java/btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/dispatcher/FooDispatcher.java",
-                "java/btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/impl/FooImpl.java",
-                "java/btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/protobuf/FooCodec.java",
-                "java/btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/proxy/FooProxy.java",
-                "java/btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/proxy/FooProxyFactory.java",
-                "java/btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/serviceapi/FooServiceFaultHandlerFactory.java",
-                "java/btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/serviceapi/IFoo.java",
-                "java/btc.commons.core.foo/src/main/proto/Foo.proto",
-                "java/btc.commons.core.foo/src/test/java/com/btc/commons/core/foo/clientconsole/Program.java",
-                "java/btc.commons.core.foo/src/test/java/com/btc/commons/core/foo/serverrunner/FooServerRunner.java",
-                "java/btc.commons.core.foo/src/test/java/com/btc/commons/core/foo/serverrunner/Program.java",
-                "java/btc.commons.core.foo/src/test/java/com/btc/commons/core/foo/test/FooImplTest.java",
-                "java/btc.commons.core.foo/src/test/java/com/btc/commons/core/foo/test/FooTest.java",
-                "java/btc.commons.core.foo/src/test/java/com/btc/commons/core/foo/test/FooZeroMQIntegrationTest.java",
-                "java/btc.commons.core.foo/src/test/resources/ServerRunnerBeans.xml",
-                "java/btc.commons.core.foo/src/test/resources/log4j.ClientConsole.properties",
-                "java/btc.commons.core.foo/src/test/resources/log4j.ServerRunner.properties",
-                "java/btc.commons.core.foo/src/test/resources/log4j.Test.properties"], path)
+                "dotnet/failable.sln", "dotnet/paket.dependencies", "java/com.btc.commons.core.foo/pom.xml",
+                "java/com.btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/dispatcher/FooDispatcher.java",
+                "java/com.btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/impl/FooImpl.java",
+                "java/com.btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/protobuf/FooCodec.java",
+                "java/com.btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/proxy/FooProxy.java",
+                "java/com.btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/proxy/FooProxyFactory.java",
+                "java/com.btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/serviceapi/FooServiceFaultHandlerFactory.java",
+                "java/com.btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/serviceapi/IFoo.java",
+                "java/com.btc.commons.core.foo/src/main/proto/Foo.proto",
+                "java/com.btc.commons.core.foo/src/test/java/com/btc/commons/core/foo/clientconsole/Program.java",
+                "java/com.btc.commons.core.foo/src/test/java/com/btc/commons/core/foo/serverrunner/FooServerRunner.java",
+                "java/com.btc.commons.core.foo/src/test/java/com/btc/commons/core/foo/serverrunner/Program.java",
+                "java/com.btc.commons.core.foo/src/test/java/com/btc/commons/core/foo/test/FooImplTest.java",
+                "java/com.btc.commons.core.foo/src/test/java/com/btc/commons/core/foo/test/FooTest.java",
+                "java/com.btc.commons.core.foo/src/test/java/com/btc/commons/core/foo/test/FooZeroMQIntegrationTest.java",
+                "java/com.btc.commons.core.foo/src/test/resources/ServerRunnerBeans.xml",
+                "java/com.btc.commons.core.foo/src/test/resources/log4j.ClientConsole.properties",
+                "java/com.btc.commons.core.foo/src/test/resources/log4j.ServerRunner.properties",
+                "java/com.btc.commons.core.foo/src/test/resources/log4j.Test.properties"], path)
     }
 
     @Test
@@ -296,14 +295,14 @@ class CommandLineRunnerTest
                 "dotnet/Imported/Protobuf/Properties/AssemblyInfo.cs", "dotnet/Imported/Protobuf/TypesCodec.cs",
                 "dotnet/Imported/Protobuf/gen/Types.proto", "dotnet/Imported/Protobuf/packages.config",
                 "dotnet/Imported/Protobuf/paket.references", "dotnet/import-derived.sln", "dotnet/import-imported.sln",
-                "dotnet/paket.dependencies", "java/btc.prins.derived/pom.xml",
-                "java/btc.prins.derived/src/main/java/com/btc/prins/derived/common/ServiceFaultHandlerFactory.java",
-                "java/btc.prins.derived/src/main/java/com/btc/prins/derived/common/StructureReferencingImport.java",
-                "java/btc.prins.derived/src/main/java/com/btc/prins/derived/protobuf/TypesCodec.java",
-                "java/btc.prins.derived/src/main/proto/Types.proto", "java/btc.prins.imported/pom.xml",
-                "java/btc.prins.imported/src/main/java/com/btc/prins/imported/common/ServiceFaultHandlerFactory.java",
-                "java/btc.prins.imported/src/main/java/com/btc/prins/imported/protobuf/TypesCodec.java",
-                "java/btc.prins.imported/src/main/proto/Types.proto"], path)
+                "dotnet/paket.dependencies", "java/com.btc.prins.derived/pom.xml",
+                "java/com.btc.prins.derived/src/main/java/com/btc/prins/derived/common/ServiceFaultHandlerFactory.java",
+                "java/com.btc.prins.derived/src/main/java/com/btc/prins/derived/common/StructureReferencingImport.java",
+                "java/com.btc.prins.derived/src/main/java/com/btc/prins/derived/protobuf/TypesCodec.java",
+                "java/com.btc.prins.derived/src/main/proto/Types.proto", "java/com.btc.prins.imported/pom.xml",
+                "java/com.btc.prins.imported/src/main/java/com/btc/prins/imported/common/ServiceFaultHandlerFactory.java",
+                "java/com.btc.prins.imported/src/main/java/com/btc/prins/imported/protobuf/TypesCodec.java",
+                "java/com.btc.prins.imported/src/main/proto/Types.proto"], path)
     }
 
 }
