@@ -70,11 +70,11 @@ class ProxyGenerator extends BasicCppGenerator {
             {
                «/* TODO remove ProtobufType argument */»
                «typeResolver.resolveProtobuf(event.data, ProtobufType.REQUEST)» eventProtobuf;
-               «IF targetVersion == "0.10"»
+               «IF targetVersion == ServiceCommVersion.V0_10»
                if (!(event->GetNumElements() == 1))
                   «resolveSymbol("CABTHROW_V2")»(«resolveSymbol("BTC::ServiceComm::API::InvalidMessageReceivedException")»("Event message has not exactly one part"));
                «ENDIF»
-               «resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ParseMessageOrThrow<«resolveSymbol("BTC::ServiceComm::API::InvalidMessageReceivedException")»>(eventProtobuf, «IF targetVersion == "0.10"»(*event)[0]«ELSE»*event«ENDIF»);
+               «resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ParseMessageOrThrow<«resolveSymbol("BTC::ServiceComm::API::InvalidMessageReceivedException")»>(eventProtobuf, «IF targetVersion == ServiceCommVersion.V0_10»(*event)[0]«ELSE»*event«ENDIF»);
 
                return «typeResolver.resolveCodecNS(paramBundle, event.data)»::Decode( eventProtobuf );
             }

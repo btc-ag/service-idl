@@ -19,6 +19,7 @@ import java.util.HashMap
 import org.junit.Test
 
 import static org.junit.Assert.*
+import com.btc.serviceidl.generator.cpp.ServiceCommVersion
 
 class DefaultGenerationSettingsProviderTest
 {
@@ -57,8 +58,10 @@ class DefaultGenerationSettingsProviderTest
     {
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
         Main.configureGenerationSettings(defaultGenerationSettingsProvider,
-            Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT, #{CppConstants.SERVICECOMM_VERSION_KIND -> "0.10"}.entrySet)
-        assertEquals("0.10", defaultGenerationSettingsProvider.getTargetVersion(CppConstants.SERVICECOMM_VERSION_KIND))
+            Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT,
+            #{CppConstants.SERVICECOMM_VERSION_KIND -> ServiceCommVersion.V0_10.label}.entrySet)
+        assertEquals(ServiceCommVersion.V0_10.label,
+            defaultGenerationSettingsProvider.getTargetVersion(CppConstants.SERVICECOMM_VERSION_KIND))
     }
 
     @Test(expected=IllegalArgumentException)
