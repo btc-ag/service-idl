@@ -449,7 +449,7 @@ class BasicCppGenerator
 
     protected def getTargetVersion()
     {
-        targetVersionProvider.getTargetVersion(CppConstants.SERVICECOMM_VERSION_KIND)
+        ServiceCommVersion.get(targetVersionProvider.getTargetVersion(CppConstants.SERVICECOMM_VERSION_KIND))
     }
 
 }

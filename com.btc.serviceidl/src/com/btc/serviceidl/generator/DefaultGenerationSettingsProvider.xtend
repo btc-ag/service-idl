@@ -34,7 +34,6 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
     val Map<String, String> versionMap
 
     new()
-    
     {
         versionMap = createBareVersionMap
         reset
@@ -79,7 +78,8 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
                 ProjectType.CLIENT_CONSOLE, ProjectType.EXTERNAL_DB_IMPL));
         projectSetFactory = new VSSolutionFactory
         moduleStructureStrategy = new PrinsModuleStructureStrategy
-        setVersion(CppConstants.SERVICECOMM_VERSION_KIND, "0.12")
+        setVersion(CppConstants.SERVICECOMM_VERSION_KIND,
+            com.btc.serviceidl.generator.cpp.ServiceCommVersion.V0_12.label)
         setVersion(JavaConstants.SERVICECOMM_VERSION_KIND, "0.5")
     }
 

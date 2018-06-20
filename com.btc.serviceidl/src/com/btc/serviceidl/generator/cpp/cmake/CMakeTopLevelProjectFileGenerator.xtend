@@ -7,12 +7,11 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.IProjectSet
+import com.btc.serviceidl.generator.cpp.ServiceCommVersion
 import com.btc.serviceidl.idl.ModuleDeclaration
 import org.eclipse.core.runtime.Path
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
-
-import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(NONE)
 class CMakeTopLevelProjectFileGenerator
@@ -63,14 +62,14 @@ class CMakeTopLevelProjectFileGenerator
 
     def generateConanfile()
     {
-        val serviceCommTargetVersion = generationSettingsProvider.getTargetVersion(
-            CppConstants.SERVICECOMM_VERSION_KIND)
-        val commonsTargetVersion = if (serviceCommTargetVersion == "0.10" ||
-                serviceCommTargetVersion == "0.11") "1.8" else "1.9"
-        val iocTargetVersion = if (serviceCommTargetVersion == "0.10" ||
-                serviceCommTargetVersion == "0.11") "1.7" else "1.8"
-        val loggingTargetVersion = if (serviceCommTargetVersion == "0.10" ||
-                serviceCommTargetVersion == "0.11") "1.7" else "1.8"
+        val serviceCommTargetVersion = ServiceCommVersion.get(generationSettingsProvider.getTargetVersion(
+            CppConstants.SERVICECOMM_VERSION_KIND))
+        val commonsTargetVersion = if (serviceCommTargetVersion == ServiceCommVersion.V0_10 ||
+                serviceCommTargetVersion == ServiceCommVersion.V0_11) "1.8" else "1.9"
+        val iocTargetVersion = if (serviceCommTargetVersion == ServiceCommVersion.V0_10 ||
+                serviceCommTargetVersion == ServiceCommVersion.V0_11) "1.7" else "1.8"
+        val loggingTargetVersion = if (serviceCommTargetVersion == ServiceCommVersion.V0_10 ||
+                serviceCommTargetVersion == ServiceCommVersion.V0_11) "1.7" else "1.8"
         '''
             from conan_template import *
             
@@ -87,7 +86,7 @@ class CMakeTopLevelProjectFileGenerator
                             ("BTC.CAB.Commons/«commonsTargetVersion».latest@cab/testing"),
                             ("BTC.CAB.IoC/«iocTargetVersion».latest@cab/testing"),
                             ("BTC.CAB.Logging/«loggingTargetVersion».latest@cab/testing"),
-                            ("BTC.CAB.ServiceComm/«serviceCommTargetVersion».latest@cab/testing")
+                            ("BTC.CAB.ServiceComm/«serviceCommTargetVersion.label».latest@cab/testing")
                             )
                 generators = "cmake"
                 short_paths = True
