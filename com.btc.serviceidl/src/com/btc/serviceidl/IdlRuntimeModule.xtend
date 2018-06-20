@@ -13,9 +13,16 @@
  */
 package com.btc.serviceidl
 
-import com.google.inject.Binder
-import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
+import com.btc.serviceidl.generator.IGenerationSettingsProvider
+import com.btc.serviceidl.generator.common.ArtifactNature
+import com.google.inject.Binder
+import java.io.InputStream
+import java.util.HashMap
+import java.util.HashSet
+import java.util.Set
+import org.eclipse.xtext.generator.IFileSystemAccess2
+import com.google.inject.Provider
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -26,5 +33,113 @@ class IdlRuntimeModule extends AbstractIdlRuntimeModule
     {
         super.configure(binder);
         binder.bind(IGenerationSettingsProvider).toInstance(new DefaultGenerationSettingsProvider)
+        binder.bind(IFileSystemAccess2).toInstance(
+            new FileSystemAccessWrapper(binder.getProvider(IFileSystemAccess2)))
     }
+}
+
+/**
+ * A wrapped around a IFileSystemAccess2 provider which prevents certain operations that should not 
+ * happen within the IdlGenerator:
+ * - deleting files
+ * - reading existing files
+ * - generating the same file multiple times
+ * - any operations without specifying an explicit outputConfiguration
+ */
+class FileSystemAccessWrapper implements IFileSystemAccess2
+{
+    val Provider<IFileSystemAccess2> wrappedProvider
+    var IFileSystemAccess2 wrappedInternal = null
+    val generated = new HashMap<String, Set<String>>
+
+    new(Provider<IFileSystemAccess2> wrappedProvider)
+    {
+        this.wrappedProvider = wrappedProvider
+        // TODO only configure the artifactNature that are selected for generation!
+        for (artifactNature : ArtifactNature.values)
+            generated.put(artifactNature.label, new HashSet<String>)
+    }
+    
+    private def getWrapped()
+    {
+        if (this.wrappedInternal === null) wrappedInternal = this.wrappedProvider.get
+        this.wrappedInternal
+    }
+
+    override isFile(String path)
+    {
+        throw new UnsupportedOperationException("Output configuration must be specified")
+    }
+
+    override isFile(String path, String outputConfigurationName)
+    {
+        wrapped.isFile(path, outputConfigurationName)
+    }
+
+    override deleteFile(String fileName)
+    {
+        throw new UnsupportedOperationException("Deleting files is not supported")
+    }
+
+    override generateFile(String fileName, CharSequence contents)
+    {
+        throw new UnsupportedOperationException("Output configuration must be specified")
+    }
+
+    override generateFile(String fileName, String outputConfigurationName, CharSequence contents)
+    {
+        val slot = generated.get(outputConfigurationName)
+        if (slot.contains(fileName))
+            wrapped.generateFile(fileName, outputConfigurationName, contents)
+        slot.add(fileName)
+    }
+
+    override deleteFile(String fileName, String outputConfigurationName)
+    {
+        throw new UnsupportedOperationException("Deleting files is not supported")
+    }
+
+    override getURI(String path)
+    {
+        throw new UnsupportedOperationException("Output configuration must be specified")
+    }
+
+    override getURI(String path, String outputConfigurationName)
+    {
+        wrapped.getURI(path, outputConfigurationName)
+    }
+
+    override generateFile(String fileName, InputStream contents)
+    {
+        throw new UnsupportedOperationException("Output configuration must be specified")
+    }
+
+    override generateFile(String fileName, String outputConfigurationName, InputStream contents)
+    {
+        val slot = generated.get(outputConfigurationName)
+        if (slot.contains(fileName))
+            wrapped.generateFile(fileName, outputConfigurationName, contents)
+        slot.add(fileName)
+    }
+
+    override readBinaryFile(String fileName)
+    {
+        throw new UnsupportedOperationException("Output configuration must be specified")
+    }
+
+    override readBinaryFile(String fileName, String outputConfigurationName)
+    {
+        throw new UnsupportedOperationException("Reading files is not supported")
+    }
+
+    override readTextFile(String fileName)
+    {
+        throw new UnsupportedOperationException("Output configuration must be specified")
+    }
+
+    override readTextFile(String fileName, String outputConfigurationName)
+    {
+        throw new UnsupportedOperationException("Reading files is not supported")
+    }
+
 }
