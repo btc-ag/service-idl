@@ -8,11 +8,12 @@
  * 
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
-package com.btc.serviceidl.generator.java;
+package com.btc.serviceidl.generator.cpp;
 
 public enum ServiceCommVersion {
-    V0_3("0.3"),
-    V0_5("0.5");
+    V0_10("0.10"),
+    V0_11("0.11"),
+    V0_12("0.12");
 
     private final String label;
 
@@ -28,6 +29,6 @@ public enum ServiceCommVersion {
         for (ServiceCommVersion value : values()) {
             if (value.getLabel().equals(string)) return value;
         }
-        throw new IllegalArgumentException("Unknown Java ServiceComm version: " + string);
+        throw new IllegalArgumentException("Unknown C++ ServiceComm version: " + string);
     }
 }

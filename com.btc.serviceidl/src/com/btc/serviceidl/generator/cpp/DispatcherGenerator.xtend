@@ -68,7 +68,7 @@ class DispatcherGenerator extends BasicCppGenerator
                   const «clientIdentityType»& clientIdentity
             )
             {
-               «IF targetVersion == "0.10"»
+               «IF targetVersion == ServiceCommVersion.V0_10»
                    // check whether request has exactly one part (other dispatchers could use more than one part)
                    if (request->GetNumElements() != 1) 
                    {
@@ -80,7 +80,7 @@ class DispatcherGenerator extends BasicCppGenerator
                
                // parse raw message into Protocol Buffers message object
                «resolveSymbol("BTC::Commons::Core::AutoPtr")»< «protobuf_request_message» > protoBufRequest( BorrowRequestMessage() );
-               ParseRequestOrLogAndThrow( «class_name.shortName»::GetLogger(), *protoBufRequest, «IF targetVersion == "0.10"»(*request)[0]«ELSE»*request«ENDIF» );
+               ParseRequestOrLogAndThrow( «class_name.shortName»::GetLogger(), *protoBufRequest, «IF targetVersion == ServiceCommVersion.V0_10»(*request)[0]«ELSE»*request«ENDIF» );
                
                «FOR function : interface_declaration.functions»
                    «val protobuf_request_method = function.name.asRequest.asCppProtobufName»
@@ -202,7 +202,7 @@ class DispatcherGenerator extends BasicCppGenerator
                return «resolveSymbol("BTC::Commons::Core::CreateUnique")»<CDispatcherAutoRegistrationFactory<«api_class_name», «class_name.shortName»>>
                (
                loggerFactory
-               «IF targetVersion == "0.10"»
+               «IF targetVersion == ServiceCommVersion.V0_10»
                    , serverEndpoint
                «ENDIF»
                , instanceGuid
@@ -215,7 +215,7 @@ class DispatcherGenerator extends BasicCppGenerator
 
     def makeToMessagePtrType(String messagePart)
     {
-        if (targetVersion == "0.10")
+        if (targetVersion == ServiceCommVersion.V0_10)
         {
             '''«resolveSymbol("BTC::ServiceComm::CommonsUtil::MakeSinglePartMessage")»(
                    GetMessagePool(),  «messagePart»)'''
@@ -249,7 +249,7 @@ class DispatcherGenerator extends BasicCppGenerator
 
     private def getClientIdentityType()
     {
-        if (targetVersion.equals("0.10"))
+        if (targetVersion.equals(ServiceCommVersion.V0_10))
             resolveSymbol("BTC::ServiceComm::Commons::CMessage")
         else
             resolveSymbol("BTC::ServiceComm::Commons::EndpointIdentity")
@@ -257,7 +257,7 @@ class DispatcherGenerator extends BasicCppGenerator
 
     private def getMessagePtrType()
     {
-        if (targetVersion.equals("0.10"))
+        if (targetVersion.equals(ServiceCommVersion.V0_10))
             resolveSymbol("BTC::ServiceComm::Commons::MessagePtr")
         else
             resolveSymbol("BTC::ServiceComm::Commons::ConstMessagePartPtr")
