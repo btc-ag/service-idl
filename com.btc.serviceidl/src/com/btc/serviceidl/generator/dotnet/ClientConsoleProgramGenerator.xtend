@@ -94,7 +94,7 @@ class ClientConsoleProgramGenerator
                       {
                          errorCount++;
                          var realException = (e is «aggregate_exception») ? (e as «aggregate_exception»).Flatten().InnerException : e;
-                         «console».WriteLine("Result of «api_name».«function.name»: " + realException.Message);
+                         «console».WriteLine("Result of «api_name».«function.name»: " + realException.ToString());
                           }
                «ENDFOR»
                
