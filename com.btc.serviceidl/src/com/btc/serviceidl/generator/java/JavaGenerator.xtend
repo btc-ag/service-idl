@@ -171,8 +171,9 @@ class JavaGenerator
    private def void generatePOM(EObject container)
    {
       val pom_path = makeProjectRootPath(container) + "pom".xml
-      file_system_access.generateFile(pom_path, ArtifactNature.JAVA.label, new POMGenerator(targetVersionProvider).generatePOMContents(container, dependencies, 
-          if (protobuf_artifacts !== null && protobuf_artifacts.containsKey(container)) protobuf_artifacts.get(container) else null))
+        file_system_access.generateFile(pom_path, ArtifactNature.JAVA.label,
+            new POMGenerator(targetVersionProvider).generatePOMContents(container, dependencies,
+                protobuf_artifacts?.get(container)))
    }
 
    private def String makeProjectRootPath(EObject container)
