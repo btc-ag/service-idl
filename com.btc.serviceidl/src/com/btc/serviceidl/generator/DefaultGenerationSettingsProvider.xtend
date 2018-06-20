@@ -53,12 +53,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 
     private def createBareVersionMap()
     {
-        val res = new HashMap<String, String>
-        for (versionKind : supportedVersionMap.keySet)
-        {
-            res.put(versionKind, null)
-        }
-        return res
+        supportedVersionMap.keySet.toMap([it], [null as String])
     }
 
     override getLanguages()
@@ -81,8 +76,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
                 ProjectType.CLIENT_CONSOLE, ProjectType.EXTERNAL_DB_IMPL));
         projectSetFactory = new VSSolutionFactory
         moduleStructureStrategy = new PrinsModuleStructureStrategy
-        setVersion(CppConstants.SERVICECOMM_VERSION_KIND,
-            ServiceCommVersion.V0_12.label)
+        setVersion(CppConstants.SERVICECOMM_VERSION_KIND, ServiceCommVersion.V0_12.label)
         setVersion(JavaConstants.SERVICECOMM_VERSION_KIND,
             com.btc.serviceidl.generator.java.ServiceCommVersion.V0_5.label)
         setVersion(DotNetConstants.SERVICECOMM_VERSION_KIND,
