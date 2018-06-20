@@ -166,7 +166,7 @@ class ProtobufGenerator
    
    private def String getJavaProtoLocation(EObject container)
    {
-      qualified_name_provider.getFullyQualifiedName(container).toLowerCase
+      MavenResolver.getArtifactId(container)
          + Constants.SEPARATOR_FILE
          + "src"
          + Constants.SEPARATOR_FILE

@@ -36,7 +36,7 @@ class JavaGeneratorTest extends AbstractGeneratorTest
     def void testAttributeWithUnderscore()
     {
         val fileCount = 3
-        val baseDirectory = ArtifactNature.JAVA.label + "foo/"
+        val baseDirectory = ArtifactNature.JAVA.label + "com.foo/"
         val directory = baseDirectory + "src/main/java/com/foo/protobuf/"
         val contents = ImmutableMap.of(directory + "TypesCodec.java", '''
 package com.foo.protobuf;
@@ -297,7 +297,7 @@ public class TypesCodec {
     def void testBasicServiceApi()
     {
         val fileCount = 3 // TODO this includes the KeyValueStoreServiceFaultHandlerFactory, which should be generated to a different project, and not with these settings
-        val baseDirectory = ArtifactNature.JAVA.label + "btc.prins.infrastructure.servicehost.demo.api.keyvaluestore/"
+        val baseDirectory = ArtifactNature.JAVA.label + "com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore/"
         val directory = baseDirectory +
             "src/main/java/com/btc/prins/infrastructure/servicehost/demo/api/keyvaluestore/serviceapi/"
         val contents = ImmutableMap.of(directory + "IKeyValueStore.java", '''
