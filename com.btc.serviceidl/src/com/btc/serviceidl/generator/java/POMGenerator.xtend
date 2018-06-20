@@ -11,7 +11,6 @@
 package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.ITargetVersionProvider
-import java.util.Optional
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -27,7 +26,8 @@ class POMGenerator
 
     def String generatePOMContents(EObject container, Iterable<MavenDependency> dependencies, String protobuf_file)
     {
-        val root_name = MavenResolver.resolvePackage(container, Optional.empty)
+        val artifactId = MavenResolver.getArtifactId(container)
+        val groupId = artifactId // TODO this must be changed when generating a parent POM
         val version = MavenResolver.resolveVersion(container)
 
         // TODO depending on the target version, different protoc versions must be used
@@ -42,8 +42,8 @@ class POMGenerator
             
                <modelVersion>4.0.0</modelVersion>
             
-               <groupId>«root_name»</groupId>
-               <artifactId>«root_name»</artifactId>
+               <groupId>«groupId»</groupId>
+               <artifactId>«artifactId»</artifactId>
                <version>«version»</version>
             
                <properties>
@@ -101,7 +101,7 @@ class POMGenerator
                </distributionManagement>
                
                <dependencies>
-                  «FOR dependency : dependencies.filter[ artifactId != root_name ]»
+                  «FOR dependency : dependencies.filter[ it.artifactId != artifactId ]»
                       <dependency>
                          <groupId>«dependency.groupId»</groupId>
                          <artifactId>«dependency.artifactId»</artifactId>

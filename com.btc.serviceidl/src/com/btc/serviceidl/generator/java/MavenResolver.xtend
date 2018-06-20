@@ -126,4 +126,9 @@ class MavenResolver
             (if (scope_determinant instanceof InterfaceDeclaration) "." + scope_determinant.name.toLowerCase else "") +
             if (project_type.present) "." + project_type.get.getName.toLowerCase else ""
     }
+    
+    static def getArtifactId(EObject container) {
+        resolvePackage(container, Optional.empty)
+    }
+    
 }
