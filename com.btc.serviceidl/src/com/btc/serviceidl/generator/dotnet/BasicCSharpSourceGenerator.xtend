@@ -10,6 +10,7 @@
 **********************************************************************/
 package com.btc.serviceidl.generator.dotnet
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
@@ -44,6 +45,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors(PACKAGE_GETTER)
 class BasicCSharpSourceGenerator {
     val extension TypeResolver typeResolver 
+    @Accessors(NONE) val ITargetVersionProvider targetVersionProvider
     val Map<String, String> typedef_table    
     val IDLSpecification idl
     
@@ -216,4 +218,9 @@ class BasicCSharpSourceGenerator {
    {
       '''/// «com.btc.serviceidl.util.Util.getPlainText(item).replaceAll("\\r", System.lineSeparator + "/// ")»'''
    }
+
+    protected def getTargetVersion()
+    {
+        ServiceCommVersion.get(targetVersionProvider.getTargetVersion(DotNetConstants.SERVICECOMM_VERSION_KIND))
+    }
 }

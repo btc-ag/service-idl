@@ -12,17 +12,19 @@ package com.btc.serviceidl.generator
 
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.IProjectSetFactory
+import com.btc.serviceidl.generator.cpp.ServiceCommVersion
 import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory
-import java.util.Arrays
-import java.util.HashSet
-import java.util.Set
-import java.util.Map
-import java.util.HashMap
-import com.btc.serviceidl.generator.cpp.CppConstants
+import com.btc.serviceidl.generator.dotnet.DotNetConstants
 import com.btc.serviceidl.generator.java.JavaConstants
+import java.util.Arrays
+import java.util.HashMap
+import java.util.HashSet
+import java.util.Map
+import java.util.Set
 
 class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 {
@@ -44,6 +46,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         val res = new HashMap<String, Set<String>>
         // TODO these should be registered by the respective generator plugins instead
         res.put(CppConstants.SERVICECOMM_VERSION_KIND, CppConstants.SERVICECOMM_VERSIONS)
+        res.put(DotNetConstants.SERVICECOMM_VERSION_KIND, DotNetConstants.SERVICECOMM_VERSIONS)
         res.put(JavaConstants.SERVICECOMM_VERSION_KIND, JavaConstants.SERVICECOMM_VERSIONS)
         return res.immutableCopy
     }
@@ -79,9 +82,11 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         projectSetFactory = new VSSolutionFactory
         moduleStructureStrategy = new PrinsModuleStructureStrategy
         setVersion(CppConstants.SERVICECOMM_VERSION_KIND,
-            com.btc.serviceidl.generator.cpp.ServiceCommVersion.V0_12.label)
+            ServiceCommVersion.V0_12.label)
         setVersion(JavaConstants.SERVICECOMM_VERSION_KIND,
             com.btc.serviceidl.generator.java.ServiceCommVersion.V0_5.label)
+        setVersion(DotNetConstants.SERVICECOMM_VERSION_KIND,
+            com.btc.serviceidl.generator.dotnet.ServiceCommVersion.V0_6.label)
     }
 
     def getVersionKinds()

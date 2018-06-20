@@ -16,6 +16,7 @@
 
 package com.btc.serviceidl.generator.dotnet
 
+import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
@@ -60,6 +61,7 @@ class DotNetGenerator
    private var IFileSystemAccess file_system_access
    private var IQualifiedNameProvider qualified_name_provider
    private var IScopeProvider scope_provider
+   var IGenerationSettingsProvider generationSettingsProvider
    private var IDLSpecification idl
    
    private var param_bundle = new ParameterBundle.Builder()
@@ -77,13 +79,15 @@ class DotNetGenerator
    private var extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
     
    val paketDependencies = new HashSet<Pair<String, String>>
+    
    
-   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Set<ProjectType> projectTypes, HashMap<String, HashMap<String, String>> pr)
+   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes, HashMap<String, HashMap<String, String>> pr)
    {
       resource = res
       file_system_access = fsa
       qualified_name_provider = qnp
       scope_provider = sp
+      this.generationSettingsProvider = generationSettingsProvider
       protobuf_project_references = pr
       
       idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
@@ -306,7 +310,7 @@ class DotNetGenerator
             vsSolution,
             param_bundle.build
         )
-      basicCSharpSourceGenerator = new BasicCSharpSourceGenerator(typeResolver, typedef_table, idl)      
+      basicCSharpSourceGenerator = new BasicCSharpSourceGenerator(typeResolver, generationSettingsProvider, typedef_table, idl)      
    }
    
    private def void generateImpl(String src_root_path, InterfaceDeclaration interface_declaration)
