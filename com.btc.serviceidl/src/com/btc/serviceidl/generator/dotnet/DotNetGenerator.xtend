@@ -47,8 +47,10 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
+import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import org.eclipse.core.runtime.IPath
 
 class DotNetGenerator
 {
@@ -161,7 +163,7 @@ class DotNetGenerator
       generateVSProjectFiles(projectRootPath)
    }
    
-   private def void generateProject(ProjectType projectType, InterfaceDeclaration interfaceDeclaration, String projectRootPath)
+   private def void generateProject(ProjectType projectType, InterfaceDeclaration interfaceDeclaration, IPath projectRootPath)
    {
       switch (projectType)
       {
@@ -214,23 +216,23 @@ class DotNetGenerator
       generateVSProjectFiles(projectRootPath)
    }
    
-   private def void generateVSProjectFiles(String projectRootPath)
+   private def void generateVSProjectFiles(IPath projectRootPath)
    {
       val projectName = vsSolution.getCsprojName(paramBundle.build)
       
       // generate project file
-      fileSystemAccess.generateFile(projectRootPath + Constants.SEPARATOR_FILE + projectName.csproj, ArtifactNature.DOTNET.label, generateCsproj(csFiles))
+      fileSystemAccess.generateFile(projectRootPath.append(projectName.csproj).toPortableString, ArtifactNature.DOTNET.label, generateCsproj(csFiles))
       
       // generate mandatory AssemblyInfo.cs file
-      fileSystemAccess.generateFile(projectRootPath + Constants.SEPARATOR_FILE + "Properties" + Constants.SEPARATOR_FILE + "AssemblyInfo.cs", ArtifactNature.DOTNET.label, generateAssemblyInfo(projectName))   
+      fileSystemAccess.generateFile(projectRootPath.append("Properties").append("AssemblyInfo".cs).toPortableString, ArtifactNature.DOTNET.label, generateAssemblyInfo(projectName))   
    
       // NuGet (optional)
       if (!nugetPackages.resolvedPackages.empty)
       {
-        fileSystemAccess.generateFile(projectRootPath + Constants.SEPARATOR_FILE + "packages.config", ArtifactNature.DOTNET.label, 
+        fileSystemAccess.generateFile(projectRootPath.append("packages.config").toPortableString, ArtifactNature.DOTNET.label, 
                 generatePackagesConfig)
         // TODO generate only either NuGet or Paket file
-        fileSystemAccess.generateFile(projectRootPath + Constants.SEPARATOR_FILE + "paket.references", ArtifactNature.DOTNET.label, 
+        fileSystemAccess.generateFile(projectRootPath.append("paket.references").toPortableString, ArtifactNature.DOTNET.label, 
                 generatePaketReferences)
         paketDependencies.addAll(flatPackages)
       }
@@ -317,7 +319,7 @@ class DotNetGenerator
       basicCSharpSourceGenerator = new BasicCSharpSourceGenerator(typeResolver, generationSettingsProvider, typedefTable, idl)      
    }
    
-   private def void generateImpl(String projectRootPath, InterfaceDeclaration interfaceDeclaration)
+   private def void generateImpl(IPath projectRootPath, InterfaceDeclaration interfaceDeclaration)
    {
       val implementationClassName = GeneratorUtil.getClassName(ArtifactNature.DOTNET, paramBundle.projectType, interfaceDeclaration.name)
       generateProjectSourceFile(
@@ -327,7 +329,7 @@ class DotNetGenerator
       )      
    }
    
-   private def void generateDispatcher(String projectRootPath, InterfaceDeclaration interfaceDeclaration)
+   private def void generateDispatcher(IPath projectRootPath, InterfaceDeclaration interfaceDeclaration)
    {
       reinitializeFile
 
@@ -358,7 +360,7 @@ class DotNetGenerator
       generateVSProjectFiles(projectRootPath)
    }
    
-   private def void generateProtobufProjectContent(EObject owner, String projectRootPath)
+   private def void generateProtobufProjectContent(EObject owner, IPath projectRootPath)
    {
       val faultHandlerFileName = Util.resolveServiceFaultHandling(typeResolver, owner).shortName
       generateProjectSourceFile(
@@ -448,10 +450,10 @@ class DotNetGenerator
         generateCsClientConsoleProgram(programName, module)
       )
       
-      fileSystemAccess.generateFile(projectRootPath + "App".config, ArtifactNature.DOTNET.label, generateAppConfig(module))
+      fileSystemAccess.generateFile(projectRootPath.append("App".config).toPortableString, ArtifactNature.DOTNET.label, generateAppConfig(module))
       
       val log4netName = log4NetConfigFile
-      fileSystemAccess.generateFile(projectRootPath + log4netName, ArtifactNature.DOTNET.label, generateLog4NetConfig(module))
+      fileSystemAccess.generateFile(projectRootPath.append(log4netName).toPortableString, ArtifactNature.DOTNET.label, generateLog4NetConfig(module))
       
       generateVSProjectFiles(projectRootPath)
    }
@@ -472,10 +474,10 @@ class DotNetGenerator
       val programName = "Program"
       generateProjectSourceFile(projectRootPath, programName, generateCsServerRunnerProgram(programName, module))      
       
-      fileSystemAccess.generateFile(projectRootPath + "App".config, ArtifactNature.DOTNET.label, generateAppConfig(module))
+      fileSystemAccess.generateFile(projectRootPath.append("App".config).toPortableString, ArtifactNature.DOTNET.label, generateAppConfig(module))
       
       val log4netName = log4NetConfigFile
-      fileSystemAccess.generateFile(projectRootPath + log4netName, ArtifactNature.DOTNET.label, generateLog4NetConfig(module))
+      fileSystemAccess.generateFile(projectRootPath.append(log4netName).toPortableString, ArtifactNature.DOTNET.label, generateLog4NetConfig(module))
       
       generateVSProjectFiles(projectRootPath)
    }
@@ -500,17 +502,17 @@ class DotNetGenerator
       new AppConfigGenerator(basicCSharpSourceGenerator).generateAppConfig(module)
    }
    
-   private def void generateProjectSourceFile(String projectRootPath, String fileBaseName, CharSequence content)
+   private def void generateProjectSourceFile(IPath projectRootPath, String fileBaseName, CharSequence content)
     {
         csFiles.add(fileBaseName)
         fileSystemAccess.generateFile(
-            projectRootPath + fileBaseName.cs,
+            projectRootPath.append(fileBaseName.cs).toPortableString,
             ArtifactNature.DOTNET.label,
             generateSourceFile(content)
         )
     }
 
-   private def void generateTest(String projectRootPath, InterfaceDeclaration interfaceDeclaration)
+   private def void generateTest(IPath projectRootPath, InterfaceDeclaration interfaceDeclaration)
     {
         val test_name = getTestClassName(interfaceDeclaration)
         generateProjectSourceFile(projectRootPath, test_name, generateCsTest(test_name, interfaceDeclaration))
@@ -557,7 +559,7 @@ class DotNetGenerator
       new TestGenerator(basicCSharpSourceGenerator).generateImplTestStub(interfaceDeclaration, className)
    }
 
-   private def void generateProxy(String projectRootPath, InterfaceDeclaration interfaceDeclaration)
+   private def void generateProxy(IPath projectRootPath, InterfaceDeclaration interfaceDeclaration)
    {
       val proxy_factory_name = getProxyFactoryName(interfaceDeclaration)
       generateProjectSourceFile(projectRootPath, proxy_factory_name,
@@ -590,7 +592,7 @@ class DotNetGenerator
       new ProxyGenerator(basicCSharpSourceGenerator).generate(className, interfaceDeclaration)
    }
    
-   private def void generateServiceAPI(String projectRootPath, InterfaceDeclaration interfaceDeclaration)
+   private def void generateServiceAPI(IPath projectRootPath, InterfaceDeclaration interfaceDeclaration)
    {
       // TODO this appears familiar from the Java generator
       // record type aliases
@@ -610,7 +612,7 @@ class DotNetGenerator
          reinitializeFile
          val fileName = Names.plain(abstractType)
          csFiles.add(fileName)
-         fileSystemAccess.generateFile(projectRootPath + fileName.cs, ArtifactNature.DOTNET.label,
+         fileSystemAccess.generateFile(projectRootPath.append(fileName.cs).toPortableString, ArtifactNature.DOTNET.label,
              generateSourceFile(new ServiceAPIGenerator(basicCSharpSourceGenerator).generate(interfaceDeclaration, abstractType)
          ))
       }
@@ -685,10 +687,9 @@ class DotNetGenerator
       nugetPackages.resolvePackage("Google.ProtocolBuffers.Serialization")
    }
       
-   private def String getProjectRootPath()
+   private def IPath getProjectRootPath()
    {
-      GeneratorUtil.getTransformedModuleName(paramBundle.build, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM)
-         + Constants.SEPARATOR_FILE
+      paramBundle.build.asPath(ArtifactNature.DOTNET)
    }
    
    private def String getLog4NetConfigFile()

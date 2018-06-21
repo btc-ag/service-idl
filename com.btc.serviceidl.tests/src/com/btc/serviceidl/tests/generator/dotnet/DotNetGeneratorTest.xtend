@@ -78,7 +78,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                   public static readonly string typeName = typeof(BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.IKeyValueStore).FullName;
                }
             }
-        ''', baseDirectory + "/BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.csproj" -> // TODO double slash 
+        ''', baseDirectory + "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.csproj" -> 
         '''
             <?xml version="1.0" encoding="utf-8"?>
             <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -168,7 +168,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
               </Target>
               -->
             </Project>
-        ''', baseDirectory + "/Properties/AssemblyInfo.cs" -> // TODO double slash
+        ''', baseDirectory + "Properties/AssemblyInfo.cs" ->
         '''
             using System.Reflection;
             using System.Runtime.CompilerServices;
