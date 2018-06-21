@@ -65,8 +65,7 @@ class JavaGenerator
                 generateModuleContents(module)
 
             // generate proxy/dispatcher projects for all contained interfaces
-            if (module.containsInterfaces)
-                generateInterfaceProjects(module)
+            generateInterfaceProjects(module)
         }
 
         // process nested modules
