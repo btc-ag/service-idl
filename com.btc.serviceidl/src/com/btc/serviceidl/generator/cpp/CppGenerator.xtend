@@ -36,44 +36,46 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
-import com.btc.serviceidl.generator.ITargetVersionProvider
 
 class CppGenerator
 {
     // parameters
-    var Resource resource
-    var IFileSystemAccess fileSystemAccess
-    var IQualifiedNameProvider qualifiedNameProvider
-    var IScopeProvider scopeProvider
-    var IDLSpecification idl
-    var ITargetVersionProvider targetVersionProvider
-    var protobufProjectReferences = new HashMap<String, Set<IProjectReference>>
+    val Resource resource
+    val IFileSystemAccess fileSystemAccess
+    val IQualifiedNameProvider qualifiedNameProvider
+    val IScopeProvider scopeProvider
+    val IDLSpecification idl
+    val IGenerationSettingsProvider generationSettingsProvider
+    val Map<String, Set<IProjectReference>> protobufProjectReferences
 
-    var IProjectSet projectSet
-    var IModuleStructureStrategy moduleStructureStrategy
+    val IProjectSet projectSet
+    val IModuleStructureStrategy moduleStructureStrategy
     val smartPointerMap = new HashMap<EObject, Collection<EObject>>
 
-    def void doGenerate(Resource resource, IFileSystemAccess fileSystemAccess,
-        IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
-        IGenerationSettingsProvider generationSettingsProvider,
+    new(Resource resource, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
+        IScopeProvider scopeProvider, IGenerationSettingsProvider generationSettingsProvider,
         Map<String, HashMap<String, String>> protobufProjectReferences)
     {
         this.resource = resource
         this.fileSystemAccess = fileSystemAccess
         this.qualifiedNameProvider = qualifiedNameProvider
         this.scopeProvider = scopeProvider
-        // TODO the protobuf projects must be added to the vsSolution, and converted into IProjectReference 
-        this.protobufProjectReferences = /*if (pr !== null) new HashMap<String, Set<IProjectReference>>(pr) else */ null
+        // TODO the protobuf projects must be added to the vsSolution, and converted into IProjectReference
+        // this.protobufProjectReferences = pr?.immutableCopy  
+        this.protobufProjectReferences = null
 
         this.idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
+        this.projectSet = generationSettingsProvider.projectSetFactory.create
+        this.moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
+        this.generationSettingsProvider = generationSettingsProvider
+    }
+
+    def void doGenerate()
+    {
         if (this.idl === null)
         {
             return
         }
-
-        this.projectSet = generationSettingsProvider.projectSetFactory.create
-        this.moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
-        this.targetVersionProvider = generationSettingsProvider
 
         // iterate module by module and generate included content
         for (module : this.idl.modules)
@@ -104,7 +106,7 @@ class CppGenerator
                     idl,
                     projectSet,
                     moduleStructureStrategy,
-                    targetVersionProvider,
+                    generationSettingsProvider,
                     protobufProjectReferences,
                     smartPointerMap,
                     module
@@ -131,7 +133,7 @@ class CppGenerator
                         idl,
                         projectSet,
                         moduleStructureStrategy,
-                        targetVersionProvider,
+                        generationSettingsProvider,
                         protobufProjectReferences,
                         smartPointerMap,
                         projectType,
@@ -149,7 +151,7 @@ class CppGenerator
                         idl,
                         projectSet,
                         moduleStructureStrategy,
-                        targetVersionProvider,
+                        generationSettingsProvider,
                         protobufProjectReferences,
                         smartPointerMap,
                         module
@@ -169,7 +171,7 @@ class CppGenerator
                     idl,
                     projectSet,
                     moduleStructureStrategy,
-                    targetVersionProvider,
+                    generationSettingsProvider,
                     protobufProjectReferences,
                     smartPointerMap,
                     module
@@ -187,7 +189,7 @@ class CppGenerator
                     idl,
                     projectSet,
                     moduleStructureStrategy,
-                    targetVersionProvider,
+                    generationSettingsProvider,
                     protobufProjectReferences,
                     smartPointerMap,
                     module
