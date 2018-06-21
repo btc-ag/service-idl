@@ -59,27 +59,27 @@ class JavaGenerator
    }
    
    // global variables
-   private var Resource resource
-   private var IFileSystemAccess file_system_access
-   private var IQualifiedNameProvider qualified_name_provider
-   private var IScopeProvider scope_provider
-   private var Map<EObject, String> protobuf_artifacts
-   private var IDLSpecification idl
+   var Resource resource
+   var IFileSystemAccess file_system_access
+   var IQualifiedNameProvider qualified_name_provider
+   var IScopeProvider scope_provider
+   var Map<EObject, String> protobuf_artifacts
+   var IDLSpecification idl
    
-   private var BasicJavaSourceGenerator basicJavaSourceGenerator 
+   var BasicJavaSourceGenerator basicJavaSourceGenerator 
    var ITargetVersionProvider targetVersionProvider
    
    val typedef_table = new HashMap<String, ResolvedName>
    val dependencies = new HashSet<MavenDependency>
    
-   private var param_bundle = new ParameterBundle.Builder()    
+   var param_bundle = new ParameterBundle.Builder()    
    
    private def getTypeResolver()
    {
        basicJavaSourceGenerator.typeResolver
    }
    
-   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes, Map<EObject, String> pa)
+   def void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes, Map<EObject, String> pa)
    {
       resource = res
       file_system_access = fsa
