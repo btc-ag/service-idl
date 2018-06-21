@@ -74,7 +74,6 @@ class DotNetGenerator
    val csFiles = new HashSet<String>
    val protobufFiles = new HashSet<String>
    var protobufProjectReferences = new HashMap<String, HashMap<String, String>>
-   var extension TypeResolver typeResolver
    var extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
     
    val paketDependencies = new HashSet<Pair<String, String>>
@@ -304,7 +303,7 @@ class DotNetGenerator
       nugetPackages = new NuGetPackageResolver
       csFiles.clear
       
-      typeResolver = new TypeResolver(
+      val typeResolver = new TypeResolver(
             DOTNET_FRAMEWORK_VERSION,
             qualifiedNameProvider,
             namespaceReferences,
@@ -391,7 +390,7 @@ class DotNetGenerator
    
    private def dispatch void resolveProtobufDependencies(StructDeclaration element, EObject owner)
    {
-      resolve(element, ProjectType.PROTOBUF)
+      typeResolver.resolve(element, ProjectType.PROTOBUF)
       
       for (member : element.members)
       {
@@ -401,12 +400,12 @@ class DotNetGenerator
    
    private def dispatch void resolveProtobufDependencies(EnumDeclaration element, EObject owner)
    {
-      resolve(element, ProjectType.PROTOBUF)
+      typeResolver.resolve(element, ProjectType.PROTOBUF)
    }
    
    private def dispatch void resolveProtobufDependencies(ExceptionDeclaration element, EObject owner)
    {
-      resolve(element, ProjectType.PROTOBUF)
+      typeResolver.resolve(element, ProjectType.PROTOBUF)
       
       if (element.supertype !== null)
          resolveProtobufDependencies(element.supertype, owner)
