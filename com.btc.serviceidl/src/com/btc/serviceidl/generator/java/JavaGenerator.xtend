@@ -79,19 +79,22 @@ class JavaGenerator
        basicJavaSourceGenerator.typeResolver
    }
    
-   def void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes, Map<EObject, String> pa)
-   {
-      resource = res
-      file_system_access = fsa
-      qualified_name_provider = qnp
-      scope_provider = sp
-      protobuf_artifacts = pa
-      targetVersionProvider = generationSettingsProvider
+   def void doGenerate(Resource resource, IFileSystemAccess fileSystemAccess,
+        IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
+        IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes,
+        Map<EObject, String> protobufArtifacts)
+    {
+      this.resource = resource
+      this.file_system_access = fileSystemAccess
+      this.qualified_name_provider = qualifiedNameProvider
+      this.scope_provider = scopeProvider
+      this.protobuf_artifacts = protobufArtifacts
+      this.targetVersionProvider = generationSettingsProvider
       
-      idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
+      this.idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
       
       // iterate module by module and generate included content
-      for (module : idl.modules)
+      for (module : this.idl.modules)
       {
          processModule(module, projectTypes)
       }
