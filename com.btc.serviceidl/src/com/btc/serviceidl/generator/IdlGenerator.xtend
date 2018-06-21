@@ -86,8 +86,7 @@ class IdlGenerator implements IGenerator2
         if (languages.contains(ArtifactNature.CPP))
         {
             val cpp_generator = new CppGenerator(resource, fsa, qualified_name_provider, scope_provider,
-                generation_settings_provider,
-                if (protobuf_generator !== null) protobuf_generator.getProjectReferences(ArtifactNature.CPP) else null)
+                generation_settings_provider, protobuf_generator?.getProjectReferences(ArtifactNature.CPP))
             cpp_generator.doGenerate
         }
 
@@ -101,11 +100,15 @@ class IdlGenerator implements IGenerator2
         if (languages.contains(ArtifactNature.DOTNET))
         {
             val dotnet_generator = new DotNetGenerator
-            dotnet_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider,
-                generation_settings_provider, projectTypes, if (protobuf_generator !== null)
-                    protobuf_generator.getProjectReferences(ArtifactNature.DOTNET)
-                else
-                    null)
+            dotnet_generator.doGenerate(
+                resource,
+                fsa,
+                qualified_name_provider,
+                scope_provider,
+                generation_settings_provider, 
+                projectTypes,
+                protobuf_generator?.getProjectReferences(ArtifactNature.DOTNET)
+            )
         }
     }
 
