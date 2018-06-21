@@ -56,11 +56,7 @@ class BasicJavaSourceGenerator
 
     def public dispatch String toText(ExceptionDeclaration element)
     {
-        val exception_name = typeResolver.resolveException(
-            qualified_name_provider.getFullyQualifiedName(element).toString)
-        if (exception_name.isPresent)
-            return exception_name.get()
-        else
+        typeResolver.resolveException(qualified_name_provider.getFullyQualifiedName(element).toString) ?:
             '''«typeResolver.resolve(element)»'''
     }
 
