@@ -317,7 +317,7 @@ class DotNetGenerator
    
    private def void generateImpl(IPath projectRootPath, InterfaceDeclaration interfaceDeclaration)
    {
-      val implementationClassName = GeneratorUtil.getClassName(ArtifactNature.DOTNET, paramBundle.projectType, interfaceDeclaration.name)
+      val implementationClassName = GeneratorUtil.getClassName(ArtifactNature.DOTNET, ProjectType.IMPL, interfaceDeclaration.name)
       generateProjectSourceFile(
         projectRootPath,
         implementationClassName,
@@ -329,7 +329,7 @@ class DotNetGenerator
    {
       reinitializeFile
 
-      val dispatcherClassName = GeneratorUtil.getClassName(ArtifactNature.DOTNET, paramBundle.projectType, interfaceDeclaration.name)
+      val dispatcherClassName = GeneratorUtil.getClassName(ArtifactNature.DOTNET, ProjectType.DISPATCHER, interfaceDeclaration.name)
       generateProjectSourceFile(
         projectRootPath,
         dispatcherClassName,
@@ -562,7 +562,7 @@ class DotNetGenerator
          generateProxyFactory(proxy_factory_name, interfaceDeclaration))      
 
       
-      val proxy_class_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, paramBundle.projectType, interfaceDeclaration.name)
+      val proxy_class_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, ProjectType.PROXY, interfaceDeclaration.name)
       generateProjectSourceFile(projectRootPath, proxy_class_name,
             generateProxyImplementation(proxy_class_name, interfaceDeclaration))
       
@@ -626,7 +626,7 @@ class DotNetGenerator
           new ServiceAPIGenerator(basicCSharpSourceGenerator).generateConstants(interfaceDeclaration, fileName))
       
       reinitializeFile
-      fileName = GeneratorUtil.getClassName(ArtifactNature.DOTNET, paramBundle.projectType, interfaceDeclaration.name)
+      fileName = GeneratorUtil.getClassName(ArtifactNature.DOTNET, ProjectType.SERVICE_API, interfaceDeclaration.name)
       generateProjectSourceFile(projectRootPath, fileName,
           new ServiceAPIGenerator(basicCSharpSourceGenerator).generateInterface(interfaceDeclaration, fileName))
    }
