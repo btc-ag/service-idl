@@ -157,13 +157,7 @@ class BasicCppGenerator
             context instanceof StructDeclaration)
         {
             val related_event = com.btc.serviceidl.util.Util.getRelatedEvent(item)
-            var makeCompareOperator = false
-            for (member : item.members)
-            {
-                if (member.name == "Id" && member.type.primitiveType !== null &&
-                    member.type.primitiveType.uuidType !== null)
-                    makeCompareOperator = true
-            }
+            val makeCompareOperator = item.needsCompareOperator
 
             '''
                 struct «makeExportMacro()» «item.name»«IF item.supertype !== null» : «resolve(item.supertype)»«ENDIF»
@@ -192,6 +186,18 @@ class BasicCppGenerator
         }
         else
             '''«resolve(item)»'''
+    }
+
+    private def boolean needsCompareOperator(StructDeclaration declaration)
+    {
+        var makeCompareOperator = false
+        for (member : declaration.members)
+        {
+            if (member.name == "Id" && member.type.primitiveType !== null &&
+                member.type.primitiveType.uuidType !== null)
+                makeCompareOperator = true
+        }
+        makeCompareOperator
     }
 
     def dispatch String toText(ExceptionReferenceDeclaration item, EObject context)
