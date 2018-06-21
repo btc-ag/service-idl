@@ -253,7 +253,7 @@ class DotNetGenerator
       '''
    }
    
-   private def String generatePaketReferences()
+   private def generatePaketReferences()
    {
       '''      
       «FOR packageEntry : flatPackages»
@@ -262,7 +262,7 @@ class DotNetGenerator
       '''
    }
    
-   private def String generatePaketDependencies()
+   private def generatePaketDependencies()
    {
       // TODO shouldn't the sources (at least extern) be configured somewhere else?
       if (!paketDependencies.empty) {
@@ -506,7 +506,7 @@ class DotNetGenerator
         fileSystemAccess.generateFile(
             projectRootPath + fileBaseName.cs,
             ArtifactNature.DOTNET.label,
-            generateSourceFile(content.toString)
+            generateSourceFile(content)
         )
     }
 
@@ -633,7 +633,7 @@ class DotNetGenerator
           new ServiceAPIGenerator(basicCSharpSourceGenerator).generateInterface(interfaceDeclaration, fileName))
    }
    
-   private def String generateSourceFile(String mainContent)
+   private def generateSourceFile(CharSequence mainContent)
    {
       '''
       «FOR reference : namespaceReferences.sort AFTER System.lineSeparator»
@@ -649,7 +649,7 @@ class DotNetGenerator
       '''
    }
    
-   private def String generateCsproj(Iterable<String> csFiles)
+   private def generateCsproj(Iterable<String> csFiles)
    {
       val projectName = vsSolution.getCsprojName(paramBundle.build)
       
