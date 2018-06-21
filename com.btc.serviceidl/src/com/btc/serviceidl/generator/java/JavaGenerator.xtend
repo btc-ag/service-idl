@@ -156,13 +156,11 @@ class JavaGenerator
             if (!activeProjectTypes.empty)
             {
                 // record type aliases
-                for (type_alias : interfaceDeclaration.contains.filter(AliasDeclaration))
-                {
-                   var type_name = typedefTable.get(type_alias.name)
-                   if (type_name === null)
+                for (typeAlias : interfaceDeclaration.contains.filter(AliasDeclaration))
+                { 
+                   if (!typedefTable.containsKey(typeAlias.name))
                    {
-                      type_name = typeResolver.resolve(type_alias.type)
-                      typedefTable.put(type_alias.name, type_name)
+                      typedefTable.put(typeAlias.name, typeResolver.resolve(typeAlias.type))
                    }
                 }
                   
