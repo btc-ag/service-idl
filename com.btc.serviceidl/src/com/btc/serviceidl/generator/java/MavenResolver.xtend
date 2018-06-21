@@ -19,11 +19,13 @@ import java.util.Optional
 import org.eclipse.emf.ecore.EObject
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.util.Util
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.util.Constants
+
+import static extension com.btc.serviceidl.util.Util.*
 
 class MavenResolver
 {
@@ -32,9 +34,8 @@ class MavenResolver
 
     static def MavenDependency resolveDependency(EObject element)
     {
-        val scope_determinant = Util.getScopeDeterminant(element)
         val name = resolvePackage(element, Optional.empty)
-        val version = resolveVersion(scope_determinant)
+        val version = resolveVersion(element.scopeDeterminant)
 
         return new MavenDependency.Builder().groupId(name).artifactId(name).version(version).build
     }
@@ -77,12 +78,12 @@ class MavenResolver
                         version("${servicecomm.version}").build)
             case name.startsWith("com.btc.cab.servicecomm.singlequeue.jeromq"):
                 return Optional.of(
-                    new MavenDependency.Builder().groupId("com.btc.cab.servicecomm").artifactId("singlequeue.zeromq.jeromq").
-                        version("${servicecomm.version}").build)
+                    new MavenDependency.Builder().groupId("com.btc.cab.servicecomm").artifactId(
+                        "singlequeue.zeromq.jeromq").version("${servicecomm.version}").build)
             case name.startsWith("com.btc.cab.servicecomm.singlequeue.zeromq.jzmq"):
                 return Optional.of(
-                    new MavenDependency.Builder().groupId("com.btc.cab.servicecomm").artifactId("singlequeue.zeromq.jzmq").
-                        version("${servicecomm.version}").build)
+                    new MavenDependency.Builder().groupId("com.btc.cab.servicecomm").artifactId(
+                        "singlequeue.zeromq.jzmq").version("${servicecomm.version}").build)
             case name.startsWith("com.btc.cab.servicecomm.singlequeue.zeromq"):
                 return Optional.of(
                     new MavenDependency.Builder().groupId("com.btc.cab.servicecomm").artifactId("singlequeue.zeromq").
@@ -120,10 +121,16 @@ class MavenResolver
 
     static def String resolvePackage(EObject element, Optional<ProjectType> project_type)
     {
-        val scope_determinant = Util.getScopeDeterminant(element)
-        return GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(Util.getModuleStack(scope_determinant)).build,
-            ArtifactNature.JAVA, TransformType.PACKAGE) +
-            (if (scope_determinant instanceof InterfaceDeclaration) "." + scope_determinant.name.toLowerCase else "") +
-            if (project_type.present) "." + project_type.get.getName.toLowerCase else ""
+        val scopeDeterminant = element.scopeDeterminant
+        return String.join(Constants.SEPARATOR_PACKAGE, #[
+            GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(scopeDeterminant.moduleStack).build,
+                ArtifactNature.JAVA, TransformType.PACKAGE)
+        ] + (if (scopeDeterminant instanceof InterfaceDeclaration) #[scopeDeterminant.name.toLowerCase] else #[]) +
+            if (project_type.present) #[project_type.get.getName.toLowerCase] else #[])
     }
+    
+    static def getArtifactId(EObject container) {
+        resolvePackage(container, Optional.empty)
+    }
+    
 }
