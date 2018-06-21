@@ -270,13 +270,12 @@ class JavaGenerator
    private def void generateServiceAPI(IPath projectSourceRootPath, InterfaceDeclaration interfaceDeclaration)
    {      
       // generate all contained types
-      for (abstractType : interfaceDeclaration.contains.filter(AbstractTypeDeclaration).filter[e | !(e instanceof AliasDeclaration)])
-      {
-         val fileName = Names.plain(abstractType)
-         generateJavaFile(projectSourceRootPath.append(fileName.java), interfaceDeclaration, 
-             [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator, paramBundle.build).generateContainedType(abstractType)]
+      // TODO change to Class-based reject with Xtext 2.15
+      interfaceDeclaration.contains.filter(AbstractTypeDeclaration).reject[it instanceof AliasDeclaration].forEach[
+         generateJavaFile(projectSourceRootPath.append(Names.plain(it).java), interfaceDeclaration, 
+             [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator, paramBundle.build).generateContainedType(it)]
          )
-      }
+      ]
       
       // generate named events
       for (event : interfaceDeclaration.namedEvents)
