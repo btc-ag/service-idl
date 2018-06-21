@@ -156,12 +156,9 @@ class JavaGenerator
             if (!activeProjectTypes.empty)
             {
                 // record type aliases
-                for (typeAlias : interfaceDeclaration.contains.filter(AliasDeclaration))
+                for (typeAlias : interfaceDeclaration.contains.filter(AliasDeclaration).filter[!typedefTable.containsKey(it.name)])
                 { 
-                   if (!typedefTable.containsKey(typeAlias.name))
-                   {
-                      typedefTable.put(typeAlias.name, typeResolver.resolve(typeAlias.type))
-                   }
+                    typedefTable.put(typeAlias.name, typeResolver.resolve(typeAlias.type))
                 }
                   
                 activeProjectTypes.forEach[generateProject(it, interfaceDeclaration)]
