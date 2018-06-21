@@ -32,7 +32,6 @@ import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
 import com.google.common.collect.Sets
-import java.util.Arrays
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
@@ -142,7 +141,7 @@ class JavaGenerator
             reinitializeAll
             paramBundle.reset(Util.getModuleStack(interfaceDeclaration))
 
-            val activeProjectTypes = Sets.intersection(projectTypes, new HashSet<ProjectType>(Arrays.asList(
+            val activeProjectTypes = Sets.intersection(projectTypes, #{
                 ProjectType.SERVICE_API,
                 ProjectType.IMPL,
                 ProjectType.PROTOBUF,
@@ -151,7 +150,7 @@ class JavaGenerator
                 ProjectType.TEST,
                 ProjectType.SERVER_RUNNER,
                 ProjectType.CLIENT_CONSOLE
-            )))
+            })
 
             if (!activeProjectTypes.empty)
             {
