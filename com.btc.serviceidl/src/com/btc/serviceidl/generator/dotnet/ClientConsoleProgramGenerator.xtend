@@ -19,6 +19,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(NONE)
 class ClientConsoleProgramGenerator
@@ -86,14 +87,14 @@ class ClientConsoleProgramGenerator
                              «FOR param : function.parameters»
                                  var «param.paramName.asParameter» = «makeDefaultValue(basicCSharpSourceGenerator, param.paramType)»;
                              «ENDFOR»
-                      «IF !is_void»var result = «ENDIF»proxy.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !function.sync».«IF is_void»Wait()«ELSE»Result«ENDIF»«ENDIF»;
+                      «IF !is_void»var «typeResolver.resolve(function.returnedType.ultimateType).alias("result")» = «ENDIF»proxy.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !function.sync».«IF is_void»Wait()«ELSE»Result«ENDIF»«ENDIF»;
                       «console».WriteLine("Result of «api_name».«function.name»: «IF is_void»Void"«ELSE»" + result.ToString()«ENDIF»);
                       }
                       catch («exception» e)
                       {
                          errorCount++;
                          var realException = (e is «aggregate_exception») ? (e as «aggregate_exception»).Flatten().InnerException : e;
-                         «console».WriteLine("Result of «api_name».«function.name»: " + realException.Message);
+                         «console».WriteLine("Result of «api_name».«function.name»: " + realException.ToString());
                           }
                «ENDFOR»
                

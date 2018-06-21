@@ -18,6 +18,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
@@ -30,6 +31,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.naming.QualifiedName
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(PACKAGE_GETTER)
 class TypeResolver
@@ -39,6 +41,7 @@ class TypeResolver
     val DotNetFrameworkVersion frameworkVersion
     val IQualifiedNameProvider qualified_name_provider
     val Set<String> namespace_references
+    val Set<FailableAlias> failableAliases
     val Set<String> referenced_assemblies
     val Map<String, String> project_references
     val NuGetPackageResolver nugetPackageResolver
@@ -73,6 +76,12 @@ class TypeResolver
     {
         var name = qualified_name_provider.getFullyQualifiedName(element)
         val fully_qualified = true
+
+        // use the underlying type for typedefs
+        if (element instanceof AliasDeclaration)
+        {
+            return resolve(com.btc.serviceidl.util.Util.getUltimateType(element))
+        }
 
         if (name === null)
         {
@@ -209,4 +218,22 @@ class TypeResolver
         throw new IllegalArgumentException("Unknown PrimitiveType: " + element.class.toString)
     }
 
+    def String resolveFailableProtobufType(EObject element, EObject container)
+    {
+        val namespace = GeneratorUtil.getTransformedModuleName(
+            ParameterBundle.createBuilder(container.scopeDeterminant.moduleStack).with(ProjectType.PROTOBUF).build,
+            ArtifactNature.DOTNET,
+            TransformType.PACKAGE
+        )
+        return namespace + TransformType.PACKAGE.separator +
+            GeneratorUtil.asFailable(element, container, qualified_name_provider)
+    }
+
+    def String resolveFailableType(String basicType)
+    {
+        resolve(FailableAlias.CONTAINER_TYPE)
+        val failableAlias = new FailableAlias(basicType)
+        failableAliases.add(failableAlias)
+        return failableAlias.aliasName
+    }
 }

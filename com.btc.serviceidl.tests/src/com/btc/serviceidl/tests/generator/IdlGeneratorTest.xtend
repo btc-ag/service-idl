@@ -52,7 +52,7 @@ class IdlGeneratorTest
     def void testBasic()
     {
         val fsa = doGenerate(TestData.basic)
-        assertEquals(112, fsa.textFiles.size)
+        assertEquals(111, fsa.textFiles.size)
     }
 
     @Test
@@ -66,7 +66,7 @@ class IdlGeneratorTest
     def void testEvent()
     {
         val fsa = doGenerate(TestData.eventTestCase)
-        assertEquals(117, fsa.textFiles.size)
+        assertEquals(116, fsa.textFiles.size)
     }
 
     @Test

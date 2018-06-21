@@ -59,11 +59,11 @@ class AppConfigGenerator {
                «val service_descriptor = '''«typeResolver.resolve("BTC.CAB.ServiceComm.NET.API.DTO.ServiceDescriptor").fullyQualifiedName»'''»
                «val service_dispatcher = typeResolver.resolve("BTC.CAB.ServiceComm.NET.API.IServiceDispatcher").fullyQualifiedName»
                <!--ZeroMQ server factory-->
-               <object id="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ">
-                 <constructor-arg index="0" expression="T(BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory, BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ).DefaultServerConnectionOptions" />
-                 <constructor-arg index="1" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
+               <object id="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ">
+                 <constructor-arg name="connectionOptions" expression="T(BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory, BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ).DefaultServerConnectionOptions" />
+                 <constructor-arg name="loggerFactory" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
                </object>
-               <object id="BTC.CAB.ServiceComm.NET.API.ServerFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.ServerFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.Core">
+               <object id="BTC.CAB.ServiceComm.NET.ServerRunner.ServerFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.ServerFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.Core">
                  <constructor-arg index="0" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
                  <constructor-arg index="1" ref="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" />
                  <constructor-arg index="2" value="tcp://127.0.0.1:«Constants.DEFAULT_PORT»"/>
@@ -79,6 +79,7 @@ class AppConfigGenerator {
                   <object id="«dispatcher».ServiceDescriptor" type="«service_descriptor», BTC.CAB.ServiceComm.NET.API">
                     <constructor-arg name="typeGuid" expression="T(«api.namespace».«getConstName(interface_declaration)», «api.namespace»).«typeGuidProperty»"/>
                     <constructor-arg name="typeName" expression="T(«api.namespace».«getConstName(interface_declaration)», «api.namespace»).«typeNameProperty»"/>
+                    <constructor-arg name="instanceGuid" expression="T(System.Guid, mscorlib).NewGuid()"/>
                     <constructor-arg name="instanceName" value="PerformanceTestService"/>
                     <constructor-arg name="instanceDescription" value="«api» instance for performance tests"/>
                   </object>
@@ -90,7 +91,7 @@ class AppConfigGenerator {
                «ENDFOR»
                
                <!-- Service Dictionary -->
-               <object id="BTC.CAB.ServiceComm.ServerRunner.Services" type="«typeResolver.resolve("System.Collections.Generic.Dictionary").fullyQualifiedName»&lt;«service_descriptor», «service_dispatcher»>">
+               <object id="BTC.CAB.ServiceComm.NET.ServerRunner.SpringServerRunner.Services" type="«typeResolver.resolve("System.Collections.Generic.Dictionary").fullyQualifiedName»&lt;«service_descriptor», «service_dispatcher»>">
                  <constructor-arg>
                    <dictionary key-type="«service_descriptor»" value-type="«service_dispatcher»">
                      «FOR interface_declaration : module.moduleComponents.filter(InterfaceDeclaration)»
@@ -102,9 +103,9 @@ class AppConfigGenerator {
                </object>
             «ELSEIF param_bundle.projectType == ProjectType.CLIENT_CONSOLE»
                <!--ZeroMQ client factory-->
-               <object id="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ">
-                 <constructor-arg index="0" expression="T(BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory, BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ).DefaultClientConnectionOptions" />
-                 <constructor-arg index="1" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
+               <object id="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ">
+                 <constructor-arg name="connectionOptions" expression="T(BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory, BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ).DefaultClientConnectionOptions" />
+                 <constructor-arg name="loggerFactory" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
                </object>
                <object id="BTC.CAB.ServiceComm.NET.API.ClientFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.ClientFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.Core">
                  <constructor-arg index="0" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
@@ -117,7 +118,7 @@ class AppConfigGenerator {
         </spring>
         
         <startup>
-          <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.0"/>
+          <supportedRuntime version="v4.0" sku=".NETFramework,Version=v«DotNetGenerator.DOTNET_FRAMEWORK_VERSION.toString»"/>
         </startup>
       </configuration>
       '''      

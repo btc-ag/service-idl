@@ -17,6 +17,18 @@
 package com.btc.serviceidl.generator.dotnet;
 
 public enum DotNetFrameworkVersion {
-    NET40,
-    NET45
+    NET46
+    ;
+    
+    @Override
+    public String toString()
+    {
+       switch(this)
+       {
+       case NET46:
+          return "4.6";
+       default:
+          throw new UnsupportedOperationException("Method is not implemented for enum value " + this.name());
+       }
+    }
 }

@@ -479,19 +479,6 @@ class IdlValidator extends AbstractIdlValidator
     }
 
     @Check
-    def unsupportedFeatureWarning(SequenceDeclaration element)
-    {
-        if (element.failable)
-        {
-            warning(
-                "The 'failable' feature is not supported in C#!",
-                element,
-                IdlPackage.Literals.SEQUENCE_DECLARATION__FAILABLE
-            )
-        }
-    }
-
-    @Check
     def unsupportedFeatureWarning(TypicalLengthHint element)
     {
         warning(

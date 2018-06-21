@@ -67,9 +67,7 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
 
            _faultHandlerManager = new «resolve("BTC.CAB.ServiceComm.NET.FaultHandling.ServiceFaultHandlerManager")»();
 
-           var «service_fault_handler» = new «resolve("BTC.CAB.ServiceComm.NET.FaultHandling.MultipleExceptionTypesServiceFaultHandler")»();
-
-           «makeExceptionRegistration(service_fault_handler, com.btc.serviceidl.util.Util.getRaisedExceptions(interface_declaration))»
+           «makeExceptionRegistration(service_fault_handler, interface_declaration)»
 
            _faultHandlerManager.RegisterHandler(«service_fault_handler»);
         }
@@ -106,10 +104,12 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
                  (
                     «FOR param : func.parameters SEPARATOR ","»
                        «val is_input = (param.direction == ParameterDirection.PARAM_IN)»
-                       «val use_codec = GeneratorUtil.useCodec(param, ArtifactNature.DOTNET)»
-                       «val decodeMethod = getDecodeMethod(param.paramType)»
+                       «val isFailable = com.btc.serviceidl.util.Util.isFailable(param)»
+                       «val use_codec = isFailable || GeneratorUtil.useCodec(param, ArtifactNature.DOTNET)»
+                       «val decodeMethod = getDecodeMethod(param.paramType, interface_declaration)»
+                       «val useCast = use_codec && !isFailable»
                        «IF is_input»
-                          «IF use_codec»(«resolveDecode(param.paramType)») «resolveCodec(typeResolver, param_bundle, param.paramType)».«decodeMethod»(«ENDIF»«IF use_codec»«resolve(param.paramType, ProjectType.PROTOBUF).alias("request")»«ELSE»request«ENDIF».«request_name».«param.paramName.asDotNetProtobufName»«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»List«ENDIF»«IF use_codec»)«ENDIF»
+                          «IF use_codec»«IF useCast»(«resolveDecode(param.paramType)») «ENDIF»«resolveCodec(typeResolver, param_bundle, param.paramType)».«decodeMethod»(«ENDIF»«IF use_codec»«resolve(param.paramType, ProjectType.PROTOBUF).alias("request")»«ELSE»request«ENDIF».«request_name».«param.paramName.asDotNetProtobufName»«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»List«ENDIF»«IF use_codec»)«ENDIF»
                        «ELSE»
                           out «param.paramName.asParameter»
                        «ENDIF»
@@ -118,16 +118,21 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
 
               // deliver response
               var responseBuilder = «protobuf_response».Types.«com.btc.serviceidl.util.Util.asResponse(func.name)».CreateBuilder()
-                 «val use_codec = GeneratorUtil.useCodec(func.returnedType, ArtifactNature.DOTNET)»
-                 «val method_name = if (com.btc.serviceidl.util.Util.isSequenceType(func.returnedType)) "AddRange" + func.name.asDotNetProtobufName else "Set" + func.name.asDotNetProtobufName»
-                 «val encodeMethod = getEncodeMethod(func.returnedType)»
-                 «IF !is_void».«method_name»(«IF use_codec»(«resolveEncode(func.returnedType)») «resolveCodec(typeResolver, param_bundle, func.returnedType)».«encodeMethod»(«ENDIF»«IF use_codec»«resolve(func.returnedType).alias("result")»«ELSE»result«ENDIF»«IF use_codec»)«ENDIF»)«ENDIF»
+                 «val isSequence = com.btc.serviceidl.util.Util.isSequenceType(func.returnedType)»
+                 «val use_codec = isSequence || GeneratorUtil.useCodec(func.returnedType, ArtifactNature.DOTNET)»
+                 «val method_name = if (isSequence) "AddRange" + func.name.asDotNetProtobufName else "Set" + func.name.asDotNetProtobufName»
+                 «val encodeMethod = getEncodeMethod(func.returnedType, interface_declaration)»
+                 «val isFailable = com.btc.serviceidl.util.Util.isFailable(func.returnedType)»
+                 «val useCast = use_codec && !isFailable»
+                 «IF !is_void».«method_name»(«IF use_codec»«IF useCast»(«resolveEncode(func.returnedType)») «ENDIF»«resolveCodec(typeResolver, param_bundle, func.returnedType)».«encodeMethod»(«ENDIF»«IF use_codec»«resolve(func.returnedType).alias("result")»«ELSE»result«ENDIF»«IF use_codec»)«ENDIF»)«ENDIF»
                  «FOR param : out_params»
                     «val param_name = param.paramName.asParameter»
-                    «val use_codec_param = GeneratorUtil.useCodec(param.paramType, ArtifactNature.DOTNET)»
-                    «val method_name_param = if (com.btc.serviceidl.util.Util.isSequenceType(param.paramType)) "AddRange" + param.paramName.asDotNetProtobufName»
-                    «val encode_method_param = getEncodeMethod(param.paramType)»
-                    .«method_name_param»(«IF use_codec_param»(«resolveEncode(param.paramType)») «resolveCodec(typeResolver, param_bundle, param.paramType)».«encode_method_param»(«ENDIF»«IF use_codec_param»«resolve(param.paramType).alias(param_name)»«ELSE»«param_name»«ENDIF»«IF use_codec_param»)«ENDIF»)
+                    «val isFailableParam = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
+                    «val use_codec_param = isFailableParam || GeneratorUtil.useCodec(param.paramType, ArtifactNature.DOTNET)»
+                    «val method_name_param = if (com.btc.serviceidl.util.Util.isSequenceType(param.paramType)) "AddRange" + param.paramName.asDotNetProtobufName else "Set" + param.paramName.asDotNetProtobufName»
+                    «val encode_method_param = getEncodeMethod(param.paramType, interface_declaration)»
+                    «val useCastParam = use_codec_param && !isFailableParam»
+                    .«method_name_param»(«IF use_codec_param»«IF useCastParam»(«resolveEncode(param.paramType)») «ENDIF»«resolveCodec(typeResolver, param_bundle, param.paramType)».«encode_method_param»(«ENDIF»«IF use_codec_param»«resolve(param.paramType).alias(param_name)»«ELSE»«param_name»«ENDIF»«IF use_codec_param»)«ENDIF»)
                  «ENDFOR»
                  ;
               

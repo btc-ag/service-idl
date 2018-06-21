@@ -53,7 +53,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 class DotNetGenerator
 {
    // constants
-   val DOTNET_FRAMEWORK_VERSION = DotNetFrameworkVersion.NET40
+   public static val DOTNET_FRAMEWORK_VERSION = DotNetFrameworkVersion.NET46
    
    // global variables
    private var Resource resource
@@ -66,6 +66,7 @@ class DotNetGenerator
    
    val typedef_table = new HashMap<String, String>
    val namespace_references = new HashSet<String>
+   val failableAliases = new HashSet<FailableAlias>
    val referenced_assemblies = new HashSet<String>
    private var nuget_packages = new NuGetPackageResolver
    val project_references = new HashMap<String, String>
@@ -284,6 +285,7 @@ class DotNetGenerator
    private def void reinitializeFile()
    {
       namespace_references.clear
+      failableAliases.clear
    }
    
    private def void reinitializeProject(ProjectType project_type)
@@ -300,6 +302,7 @@ class DotNetGenerator
             DOTNET_FRAMEWORK_VERSION,
             qualified_name_provider,
             namespace_references,
+            failableAliases,
             referenced_assemblies,
             project_references,
             nuget_packages,
@@ -352,6 +355,13 @@ class DotNetGenerator
    
    private def void generateProtobufProjectContent(EObject owner, String project_root_path)
    {
+      val faultHandlerFileName = Util.resolveServiceFaultHandling(typeResolver, owner).shortName
+      generateProjectSourceFile(
+         project_root_path,
+         faultHandlerFileName,
+         new ServiceFaultHandlingGenerator(basicCSharpSourceGenerator).generate(faultHandlerFileName, owner)
+      )
+       
       val codec_name = GeneratorUtil.getCodecName(owner)
       generateProjectSourceFile(project_root_path, codec_name, generateProtobufCodec(owner, codec_name))
       if (owner instanceof ModuleDeclaration)
@@ -526,20 +536,20 @@ class DotNetGenerator
    {
       reinitializeFile
 
-      new ServerRegistrationGenerator(basicCSharpSourceGenerator).generate(interface_declaration, class_name)      
+      new ServerRegistrationGenerator(basicCSharpSourceGenerator).generate(interface_declaration, class_name)
    }
 
    private def generateCsZeroMQIntegrationTest(String class_name, InterfaceDeclaration interface_declaration)
    {
       reinitializeFile
-      new TestGenerator(basicCSharpSourceGenerator).generateIntegrationTest(interface_declaration, class_name)      
+      new TestGenerator(basicCSharpSourceGenerator).generateIntegrationTest(interface_declaration, class_name)
    }
 
    private def generateCsImplTest(String class_name, InterfaceDeclaration interface_declaration)
    {
       reinitializeFile
       
-      new TestGenerator(basicCSharpSourceGenerator).generateImplTestStub(interface_declaration, class_name)      
+      new TestGenerator(basicCSharpSourceGenerator).generateImplTestStub(interface_declaration, class_name)
    }
 
    private def void generateProxy(String project_root_path, InterfaceDeclaration interface_declaration)
@@ -548,13 +558,6 @@ class DotNetGenerator
       generateProjectSourceFile(project_root_path, proxy_factory_name,
          generateProxyFactory(proxy_factory_name, interface_declaration))      
 
-      val proxy_protocol_name = interface_declaration.proxyProtocolName
-      generateProjectSourceFile(project_root_path, proxy_protocol_name,
-            generateProxyProtocol(proxy_protocol_name, interface_declaration))
-      
-      val proxy_data_name = interface_declaration.proxyDataName
-      generateProjectSourceFile(project_root_path, proxy_data_name,
-            generateProxyData(proxy_data_name, interface_declaration))
       
       val proxy_class_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, param_bundle.projectType, interface_declaration.name)
       generateProjectSourceFile(project_root_path, proxy_class_name,
@@ -580,20 +583,6 @@ class DotNetGenerator
       reinitializeFile
       
       new ProxyGenerator(basicCSharpSourceGenerator).generate(class_name, interface_declaration)
-   }
-   
-   private def generateProxyData(String class_name, InterfaceDeclaration interface_declaration)
-   {
-      reinitializeFile
-      
-      new ProxyDataGenerator(basicCSharpSourceGenerator).generate(interface_declaration)
-   }
-   
-   private def generateProxyProtocol(String class_name, InterfaceDeclaration interface_declaration)
-   {
-      reinitializeFile
-
-      new ProxyProtocolGenerator(basicCSharpSourceGenerator).generate(class_name, interface_declaration)      
    }
    
    private def void generateServiceAPI(String project_root_path, InterfaceDeclaration interface_declaration)
@@ -644,6 +633,9 @@ class DotNetGenerator
       «FOR reference : namespace_references.sort AFTER System.lineSeparator»
          using «reference»;
       «ENDFOR»
+      «FOR failableAlias : failableAliases»
+         using «failableAlias.aliasName» = «FailableAlias.CONTAINER_TYPE»<«failableAlias.basicTypeName»>;
+      «ENDFOR»
       namespace «GeneratorUtil.getTransformedModuleName(param_bundle.build, ArtifactNature.DOTNET, TransformType.PACKAGE)»
       {
          «main_content»
@@ -651,7 +643,7 @@ class DotNetGenerator
       '''
    }
    
-   private def generateCsproj(Iterable<String> cs_files)
+   private def String generateCsproj(Iterable<String> cs_files)
    {
       val project_name = vsSolution.getCsprojName(param_bundle.build)
       

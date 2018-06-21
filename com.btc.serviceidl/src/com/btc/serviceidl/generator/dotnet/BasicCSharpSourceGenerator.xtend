@@ -188,7 +188,7 @@ class BasicCSharpSourceGenerator {
             public «element.name»(«resolve("System.string")» msg) : base(msg)
             {
                // this dummy constructor is necessary because otherwise
-               // ProtobufServiceFaultHandler::RegisterException will fail!
+               // MultipleExceptionTypesServiceFaultHandler::RegisterException will fail!
             }
             «ENDIF»
             
@@ -204,7 +204,11 @@ class BasicCSharpSourceGenerator {
    
    def public dispatch String toText(SequenceDeclaration element, EObject context)
    {
-      '''«resolve("System.Collections.Generic.IEnumerable")»<«toText(element.type, element)»>'''
+      val isFailable = element.failable
+      val basicType = resolve(element.type)
+      val effectiveType = if (isFailable) resolveFailableType(basicType.fullyQualifiedName) else basicType
+      
+      '''«resolve("System.Collections.Generic.IEnumerable")»<«effectiveType»>'''
    }
    
    def public dispatch String toText(TupleDeclaration element, EObject context)

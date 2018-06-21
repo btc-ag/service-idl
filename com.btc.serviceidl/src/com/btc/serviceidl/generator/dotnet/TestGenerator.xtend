@@ -28,10 +28,13 @@ class TestGenerator extends GeneratorBase
         val api_class_name = resolve(interface_declaration)
         val logger_factory = resolve("BTC.CAB.Logging.Log4NET.Log4NETLoggerFactory")
         val server_registration = getServerRegistrationName(interface_declaration)
+        val connectionFactory = resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory")
 
         // explicit resolution of necessary assemblies
         resolve("BTC.CAB.Logging.API.NET.ILoggerFactory")
         resolve("BTC.CAB.ServiceComm.NET.Base.AServiceDispatcherBase")
+        resolve("BTC.CAB.ServiceComm.NET.Common.IExtensible")
+        resolve("BTC.CAB.ServiceComm.NET.ExtensionAPI.IServerFailureObservable")
 
         '''
             [«resolve("NUnit.Framework.TestFixture")»]
@@ -58,7 +61,8 @@ class TestGenerator extends GeneratorBase
                   StartServer(loggerFactory, connectionString);
                   
                   // client
-                  «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.API.IConnectionFactory")» connectionFactory = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory")»(NetMqConnectionFactory.DefaultClientConnectionOptions, loggerFactory);
+                  var connectionOptions = «connectionFactory».«resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.API.ConnectionOptions").alias("DefaultClientConnectionOptions")»;
+                  «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.API.IConnectionFactory")» connectionFactory = new «connectionFactory»(connectionOptions, loggerFactory);
                   _client = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.Client")»(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcClientEndpoint")»(loggerFactory), connectionFactory);
                   
                   _testSubject = «resolve(interface_declaration, ProjectType.PROXY).alias(getProxyFactoryName(interface_declaration))».CreateProtobufProxy(_client.ClientEndpoint);
@@ -66,7 +70,8 @@ class TestGenerator extends GeneratorBase
             
                private void StartServer(«logger_factory» loggerFactory, string connectionString)
                {
-                  _serverConnectionFactory = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory")»(NetMqConnectionFactory.DefaultServerConnectionOptions, loggerFactory);
+                   var connectionOptions = «connectionFactory».«resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.API.ConnectionOptions").alias("DefaultServerConnectionOptions")»;
+                  _serverConnectionFactory = new «connectionFactory»(connectionOptions, loggerFactory);
                   _server = new Server(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcServerEndpoint")»(loggerFactory), _serverConnectionFactory);
                   _serverRegistration = new «server_registration»(_server);
                   _serverRegistration.RegisterService();
@@ -140,7 +145,7 @@ class TestGenerator extends GeneratorBase
                          «FOR param : function.parameters»
                              var «param.paramName.asParameter» = «basicCSharpSourceGenerator.makeDefaultValue(param.paramType)»;
                          «ENDFOR»
-                   «IF !is_void»var result = «ENDIF»TestSubject.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !is_sync».«IF is_void»Wait()«ELSE»Result«ENDIF»«ENDIF»;
+                   «IF !is_void»var «resolve(com.btc.serviceidl.util.Util.getUltimateType(function.returnedType)).alias("result")» = «ENDIF»TestSubject.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !is_sync».«IF is_void»Wait()«ELSE»Result«ENDIF»«ENDIF»;
                    });
                    
                    var realException = (e is «aggregate_exception») ? (e as «aggregate_exception»).Flatten().InnerException : e;

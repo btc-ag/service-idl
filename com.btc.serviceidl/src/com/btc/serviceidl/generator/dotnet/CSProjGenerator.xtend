@@ -19,7 +19,7 @@ import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import com.btc.serviceidl.generator.common.ArtifactNature
 
 class CSProjGenerator {
-  static def generateCSProj(String project_name, VSSolution vsSolution, ParameterBundle param_bundle, Iterable<String> referenced_assemblies, Iterable<NuGetPackage> nuget_packages, Map<String, String> project_references, Iterable<String> cs_files, Iterable<String> protobuf_files)
+  static def String generateCSProj(String project_name, VSSolution vsSolution, ParameterBundle param_bundle, Iterable<String> referenced_assemblies, Iterable<NuGetPackage> nuget_packages, Map<String, String> project_references, Iterable<String> cs_files, Iterable<String> protobuf_files)
   {
       // Please do NOT edit line indents in the code below (even though they
       // may look misplaced) unless you are fully aware of what you are doing!!!
@@ -37,7 +37,7 @@ class CSProjGenerator {
           <OutputType>«IF is_exe»Exe«ELSE»Library«ENDIF»</OutputType>
           <RootNamespace>«project_name»</RootNamespace>
           <AssemblyName>«project_name»</AssemblyName>
-          <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+          <TargetFrameworkVersion>v«DotNetGenerator.DOTNET_FRAMEWORK_VERSION.toString»</TargetFrameworkVersion>
           <TargetFrameworkProfile />
         </PropertyGroup>
         «IF !is_exe || !prins»
