@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.GuidMapper
@@ -37,14 +38,14 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.idl.TupleDeclaration
 import com.btc.serviceidl.util.Constants
 import java.util.ArrayList
+import java.util.Comparator
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
-import java.util.Comparator
-import com.btc.serviceidl.generator.ITargetVersionProvider
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(NONE)
 class BasicCppGenerator
@@ -271,7 +272,7 @@ class BasicCppGenerator
 
     def dispatch String toText(DocCommentElement item, EObject context)
     {
-        com.btc.serviceidl.util.Util.getPlainText(item)
+        item.plainText
     }
 
     def dispatch String toText(ModuleDeclaration item, EObject context)
@@ -341,7 +342,6 @@ class BasicCppGenerator
             {
                 result.add(map.get(key))
                 map.remove(key)
-
             }
         }
         result
