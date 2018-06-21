@@ -18,6 +18,8 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.HeaderResolver.OutputConfigurationItem
+import com.btc.serviceidl.generator.cpp.TypeResolver.IncludeGroup
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.DocCommentElement
@@ -40,6 +42,8 @@ import com.btc.serviceidl.util.Constants
 import java.util.ArrayList
 import java.util.Comparator
 import java.util.Map
+import java.util.Set
+import org.eclipse.core.runtime.IPath
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -350,40 +354,11 @@ class BasicCppGenerator
     def CharSequence generateIncludes(boolean isHeader)
     {
         val includes = typeResolver.includes
-        val outputConfiguration = headerResolver.outputConfiguration
-
         val result = new StringBuilder()
 
-        for (outputConfigurationItem : outputConfiguration)
+        for (outputConfigurationItem : headerResolver.outputConfiguration)
         {
-            val sortedElements = includes.extractAllExcludeNull(outputConfigurationItem.includeGroups).flatten.sortWith(
-                Comparator.comparing[toString])
-            if (!sortedElements.empty)
-            {
-                result.append(outputConfigurationItem.prefix)
-                for (element : sortedElements)
-                {
-                    result.append("#include ")
-                    result.append(if (outputConfigurationItem.systemIncludeStyle) "<" else "\"")
-                    result.append(element)
-                    result.append(if (outputConfigurationItem.systemIncludeStyle) ">" else "\"")
-                    result.append(System.lineSeparator)
-                }
-                result.append(outputConfigurationItem.suffix)
-                result.append(System.lineSeparator)
-            }
-
-            // TODO remove this
-            if (outputConfigurationItem.precedence == 0 && isHeader && paramBundle.projectType == ProjectType.PROXY)
-            {
-                result.append('''
-                    // resolve naming conflict between Windows' API function InitiateShutdown and CAB's AServiceProxyBase::InitiateShutdown
-                    #ifdef InitiateShutdown
-                    #undef InitiateShutdown
-                    #endif
-                                    
-                ''')
-            }
+            generateIncludesSection(isHeader, outputConfigurationItem, includes, result)
         }
 
         if (!includes.empty)
@@ -403,6 +378,39 @@ class BasicCppGenerator
         ''')
 
         return result
+    }
+    
+    def generateIncludesSection(boolean isHeader, OutputConfigurationItem outputConfigurationItem,
+        Map<IncludeGroup, Set<IPath>> includes, StringBuilder result)
+    {
+        val sortedElements = includes.extractAllExcludeNull(outputConfigurationItem.includeGroups).flatten.sortWith(
+                Comparator.comparing[toString])
+        if (!sortedElements.empty)
+        {
+            result.append(outputConfigurationItem.prefix)
+            for (element : sortedElements)
+            {
+                result.append("#include ")
+                result.append(if (outputConfigurationItem.systemIncludeStyle) "<" else "\"")
+                result.append(element)
+                result.append(if (outputConfigurationItem.systemIncludeStyle) ">" else "\"")
+                result.append(System.lineSeparator)
+            }
+            result.append(outputConfigurationItem.suffix)
+            result.append(System.lineSeparator)
+        }
+
+        // TODO remove this
+        if (outputConfigurationItem.precedence == 0 && isHeader && paramBundle.projectType == ProjectType.PROXY)
+        {
+            result.append('''
+                // resolve naming conflict between Windows' API function InitiateShutdown and CAB's AServiceProxyBase::InitiateShutdown
+                #ifdef InitiateShutdown
+                #undef InitiateShutdown
+                #endif
+                                
+            ''')
+        }
     }
 
     def String makeExceptionImplementation(ExceptionDeclaration exception)
