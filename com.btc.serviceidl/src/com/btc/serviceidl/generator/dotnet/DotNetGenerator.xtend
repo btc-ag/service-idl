@@ -50,6 +50,7 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 import org.eclipse.core.runtime.IPath
 
 class DotNetGenerator
@@ -156,7 +157,7 @@ class DotNetGenerator
       
       for (interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
       {
-         paramBundle.reset(com.btc.serviceidl.util.Util.getModuleStack(interfaceDeclaration))
+         paramBundle.reset(interfaceDeclaration.moduleStack)
          generateProject(projectType, interfaceDeclaration, projectRootPath)
       }
       
@@ -197,22 +198,17 @@ class DotNetGenerator
    private def void generateCommon(ModuleDeclaration module)
    {
       reinitializeProject(ProjectType.COMMON)
-      
-      val projectRootPath = getProjectRootPath()
-      
+            
       var fileContent = 
       '''
-         «FOR element : module.moduleComponents»
-            «IF !(element instanceof InterfaceDeclaration)»
-               «toText(element, module)»
+         «FOR element : module.moduleComponents.reject[it instanceof InterfaceDeclaration]»
+             «toText(element, module)»
 
-            «ENDIF»
          «ENDFOR»
       '''
 
-      val commonFileName = Constants.FILE_NAME_TYPES
-      generateProjectSourceFile(projectRootPath, commonFileName, fileContent)
-      
+      val projectRootPath = getProjectRootPath()
+      generateProjectSourceFile(projectRootPath, Constants.FILE_NAME_TYPES, fileContent)      
       generateVSProjectFiles(projectRootPath)
    }
    
