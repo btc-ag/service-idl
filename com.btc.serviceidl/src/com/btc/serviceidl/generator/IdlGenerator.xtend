@@ -99,16 +99,15 @@ class IdlGenerator implements IGenerator2
 
         if (languages.contains(ArtifactNature.DOTNET))
         {
-            val dotnet_generator = new DotNetGenerator
-            dotnet_generator.doGenerate(
+            val dotnet_generator = new DotNetGenerator(
                 resource,
                 fsa,
                 qualified_name_provider,
-                scope_provider,
-                generation_settings_provider, 
+                generation_settings_provider,
                 projectTypes,
                 protobuf_generator?.getProjectReferences(ArtifactNature.DOTNET)
             )
+            dotnet_generator.doGenerate
         }
     }
 
