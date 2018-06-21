@@ -40,18 +40,17 @@ import java.util.Arrays
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Set
+import org.eclipse.core.runtime.IPath
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import org.eclipse.core.runtime.IPath
 
 class DotNetGenerator
 {
@@ -65,7 +64,7 @@ class DotNetGenerator
    val IGenerationSettingsProvider generationSettingsProvider
    val IDLSpecification idl
    
-   var paramBundle = new ParameterBundle.Builder()
+   var ParameterBundle paramBundle
    
    val typedefTable = new HashMap<String, String>
    val namespaceReferences = new HashSet<String>
@@ -113,7 +112,7 @@ class DotNetGenerator
    
    private def void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
-      paramBundle = ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(module))
+      paramBundle = ParameterBundle.createBuilder(module.moduleStack).build
       
       if (!module.virtual)
       {
@@ -157,7 +156,7 @@ class DotNetGenerator
       
       for (interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
       {
-         paramBundle.reset(interfaceDeclaration.moduleStack)
+         paramBundle = ParameterBundle.createBuilder(interfaceDeclaration.moduleStack).with(projectType).build
          generateProject(projectType, interfaceDeclaration, projectRootPath)
       }
       
@@ -214,7 +213,7 @@ class DotNetGenerator
    
    private def void generateVSProjectFiles(IPath projectRootPath)
    {
-      val projectName = vsSolution.getCsprojName(paramBundle.build)
+      val projectName = vsSolution.getCsprojName(paramBundle)
       
       // generate project file
       fileSystemAccess.generateFile(projectRootPath.append(projectName.csproj).toPortableString, ArtifactNature.DOTNET.label, generateCsproj(csFiles))
@@ -282,7 +281,7 @@ class DotNetGenerator
    
    private def generateAssemblyInfo(String projectName)
    {
-       new AssemblyInfoGenerator(paramBundle.build).generate(projectName)
+       new AssemblyInfoGenerator(paramBundle).generate(projectName)
    }
    
    private def void reinitializeFile()
@@ -294,7 +293,7 @@ class DotNetGenerator
    private def void reinitializeProject(ProjectType projectType)
    {
       reinitializeFile
-      paramBundle.reset(projectType)
+      paramBundle = ParameterBundle.createBuilder(paramBundle.moduleStack).with(projectType).build
       referencedAssemblies.clear
       projectReferences.clear
       protobufFiles.clear
@@ -310,7 +309,7 @@ class DotNetGenerator
             projectReferences,
             nugetPackages,
             vsSolution,
-            paramBundle.build
+            paramBundle
         )
       basicCSharpSourceGenerator = new BasicCSharpSourceGenerator(typeResolver, generationSettingsProvider, typedefTable, idl)      
    }
@@ -480,7 +479,7 @@ class DotNetGenerator
    
    private def generateLog4NetConfig(ModuleDeclaration module)
    {
-       new Log4NetConfigGenerator(paramBundle.build).generate()
+       new Log4NetConfigGenerator(paramBundle).generate()
    }
    
    private def generateCsServerRunnerProgram(String className, ModuleDeclaration module)
@@ -640,7 +639,7 @@ class DotNetGenerator
       «FOR failableAlias : failableAliases»
          using «failableAlias.aliasName» = «FailableAlias.CONTAINER_TYPE»<«failableAlias.basicTypeName»>;
       «ENDFOR»
-      namespace «GeneratorUtil.getTransformedModuleName(paramBundle.build, ArtifactNature.DOTNET, TransformType.PACKAGE)»
+      namespace «GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.DOTNET, TransformType.PACKAGE)»
       {
          «mainContent»
       }
@@ -649,7 +648,7 @@ class DotNetGenerator
    
    private def generateCsproj(Iterable<String> csFiles)
    {
-      val projectName = vsSolution.getCsprojName(paramBundle.build)
+      val projectName = vsSolution.getCsprojName(paramBundle)
       
       val isProtobuf = paramBundle.projectType == ProjectType.PROTOBUF
       
@@ -666,7 +665,7 @@ class DotNetGenerator
          }
       }
 
-      CSProjGenerator.generateCSProj(projectName, vsSolution, paramBundle.build, referencedAssemblies, nugetPackages.resolvedPackages, projectReferences, csFiles, if (isProtobuf) protobufFiles else null
+      CSProjGenerator.generateCSProj(projectName, vsSolution, paramBundle, referencedAssemblies, nugetPackages.resolvedPackages, projectReferences, csFiles, if (isProtobuf) protobufFiles else null
       )      
    }
    
@@ -685,12 +684,12 @@ class DotNetGenerator
       
    private def IPath getProjectRootPath()
    {
-      paramBundle.build.asPath(ArtifactNature.DOTNET)
+      paramBundle.asPath(ArtifactNature.DOTNET)
    }
    
    private def String getLog4NetConfigFile()
    {
-      paramBundle.build.log4NetConfigFile
+      paramBundle.log4NetConfigFile
    }
          
 }
