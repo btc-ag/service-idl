@@ -347,7 +347,7 @@ class BasicCppGenerator
         result
     }
 
-    def CharSequence generateIncludes(boolean is_header)
+    def CharSequence generateIncludes(boolean isHeader)
     {
         val includes = typeResolver.includes
         val outputConfiguration = headerResolver.outputConfiguration
@@ -374,7 +374,7 @@ class BasicCppGenerator
             }
 
             // TODO remove this
-            if (outputConfigurationItem.precedence == 0 && is_header && paramBundle.projectType == ProjectType.PROXY)
+            if (outputConfigurationItem.precedence == 0 && isHeader && paramBundle.projectType == ProjectType.PROXY)
             {
                 result.append('''
                     // resolve naming conflict between Windows' API function InitiateShutdown and CAB's AServiceProxyBase::InitiateShutdown
@@ -393,7 +393,7 @@ class BasicCppGenerator
 
         result.append(    
         '''            
-            «IF !is_header && paramBundle.projectType == ProjectType.SERVER_RUNNER»
+            «IF !isHeader && paramBundle.projectType == ProjectType.SERVER_RUNNER»
                 
                 #ifndef NOMINMAX
                 #define NOMINMAX
