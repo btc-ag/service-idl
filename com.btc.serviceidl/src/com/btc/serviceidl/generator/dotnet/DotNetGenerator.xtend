@@ -44,7 +44,6 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
-import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
@@ -57,11 +56,11 @@ class DotNetGenerator
    public static val DOTNET_FRAMEWORK_VERSION = DotNetFrameworkVersion.NET46
    
    // global variables
-   var Resource resource
-   var IFileSystemAccess fileSystemAccess
-   var IQualifiedNameProvider qualifiedNameProvider
-   var IGenerationSettingsProvider generationSettingsProvider
-   var IDLSpecification idl
+   val Resource resource
+   val IFileSystemAccess fileSystemAccess
+   val IQualifiedNameProvider qualifiedNameProvider
+   val IGenerationSettingsProvider generationSettingsProvider
+   val IDLSpecification idl
    
    var paramBundle = new ParameterBundle.Builder()
    
@@ -80,29 +79,35 @@ class DotNetGenerator
     
    val paketDependencies = new HashSet<Pair<String, String>>
    
-   def void doGenerate(Resource resource, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider sp, IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes, HashMap<String, HashMap<String, String>> protobufProjectReferences)
-   {
-      this.resource = resource
-      this.fileSystemAccess = fileSystemAccess
-      this.qualifiedNameProvider = qualifiedNameProvider
-      this.generationSettingsProvider = generationSettingsProvider
-      this.protobufProjectReferences = protobufProjectReferences
-      
-      idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
-            
-      // iterate module by module and generate included content
-      for (module : idl.modules)
-      {
-         processModule(module, projectTypes)
-      }
-      
-      new VSSolutionGenerator(fileSystemAccess, vsSolution, resource.URI.lastSegment.replace(".idl", "")).generateSolutionFile
-      
-      // TODO generate only either NuGet or Paket file
-      fileSystemAccess.generateFile("paket.dependencies", ArtifactNature.DOTNET.label,
-            generatePaketDependencies)       
-      
-   }
+   new(Resource resource, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
+        IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes,
+        HashMap<String, HashMap<String, String>> protobufProjectReferences)
+    {
+        this.resource = resource
+        this.fileSystemAccess = fileSystemAccess
+        this.qualifiedNameProvider = qualifiedNameProvider
+        this.generationSettingsProvider = generationSettingsProvider
+        this.protobufProjectReferences = protobufProjectReferences
+
+        idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
+    }
+
+    def void doGenerate()
+    {
+
+        // iterate module by module and generate included content
+        for (module : idl.modules)
+        {
+            processModule(module, generationSettingsProvider.projectTypes)
+        }
+
+        new VSSolutionGenerator(fileSystemAccess, vsSolution, resource.URI.lastSegment.replace(".idl", "")).
+            generateSolutionFile
+
+        // TODO generate only either NuGet or Paket file
+        fileSystemAccess.generateFile("paket.dependencies", ArtifactNature.DOTNET.label, generatePaketDependencies)
+
+    }
    
    private def void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
