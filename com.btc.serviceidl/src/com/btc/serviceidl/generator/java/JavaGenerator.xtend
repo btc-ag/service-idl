@@ -374,14 +374,15 @@ class JavaGenerator
       )
       
       val packageName = MavenResolver.resolvePackage(interfaceDeclaration, Optional.of(paramBundle.projectType))
+      val testResourcesPath = makeProjectSourcePath(interfaceDeclaration, ProjectType.SERVER_RUNNER, MavenArtifactType.TEST_RESOURCES, PathType.ROOT)
       fileSystemAccess.generateFile(
-         makeProjectSourcePath(interfaceDeclaration, ProjectType.SERVER_RUNNER, MavenArtifactType.TEST_RESOURCES, PathType.ROOT).append(beansName).toPortableString,
+         testResourcesPath.append(beansName).toPortableString,
          ArtifactNature.JAVA.label,
          ConfigFilesGenerator.generateSpringBeans(packageName, programName)
       )
       
       fileSystemAccess.generateFile(
-         makeProjectSourcePath(interfaceDeclaration, ProjectType.SERVER_RUNNER, MavenArtifactType.TEST_RESOURCES, PathType.ROOT).append(log4jName).toPortableString,
+         testResourcesPath.append(log4jName).toPortableString,
          ArtifactNature.JAVA.label,
          ConfigFilesGenerator.generateLog4jProperties()
       )
