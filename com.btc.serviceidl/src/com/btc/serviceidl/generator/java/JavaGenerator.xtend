@@ -16,12 +16,10 @@
 package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.IGenerationSettingsProvider
-import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import java.util.Map
-import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -54,35 +52,35 @@ class JavaGenerator
         // iterate module by module and generate included content
         for (module : idl.modules)
         {
-            processModule(module, generationSettingsProvider.projectTypes)
+            processModule(module)
         }
     }
 
-    private def void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
+    private def void processModule(ModuleDeclaration module)
     {
         if (!module.virtual)
         {
             // generate common data types and exceptions, if available
             if (module.containsTypes)
-                generateModuleContents(module, projectTypes)
+                generateModuleContents(module)
 
             // generate proxy/dispatcher projects for all contained interfaces
             if (module.containsInterfaces)
-                generateInterfaceProjects(module, projectTypes)
+                generateInterfaceProjects(module)
         }
 
         // process nested modules
         for (nested_module : module.nestedModules)
-            processModule(nested_module, projectTypes)
+            processModule(nested_module)
     }
 
-    private def void generateModuleContents(ModuleDeclaration module, Set<ProjectType> projectTypes)
+    private def void generateModuleContents(ModuleDeclaration module)
     {
         new ModuleProjectGenerator(fileSystemAccess, qualifiedNameProvider, generationSettingsProvider,
             protobufArtifacts, idl, module).generate
     }
 
-    private def void generateInterfaceProjects(ModuleDeclaration module, Set<ProjectType> projectTypes)
+    private def void generateInterfaceProjects(ModuleDeclaration module)
     {
         for (interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
