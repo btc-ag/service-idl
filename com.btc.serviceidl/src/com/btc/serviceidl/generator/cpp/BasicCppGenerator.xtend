@@ -190,14 +190,7 @@ class BasicCppGenerator
 
     private def boolean needsCompareOperator(StructDeclaration declaration)
     {
-        var makeCompareOperator = false
-        for (member : declaration.members)
-        {
-            if (member.name == "Id" && member.type.primitiveType !== null &&
-                member.type.primitiveType.uuidType !== null)
-                makeCompareOperator = true
-        }
-        makeCompareOperator
+        declaration.members.exists[name == "Id" && type.primitiveType !== null && type.primitiveType.uuidType !== null]
     }
 
     def dispatch String toText(ExceptionReferenceDeclaration item, EObject context)
