@@ -69,14 +69,7 @@ class JavaGenerator
 
    val typedefTable = new HashMap<String, ResolvedName>
    val dependencies = new HashSet<MavenDependency>
-
-   var BasicJavaSourceGenerator basicJavaSourceGenerator 
       
-   private def getTypeResolver()
-   {
-       basicJavaSourceGenerator.typeResolver
-   }
-   
    new(Resource resource, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IScopeProvider scopeProvider, IGenerationSettingsProvider generationSettingsProvider,
         Map<EObject, String> protobufArtifacts)
@@ -120,8 +113,7 @@ class JavaGenerator
 
    private def void generateModuleContents(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
-      val paramBundle = ParameterBundle.createBuilder(module.moduleStack).build
-      reinitializeAll(paramBundle)
+      reinitializeAll
       
       if (projectTypes.contains(ProjectType.COMMON))
         generateCommon(makeProjectSourcePath(module, ProjectType.COMMON, MavenArtifactType.MAIN_JAVA, PathType.FULL), module)
@@ -137,7 +129,7 @@ class JavaGenerator
         for (interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
             val paramBundle = ParameterBundle.createBuilder(interfaceDeclaration.moduleStack).build
-            reinitializeAll(paramBundle)
+            reinitializeAll
             
             val activeProjectTypes = Sets.intersection(projectTypes, #{
                 ProjectType.SERVICE_API,
@@ -153,6 +145,7 @@ class JavaGenerator
             if (!activeProjectTypes.empty)
             {
                 // record type aliases
+                val typeResolver = createTypeResolver(paramBundle)
                 for (typeAlias : interfaceDeclaration.contains.filter(AliasDeclaration).filter[!typedefTable.containsKey(it.name)])
                 { 
                     typedefTable.put(typeAlias.name, typeResolver.resolve(typeAlias.type))
@@ -230,7 +223,7 @@ class JavaGenerator
       }
    }
    
-   private def generateSourceFile(EObject container, ProjectType projectType, CharSequence mainContents)
+   private def generateSourceFile(EObject container, ProjectType projectType, TypeResolver typeResolver, CharSequence mainContents)
    {
       '''
       package «MavenResolver.resolvePackage(container, Optional.of(projectType))»;
@@ -278,9 +271,12 @@ class JavaGenerator
       for (event : interfaceDeclaration.namedEvents)
       {
           // TODO do not use basicJavaSourceGenerator/typeResolver to generate the file name!
-          generateJavaFile(projectSourceRootPath.append(basicJavaSourceGenerator.toText(event).java), paramBundle, interfaceDeclaration,
-             [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator).generateEvent(event)]   
-          )
+            generateJavaFile(
+                projectSourceRootPath.append(createBasicJavaSourceGenerator(paramBundle).toText(event).java),
+                paramBundle,
+                interfaceDeclaration,
+                [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator).generateEvent(event)]
+            )
       }
       
       generateJavaFile(projectSourceRootPath.append(ProjectType.SERVICE_API.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name).java),
@@ -432,27 +428,29 @@ class JavaGenerator
    private def <T extends EObject> void generateJavaFile(IPath fileName, ParameterBundle paramBundle, T declarator, (BasicJavaSourceGenerator)=>CharSequence generateBody)
    {
        // TODO T can be InterfaceDeclaration or ModuleDeclaration, the metamodel should be changed to introduce a common base type of these
-      reinitializeFile(paramBundle)
-      
+      val basicJavaSourceGenerator = createBasicJavaSourceGenerator(paramBundle)
       fileSystemAccess.generateFile(fileName.toPortableString, ArtifactNature.JAVA.label, 
          generateSourceFile(
                 declarator,
                 paramBundle.projectType,
-                generateBody.apply(this.basicJavaSourceGenerator)
+                basicJavaSourceGenerator.typeResolver,
+                generateBody.apply(basicJavaSourceGenerator)
          )
       )
    }
    
-   // TODO remove this function
-   private def void reinitializeFile(ParameterBundle paramBundle)
+   private def createBasicJavaSourceGenerator(ParameterBundle paramBundle)
    {
-      val typeResolver = new TypeResolver(qualifiedNameProvider, paramBundle, dependencies)
-      basicJavaSourceGenerator = new BasicJavaSourceGenerator(qualifiedNameProvider, generationSettingsProvider, typeResolver, idl, typedefTable)
+      new BasicJavaSourceGenerator(qualifiedNameProvider, generationSettingsProvider,
+            createTypeResolver(paramBundle), idl, typedefTable)
    }
+    
+    def createTypeResolver(ParameterBundle paramBundle) {
+        new TypeResolver(qualifiedNameProvider, paramBundle, dependencies)
+    }
    
-   private def void reinitializeAll(ParameterBundle paramBundle)
+   private def void reinitializeAll()
    {
-      reinitializeFile(paramBundle)
       dependencies.clear
       typedefTable.clear
    }
