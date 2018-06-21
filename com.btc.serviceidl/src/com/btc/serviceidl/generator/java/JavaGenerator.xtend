@@ -17,7 +17,6 @@
 package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.IGenerationSettingsProvider
-import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
@@ -58,30 +57,29 @@ class JavaGenerator
       FULL
    }
    
-   // global variables
-   var Resource resource
-   var IFileSystemAccess file_system_access
-   var IQualifiedNameProvider qualified_name_provider
-   var IScopeProvider scope_provider
-   var Map<EObject, String> protobuf_artifacts
-   var IDLSpecification idl
-   
-   var BasicJavaSourceGenerator basicJavaSourceGenerator 
-   var ITargetVersionProvider targetVersionProvider
-   
+   // parameters
+   val Resource resource
+   val IFileSystemAccess file_system_access
+   val IQualifiedNameProvider qualified_name_provider
+   val IScopeProvider scope_provider
+   val Map<EObject, String> protobuf_artifacts
+   val IGenerationSettingsProvider generationSettingsProvider
+   val IDLSpecification idl
+
    val typedef_table = new HashMap<String, ResolvedName>
    val dependencies = new HashSet<MavenDependency>
+
+   var BasicJavaSourceGenerator basicJavaSourceGenerator 
    
-   var param_bundle = new ParameterBundle.Builder()    
+   var ParameterBundle.Builder param_bundle = null
    
    private def getTypeResolver()
    {
        basicJavaSourceGenerator.typeResolver
    }
    
-   def void doGenerate(Resource resource, IFileSystemAccess fileSystemAccess,
-        IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
-        IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes,
+   new(Resource resource, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
+        IScopeProvider scopeProvider, IGenerationSettingsProvider generationSettingsProvider,
         Map<EObject, String> protobufArtifacts)
     {
       this.resource = resource
@@ -89,14 +87,17 @@ class JavaGenerator
       this.qualified_name_provider = qualifiedNameProvider
       this.scope_provider = scopeProvider
       this.protobuf_artifacts = protobufArtifacts
-      this.targetVersionProvider = generationSettingsProvider
+      this.generationSettingsProvider = generationSettingsProvider
       
       this.idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
+    }  
       
+    def void doGenerate()
+    {      
       // iterate module by module and generate included content
-      for (module : this.idl.modules)
+      for (module : idl.modules)
       {
-         processModule(module, projectTypes)
+         processModule(module, generationSettingsProvider.projectTypes)
       }
    }
 
@@ -173,9 +174,9 @@ class JavaGenerator
 
    private def void generatePOM(EObject container)
    {
-      val pom_path = makeProjectRootPath(container) + "pom".xml
+        val pom_path = makeProjectRootPath(container) + "pom".xml
         file_system_access.generateFile(pom_path, ArtifactNature.JAVA.label,
-            new POMGenerator(targetVersionProvider).generatePOMContents(container, dependencies,
+            new POMGenerator(generationSettingsProvider).generatePOMContents(container, dependencies,
                 protobuf_artifacts?.get(container)))
    }
 
@@ -441,7 +442,7 @@ class JavaGenerator
    private def void reinitializeFile()
    {
       val typeResolver = new TypeResolver(qualified_name_provider, param_bundle.build, dependencies)
-      basicJavaSourceGenerator = new BasicJavaSourceGenerator(qualified_name_provider, targetVersionProvider, typeResolver, idl, typedef_table)
+      basicJavaSourceGenerator = new BasicJavaSourceGenerator(qualified_name_provider, generationSettingsProvider, typeResolver, idl, typedef_table)
    }
    
    private def void reinitializeAll()
