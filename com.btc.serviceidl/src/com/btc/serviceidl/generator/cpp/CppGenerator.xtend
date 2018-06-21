@@ -23,10 +23,8 @@ import com.btc.serviceidl.generator.cpp.prins.OdbProjectGenerator
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.google.common.collect.Sets
-import java.util.Arrays
 import java.util.Collection
 import java.util.HashMap
-import java.util.HashSet
 import java.util.Map
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
@@ -117,13 +115,13 @@ class CppGenerator
             // generate proxy/dispatcher projects for all contained interfaces
             if (module.containsInterfaces)
             {
-                for (projectType : Sets.intersection(projectTypes, new HashSet<ProjectType>(Arrays.asList(
+                for (projectType : Sets.intersection(projectTypes, #{
                     ProjectType.SERVICE_API,
                     ProjectType.IMPL,
                     ProjectType.PROXY,
                     ProjectType.DISPATCHER,
                     ProjectType.TEST
-                ))))
+                }))
                 {
                     new LegacyProjectGenerator(
                         resource,
