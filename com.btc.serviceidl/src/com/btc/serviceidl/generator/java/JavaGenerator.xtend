@@ -128,7 +128,6 @@ class JavaGenerator
     {
         for (interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
-            val paramBundle = ParameterBundle.createBuilder(interfaceDeclaration.moduleStack).build
             reinitializeAll
             
             val activeProjectTypes = Sets.intersection(projectTypes, #{
@@ -144,6 +143,8 @@ class JavaGenerator
 
             if (!activeProjectTypes.empty)
             {
+                val paramBundle = ParameterBundle.createBuilder(interfaceDeclaration.moduleStack).build
+    
                 // record type aliases
                 val typeResolver = createTypeResolver(paramBundle)
                 for (typeAlias : interfaceDeclaration.contains.filter(AliasDeclaration).filter[!typedefTable.containsKey(it.name)])
