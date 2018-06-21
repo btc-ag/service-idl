@@ -41,22 +41,22 @@ import com.btc.serviceidl.generator.ITargetVersionProvider
 class CppGenerator
 {
     // global variables
-    private var Resource resource
-    private var IFileSystemAccess fileSystemAccess
-    private var IQualifiedNameProvider qualifiedNameProvider
-    private var IScopeProvider scopeProvider
-    private var IDLSpecification idl
+    var Resource resource
+    var IFileSystemAccess fileSystemAccess
+    var IQualifiedNameProvider qualifiedNameProvider
+    var IScopeProvider scopeProvider
+    var IDLSpecification idl
 
     var extension IProjectSet vsSolution
     var IModuleStructureStrategy moduleStructureStrategy
 
-    private var protobufProjectReferences = new HashMap<String, Set<IProjectReference>>
+    var protobufProjectReferences = new HashMap<String, Set<IProjectReference>>
 
     val smartPointerMap = new HashMap<EObject, Collection<EObject>>
 
     var ITargetVersionProvider targetVersionProvider
 
-    def public void doGenerate(Resource resource, IFileSystemAccess fileSystemAccess,
+    def void doGenerate(Resource resource, IFileSystemAccess fileSystemAccess,
         IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
         IGenerationSettingsProvider generationSettingsProvider,
         Map<String, HashMap<String, String>> protobufProjectReferences)
