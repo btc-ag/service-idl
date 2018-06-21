@@ -42,49 +42,51 @@ class CppGenerator
 {
     // global variables
     private var Resource resource
-    private var IFileSystemAccess file_system_access
-    private var IQualifiedNameProvider qualified_name_provider
-    private var IScopeProvider scope_provider
+    private var IFileSystemAccess fileSystemAccess
+    private var IQualifiedNameProvider qualifiedNameProvider
+    private var IScopeProvider scopeProvider
     private var IDLSpecification idl
 
     var extension IProjectSet vsSolution
     var IModuleStructureStrategy moduleStructureStrategy
 
-    private var protobuf_project_references = new HashMap<String, Set<IProjectReference>>
+    private var protobufProjectReferences = new HashMap<String, Set<IProjectReference>>
 
-    val smart_pointer_map = new HashMap<EObject, Collection<EObject>>
+    val smartPointerMap = new HashMap<EObject, Collection<EObject>>
 
     var ITargetVersionProvider targetVersionProvider
 
-    def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp,
-        IGenerationSettingsProvider generationSettingsProvider, Map<String, HashMap<String, String>> pr)
+    def public void doGenerate(Resource resource, IFileSystemAccess fileSystemAccess,
+        IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
+        IGenerationSettingsProvider generationSettingsProvider,
+        Map<String, HashMap<String, String>> protobufProjectReferences)
     {
-        resource = res
-        file_system_access = fsa
-        qualified_name_provider = qnp
-        scope_provider = sp
+        this.resource = resource
+        this.fileSystemAccess = fileSystemAccess
+        this.qualifiedNameProvider = qualifiedNameProvider
+        this.scopeProvider = scopeProvider
         // TODO the protobuf projects must be added to the vsSolution, and converted into IProjectReference 
-        protobuf_project_references = /*if (pr !== null) new HashMap<String, Set<IProjectReference>>(pr) else */ null
+        this.protobufProjectReferences = /*if (pr !== null) new HashMap<String, Set<IProjectReference>>(pr) else */ null
 
-        idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
-        if (idl === null)
+        this.idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
+        if (this.idl === null)
         {
             return
         }
 
-        vsSolution = generationSettingsProvider.projectSetFactory.create
-        moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
-        targetVersionProvider = generationSettingsProvider
+        this.vsSolution = generationSettingsProvider.projectSetFactory.create
+        this.moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
+        this.targetVersionProvider = generationSettingsProvider
 
         // iterate module by module and generate included content
-        for (module : idl.modules)
+        for (module : this.idl.modules)
         {
             processModule(module, generationSettingsProvider.projectTypes)
 
             // only for the top-level modules, produce a parent project file
             if (vsSolution instanceof CMakeProjectSet)
             {
-                new CMakeTopLevelProjectFileGenerator(file_system_access, generationSettingsProvider, vsSolution,
+                new CMakeTopLevelProjectFileGenerator(fileSystemAccess, generationSettingsProvider, vsSolution,
                     module).generate()
             }
         }
@@ -99,15 +101,15 @@ class CppGenerator
             {
                 new CommonProjectGenerator(
                     resource,
-                    file_system_access,
-                    qualified_name_provider,
-                    scope_provider,
+                    fileSystemAccess,
+                    qualifiedNameProvider,
+                    scopeProvider,
                     idl,
                     vsSolution,
                     moduleStructureStrategy,
                     targetVersionProvider,
-                    protobuf_project_references,
-                    smart_pointer_map,
+                    protobufProjectReferences,
+                    smartPointerMap,
                     module
                 ).generate()
 
@@ -126,15 +128,15 @@ class CppGenerator
                 {
                     new LegacyProjectGenerator(
                         resource,
-                        file_system_access,
-                        qualified_name_provider,
-                        scope_provider,
+                        fileSystemAccess,
+                        qualifiedNameProvider,
+                        scopeProvider,
                         idl,
                         vsSolution,
                         moduleStructureStrategy,
                         targetVersionProvider,
-                        protobuf_project_references,
-                        smart_pointer_map,
+                        protobufProjectReferences,
+                        smartPointerMap,
                         projectType,
                         module
                     ).generate()
@@ -144,15 +146,15 @@ class CppGenerator
                 {
                     new ServerRunnerProjectGenerator(
                         resource,
-                        file_system_access,
-                        qualified_name_provider,
-                        scope_provider,
+                        fileSystemAccess,
+                        qualifiedNameProvider,
+                        scopeProvider,
                         idl,
                         vsSolution,
                         moduleStructureStrategy,
                         targetVersionProvider,
-                        protobuf_project_references,
-                        smart_pointer_map,
+                        protobufProjectReferences,
+                        smartPointerMap,
                         module
                     ).generate()
                 }
@@ -164,15 +166,15 @@ class CppGenerator
             {
                 new ProtobufProjectGenerator(
                     resource,
-                    file_system_access,
-                    qualified_name_provider,
-                    scope_provider,
+                    fileSystemAccess,
+                    qualifiedNameProvider,
+                    scopeProvider,
                     idl,
                     vsSolution,
                     moduleStructureStrategy,
                     targetVersionProvider,
-                    protobuf_project_references,
-                    smart_pointer_map,
+                    protobufProjectReferences,
+                    smartPointerMap,
                     module
                 ).generate()
             }
@@ -182,23 +184,23 @@ class CppGenerator
             {
                 new OdbProjectGenerator(
                     resource,
-                    file_system_access,
-                    qualified_name_provider,
-                    scope_provider,
+                    fileSystemAccess,
+                    qualifiedNameProvider,
+                    scopeProvider,
                     idl,
                     vsSolution,
                     moduleStructureStrategy,
                     targetVersionProvider,
-                    protobuf_project_references,
-                    smart_pointer_map,
+                    protobufProjectReferences,
+                    smartPointerMap,
                     module
                 ).generate()
             }
         }
 
         // process nested modules
-        for (nested_module : module.nestedModules)
-            processModule(nested_module, projectTypes)
+        for (nestedModule : module.nestedModules)
+            processModule(nestedModule, projectTypes)
     }
 
 }
