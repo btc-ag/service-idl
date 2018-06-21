@@ -57,30 +57,30 @@ class DotNetGenerator
    public static val DOTNET_FRAMEWORK_VERSION = DotNetFrameworkVersion.NET46
    
    // global variables
-   private var Resource resource
-   private var IFileSystemAccess fileSystemAccess
-   private var IQualifiedNameProvider qualifiedNameProvider
+   var Resource resource
+   var IFileSystemAccess fileSystemAccess
+   var IQualifiedNameProvider qualifiedNameProvider
    var IGenerationSettingsProvider generationSettingsProvider
-   private var IDLSpecification idl
+   var IDLSpecification idl
    
-   private var paramBundle = new ParameterBundle.Builder()
+   var paramBundle = new ParameterBundle.Builder()
    
    val typedefTable = new HashMap<String, String>
    val namespaceReferences = new HashSet<String>
    val failableAliases = new HashSet<FailableAlias>
    val referencedAssemblies = new HashSet<String>
-   private var nugetPackages = new NuGetPackageResolver
+   var nugetPackages = new NuGetPackageResolver
    val projectReferences = new HashMap<String, String>
    val vsSolution = new VSSolution
    val csFiles = new HashSet<String>
    val protobufFiles = new HashSet<String>
-   private var protobufProjectReferences = new HashMap<String, HashMap<String, String>>
-   private var extension TypeResolver typeResolver
-   private var extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
+   var protobufProjectReferences = new HashMap<String, HashMap<String, String>>
+   var extension TypeResolver typeResolver
+   var extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
     
    val paketDependencies = new HashSet<Pair<String, String>>
    
-   def public void doGenerate(Resource resource, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider sp, IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes, HashMap<String, HashMap<String, String>> protobufProjectReferences)
+   def void doGenerate(Resource resource, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider sp, IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes, HashMap<String, HashMap<String, String>> protobufProjectReferences)
    {
       this.resource = resource
       this.fileSystemAccess = fileSystemAccess
