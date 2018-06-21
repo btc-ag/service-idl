@@ -47,7 +47,7 @@ class CppGenerator
     var IScopeProvider scopeProvider
     var IDLSpecification idl
 
-    var extension IProjectSet vsSolution
+    var IProjectSet projectSet
     var IModuleStructureStrategy moduleStructureStrategy
 
     var protobufProjectReferences = new HashMap<String, Set<IProjectReference>>
@@ -74,7 +74,7 @@ class CppGenerator
             return
         }
 
-        this.vsSolution = generationSettingsProvider.projectSetFactory.create
+        this.projectSet = generationSettingsProvider.projectSetFactory.create
         this.moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
         this.targetVersionProvider = generationSettingsProvider
 
@@ -84,9 +84,9 @@ class CppGenerator
             processModule(module, generationSettingsProvider.projectTypes)
 
             // only for the top-level modules, produce a parent project file
-            if (vsSolution instanceof CMakeProjectSet)
+            if (projectSet instanceof CMakeProjectSet)
             {
-                new CMakeTopLevelProjectFileGenerator(fileSystemAccess, generationSettingsProvider, vsSolution,
+                new CMakeTopLevelProjectFileGenerator(fileSystemAccess, generationSettingsProvider, projectSet,
                     module).generate()
             }
         }
@@ -105,7 +105,7 @@ class CppGenerator
                     qualifiedNameProvider,
                     scopeProvider,
                     idl,
-                    vsSolution,
+                    projectSet,
                     moduleStructureStrategy,
                     targetVersionProvider,
                     protobufProjectReferences,
@@ -132,7 +132,7 @@ class CppGenerator
                         qualifiedNameProvider,
                         scopeProvider,
                         idl,
-                        vsSolution,
+                        projectSet,
                         moduleStructureStrategy,
                         targetVersionProvider,
                         protobufProjectReferences,
@@ -150,7 +150,7 @@ class CppGenerator
                         qualifiedNameProvider,
                         scopeProvider,
                         idl,
-                        vsSolution,
+                        projectSet,
                         moduleStructureStrategy,
                         targetVersionProvider,
                         protobufProjectReferences,
@@ -170,7 +170,7 @@ class CppGenerator
                     qualifiedNameProvider,
                     scopeProvider,
                     idl,
-                    vsSolution,
+                    projectSet,
                     moduleStructureStrategy,
                     targetVersionProvider,
                     protobufProjectReferences,
@@ -188,7 +188,7 @@ class CppGenerator
                     qualifiedNameProvider,
                     scopeProvider,
                     idl,
-                    vsSolution,
+                    projectSet,
                     moduleStructureStrategy,
                     targetVersionProvider,
                     protobufProjectReferences,
