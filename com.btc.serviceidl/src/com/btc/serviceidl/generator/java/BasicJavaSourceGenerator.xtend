@@ -263,59 +263,63 @@ class BasicJavaSourceGenerator
         ) throws«FOR exception : function.raisedExceptions SEPARATOR ',' AFTER ','» «toText(exception)»«ENDFOR» Exception'''
     }
 
-    def public String makeDefaultValue(EObject element)
+    def public dispatch String makeDefaultValue(PrimitiveType element)
     {
-        if (element instanceof PrimitiveType)
-        {
-            if (element.isString)
-                return '''""'''
-            else if (element.isUUID)
-                return '''«typeResolver.resolve(JavaClassNames.UUID)».randomUUID()'''
-            else if (element.isBoolean)
-                return "false"
-            else if (element.isChar)
-                return "'\\u0000'"
-            else if (element.isDouble)
-                return "0D"
-            else if (element.isFloat)
-                return "0F"
-            else if (element.isInt64)
-                return "0L"
-            else if (element.isByte)
-                return "Byte.MIN_VALUE"
-            else if (element.isInt16)
-                return "Short.MIN_VALUE"
-        }
-        else if (element instanceof AliasDeclaration)
-        {
-            return makeDefaultValue(element.type)
-        }
-        else if (element instanceof AbstractType)
-        {
-            if (element.referenceType !== null)
-                return makeDefaultValue(element.referenceType)
-            else if (element.primitiveType !== null)
-                return makeDefaultValue(element.primitiveType)
-            else if (element.collectionType !== null)
-                return makeDefaultValue(element.collectionType)
-        }
-        else if (element instanceof SequenceDeclaration)
-        {
-            val type = toText(element.type)
-            val is_failable = element.failable
-            // TODO this should better use Collections.emptyList
-            return '''new «typeResolver.resolve("java.util.Vector")»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«type»«IF is_failable»>«ENDIF»>()'''
-        }
-        else if (element instanceof StructDeclaration)
-        {
-            return '''new «typeResolver.resolve(element)»(«FOR member : element.allMembers SEPARATOR ", "»«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)».empty()«ELSE»«makeDefaultValue(member.type)»«ENDIF»«ENDFOR»)'''
-        }
-        else if (element instanceof EnumDeclaration)
-        {
-            return '''«toText(element)».«element.containedIdentifiers.head»''';
-        }
+        if (element.isString)
+            '''""'''
+        else if (element.isUUID)
+            '''«typeResolver.resolve(JavaClassNames.UUID)».randomUUID()'''
+        else if (element.isBoolean)
+            "false"
+        else if (element.isChar)
+            "'\\u0000'"
+        else if (element.isDouble)
+            "0D"
+        else if (element.isFloat)
+            "0F"
+        else if (element.isInt64)
+            "0L"
+        else if (element.isByte)
+            "Byte.MIN_VALUE"
+        else if (element.isInt16)
+            "Short.MIN_VALUE"
+        else
+            '''0'''
+    }
 
-        return '''0'''
+    def public dispatch String makeDefaultValue(AliasDeclaration element)
+    {
+        makeDefaultValue(element.type)
+    }
+
+    def public dispatch String makeDefaultValue(AbstractType element)
+    {
+        makeDefaultValue(element.referenceType ?: element.primitiveType ?: element.collectionType)
+    }
+
+    def public dispatch String makeDefaultValue(SequenceDeclaration element)
+    {
+        val type = toText(element.type)
+        val is_failable = element.failable
+
+        // TODO this should better use Collections.emptyList
+        '''new «typeResolver.resolve("java.util.Vector")»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«type»«IF is_failable»>«ENDIF»>()'''
+    }
+
+    def public dispatch String makeDefaultValue(StructDeclaration element)
+    {
+        '''new «typeResolver.resolve(element)»(«FOR member : element.allMembers SEPARATOR ", "»«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)».empty()«ELSE»«makeDefaultValue(member.type)»«ENDIF»«ENDFOR»)'''
+    }
+
+    def public dispatch String makeDefaultValue(EnumDeclaration element)
+    {
+        '''«toText(element)».«element.containedIdentifiers.head»'''
+    }
+
+    def public dispatch String makeDefaultValue(EObject element)
+    {
+        // TODO does this make sense? is this ever called?
+        '''0'''
     }
 
     private static def String makeGetterSetter(String type_name, String var_name)
