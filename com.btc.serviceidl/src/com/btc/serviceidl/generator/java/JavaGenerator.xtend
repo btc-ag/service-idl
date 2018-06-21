@@ -45,10 +45,10 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.java.BasicJavaSourceGenerator.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 class JavaGenerator
 {
@@ -71,9 +71,7 @@ class JavaGenerator
    val dependencies = new HashSet<MavenDependency>
 
    var BasicJavaSourceGenerator basicJavaSourceGenerator 
-   
-   var ParameterBundle.Builder paramBundle = null
-   
+      
    private def getTypeResolver()
    {
        basicJavaSourceGenerator.typeResolver
@@ -103,9 +101,7 @@ class JavaGenerator
    }
 
    private def void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
-   {
-      paramBundle = ParameterBundle.createBuilder(Util.getModuleStack(module))
-      
+   {      
       if (!module.virtual)
       {
          // generate common data types and exceptions, if available
@@ -124,8 +120,8 @@ class JavaGenerator
 
    private def void generateModuleContents(ModuleDeclaration module, Set<ProjectType> projectTypes)
    {
-      reinitializeAll
-      paramBundle.reset(Util.getModuleStack(module))
+      val paramBundle = ParameterBundle.createBuilder(module.moduleStack).build
+      reinitializeAll(paramBundle)
       
       if (projectTypes.contains(ProjectType.COMMON))
         generateCommon(makeProjectSourcePath(module, ProjectType.COMMON, MavenArtifactType.MAIN_JAVA, PathType.FULL), module)
@@ -140,9 +136,9 @@ class JavaGenerator
     {
         for (interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
-            reinitializeAll
-            paramBundle.reset(Util.getModuleStack(interfaceDeclaration))
-
+            val paramBundle = ParameterBundle.createBuilder(interfaceDeclaration.moduleStack).build
+            reinitializeAll(paramBundle)
+            
             val activeProjectTypes = Sets.intersection(projectTypes, #{
                 ProjectType.SERVICE_API,
                 ProjectType.IMPL,
@@ -162,7 +158,7 @@ class JavaGenerator
                     typedefTable.put(typeAlias.name, typeResolver.resolve(typeAlias.type))
                 }
                   
-                activeProjectTypes.forEach[generateProject(it, interfaceDeclaration)]
+                activeProjectTypes.forEach[generateProject(paramBundle, it, interfaceDeclaration)]
                 generatePOM(interfaceDeclaration)
             }
         }
@@ -198,9 +194,8 @@ class JavaGenerator
       result
    }
    
-   private def void generateProject(ProjectType projectType, InterfaceDeclaration interfaceDeclaration)
+   private def void generateProject(ParameterBundle containerParamBundle, ProjectType projectType, InterfaceDeclaration interfaceDeclaration)
    {
-      paramBundle.reset(projectType)
       val mavenType =
          if (projectType == ProjectType.TEST
             || projectType == ProjectType.SERVER_RUNNER
@@ -235,10 +230,10 @@ class JavaGenerator
       }
    }
    
-   private def generateSourceFile(EObject container, CharSequence mainContents)
+   private def generateSourceFile(EObject container, ProjectType projectType, CharSequence mainContents)
    {
       '''
-      package «MavenResolver.resolvePackage(container, Optional.of(paramBundle.projectType))»;
+      package «MavenResolver.resolvePackage(container, Optional.of(projectType))»;
       
       «FOR reference : typeResolver.referenced_types.sort AFTER System.lineSeparator»
          import «reference»;
@@ -249,11 +244,11 @@ class JavaGenerator
    
    private def void generateCommon(IPath projectSourceRootPath, ModuleDeclaration module)
    {
-      paramBundle.reset(ProjectType.COMMON)
+      val paramBundle = ParameterBundle.createBuilder(module.moduleStack).with(ProjectType.COMMON).build
       
       for ( element : module.moduleComponents.filter(AbstractTypeDeclaration).filter[e | !(e instanceof AliasDeclaration)] )
       {
-         generateJavaFile(projectSourceRootPath.append(Names.plain(element).java), module, 
+         generateJavaFile(projectSourceRootPath.append(Names.plain(element).java), paramBundle, module, 
              [basicJavaSourceGenerator|basicJavaSourceGenerator.toDeclaration(element)]
          )
       }
@@ -262,18 +257,20 @@ class JavaGenerator
       // TODO the service fault handler factory is ServiceComm-specific and should therefore not be generated to the service API package
       // TODO the "common" service fault handler factory is also generated as part of the ServiceAPI!?      
       val serviceFaultHandlerFactoryName = module.asServiceFaultHandlerFactory
-      generateJavaFile(projectSourceRootPath.append(paramBundle.projectType.getClassName(ArtifactNature.JAVA, serviceFaultHandlerFactoryName).java),
+      generateJavaFile(projectSourceRootPath.append(ProjectType.COMMON.getClassName(ArtifactNature.JAVA, serviceFaultHandlerFactoryName).java), paramBundle, 
           module, [basicJavaSourceGenerator|new ServiceFaultHandlerFactoryGenerator(basicJavaSourceGenerator).generateServiceFaultHandlerFactory(serviceFaultHandlerFactoryName, module )]
       )
    }
    
    private def void generateServiceAPI(IPath projectSourceRootPath, InterfaceDeclaration interfaceDeclaration)
    {      
+      val paramBundle = ParameterBundle.createBuilder(interfaceDeclaration.moduleStack).with(ProjectType.SERVICE_API).build
+
       // generate all contained types
       // TODO change to Class-based reject with Xtext 2.15
       interfaceDeclaration.contains.filter(AbstractTypeDeclaration).reject[it instanceof AliasDeclaration].forEach[
-         generateJavaFile(projectSourceRootPath.append(Names.plain(it).java), interfaceDeclaration, 
-             [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator, paramBundle.build).generateContainedType(it)]
+         generateJavaFile(projectSourceRootPath.append(Names.plain(it).java), paramBundle, interfaceDeclaration, 
+             [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator).generateContainedType(it)]
          )
       ]
       
@@ -281,40 +278,47 @@ class JavaGenerator
       for (event : interfaceDeclaration.namedEvents)
       {
           // TODO do not use basicJavaSourceGenerator/typeResolver to generate the file name!
-          generateJavaFile(projectSourceRootPath.append(basicJavaSourceGenerator.toText(event).java), interfaceDeclaration,
-             [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator, paramBundle.build).generateEvent(event)]   
+          generateJavaFile(projectSourceRootPath.append(basicJavaSourceGenerator.toText(event).java), paramBundle, interfaceDeclaration,
+             [basicJavaSourceGenerator|new ServiceAPIGenerator(basicJavaSourceGenerator).generateEvent(event)]   
           )
       }
       
-      generateJavaFile(projectSourceRootPath.append(paramBundle.projectType.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name).java),
+      generateJavaFile(projectSourceRootPath.append(ProjectType.SERVICE_API.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name).java),
+          paramBundle, 
           interfaceDeclaration,
           [basicJavaSourceGenerator|          
-          new ServiceAPIGenerator(basicJavaSourceGenerator, paramBundle.build).generateMain(interfaceDeclaration)])
+          new ServiceAPIGenerator(basicJavaSourceGenerator).generateMain(interfaceDeclaration)])
       
       // common service fault handler factory
       // TODO the service fault handler factory is ServiceComm-specific and should therefore not be generated to the service API package
       val serviceFaultHandlerFactoryName = interfaceDeclaration.asServiceFaultHandlerFactory
       generateJavaFile(projectSourceRootPath.append(serviceFaultHandlerFactoryName.java),
-          interfaceDeclaration, [basicJavaSourceGenerator|new ServiceFaultHandlerFactoryGenerator(basicJavaSourceGenerator).generateServiceFaultHandlerFactory(serviceFaultHandlerFactoryName, interfaceDeclaration )]
+          paramBundle, 
+          interfaceDeclaration, 
+          [basicJavaSourceGenerator|new ServiceFaultHandlerFactoryGenerator(basicJavaSourceGenerator).generateServiceFaultHandlerFactory(serviceFaultHandlerFactoryName, interfaceDeclaration )]
       )
    }   
    
    private def void generateTest(IPath projectSourceRootPath, InterfaceDeclaration interfaceDeclaration)
    {
+      val paramBundle = ParameterBundle.createBuilder(interfaceDeclaration.moduleStack).with(ProjectType.TEST).build
+
       val log4jName = "log4j.Test".properties
       
-      val testName = paramBundle.projectType.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name)
-      generateJavaFile(projectSourceRootPath.append(testName.java), interfaceDeclaration, 
+      val testName = ProjectType.TEST.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name)
+      generateJavaFile(projectSourceRootPath.append(testName.java), paramBundle, interfaceDeclaration, 
           [basicJavaSourceGenerator|new TestGenerator(basicJavaSourceGenerator).generateTestStub(testName, projectSourceRootPath, interfaceDeclaration)])
       
       val impl_test_name = interfaceDeclaration.name + "ImplTest"
       generateJavaFile(projectSourceRootPath.append(impl_test_name.java),
+          paramBundle, 
          interfaceDeclaration, 
           [basicJavaSourceGenerator|new TestGenerator(basicJavaSourceGenerator).generateFileImplTest(impl_test_name, testName, interfaceDeclaration)]
       )
       
       val zmqTestName = interfaceDeclaration.name + "ZeroMQIntegrationTest"
       generateJavaFile(projectSourceRootPath.append(zmqTestName.java),
+          paramBundle, 
          interfaceDeclaration, 
             [basicJavaSourceGenerator|new TestGenerator(basicJavaSourceGenerator).generateFileZeroMQItegrationTest(zmqTestName, testName, log4jName, projectSourceRootPath, interfaceDeclaration)]         
       )
@@ -328,23 +332,24 @@ class JavaGenerator
    
    private def void generateProtobuf(IPath projectSourceRootPath, EObject container)
    {
-      // TODO param_bundle should also be converted into a local
-      paramBundle.reset(ProjectType.PROTOBUF)      
-      
-      val codecName = paramBundle.projectType.getClassName(ArtifactNature.JAVA, if (container instanceof InterfaceDeclaration) container.name else Constants.FILE_NAME_TYPES) + "Codec"
+      val paramBundle = ParameterBundle.createBuilder(container.moduleStack).with(ProjectType.PROTOBUF).build
+       
+      val codecName = ProjectType.PROTOBUF.getClassName(ArtifactNature.JAVA, if (container instanceof InterfaceDeclaration) container.name else Constants.FILE_NAME_TYPES) + "Codec"
       // TODO most of the generated file is reusable, and should be moved to com.btc.cab.commons (UUID utilities) or something similar
       
-      generateJavaFile(projectSourceRootPath.append(codecName.java), container,
+      generateJavaFile(projectSourceRootPath.append(codecName.java), paramBundle, container,
           [basicJavaSourceGenerator|new ProtobufCodecGenerator(basicJavaSourceGenerator).generateProtobufCodecBody(container, codecName)]          
       )  
    }
    
    private def void generateClientConsole(IPath projectSourceRootPath, InterfaceDeclaration interfaceDeclaration)
    {
+      val paramBundle = ParameterBundle.createBuilder(interfaceDeclaration.moduleStack).with(ProjectType.CLIENT_CONSOLE).build
       val programName = "Program"
       val log4jName = "log4j.ClientConsole".properties
       
       generateJavaFile(projectSourceRootPath.append(programName.java),
+          paramBundle,
          interfaceDeclaration,
             [basicJavaSourceGenerator|new ClientConsoleGenerator(basicJavaSourceGenerator).generateClientConsoleProgram(programName, log4jName, interfaceDeclaration)]         
       )
@@ -358,21 +363,24 @@ class JavaGenerator
    
    private def void generateServerRunner(IPath projectSourceRootPath, InterfaceDeclaration interfaceDeclaration)
    {
+      val paramBundle = ParameterBundle.createBuilder(interfaceDeclaration.moduleStack).with(ProjectType.SERVER_RUNNER).build
       val programName = "Program"
       val serverRunnerName = ProjectType.SERVER_RUNNER.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name)
       val beansName = "ServerRunnerBeans".xml
       val log4jName = "log4j.ServerRunner".properties
       
       generateJavaFile(projectSourceRootPath.append(programName.java),
+          paramBundle,
          interfaceDeclaration,
          [basicJavaSourceGenerator|new ServerRunnerGenerator(basicJavaSourceGenerator).generateServerRunnerProgram(programName, serverRunnerName, beansName, log4jName, interfaceDeclaration)]
       )
 
       generateJavaFile(projectSourceRootPath.append(serverRunnerName.java),
+          paramBundle,
          interfaceDeclaration, [basicJavaSourceGenerator|new ServerRunnerGenerator(basicJavaSourceGenerator).generateServerRunnerImplementation(serverRunnerName, interfaceDeclaration)]
       )
       
-      val packageName = MavenResolver.resolvePackage(interfaceDeclaration, Optional.of(paramBundle.projectType))
+      val packageName = MavenResolver.resolvePackage(interfaceDeclaration, Optional.of(ProjectType.SERVER_RUNNER))
       val testResourcesPath = makeProjectSourcePath(interfaceDeclaration, ProjectType.SERVER_RUNNER, MavenArtifactType.TEST_RESOURCES, PathType.ROOT)
       fileSystemAccess.generateFile(
          testResourcesPath.append(beansName).toPortableString,
@@ -389,14 +397,17 @@ class JavaGenerator
    
    private def void generateProxy(IPath projectSourceRootPath, InterfaceDeclaration interfaceDeclaration)
    {
-      val proxyFactoryName = paramBundle.projectType.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name) + "Factory"
+      val paramBundle = ParameterBundle.createBuilder(interfaceDeclaration.moduleStack).with(ProjectType.PROXY).build
+      val proxyFactoryName = ProjectType.PROXY.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name) + "Factory"
       generateJavaFile(projectSourceRootPath.append(proxyFactoryName.java),
+          paramBundle,
          interfaceDeclaration, [basicJavaSourceGenerator|new ProxyFactoryGenerator(basicJavaSourceGenerator).generateProxyFactory(proxyFactoryName, interfaceDeclaration)]
       )
 
-      val proxyClassName = paramBundle.projectType.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name)
+      val proxyClassName = ProjectType.PROXY.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name)
       generateJavaFile(
          projectSourceRootPath.append(proxyClassName.java),
+          paramBundle,
          interfaceDeclaration, 
          [basicJavaSourceGenerator|new ProxyGenerator(basicJavaSourceGenerator).generateProxyImplementation(proxyClassName, interfaceDeclaration)]
       )
@@ -404,40 +415,44 @@ class JavaGenerator
       
    private def void generateDispatcher(IPath projectSourceRootPath, InterfaceDeclaration interfaceDeclaration)
    {
-      val dispatcherClassName = paramBundle.projectType.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name)
+      val paramBundle = ParameterBundle.createBuilder(interfaceDeclaration.moduleStack).with(ProjectType.DISPATCHER).build
+      val dispatcherClassName = ProjectType.DISPATCHER.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name)
       
-      generateJavaFile(projectSourceRootPath.append(dispatcherClassName.java), interfaceDeclaration, [basicJavaSourceGenerator|new DispatcherGenerator(basicJavaSourceGenerator).generateDispatcherBody(dispatcherClassName, interfaceDeclaration)])
+      generateJavaFile(projectSourceRootPath.append(dispatcherClassName.java), paramBundle, interfaceDeclaration, [basicJavaSourceGenerator|new DispatcherGenerator(basicJavaSourceGenerator).generateDispatcherBody(dispatcherClassName, interfaceDeclaration)])
    }
    
    private def void generateImplementationStub(IPath projectSourceRootPath, InterfaceDeclaration interfaceDeclaration)
    {
-      val implementationName = paramBundle.projectType.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name)
+      val paramBundle = ParameterBundle.createBuilder(interfaceDeclaration.moduleStack).with(ProjectType.IMPL).build
+      val implementationName = ProjectType.IMPL.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name)
 
-      generateJavaFile(projectSourceRootPath.append(implementationName.java), interfaceDeclaration, [basicJavaSourceGenerator|new ImplementationStubGenerator(basicJavaSourceGenerator).generateImplementationStubBody(implementationName, interfaceDeclaration)])   
+      generateJavaFile(projectSourceRootPath.append(implementationName.java), paramBundle, interfaceDeclaration, [basicJavaSourceGenerator|new ImplementationStubGenerator(basicJavaSourceGenerator).generateImplementationStubBody(implementationName, interfaceDeclaration)])   
    }
    
-   private def <T extends EObject> void generateJavaFile(IPath fileName, T declarator, (BasicJavaSourceGenerator)=>CharSequence generateBody)
+   private def <T extends EObject> void generateJavaFile(IPath fileName, ParameterBundle paramBundle, T declarator, (BasicJavaSourceGenerator)=>CharSequence generateBody)
    {
        // TODO T can be InterfaceDeclaration or ModuleDeclaration, the metamodel should be changed to introduce a common base type of these
-      reinitializeFile
+      reinitializeFile(paramBundle)
       
       fileSystemAccess.generateFile(fileName.toPortableString, ArtifactNature.JAVA.label, 
-         generateSourceFile(declarator,
-         generateBody.apply(this.basicJavaSourceGenerator)
+         generateSourceFile(
+                declarator,
+                paramBundle.projectType,
+                generateBody.apply(this.basicJavaSourceGenerator)
          )
       )
    }
    
    // TODO remove this function
-   private def void reinitializeFile()
+   private def void reinitializeFile(ParameterBundle paramBundle)
    {
-      val typeResolver = new TypeResolver(qualifiedNameProvider, paramBundle.build, dependencies)
+      val typeResolver = new TypeResolver(qualifiedNameProvider, paramBundle, dependencies)
       basicJavaSourceGenerator = new BasicJavaSourceGenerator(qualifiedNameProvider, generationSettingsProvider, typeResolver, idl, typedefTable)
    }
    
-   private def void reinitializeAll()
+   private def void reinitializeAll(ParameterBundle paramBundle)
    {
-      reinitializeFile
+      reinitializeFile(paramBundle)
       dependencies.clear
       typedefTable.clear
    }
