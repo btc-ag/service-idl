@@ -34,8 +34,10 @@ class OdbGenerator
 
     def generateODBTraitsBody()
     {
-        val guidResolved = resolveSymbol(PrinsTypeNames.GUID)
-        
+        val odbBinaryType = resolveSymbol("id_binary")
+        val odbRawType = resolveSymbol("id_raw")
+        val guidResolved = resolveSymbol("BTC::Commons::CoreExtras::UUID")
+
         '''
             namespace odb
             {
@@ -45,38 +47,30 @@ class OdbGenerator
                   template<>
                   struct default_type_traits<«guidResolved»>
                   {
-                     static const database_type_id db_type_id = «resolveSymbol("id_uniqueidentifier")»;
+                     static const database_type_id db_type_id = «odbBinaryType»;
                   };
             
                   template<>
-                  class value_traits<«guidResolved», id_uniqueidentifier>
+                  class value_traits<«guidResolved», «odbBinaryType»>
                   {
                   public:
                      typedef «guidResolved»   value_type;
                      typedef «guidResolved»   query_type;
-                     typedef uniqueidentifier            image_type;
+                     typedef char                             image_type[16];
             
-                     static void set_value(value_type& val, const image_type& img, bool is_null)
+                     static void set_value (value_type& v, const image_type& i, std::size_t n, bool is_null)
                      {
                         if (!is_null)
-                        {
-                           «resolveSymbol("BTC::Commons::CoreExtras::UUID")» uuid;
-                           «resolveSymbol("std::array")»<char, 16> db_data;
-                           «resolveSymbol("std::memcpy")»(db_data.data(), &img, 16);
-                           «resolveSymbol("BTC::PRINS::Commons::Utilities::GUIDHelper")»::guidEncode(db_data.data(), uuid);
-                           val = «guidResolved»::FromStringSafe("{" + uuid.ToString() + "}");
-                        }
+                           «resolveSymbol("std::memcpy")» (&v, &i[0], n);
                         else
-                           val = «guidResolved»::nullGuid;
+                           v = «guidResolved»::Null();
                      }
             
-                     static void set_image(image_type& img, bool& is_null, const value_type& val)
+                     static void set_image (image_type i, std::size_t s, std::size_t& n, bool& is_null, const value_type& v)
                      {
                         is_null = false;
-                        auto uuid = BTC::Commons::CoreExtras::UUID::ParseString(val.ToString());
-                        std::array<char, 16> db_data;
-                        BTC::PRINS::Commons::Utilities::GUIDHelper::guidDecode(uuid, db_data.data());
-                        std::memcpy(&img, db_data.data(), 16);
+                        «resolveSymbol("std::memcpy")» (&i[0], &v, s);
+                        n = s;
                      }
                   };
                }
@@ -85,38 +79,32 @@ class OdbGenerator
                namespace oracle
                {
                   template<>
-                  struct default_type_traits<«resolveSymbol(PrinsTypeNames.GUID)»>
+                  struct default_type_traits<«guidResolved»>
                   {
-                     static const database_type_id db_type_id = «resolveSymbol("id_raw")»;
+                     static const database_type_id db_type_id = «odbRawType»;
                   };
             
                   template<>
-                  class value_traits<«guidResolved», id_raw>
+                  class value_traits<«guidResolved», «odbRawType»>
                   {
                   public:
                      typedef «guidResolved»   value_type;
                      typedef «guidResolved»   query_type;
-                     typedef char                        image_type[16];
+                     typedef char                             image_type[16];
             
-                     static void set_value(value_type& val, const image_type img, std::size_t n, bool is_null)
+                     static void set_value (value_type& v, const image_type& i, std::size_t n, bool is_null)
                      {
-                        «resolveSymbol("BTC::Commons::CoreExtras::UUID")» uuid;
-                        «resolveSymbol("std::vector")»<char> db_data;
-                        db_data.reserve(n);
-                        «resolveSymbol("std::memcpy")»(db_data.data(), img, n);
-                        «resolveSymbol("BTC::PRINS::Commons::Utilities::GUIDHelper")»::guidEncode(db_data.data(), uuid);
-                        val = «guidResolved»::FromStringSafe("{" + uuid.ToString() + "}");
+                        if (!is_null)
+                           «resolveSymbol("std::memcpy")» (&v, &i[0], n);
+                        else
+                           v = «guidResolved»::Null();
                      }
-            
-                     static void set_image(image_type img, std::size_t c, std::size_t& n, bool& is_null, const value_type& val)
+                     
+                     static void set_image (image_type i, std::size_t s, std::size_t& n, bool& is_null, const value_type& v)
                      {
                         is_null = false;
-                        auto uuid = BTC::Commons::CoreExtras::UUID::ParseString(val.ToString());
-                        std::vector<char> db_data;
-                        db_data.resize(16);
-                        BTC::PRINS::Commons::Utilities::GUIDHelper::guidDecode(uuid, db_data.data());
-                        n = db_data.size();
-                        std::memcpy (img, db_data.data(), n);
+                        «resolveSymbol("std::memcpy")» (&i[0], &v, s);
+                        n = s;
                      }
                   };
                }
@@ -148,7 +136,7 @@ class OdbGenerator
         else if (element.floatingPointType !== null)
             return element.floatingPointType
         else if (element.uuidType !== null)
-            return resolveSymbol(PrinsTypeNames.GUID)
+            return resolveSymbol("BTC::Commons::CoreExtras::UUID")
         else if (element.booleanType !== null)
             return "bool"
         else if (element.charType !== null)
@@ -227,7 +215,7 @@ class OdbGenerator
         existing_column_names.add(normalized_column_name)
 
         '''
-            #pragma db «IF is_uuid && column_name == "ID"»id «ENDIF»column("«normalized_column_name»")«IF is_uuid» oracle:type("RAW(16)") mssql:type("UNIQUEIDENTIFIER")«ENDIF»
+            #pragma db «IF is_uuid && column_name == "ID"»id «ENDIF»column("«normalized_column_name»")«IF is_uuid» oracle:type("RAW(16)") mssql:type("BINARY(16)")«ENDIF»
             «IF is_optional»«resolveSymbol("odb::nullable")»<«ENDIF»«resolveODBType(member.type)»«IF is_optional»>«ENDIF» «column_name»;
         '''
     }
