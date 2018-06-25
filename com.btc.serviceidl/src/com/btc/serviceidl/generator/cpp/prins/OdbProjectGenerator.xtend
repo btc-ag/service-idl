@@ -10,10 +10,12 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp.prins
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.BasicCppGenerator
+import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
@@ -29,7 +31,6 @@ import java.util.Map
 import java.util.Optional
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -39,18 +40,16 @@ import static com.btc.serviceidl.generator.cpp.Util.*
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
-import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
-import com.btc.serviceidl.generator.ITargetVersionProvider
 
 @Accessors
 class OdbProjectGenerator extends ProjectGeneratorBase {
-    new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
+    new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
         IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
         Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map,  ModuleDeclaration module)
     {
-        super(resource, file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
+        super(file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
             moduleStructureStrategy, targetVersionProvider, protobuf_project_references, smart_pointer_map, 
             ProjectType.EXTERNAL_DB_IMPL, module, new OdbSourceGenerationStrategy)
     }

@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.IDLSpecification
@@ -20,21 +21,19 @@ import java.util.Map
 import java.util.Optional
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
-import com.btc.serviceidl.generator.ITargetVersionProvider
 
 class LegacyProjectGenerator extends ProjectGeneratorBase
 {
-    new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
+    new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
         IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
         Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ProjectType type, ModuleDeclaration module)
     {
-        super(resource, file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
+        super(file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
             moduleStructureStrategy, targetVersionProvider, protobuf_project_references, smart_pointer_map, type,
             module, new SourceGenerationStrategy)
     }
