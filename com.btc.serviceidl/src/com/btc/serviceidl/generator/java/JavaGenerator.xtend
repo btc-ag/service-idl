@@ -21,7 +21,6 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
@@ -36,15 +35,14 @@ class JavaGenerator
     val IGenerationSettingsProvider generationSettingsProvider
     val IDLSpecification idl
 
-    new(Resource resource, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
+    new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IGenerationSettingsProvider generationSettingsProvider, Map<EObject, String> protobufArtifacts)
     {
+        this.idl = idl
         this.fileSystemAccess = fileSystemAccess
         this.qualifiedNameProvider = qualifiedNameProvider
         this.protobufArtifacts = protobufArtifacts
         this.generationSettingsProvider = generationSettingsProvider
-
-        this.idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
     }
 
     def void doGenerate()

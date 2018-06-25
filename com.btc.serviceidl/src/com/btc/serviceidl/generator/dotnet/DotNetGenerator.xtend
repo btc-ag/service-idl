@@ -42,7 +42,6 @@ import java.util.HashSet
 import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
@@ -79,16 +78,15 @@ class DotNetGenerator
     
    val paketDependencies = new HashSet<Pair<String, String>>
    
-   new(Resource resource, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
+   new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes,
         HashMap<String, HashMap<String, String>> protobufProjectReferences)
     {
+        this.idl = idl
         this.fileSystemAccess = fileSystemAccess
         this.qualifiedNameProvider = qualifiedNameProvider
         this.generationSettingsProvider = generationSettingsProvider
         this.protobufProjectReferences = protobufProjectReferences
-
-        idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
     }
 
     def void doGenerate()
