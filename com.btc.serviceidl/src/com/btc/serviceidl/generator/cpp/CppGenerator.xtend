@@ -28,7 +28,6 @@ import java.util.HashMap
 import java.util.Map
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
@@ -49,10 +48,11 @@ class CppGenerator
     val IModuleStructureStrategy moduleStructureStrategy
     val smartPointerMap = new HashMap<EObject, Collection<EObject>>
 
-    new(Resource resource, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
+    new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IScopeProvider scopeProvider, IGenerationSettingsProvider generationSettingsProvider,
         Map<String, HashMap<String, String>> protobufProjectReferences)
     {
+        this.idl = idl
         this.fileSystemAccess = fileSystemAccess
         this.qualifiedNameProvider = qualifiedNameProvider
         this.scopeProvider = scopeProvider
@@ -60,7 +60,6 @@ class CppGenerator
         // this.protobufProjectReferences = pr?.immutableCopy  
         this.protobufProjectReferences = null
 
-        this.idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
         this.projectSet = generationSettingsProvider.projectSetFactory.create
         this.moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
         this.generationSettingsProvider = generationSettingsProvider
@@ -68,11 +67,6 @@ class CppGenerator
 
     def void doGenerate()
     {
-        if (this.idl === null)
-        {
-            return
-        }
-
         // iterate module by module and generate included content
         for (module : this.idl.modules)
         {
