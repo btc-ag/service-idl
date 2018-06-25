@@ -151,13 +151,13 @@ class ProxyGenerator extends BasicCppGenerator {
                     // handle [out] parameters
                     «FOR param : output_parameters»
                        «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
-                          «typeResolver.resolveDecode(paramBundle, param.paramType, interface_declaration)»( concreteResponse.«param.paramName.toLowerCase»(), «param.paramName» );
+                          «typeResolver.resolveDecode(paramBundle, param.paramType, interface_declaration)»( concreteResponse.«param.paramName.asCppProtobufName»(), «param.paramName» );
                        «ELSE»
-                          «param.paramName» = «makeDecodeResponse(param.paramType, interface_declaration, param.paramName.toLowerCase)»
+                          «param.paramName» = «makeDecodeResponse(param.paramType, interface_declaration, param.paramName.asCppProtobufName)»
                        «ENDIF»
                     «ENDFOR»
                  «ENDIF»
-                 return «makeDecodeResponse(function.returnedType, interface_declaration, function.name.toLowerCase)»
+                 return «makeDecodeResponse(function.returnedType, interface_declaration, function.name.asCppProtobufName)»
                  // decode response <--
               } )«IF function.isSync».Get()«ENDIF»;
            «ENDIF»
