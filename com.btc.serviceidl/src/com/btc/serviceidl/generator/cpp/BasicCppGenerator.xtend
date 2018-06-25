@@ -464,7 +464,7 @@ class BasicCppGenerator
                     
                     «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Exception")»> «class_name»::IntClone() const
                     {
-                       return «resolveSymbol("BTC::Commons::Core::CreateUnique")»<«class_name»>(GetSingleMsg());
+                       return «resolveSymbol("BTC::Commons::Core::CreateUnique")»<«class_name»>(*this);
                     }
                 «ENDIF»
                 
