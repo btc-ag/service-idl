@@ -99,9 +99,6 @@ class TypeResolver
     public static val BOOST_INCLUDE_GROUP = new IncludeGroup("boost")
     public static val CAB_INCLUDE_GROUP = new IncludeGroup("BTC.CAB")
 
-// PRINS-specific, TODO move to PRINS-package
-    public static val MODULES_INCLUDE_GROUP = new IncludeGroup("BTC.PRINS.Modules")
-
     @Accessors(PACKAGE_GETTER) val HeaderResolver headerResolver
 
     new(
@@ -135,7 +132,7 @@ class TypeResolver
         // TODO resolve and add to libs generically
         if (header.includeGroup == CAB_INCLUDE_GROUP)
             cab_libs.addAll(LibResolver.getCABLibs(header.path))
-        if (header.includeGroup == MODULES_INCLUDE_GROUP || header.includeGroup == TARGET_INCLUDE_GROUP)
+        if (header.includeGroup == TARGET_INCLUDE_GROUP)
             project_references.add(projectSet.resolveHeader(header))
     }
 

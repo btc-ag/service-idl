@@ -29,7 +29,7 @@ class PrinsHeaderResolver
     private static def withPrinsGroups(HeaderResolver.Builder builder)
     {
         builder.withBasicGroups.withGroup(odb_header_mapper, ODB_INCLUDE_GROUP).configureGroup(
-            Arrays.asList(TypeResolver.MODULES_INCLUDE_GROUP, TypeResolver.TARGET_INCLUDE_GROUP), 0, "", "", false).
+            Arrays.asList(TypeResolver.TARGET_INCLUDE_GROUP), 0, "", "", false).
             configureGroup(TypeResolver.CAB_INCLUDE_GROUP, 10,
                 '''#include "modules/Commons/include/BeginCabInclude.h"     // CAB -->''' + System.lineSeparator, '''#include "modules/Commons/include/EndCabInclude.h"       // <-- CAB
 

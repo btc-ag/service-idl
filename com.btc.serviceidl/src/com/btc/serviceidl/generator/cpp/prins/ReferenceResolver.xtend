@@ -17,7 +17,6 @@ package com.btc.serviceidl.generator.cpp.prins
 
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.HeaderResolver
-import com.btc.serviceidl.generator.cpp.TypeResolver
 import org.eclipse.core.runtime.IPath
 
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
@@ -41,15 +40,6 @@ class ReferenceResolver
 
     static def VSProjectInfo getProjectReference(HeaderResolver.GroupedHeader header)
     {
-        if (header.includeGroup == TypeResolver.MODULES_INCLUDE_GROUP)
-        {
-            val moduleName = header.path.modulesHeaderPathToModuleName
-            val project_reference = vs_projects_mapper.get(moduleName)
-
-            if (project_reference !== null) return project_reference
-
-        }
-
         throw new IllegalArgumentException("Could not find project reference mapping for header: " + header.toString)
     }
 
