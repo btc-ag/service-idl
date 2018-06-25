@@ -58,7 +58,6 @@ class DotNetGenerator
    public static val DOTNET_FRAMEWORK_VERSION = DotNetFrameworkVersion.NET46
    
    // global variables
-   val Resource resource
    val IFileSystemAccess fileSystemAccess
    val IQualifiedNameProvider qualifiedNameProvider
    val IGenerationSettingsProvider generationSettingsProvider
@@ -84,7 +83,6 @@ class DotNetGenerator
         IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes,
         HashMap<String, HashMap<String, String>> protobufProjectReferences)
     {
-        this.resource = resource
         this.fileSystemAccess = fileSystemAccess
         this.qualifiedNameProvider = qualifiedNameProvider
         this.generationSettingsProvider = generationSettingsProvider
@@ -102,7 +100,7 @@ class DotNetGenerator
             processModule(module, generationSettingsProvider.projectTypes)
         }
 
-        new VSSolutionGenerator(fileSystemAccess, vsSolution, resource.URI.lastSegment.replace(".idl", "")).
+        new VSSolutionGenerator(fileSystemAccess, vsSolution, idl.eResource.URI.lastSegment.replace(".idl", "")).
             generateSolutionFile
 
         // TODO generate only either NuGet or Paket file
