@@ -74,7 +74,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       { return }
                   
       // paths
-      val odb_path = projectPath + "odb" + Constants.SEPARATOR_FILE
+      val odb_path = projectPath + Constants.SEPARATOR_FILE + "odb" + Constants.SEPARATOR_FILE
       
       // collect all commonly used types to include them in an centralized header
       val common_types = all_elements
