@@ -314,8 +314,7 @@ class BasicJavaSourceGenerator
 
     def public dispatch String makeDefaultValue(EObject element)
     {
-        // TODO does this make sense? is this ever called?
-        '''0'''
+        throw new IllegalArgumentException("Cannot make default value for element of type " + element.eClass.name)
     }
 
     private static def String makeGetterSetter(String type_name, String var_name)
