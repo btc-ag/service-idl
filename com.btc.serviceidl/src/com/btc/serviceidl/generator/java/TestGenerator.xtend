@@ -14,6 +14,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.util.Constants
 import java.util.Optional
+import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
@@ -45,7 +46,7 @@ class TestGenerator
         '''
     }
 
-    def public generateTestStub(String class_name, String src_root_path,
+    def public generateTestStub(String class_name, IPath src_root_path,
         InterfaceDeclaration interface_declaration)
     {
         // TODO is this really useful? it only generates a stub, what should be done when regenerating?
@@ -115,7 +116,7 @@ class TestGenerator
     }
 
     def public generateFileZeroMQItegrationTest(String class_name, String super_class, String log4j_name,
-        String src_root_path, InterfaceDeclaration interface_declaration)
+        IPath src_root_path, InterfaceDeclaration interface_declaration)
     {
         val resources_location = MavenArtifactType.TEST_RESOURCES.directoryLayout
         val junit_assert = typeResolver.resolve(JavaClassNames.JUNIT_ASSERT)

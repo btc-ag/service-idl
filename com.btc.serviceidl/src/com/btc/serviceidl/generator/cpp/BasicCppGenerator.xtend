@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.GuidMapper
@@ -17,6 +18,8 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.HeaderResolver.OutputConfigurationItem
+import com.btc.serviceidl.generator.cpp.TypeResolver.IncludeGroup
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.DocCommentElement
@@ -37,14 +40,16 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.idl.TupleDeclaration
 import com.btc.serviceidl.util.Constants
 import java.util.ArrayList
+import java.util.Comparator
 import java.util.Map
+import java.util.Set
+import org.eclipse.core.runtime.IPath
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
-import java.util.Comparator
-import com.btc.serviceidl.generator.ITargetVersionProvider
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(NONE)
 class BasicCppGenerator
@@ -157,13 +162,7 @@ class BasicCppGenerator
             context instanceof StructDeclaration)
         {
             val related_event = com.btc.serviceidl.util.Util.getRelatedEvent(item)
-            var makeCompareOperator = false
-            for (member : item.members)
-            {
-                if (member.name == "Id" && member.type.primitiveType !== null &&
-                    member.type.primitiveType.uuidType !== null)
-                    makeCompareOperator = true
-            }
+            val makeCompareOperator = item.needsCompareOperator
 
             '''
                 struct «makeExportMacro()» «item.name»«IF item.supertype !== null» : «resolve(item.supertype)»«ENDIF»
@@ -192,6 +191,11 @@ class BasicCppGenerator
         }
         else
             '''«resolve(item)»'''
+    }
+
+    private def boolean needsCompareOperator(StructDeclaration declaration)
+    {
+        declaration.members.exists[name == "Id" && type.primitiveType !== null && type.primitiveType.uuidType !== null]
     }
 
     def dispatch String toText(ExceptionReferenceDeclaration item, EObject context)
@@ -272,7 +276,7 @@ class BasicCppGenerator
 
     def dispatch String toText(DocCommentElement item, EObject context)
     {
-        com.btc.serviceidl.util.Util.getPlainText(item)
+        item.plainText
     }
 
     def dispatch String toText(ModuleDeclaration item, EObject context)
@@ -342,49 +346,19 @@ class BasicCppGenerator
             {
                 result.add(map.get(key))
                 map.remove(key)
-
             }
         }
         result
     }
 
-    def CharSequence generateIncludes(boolean is_header)
+    def CharSequence generateIncludes(boolean isHeader)
     {
         val includes = typeResolver.includes
-        val outputConfiguration = headerResolver.outputConfiguration
-
         val result = new StringBuilder()
 
-        for (outputConfigurationItem : outputConfiguration)
+        for (outputConfigurationItem : headerResolver.outputConfiguration)
         {
-            val sortedElements = includes.extractAllExcludeNull(outputConfigurationItem.includeGroups).flatten.sortWith(
-                Comparator.comparing[toString])
-            if (!sortedElements.empty)
-            {
-                result.append(outputConfigurationItem.prefix)
-                for (element : sortedElements)
-                {
-                    result.append("#include ")
-                    result.append(if (outputConfigurationItem.systemIncludeStyle) "<" else "\"")
-                    result.append(element)
-                    result.append(if (outputConfigurationItem.systemIncludeStyle) ">" else "\"")
-                    result.append(System.lineSeparator)
-                }
-                result.append(outputConfigurationItem.suffix)
-                result.append(System.lineSeparator)
-            }
-
-            // TODO remove this
-            if (outputConfigurationItem.precedence == 0 && is_header && paramBundle.projectType == ProjectType.PROXY)
-            {
-                result.append('''
-                    // resolve naming conflict between Windows' API function InitiateShutdown and CAB's AServiceProxyBase::InitiateShutdown
-                    #ifdef InitiateShutdown
-                    #undef InitiateShutdown
-                    #endif
-                                    
-                ''')
-            }
+            generateIncludesSection(isHeader, outputConfigurationItem, includes, result)
         }
 
         if (!includes.empty)
@@ -394,7 +368,7 @@ class BasicCppGenerator
 
         result.append(    
         '''            
-            «IF !is_header && paramBundle.projectType == ProjectType.SERVER_RUNNER»
+            «IF !isHeader && paramBundle.projectType == ProjectType.SERVER_RUNNER»
                 
                 #ifndef NOMINMAX
                 #define NOMINMAX
@@ -404,6 +378,39 @@ class BasicCppGenerator
         ''')
 
         return result
+    }
+    
+    def generateIncludesSection(boolean isHeader, OutputConfigurationItem outputConfigurationItem,
+        Map<IncludeGroup, Set<IPath>> includes, StringBuilder result)
+    {
+        val sortedElements = includes.extractAllExcludeNull(outputConfigurationItem.includeGroups).flatten.sortWith(
+                Comparator.comparing[toString])
+        if (!sortedElements.empty)
+        {
+            result.append(outputConfigurationItem.prefix)
+            for (element : sortedElements)
+            {
+                result.append("#include ")
+                result.append(if (outputConfigurationItem.systemIncludeStyle) "<" else "\"")
+                result.append(element)
+                result.append(if (outputConfigurationItem.systemIncludeStyle) ">" else "\"")
+                result.append(System.lineSeparator)
+            }
+            result.append(outputConfigurationItem.suffix)
+            result.append(System.lineSeparator)
+        }
+
+        // TODO remove this
+        if (outputConfigurationItem.precedence == 0 && isHeader && paramBundle.projectType == ProjectType.PROXY)
+        {
+            result.append('''
+                // resolve naming conflict between Windows' API function InitiateShutdown and CAB's AServiceProxyBase::InitiateShutdown
+                #ifdef InitiateShutdown
+                #undef InitiateShutdown
+                #endif
+                                
+            ''')
+        }
     }
 
     def String makeExceptionImplementation(ExceptionDeclaration exception)

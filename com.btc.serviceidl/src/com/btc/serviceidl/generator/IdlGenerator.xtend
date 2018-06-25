@@ -3,27 +3,27 @@
  */
 package com.btc.serviceidl.generator
 
-import org.eclipse.emf.ecore.resource.Resource
+import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.GuidMapper
+import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.CppGenerator
+import com.btc.serviceidl.generator.dotnet.DotNetGenerator
+import com.btc.serviceidl.generator.java.JavaGenerator
+import com.btc.serviceidl.generator.protobuf.ProtobufGenerator
+import com.btc.serviceidl.idl.EventDeclaration
+import com.btc.serviceidl.idl.IDLSpecification
+import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.google.inject.Inject
+import java.util.Collections
+import java.util.Map
+import java.util.UUID
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.xtext.generator.IFileSystemAccess2
+import org.eclipse.xtext.generator.IGenerator2
+import org.eclipse.xtext.generator.IGeneratorContext
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
-import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.generator.common.GuidMapper
-import com.btc.serviceidl.idl.EventDeclaration
-import org.eclipse.emf.ecore.EObject
-import java.util.UUID
-import java.util.Map
-import java.util.Collections
-import com.btc.serviceidl.generator.common.ArtifactNature
-import org.eclipse.xtext.generator.IGenerator2
-import org.eclipse.xtext.generator.IFileSystemAccess2
-import org.eclipse.xtext.generator.IGeneratorContext
-import com.btc.serviceidl.generator.protobuf.ProtobufGenerator
-import com.btc.serviceidl.generator.cpp.CppGenerator
-import com.btc.serviceidl.generator.java.JavaGenerator
-import com.btc.serviceidl.generator.dotnet.DotNetGenerator
-import com.btc.serviceidl.generator.common.ProjectType
-import org.eclipse.xtext.generator.AbstractFileSystemAccess
 
 /**
  * Generates code from your model files on save.
@@ -69,6 +69,11 @@ class IdlGenerator implements IGenerator2
         {
             resource.save(Collections.EMPTY_MAP)
         }
+        val idl = resource.contents.filter(IDLSpecification).head // only one IDL root module possible
+        if (idl === null)
+        {
+            return
+        }
 
         val projectTypes = generation_settings_provider.projectTypes
         val languages = generation_settings_provider.languages
@@ -85,27 +90,29 @@ class IdlGenerator implements IGenerator2
 
         if (languages.contains(ArtifactNature.CPP))
         {
-            val cpp_generator = new CppGenerator
-            cpp_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider,
-                generation_settings_provider,
-                if (protobuf_generator !== null) protobuf_generator.getProjectReferences(ArtifactNature.CPP) else null)
+            val cpp_generator = new CppGenerator(idl, fsa, qualified_name_provider, scope_provider,
+                generation_settings_provider, protobuf_generator?.getProjectReferences(ArtifactNature.CPP))
+            cpp_generator.doGenerate
         }
 
         if (languages.contains(ArtifactNature.JAVA))
         {
-            val java_generator = new JavaGenerator
-            java_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider,
-                generation_settings_provider, projectTypes, protobuf_artifacts)
+            val java_generator = new JavaGenerator(idl, fsa, qualified_name_provider, generation_settings_provider,
+                protobuf_artifacts)
+            java_generator.doGenerate
         }
 
         if (languages.contains(ArtifactNature.DOTNET))
         {
-            val dotnet_generator = new DotNetGenerator
-            dotnet_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider,
-                generation_settings_provider, projectTypes, if (protobuf_generator !== null)
-                    protobuf_generator.getProjectReferences(ArtifactNature.DOTNET)
-                else
-                    null)
+            val dotnet_generator = new DotNetGenerator(
+                idl,
+                fsa,
+                qualified_name_provider,
+                generation_settings_provider,
+                projectTypes,
+                protobuf_generator?.getProjectReferences(ArtifactNature.DOTNET)
+            )
+            dotnet_generator.doGenerate
         }
     }
 

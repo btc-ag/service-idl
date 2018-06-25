@@ -117,8 +117,8 @@ class TypeResolver
         if (element.isException)
         {
             val exception_name = resolveException(name.toString)
-            if (exception_name.present)
-                return new ResolvedName(exception_name.get(), TransformType.PACKAGE, fully_qualified)
+            if (exception_name !== null)
+                return new ResolvedName(exception_name, TransformType.PACKAGE, fully_qualified)
         }
 
         if (name === null)
@@ -164,7 +164,7 @@ class TypeResolver
         return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, fully_qualified)
     }
 
-    def public Optional<String> resolveException(String name)
+    def public String resolveException(String name)
     {
         // temporarily some special handling for exceptions, because not all
         // C++ CAB exceptions are supported by the Java CAB
@@ -172,9 +172,9 @@ class TypeResolver
         {
             case "BTC.Commons.Core.InvalidArgumentException":
                 // TODO shouldn't this use resolve("java.util.IllegalArgumentException")?
-                return Optional.of("IllegalArgumentException")
+                "IllegalArgumentException"
             default:
-                return Optional.empty
+                null
         }
     }
 

@@ -12,7 +12,7 @@ package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GuidMapper
-import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
@@ -26,7 +26,6 @@ import static extension com.btc.serviceidl.util.Util.*
 class ServiceAPIGenerator
 {
     val BasicJavaSourceGenerator basicJavaSourceGenerator
-    val ParameterBundle param_bundle
 
     private def getTypeResolver()
     {
@@ -73,7 +72,7 @@ class ServiceAPIGenerator
     {
         val anonymous_event = interface_declaration.anonymousEvent
         '''
-        public interface «param_bundle.projectType.getClassName(ArtifactNature.JAVA, interface_declaration.name)»«IF anonymous_event !== null» extends «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«basicJavaSourceGenerator.toText(anonymous_event.data)»>«ENDIF» {
+        public interface «ProjectType.SERVICE_API.getClassName(ArtifactNature.JAVA, interface_declaration.name)»«IF anonymous_event !== null» extends «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«basicJavaSourceGenerator.toText(anonymous_event.data)»>«ENDIF» {
         
            «typeResolver.resolve(JavaClassNames.UUID)» TypeGuid = UUID.fromString("«GuidMapper.get(interface_declaration)»");
            
