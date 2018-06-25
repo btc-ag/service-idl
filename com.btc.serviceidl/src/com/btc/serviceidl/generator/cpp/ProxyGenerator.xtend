@@ -127,14 +127,14 @@ class ProxyGenerator extends BasicCppGenerator {
                     «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
                     «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.RESPONSE).fullyQualifiedName»
                     «typeResolver.resolveCodecNS(paramBundle, ulimate_type, is_failable, Optional.of(interface_declaration))»::Encode«IF is_failable»Failable«ENDIF»< «resolve(ulimate_type)», «IF is_failable»«typeResolver.resolveFailableProtobufType(param.paramType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF» >
-                       ( «resolveSymbol("std::move")»(«param.paramName»), concreteRequest->mutable_«param.paramName.toLowerCase»() );
+                       ( «resolveSymbol("std::move")»(«param.paramName»), concreteRequest->mutable_«param.paramName.asCppProtobufName»() );
                  «ELSEIF com.btc.serviceidl.util.Util.isEnumType(param.paramType)»
-                    concreteRequest->set_«param.paramName.toLowerCase»( «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Encode(«param.paramName») );
+                    concreteRequest->set_«param.paramName.asCppProtobufName»( «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Encode(«param.paramName») );
                  «ELSE»
-                    «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Encode( «param.paramName», concreteRequest->mutable_«param.paramName.toLowerCase»() );
+                    «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Encode( «param.paramName», concreteRequest->mutable_«param.paramName.asCppProtobufName»() );
                  «ENDIF»
               «ELSE»
-                 concreteRequest->set_«param.paramName.toLowerCase»(«param.paramName»);
+                 concreteRequest->set_«param.paramName.asCppProtobufName»(«param.paramName»);
               «ENDIF»
            «ENDFOR»
            // encode request <--
@@ -151,13 +151,13 @@ class ProxyGenerator extends BasicCppGenerator {
                     // handle [out] parameters
                     «FOR param : output_parameters»
                        «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
-                          «typeResolver.resolveDecode(paramBundle, param.paramType, interface_declaration)»( concreteResponse.«param.paramName.toLowerCase»(), «param.paramName» );
+                          «typeResolver.resolveDecode(paramBundle, param.paramType, interface_declaration)»( concreteResponse.«param.paramName.asCppProtobufName»(), «param.paramName» );
                        «ELSE»
-                          «param.paramName» = «makeDecodeResponse(param.paramType, interface_declaration, param.paramName.toLowerCase)»
+                          «param.paramName» = «makeDecodeResponse(param.paramType, interface_declaration, param.paramName.asCppProtobufName)»
                        «ENDIF»
                     «ENDFOR»
                  «ENDIF»
-                 return «makeDecodeResponse(function.returnedType, interface_declaration, function.name.toLowerCase)»
+                 return «makeDecodeResponse(function.returnedType, interface_declaration, function.name.asCppProtobufName)»
                  // decode response <--
               } )«IF function.isSync».Get()«ENDIF»;
            «ENDIF»
