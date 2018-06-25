@@ -38,7 +38,6 @@ import static extension com.btc.serviceidl.util.Extensions.*
 class CppGenerator
 {
     // parameters
-    val Resource resource
     val IFileSystemAccess fileSystemAccess
     val IQualifiedNameProvider qualifiedNameProvider
     val IScopeProvider scopeProvider
@@ -54,7 +53,6 @@ class CppGenerator
         IScopeProvider scopeProvider, IGenerationSettingsProvider generationSettingsProvider,
         Map<String, HashMap<String, String>> protobufProjectReferences)
     {
-        this.resource = resource
         this.fileSystemAccess = fileSystemAccess
         this.qualifiedNameProvider = qualifiedNameProvider
         this.scopeProvider = scopeProvider
@@ -97,7 +95,6 @@ class CppGenerator
             if (projectTypes.contains(ProjectType.COMMON) && module.containsTypes)
             {
                 new CommonProjectGenerator(
-                    resource,
                     fileSystemAccess,
                     qualifiedNameProvider,
                     scopeProvider,
@@ -124,7 +121,6 @@ class CppGenerator
                 }))
                 {
                     new LegacyProjectGenerator(
-                        resource,
                         fileSystemAccess,
                         qualifiedNameProvider,
                         scopeProvider,
@@ -142,7 +138,6 @@ class CppGenerator
                 if (projectTypes.contains(ProjectType.SERVER_RUNNER))
                 {
                     new ServerRunnerProjectGenerator(
-                        resource,
                         fileSystemAccess,
                         qualifiedNameProvider,
                         scopeProvider,
@@ -162,7 +157,6 @@ class CppGenerator
             if (projectTypes.contains(ProjectType.PROTOBUF) && (module.containsTypes || module.containsInterfaces))
             {
                 new ProtobufProjectGenerator(
-                    resource,
                     fileSystemAccess,
                     qualifiedNameProvider,
                     scopeProvider,
@@ -180,7 +174,6 @@ class CppGenerator
                 module.containsInterfaces)
             {
                 new OdbProjectGenerator(
-                    resource,
                     fileSystemAccess,
                     qualifiedNameProvider,
                     scopeProvider,

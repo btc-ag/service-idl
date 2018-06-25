@@ -10,13 +10,17 @@
  */
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectFileGenerator
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
 import com.btc.serviceidl.generator.cpp.prins.OdbConstants
 import com.btc.serviceidl.generator.cpp.prins.VSProjectFileGenerator
+import com.btc.serviceidl.generator.cpp.prins.VSSolution
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
@@ -29,7 +33,6 @@ import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -38,15 +41,10 @@ import org.eclipse.xtext.scoping.IScopeProvider
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectFileGenerator
-import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
-import com.btc.serviceidl.generator.cpp.prins.VSSolution
-import com.btc.serviceidl.generator.ITargetVersionProvider
 
 @Accessors(PROTECTED_GETTER)
 class ProjectGeneratorBaseBase
 {
-    val Resource resource
     val IFileSystemAccess file_system_access
     val IQualifiedNameProvider qualified_name_provider
     val IScopeProvider scope_provider
@@ -65,13 +63,12 @@ class ProjectGeneratorBaseBase
     val project_references = new HashSet<IProjectReference>
     val projectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP)) // TODO inject the file groups
 
-    new(Resource resource, IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
+    new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
         IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
         Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ProjectType type, ModuleDeclaration module)
     {
-        this.resource = resource
         this.file_system_access = file_system_access
         this.qualified_name_provider = qualified_name_provider
         this.scope_provider = scope_provider
