@@ -42,7 +42,6 @@ class CodecGenerator extends BasicCppGenerator
         val failable_handle = resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")
         val cab_exception = resolveSymbol("BTC::Commons::Core::Exception")
         val cab_vector = resolveSymbol("BTC::Commons::CoreStd::Collection")
-        val cab_del_exception = resolveSymbol("BTC::Commons::Core::DelException")
         val cab_string = resolveSymbol("BTC::Commons::Core::String")
         val cab_create_unique = resolveSymbol("BTC::Commons::Core::CreateUnique")
         val std_find_if = resolveSymbol("std::find_if")
@@ -225,11 +224,11 @@ class CodecGenerator extends BasicCppGenerator
                {
                   «failable_handle»< API_TYPE > item(failable_item);
                   item.Get();
-               }
-               catch («resolveSymbol("BTC::Commons::Core::Exception")» const * e)
+               }               
+               catch (const «resolveSymbol("BTC::Commons::Core::Exception")» «exceptionCatch("e")»)
                {
-                  «cab_del_exception» _(e);
-                  SerializeException(*e, protobuf_item);
+                  «maybeDelException("e")»
+                  SerializeException(«exceptionAccess("e")», protobuf_item);
                }
                   }
                   else
@@ -271,10 +270,10 @@ class CodecGenerator extends BasicCppGenerator
                         «failable_handle»< API_TYPE > item(failable_item);
                         item.Get();
                      }
-                     catch («cab_exception» const * e)
+                     catch (const «cab_exception» «exceptionCatch("e")»)
                      {
-                        «cab_del_exception» _(e);
-                        SerializeException(*e, protobuf_item);
+                        «maybeDelException("e")»
+                        SerializeException(«exceptionAccess("e")», protobuf_item);
                      }
                   }
                   else
@@ -494,6 +493,30 @@ class CodecGenerator extends BasicCppGenerator
                 }
             «ENDFOR»
         '''
+    }
+    
+    def maybeDelException(String name)
+    {
+        if (targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11)
+            '''«resolveSymbol("BTC::Commons::Core::DelException")» _(«name»);'''
+        else
+            ""
+    }
+    
+    private def exceptionCatch(String name)
+    {
+        if (targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11)
+            "*" + name
+        else
+            "&" + name
+    }
+
+    private def exceptionAccess(String name)
+    {
+        if (targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11)
+            "*" + name
+        else
+            name
     }
 
     private def dispatch String makeDecode(StructDeclaration element, EObject container)
