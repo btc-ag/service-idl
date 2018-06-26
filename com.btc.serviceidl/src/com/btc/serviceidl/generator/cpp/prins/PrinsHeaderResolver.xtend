@@ -20,22 +20,16 @@ class PrinsHeaderResolver
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
     static val odb_header_mapper = #{
+        "id_binary" -> "odb/mssql/traits.hxx",
         "id_raw" -> "odb/oracle/traits.hxx",
         "id_uniqueidentifier" -> "odb/mssql/traits.hxx",
         "odb::nullable" -> "odb/nullable.hxx"
     }
 
-    // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    static val modules_header_mapper = #{
-        PrinsTypeNames.GUID -> "modules/Commons/include/GUID.h",
-        "BTC::PRINS::Commons::Utilities::GUIDHelper" -> "modules/Commons/Utilities/include/GUIDHelper.h"
-    }
-
     private static def withPrinsGroups(HeaderResolver.Builder builder)
     {
-        builder.withBasicGroups.withGroup(odb_header_mapper, ODB_INCLUDE_GROUP).withGroup(modules_header_mapper,
-            TypeResolver.MODULES_INCLUDE_GROUP).configureGroup(
-            Arrays.asList(TypeResolver.MODULES_INCLUDE_GROUP, TypeResolver.TARGET_INCLUDE_GROUP), 0, "", "", false).
+        builder.withBasicGroups.withGroup(odb_header_mapper, ODB_INCLUDE_GROUP).configureGroup(
+            Arrays.asList(TypeResolver.TARGET_INCLUDE_GROUP), 0, "", "", false).
             configureGroup(TypeResolver.CAB_INCLUDE_GROUP, 10,
                 '''#include "modules/Commons/include/BeginCabInclude.h"     // CAB -->''' + System.lineSeparator, '''#include "modules/Commons/include/EndCabInclude.h"       // <-- CAB
 

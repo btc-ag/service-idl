@@ -227,16 +227,24 @@ class BasicCppGenerator
                        explicit «class_name»(«resolveSymbol("BTC::Commons::Core::String")» const &msg);
                        «class_name»( «FOR member : item.members SEPARATOR ", "»«toText(member.type, item)» const& «member.name.asMember»«ENDFOR» );
                        
-                       virtual ~«class_name»();
-                       virtual void Throw() const;
-                       virtual void Throw();
+                       virtual ~«class_name»() = default;
+                       
+                       virtual void Throw() const override;
+                       
+                       «IF targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11»
+                          virtual void Throw() override;
+                       «ENDIF»
                        
                        «FOR member : item.members»
                            «toText(member.type, item)» «member.name.asMember»;
                        «ENDFOR»
                        
                        protected:
-                          virtual «resolveSymbol("BTC::Commons::Core::Exception")» *IntClone() const;
+                          «IF targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11»
+                             virtual «resolveSymbol("BTC::Commons::Core::Exception")» *IntClone() const;
+                          «ELSE»
+                             virtual «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Exception")»> IntClone() const override;
+                          «ENDIF»
                     };
                 '''
             }
@@ -433,23 +441,33 @@ class BasicCppGenerator
                    «FOR member : exception.members», «member.name.asMember»( «member.name.asMember» )«ENDFOR»
                 {}
                 
-                «class_name»::~«class_name»()
-                {}
+                «IF targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11»
+                    void «class_name»::Throw() const
+                    {
+                       throw this;
+                    }
+                    
+                    void «class_name»::Throw()
+                    {
+                       throw this;
+                    }
+                    
+                    «resolveSymbol("BTC::Commons::Core::Exception")» *«class_name»::IntClone() const
+                    {
+                        return new «class_name»(*this);
+                    }
+                «ELSE»
+                    void «class_name»::Throw() const
+                    {
+                       throw *this;
+                    }
+                    
+                    «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Exception")»> «class_name»::IntClone() const
+                    {
+                       return «resolveSymbol("BTC::Commons::Core::CreateUnique")»<«class_name»>(*this);
+                    }
+                «ENDIF»
                 
-                void «class_name»::Throw() const
-                {
-                   throw this;
-                }
-                
-                void «class_name»::Throw()
-                {
-                   throw this;
-                }
-                
-                «resolveSymbol("BTC::Commons::Core::Exception")» *«class_name»::IntClone() const
-                {
-                   return new «class_name»(GetSingleMsg());
-                }
             «ENDIF»
         '''
     }

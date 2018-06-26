@@ -33,7 +33,7 @@ class ReflectionGenerator extends BasicCppGenerator
                      ,ci.CArgRefNotNull< «resolveSymbol("BTC::Logging::API::LoggerFactory")» >( "loggerFactory" )
                      «IF paramBundle.projectType == ProjectType.PROXY»
                          ,ci.CArgRefNotNull< «resolveSymbol("BTC::ServiceComm::API::IClientEndpoint")» >( "localEndpoint" )
-                         ,ci.CArgRefOptional< «resolveSymbol("BTC::Commons::CoreExtras::UUID")» >( "serverServiceInstanceGuid" )
+                         ,ci.CArgRefOptional< «resolveSymbol("BTC::Commons::CoreExtras::Optional")»<«resolveSymbol("BTC::Commons::CoreExtras::UUID")»> >( "serverServiceInstanceGuid" )
                      «ELSEIF paramBundle.projectType == ProjectType.DISPATCHER»
                          ,ci.CArgRefNotNull< «resolveSymbol("BTC::ServiceComm::API::IServerEndpoint")» >( "serviceEndpoint" )
                          ,ci.CArgRef< «resolveSymbol("BTC::Commons::Core::AutoPtr")»<«resolve(interface_declaration, ProjectType.SERVICE_API)»> >( "dispatchee" )
