@@ -76,6 +76,6 @@ class ResolvedName
         if (fully_qualified)
             fullyQualifiedName
         else
-            return qualified_name.lastSegment
+            shortName
     }
 }
