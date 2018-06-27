@@ -16,6 +16,8 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import static com.btc.serviceidl.generator.java.BasicJavaSourceGenerator.*
 
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.idl.EventDeclaration
 
 @Accessors(NONE)
 class ImplementationStubGenerator
@@ -30,6 +32,7 @@ class ImplementationStubGenerator
     def generateImplementationStubBody(String impl_name, InterfaceDeclaration interface_declaration)
     {
         val api_name = typeResolver.resolve(interface_declaration)
+        val anonymous_event = interface_declaration.anonymousEvent
         '''
         public class «impl_name» implements «api_name» {
            
@@ -53,8 +56,27 @@ class ImplementationStubGenerator
                   «makeDefaultMethodStub»
                }
            «ENDFOR»
+
+           «IF anonymous_event !== null»
+               «outputAnonymousEvent(anonymous_event)»
+           «ENDIF»
         }
         '''
     }
+    
+    private def outputAnonymousEvent(EventDeclaration anonymous_event)
+    {
+
+        '''«IF anonymous_event.keys.empty»
+           /**
+              @see com.btc.cab.commons.IObservable#subscribe
+           */
+           @Override
+           public «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«typeResolver.resolve(anonymous_event.data)»> observer) throws Exception {
+              «makeDefaultMethodStub»
+           }
+        «ENDIF»'''
+    }
+    
 
 }

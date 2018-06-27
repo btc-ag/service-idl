@@ -50,7 +50,7 @@ class ProxyGenerator
             else
                 typeResolver.resolve("com.btc.cab.servicecomm.serialization.ISerializer")
         val deserializerType = if (basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3)
-                null
+                typeResolver.resolve("com.btc.cab.servicecomm.serialization.IMessageBufferDeserializer")
             else
                 typeResolver.resolve("com.btc.cab.servicecomm.serialization.IDeserializer")
 
@@ -108,6 +108,17 @@ class ProxyGenerator
                        
                        return new «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.CompositeDeserializer")»(deserializerMap);
                    }
+                   
+                   «IF anonymous_event !== null»
+                       «val eventTypeName = typeResolver.resolve(anonymous_event.data)»
+                       private class UnmarshalProtobufFunction implements «typeResolver.resolve("com.btc.cab.commons.lambda.ThrowingFunction")»<byte[], «eventTypeName»> {                   
+                            @Override
+                            public «eventTypeName» applyThrows(byte[] bytes) throws «typeResolver.resolve("com.google.protobuf.InvalidProtocolBufferException")» {
+                               «/* TODO generate this*/»
+                               «makeDefaultMethodStub»
+                            }
+                       }
+                   «ENDIF»
                «ENDIF»
                
                «FOR function : interface_declaration.functions SEPARATOR BasicJavaSourceGenerator.newLine»
@@ -219,8 +230,7 @@ class ProxyGenerator
     private def outputAnonymousEvent(EventDeclaration anonymous_event)
     {
         val eventKindType = typeResolver.resolve("com.btc.cab.servicecomm.api.IEventRegistry.EventKind")
-        val eventKindPublishSubscribe = if (basicJavaSourceGenerator.targetVersion ==
-                ServiceCommVersion.V0_3) "EVENTKINDPUBLISHSUBSCRIBE" else "EVENT_KIND_PUBLISH_SUBSCRIBE"
+        val eventKindPublishSubscribe = "EVENT_KIND_PUBLISH_SUBSCRIBE"
 
         '''«IF anonymous_event.keys.empty»
            «val event_type_name = typeResolver.resolve(anonymous_event.data)»
@@ -234,15 +244,16 @@ class ProxyGenerator
                     «eventKindType».«eventKindPublishSubscribe»,
                     «event_type_name».EventTypeGuid.toString());
               return «typeResolver.resolve("com.btc.cab.servicecomm.util.EventRegistryExtensions")».subscribe(_endpoint.getEventRegistry()
-                    .getSubscriberManager(), «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»_serializerDeserializer«ELSE»_deserializer«ENDIF»,
+                    .getSubscriberManager(), _deserializer,
                     «event_type_name».EventTypeGuid,
-                    «eventKindType».«eventKindPublishSubscribe», observer);
+                    «eventKindType».«eventKindPublishSubscribe», observer, «event_type_name».class);
            }
          «ELSE»
            /**
               @see ???
            */
-           public «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«typeResolver.resolve(anonymous_event.data)»> observer, Iterable<KeyType> keys) throws Exception {
+           public «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«typeResolver.resolve(anonymous_event.data)»> observer, Iterable<KeyType> keys)
+           {
               «makeDefaultMethodStub»
            }
         «ENDIF»'''
