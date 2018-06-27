@@ -217,30 +217,36 @@ class ProxyGenerator
     }
 
     private def outputAnonymousEvent(EventDeclaration anonymous_event)
-    '''«IF anonymous_event.keys.empty»
-       «val event_type_name = typeResolver.resolve(anonymous_event.data)»
-       /**
-          @see com.btc.cab.commons.IObservable#subscribe
-       */
-       @Override
-       public «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«typeResolver.resolve(anonymous_event.data)»> observer) throws Exception {
-          _endpoint.getEventRegistry().createEventRegistration(
-                «event_type_name».EventTypeGuid,
-                «typeResolver.resolve("com.btc.cab.servicecomm.api.EventKind")».EVENTKINDPUBLISHSUBSCRIBE,
-                «event_type_name».EventTypeGuid.toString());
-          return «typeResolver.resolve("com.btc.cab.servicecomm.util.EventRegistryExtensions")».subscribe(_endpoint.getEventRegistry()
-                .getSubscriberManager(), «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»_serializerDeserializer«ELSE»_deserializer«ENDIF»,
-                «event_type_name».EventTypeGuid,
-                EventKind.EVENTKINDPUBLISHSUBSCRIBE, observer);
-       }
-     «ELSE»
-       /**
-          @see ???
-       */
-       public «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«typeResolver.resolve(anonymous_event.data)»> observer, Iterable<KeyType> keys) throws Exception {
-          «makeDefaultMethodStub»
-       }
-    «ENDIF»'''
+    {
+        val eventKindType = if (basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3)
+                typeResolver.resolve("com.btc.cab.servicecomm.api.EventKind")
+            else
+                typeResolver.resolve("com.btc.cab.servicecomm.api.IEventRegistry.EventKind")
+        '''«IF anonymous_event.keys.empty»
+           «val event_type_name = typeResolver.resolve(anonymous_event.data)»
+           /**
+              @see com.btc.cab.commons.IObservable#subscribe
+           */
+           @Override
+           public «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«typeResolver.resolve(anonymous_event.data)»> observer) throws Exception {
+              _endpoint.getEventRegistry().createEventRegistration(
+                    «event_type_name».EventTypeGuid,
+                    «eventKindType».EVENTKINDPUBLISHSUBSCRIBE,
+                    «event_type_name».EventTypeGuid.toString());
+              return «typeResolver.resolve("com.btc.cab.servicecomm.util.EventRegistryExtensions")».subscribe(_endpoint.getEventRegistry()
+                    .getSubscriberManager(), «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»_serializerDeserializer«ELSE»_deserializer«ENDIF»,
+                    «event_type_name».EventTypeGuid,
+                    «eventKindType».EVENTKINDPUBLISHSUBSCRIBE, observer);
+           }
+         «ELSE»
+           /**
+              @see ???
+           */
+           public «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«typeResolver.resolve(anonymous_event.data)»> observer, Iterable<KeyType> keys) throws Exception {
+              «makeDefaultMethodStub»
+           }
+        «ENDIF»'''
+    }
 
     private def String handleOutputParameter(ParameterElement element, String source_name, String target_name)
     {
