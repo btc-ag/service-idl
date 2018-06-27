@@ -65,7 +65,7 @@ class ResolvedName
     def getNestingLevel()
     {
         // this relies on the usual Java naming conventions (PascalCase for classes, lower_snake_case for package names)
-        qualified_name.segments.reverseView.takeWhile[Character.isUpperCase(it.charAt(0))].size
+        qualified_name.segments.reverseView.takeWhile[it.empty || Character.isUpperCase(it.charAt(0))].size
     }
 
     /**
