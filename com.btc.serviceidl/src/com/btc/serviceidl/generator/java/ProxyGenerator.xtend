@@ -218,10 +218,10 @@ class ProxyGenerator
 
     private def outputAnonymousEvent(EventDeclaration anonymous_event)
     {
-        val eventKindType = if (basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3)
-                typeResolver.resolve("com.btc.cab.servicecomm.api.EventKind")
-            else
-                typeResolver.resolve("com.btc.cab.servicecomm.api.IEventRegistry.EventKind")
+        val eventKindType = typeResolver.resolve("com.btc.cab.servicecomm.api.IEventRegistry.EventKind")
+        val eventKindPublishSubscribe = if (basicJavaSourceGenerator.targetVersion ==
+                ServiceCommVersion.V0_3) "EVENTKINDPUBLISHSUBSCRIBE" else "EVENT_KIND_PUBLISH_SUBSCRIBE"
+
         '''«IF anonymous_event.keys.empty»
            «val event_type_name = typeResolver.resolve(anonymous_event.data)»
            /**
@@ -231,12 +231,12 @@ class ProxyGenerator
            public «typeResolver.resolve(JavaClassNames.CLOSEABLE)» subscribe(«typeResolver.resolve(JavaClassNames.OBSERVER)»<«typeResolver.resolve(anonymous_event.data)»> observer) throws Exception {
               _endpoint.getEventRegistry().createEventRegistration(
                     «event_type_name».EventTypeGuid,
-                    «eventKindType».EVENTKINDPUBLISHSUBSCRIBE,
+                    «eventKindType».«eventKindPublishSubscribe»,
                     «event_type_name».EventTypeGuid.toString());
               return «typeResolver.resolve("com.btc.cab.servicecomm.util.EventRegistryExtensions")».subscribe(_endpoint.getEventRegistry()
                     .getSubscriberManager(), «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»_serializerDeserializer«ELSE»_deserializer«ENDIF»,
                     «event_type_name».EventTypeGuid,
-                    «eventKindType».EVENTKINDPUBLISHSUBSCRIBE, observer);
+                    «eventKindType».«eventKindPublishSubscribe», observer);
            }
          «ELSE»
            /**
