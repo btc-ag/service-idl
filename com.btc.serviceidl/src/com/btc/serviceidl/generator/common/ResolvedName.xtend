@@ -16,8 +16,8 @@
  */
 package com.btc.serviceidl.generator.common
 
-import org.eclipse.xtext.naming.QualifiedName
 import java.util.regex.Pattern
+import org.eclipse.xtext.naming.QualifiedName
 
 class ResolvedName
 {
@@ -54,12 +54,18 @@ class ResolvedName
 
     def String getShortName()
     {
-        qualified_name.lastSegment
+        qualified_name.skipFirst(qualified_name.segmentCount - nestingLevel).toString
     }
 
     def String getNamespace()
     {
-        qualified_name.skipLast(1).toString
+        qualified_name.skipLast(nestingLevel).toString
+    }
+
+    def getNestingLevel()
+    {
+        // this relies on the usual Java naming conventions (PascalCase for classes, lower_snake_case for package names)
+        qualified_name.segments.reverseView.takeWhile[Character.isUpperCase(it.charAt(0))].size
     }
 
     /**
