@@ -44,10 +44,11 @@ class ProxyGenerator
     {
         val anonymous_event = interface_declaration.anonymousEvent
         val api_name = typeResolver.resolve(interface_declaration)
-        
-        val serializerType = if (basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3) typeResolver.resolve(
-                "com.btc.cab.servicecomm.serialization.IMessageBufferSerializer") else typeResolver.resolve(
-                "com.btc.cab.servicecomm.serialization.ISerializer")
+
+        val serializerType = if (basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3)
+                typeResolver.resolve("com.btc.cab.servicecomm.serialization.IMessageBufferSerializer")
+            else
+                typeResolver.resolve("com.btc.cab.servicecomm.serialization.ISerializer")
         val deserializerType = if (basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3)
                 null
             else
@@ -60,7 +61,7 @@ class ProxyGenerator
                private final «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceReference")» _serviceReference;
                private final «serializerType» _serializer;
                «IF deserializerType !== null»
-               private final «deserializerType» _deserializer;
+                   private final «deserializerType» _deserializer;
                «ENDIF»
                
                public «class_name»(IClientEndpoint endpoint) throws Exception {
@@ -75,7 +76,7 @@ class ProxyGenerator
                     «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»)«ENDIF»
                     ;
                    «IF deserializerType !== null»
-                   _deserializer = initializeDeserializer();
+                       _deserializer = initializeDeserializer();
                    «ENDIF»
             
                   // ServiceFaultHandler
@@ -85,28 +86,28 @@ class ProxyGenerator
                }
                
                «IF deserializerType !== null»
-               private «deserializerType» initializeDeserializer() {
-                   «deserializerType» dummyDeserializer =
-                       new «deserializerType»() {
-                         @Override
-                         public <T> T deserialize(byte[] inputStream, Class<T> deserializeClass) {
-                           return null;
-                         }
-                       };
-                   «typeResolver.resolve("java.util.Map")»<Class<?>, «deserializerType»> deserializerMap = new «typeResolver.resolve("java.util.HashMap")»<>();
-                   deserializerMap.put(«resolveProtobuf(typeResolver, interface_declaration, Optional.of(ProtobufType.REQUEST))».class, dummyDeserializer);
-                   deserializerMap.put(«resolveProtobuf(typeResolver, interface_declaration, Optional.of(ProtobufType.RESPONSE))».class, dummyDeserializer);
-               
-                   «IF anonymous_event !== null»
-                       «val eventTypeName = typeResolver.resolve(anonymous_event.data)»
-                       «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.MarshallingDeserializer")»<«eventTypeName», byte[]> netProtoBufStream =
-                           new MarshallingDeserializer<>(new UnmarshalProtobufFunction());
+                   private «deserializerType» initializeDeserializer() {
+                       «deserializerType» dummyDeserializer =
+                           new «deserializerType»() {
+                             @Override
+                             public <T> T deserialize(byte[] inputStream, Class<T> deserializeClass) {
+                               return null;
+                             }
+                           };
+                       «typeResolver.resolve("java.util.Map")»<Class<?>, «deserializerType»> deserializerMap = new «typeResolver.resolve("java.util.HashMap")»<>();
+                       deserializerMap.put(«resolveProtobuf(typeResolver, interface_declaration, Optional.of(ProtobufType.REQUEST))».class, dummyDeserializer);
+                       deserializerMap.put(«resolveProtobuf(typeResolver, interface_declaration, Optional.of(ProtobufType.RESPONSE))».class, dummyDeserializer);
+                   
+                       «IF anonymous_event !== null»
+                           «val eventTypeName = typeResolver.resolve(anonymous_event.data)»
+                           «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.MarshallingDeserializer")»<«eventTypeName», byte[]> netProtoBufStream =
+                               new MarshallingDeserializer<>(new UnmarshalProtobufFunction());
+                           
+                           deserializerMap.put(«eventTypeName».class, netProtoBufStream);
+                       «ENDIF»
                        
-                       deserializerMap.put(«eventTypeName».class, netProtoBufStream);
-                   «ENDIF»
-                              
-                   return new «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.CompositeDeserializer")»(deserializerMap);
-                 }
+                       return new «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.CompositeDeserializer")»(deserializerMap);
+                   }
                «ENDIF»
                
                «FOR function : interface_declaration.functions SEPARATOR BasicJavaSourceGenerator.newLine»
@@ -206,9 +207,9 @@ class ProxyGenerator
                          return null; // it's a Void!
                      «ELSE»
                      «return_type» result = «IF use_codec»(«return_type») «codec».decode(«ENDIF»«IF is_byte || is_short || is_char»(«IF is_byte»byte«ELSEIF is_char»char«ELSE»short«ENDIF») «ENDIF»«response_name».get«protobuf_function_name»()«IF use_codec»)«ENDIF»;
-               «ENDIF»
-               «IF !is_void»return result;«ENDIF»
-                  };
+              «ENDIF»
+              «IF !is_void»return result;«ENDIF»
+             };
             
                «IF !is_void || !is_sync»return «ENDIF»«typeResolver.resolve("com.btc.cab.commons.helper.AsyncHelper")».createAndRunFutureTask(returnCallable)«IF is_sync».get()«ENDIF»;
             }
