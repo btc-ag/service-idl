@@ -176,8 +176,7 @@ class ProtobufUtil
         typeResolver.addLibraryDependency("BTC.CAB.ServiceComm.Default.lib")
 
         var namespace = GeneratorUtil.getTransformedModuleName(
-            ParameterBundle.createBuilder(com.btc.serviceidl.util.Util.getModuleStack(
-                com.btc.serviceidl.util.Util.getScopeDeterminant(container))).with(ProjectType.PROTOBUF).build,
+            ParameterBundle.createBuilder(container.scopeDeterminant.moduleStack).with(ProjectType.PROTOBUF).build,
             ArtifactNature.CPP,
             TransformType.NAMESPACE
         )
