@@ -37,6 +37,10 @@ class DispatcherGenerator extends BasicCppGenerator
         val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
         val protobuf_request_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
         val protobuf_response_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
+        val moduleNamespace = Optional.of(
+            GeneratorUtil.getTransformedModuleName(
+                new ParameterBundle.Builder(paramBundle).with(ProjectType.SERVICE_API).build, ArtifactNature.CPP,
+                TransformType.NAMESPACE))
 
         '''
             «class_name.shortName»::«class_name.shortName»
@@ -48,7 +52,7 @@ class DispatcherGenerator extends BasicCppGenerator
             ) :
             «resolveSymbol("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
             , «interface_declaration.asBaseName»( serviceEndpoint.GetServiceFaultHandlerManagerFactory(), «resolveSymbol("std::move")»(dispatchee) )
-            { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.getTransformedModuleName(new ParameterBundle.Builder(paramBundle).with(ProjectType.SERVICE_API).build, ArtifactNature.CPP, TransformType.NAMESPACE)))»( GetServiceFaultHandlerManager() ); }
+            { «getRegisterServerFaults(interface_declaration, moduleNamespace)»( GetServiceFaultHandlerManager() ); }
             
             «class_name.shortName»::«class_name.shortName»
             (
@@ -58,7 +62,7 @@ class DispatcherGenerator extends BasicCppGenerator
             ) :
             «resolveSymbol("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
             , «interface_declaration.asBaseName»( serviceFaultHandlerManagerFactory, «resolveSymbol("std::move")»(dispatchee) )
-            { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.getTransformedModuleName(new ParameterBundle.Builder(paramBundle).with(ProjectType.SERVICE_API).build, ArtifactNature.CPP, TransformType.NAMESPACE)))»( GetServiceFaultHandlerManager() ); }
+            { «getRegisterServerFaults(interface_declaration, moduleNamespace)»( GetServiceFaultHandlerManager() ); }
             
             «generateCppDestructor(interface_declaration)»
             
