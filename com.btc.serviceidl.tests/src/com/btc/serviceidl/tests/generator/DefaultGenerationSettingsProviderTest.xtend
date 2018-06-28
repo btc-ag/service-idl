@@ -13,13 +13,14 @@ package com.btc.serviceidl.tests.generator
 import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
 import com.btc.serviceidl.generator.Main
 import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.CppConstants
+import com.btc.serviceidl.generator.cpp.ServiceCommVersion
 import com.google.common.collect.ImmutableSet
 import java.util.HashMap
 import org.junit.Test
 
 import static org.junit.Assert.*
-import com.btc.serviceidl.generator.cpp.ServiceCommVersion
 
 class DefaultGenerationSettingsProviderTest
 {
@@ -59,16 +60,17 @@ class DefaultGenerationSettingsProviderTest
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
         Main.configureGenerationSettings(defaultGenerationSettingsProvider,
             Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT,
-            #{CppConstants.SERVICECOMM_VERSION_KIND -> ServiceCommVersion.V0_10.label}.entrySet)
+            #{CppConstants.SERVICECOMM_VERSION_KIND -> ServiceCommVersion.V0_10.label}.entrySet, ArtifactNature.values,
+            ProjectType.values)
         assertEquals(ServiceCommVersion.V0_10.label,
             defaultGenerationSettingsProvider.getTargetVersion(CppConstants.SERVICECOMM_VERSION_KIND))
     }
 
     @Test(expected=IllegalArgumentException)
-    def void testConfigureUnknownProjectSetFails()
+    def void testConfigureUnknownProjectSystemFails()
     {
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
         Main.configureGenerationSettings(defaultGenerationSettingsProvider, "foo",
-            new HashMap<String, String>().entrySet)
+            new HashMap<String, String>().entrySet, ArtifactNature.values, ProjectType.values)
     }
 }

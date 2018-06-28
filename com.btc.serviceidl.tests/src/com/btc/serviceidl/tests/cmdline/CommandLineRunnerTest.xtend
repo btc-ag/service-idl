@@ -129,6 +129,26 @@ class CommandLineRunnerTest
     }
 
     @Test
+    def void testWithValidInputInProcessCppProjectSystemCmake()
+    {
+        val file = new File(TEST_DATA_DIR + "base.idl")
+        val path = Files.createTempDirectory("test-gen")
+        assertEquals(0, Main.mainBackend(
+            Arrays.asList(file.absolutePath, "-cppOutputPath", path.toString + "/cpp", "-cppProjectSystem", "cmake")))
+        assertExpectedFiles(
+            #["cpp/CMakeLists.txt", "cpp/conanfile.py", "cpp/modules/BTC/Commons/Core/Common/build/CMakeLists.txt",
+                "cpp/modules/BTC/Commons/Core/Common/build/make.cmakeset",
+                "cpp/modules/BTC/Commons/Core/Common/include/Types.h",
+                "cpp/modules/BTC/Commons/Core/Common/include/btc_commons_core_common_export.h",
+                "cpp/modules/BTC/Commons/Core/Common/source/Types.cpp",
+                "cpp/modules/BTC/Commons/Core/Protobuf/build/CMakeLists.txt",
+                "cpp/modules/BTC/Commons/Core/Protobuf/build/make.cmakeset",
+                "cpp/modules/BTC/Commons/Core/Protobuf/gen/Types.proto",
+                "cpp/modules/BTC/Commons/Core/Protobuf/include/TypesCodec.h",
+                "cpp/modules/BTC/Commons/Core/Protobuf/include/btc_commons_core_protobuf_export.h"], path)
+    }
+
+    @Test
     def void testWithValidInputInProcessJavaOnly()
     {
         val file = new File(TEST_DATA_DIR + "base.idl")
@@ -140,6 +160,30 @@ class CommandLineRunnerTest
                 "java/com.btc.commons.core/src/main/java/com/btc/commons/core/common/ServiceFaultHandlerFactory.java",
                 "java/com.btc.commons.core/src/main/java/com/btc/commons/core/protobuf/TypesCodec.java",
                 "java/com.btc.commons.core/src/main/proto/Types.proto"], path)
+    }
+
+    @Test
+    def void testWithValidInputSubsetInProcess()
+    {
+        val file = new File(TEST_DATA_DIR + "failable.idl")
+        val path = Files.createTempDirectory("test-gen")
+        assertEquals(0, Main.mainBackend(#[file.absolutePath, "-outputPath", path.toString, "-projectSet", "api"]))
+        assertExpectedFiles(#[
+            "cpp/modules/BTC/Commons/Core/ServiceAPI/BTC.Commons.Core.ServiceAPI.vcxproj",
+            "cpp/modules/BTC/Commons/Core/ServiceAPI/BTC.Commons.Core.ServiceAPI.vcxproj.filters",
+            "cpp/modules/BTC/Commons/Core/ServiceAPI/include/IFoo.h",
+            "cpp/modules/BTC/Commons/Core/ServiceAPI/include/btc_commons_core_serviceapi_export.h",
+            "cpp/modules/BTC/Commons/Core/ServiceAPI/source/Dependencies.cpp",
+            "cpp/modules/BTC/Commons/Core/ServiceAPI/source/IFoo.cpp",
+            "dotnet/BTC/Commons/Core/ServiceAPI/BTC.Commons.Core.ServiceAPI.csproj",
+            "dotnet/BTC/Commons/Core/ServiceAPI/FooConst.cs",
+            "dotnet/BTC/Commons/Core/ServiceAPI/IFoo.cs",
+            "dotnet/BTC/Commons/Core/ServiceAPI/Properties/AssemblyInfo.cs",
+            "dotnet/failable.sln",
+            "java/com.btc.commons.core.foo/pom.xml",
+            "java/com.btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/serviceapi/FooServiceFaultHandlerFactory.java",
+            "java/com.btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/serviceapi/IFoo.java"
+        ], path)
     }
 
     @Test
