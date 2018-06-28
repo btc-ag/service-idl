@@ -56,7 +56,7 @@ class ProtobufUtilTest
         idl = parseHelper.parse("module Foo { struct Bar { string x }; interface Bar { struct Bar { string y }; } }");
 
         dependencies = new HashSet<MavenDependency>()
-        val paramBundle = new ParameterBundle.Builder().reset(ImmutableList.of(fooModule)).build()
+        val paramBundle = new ParameterBundle.Builder().with(ImmutableList.of(fooModule)).build()
         typeResolver = new TypeResolver(qualifiedNameProvider, paramBundle, dependencies)
     }
 
@@ -84,7 +84,7 @@ class ProtobufUtilTest
         idl = parseHelper.parse("module Foo { interface Bar { struct Bar { string x }; }");
 
         dependencies = new HashSet<MavenDependency>()
-        val paramBundle = new ParameterBundle.Builder().reset(ImmutableList.of(fooModule)).build()
+        val paramBundle = new ParameterBundle.Builder().with(ImmutableList.of(fooModule)).build()
         typeResolver = new TypeResolver(qualifiedNameProvider, paramBundle, dependencies)
 
         val result = ProtobufUtil.resolveProtobuf(typeResolver, fooModule.getModuleComponents().filter(
@@ -100,7 +100,7 @@ class ProtobufUtilTest
         idl = parseHelper.parse("module Foo { interface Bar { struct Bar { string x }; void MyRequest(int i); }");
 
         dependencies = new HashSet<MavenDependency>()
-        val paramBundle = new ParameterBundle.Builder().reset(ImmutableList.of(fooModule)).build()
+        val paramBundle = new ParameterBundle.Builder().with(ImmutableList.of(fooModule)).build()
         typeResolver = new TypeResolver(qualifiedNameProvider, paramBundle, dependencies)
 
         val result = ProtobufUtil.resolveProtobuf(typeResolver, fooModule.getModuleComponents().filter(

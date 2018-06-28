@@ -84,7 +84,7 @@ abstract class BasicProjectGenerator
       if (pathType == PathType.FULL)
       {
          val tempParameterBundleBuilder = new ParameterBundle.Builder()
-         tempParameterBundleBuilder.reset(Util.getModuleStack(container))
+         tempParameterBundleBuilder.with(Util.getModuleStack(container))
          
          result = result.append(GeneratorUtil.getTransformedModuleName(tempParameterBundleBuilder.build, ArtifactNature.JAVA, TransformType.FILE_SYSTEM))
          if (container instanceof InterfaceDeclaration) result = result.append(container.name.toLowerCase)

@@ -188,7 +188,7 @@ class TypeResolver
     {
         project_references.add(
             projectSet.resolve(
-                new ParameterBundle.Builder().reset(referenced_object.moduleStack).with(project_type).build))
+                new ParameterBundle.Builder().with(referenced_object.moduleStack).with(project_type).build))
     }
 
     def getPrimitiveTypeName(PrimitiveType item)
