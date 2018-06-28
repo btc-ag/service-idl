@@ -65,7 +65,7 @@ class ProtobufGenerator
    private var IQualifiedNameProvider qualified_name_provider
    private var IScopeProvider scope_provider
    
-   private var param_bundle = new ParameterBundle.Builder()
+   private var ParameterBundle param_bundle
    
    val referenced_files = new HashSet<String>
    val generated_artifacts = new HashMap<EObject, String>
@@ -98,8 +98,7 @@ class ProtobufGenerator
       // handle all interfaces
       for (interface_declaration : resource.allContents.filter(InterfaceDeclaration).toIterable)
       {
-         param_bundle = ParameterBundle.createBuilder(Util.getModuleStack(interface_declaration))
-         param_bundle.reset(ProjectType.PROTOBUF)
+         param_bundle = ParameterBundle.createBuilder(Util.getModuleStack(interface_declaration)).with(ProjectType.PROTOBUF).build
          val artifact_name = interface_declaration.name
 
          // TODO why is the proto file generated for each language?
@@ -115,8 +114,7 @@ class ProtobufGenerator
          var module_contents = module.eContents.filter( [e | !(e instanceof ModuleDeclaration || e instanceof InterfaceDeclaration)])
          if ( !module_contents.empty )
          {
-            param_bundle = ParameterBundle.createBuilder(Util.getModuleStack(module))
-            param_bundle.reset(ProjectType.PROTOBUF)
+            param_bundle = ParameterBundle.createBuilder(Util.getModuleStack(module)).with(ProjectType.PROTOBUF).build
             val artifact_name = Constants.FILE_NAME_TYPES
             
             for (language : languages) 
@@ -148,7 +146,6 @@ class ProtobufGenerator
    
    private def void generateProtobufFile(ArtifactNature an, EObject container, String artifact_name, String file_content)
    {
-      param_bundle.reset(ProjectType.PROTOBUF)
       var project_path = "";
       // TODO this depends on the PRINS directory structure
       if (an == ArtifactNature.CPP)
@@ -156,7 +153,7 @@ class ProtobufGenerator
       if (an == ArtifactNature.JAVA) // special directory structure according to Maven conventions
          project_path += getJavaProtoLocation(container)
       else
-         project_path += GeneratorUtil.getTransformedModuleName(param_bundle.build, an, TransformType.FILE_SYSTEM)
+         project_path += GeneratorUtil.getTransformedModuleName(param_bundle, an, TransformType.FILE_SYSTEM)
          + Constants.SEPARATOR_FILE
          + Constants.PROTOBUF_GENERATION_DIRECTORY_NAME
          + Constants.SEPARATOR_FILE
@@ -277,7 +274,7 @@ class ProtobufGenerator
       «IF artifact_nature == ArtifactNature.JAVA»
          package «MavenResolver.resolvePackage(container, Optional.of(ProjectType.PROTOBUF))»;         
       «ELSE»
-         package «GeneratorUtil.getTransformedModuleName(param_bundle.build, artifact_nature, TransformType.PACKAGE)»;
+         package «GeneratorUtil.getTransformedModuleName(param_bundle, artifact_nature, TransformType.PACKAGE)»;
       «ENDIF»
       '''
    }
@@ -546,7 +543,7 @@ class ProtobufGenerator
          if (artifactNature != ArtifactNature.JAVA)
          {
             referenced_project = GeneratorUtil.getTransformedModuleName(temp_bundle, artifactNature, TransformType.PACKAGE)
-            current_project = GeneratorUtil.getTransformedModuleName(param_bundle.with(ProjectType.PROTOBUF).build, artifactNature, TransformType.PACKAGE)
+            current_project = GeneratorUtil.getTransformedModuleName(param_bundle, artifactNature, TransformType.PACKAGE)
          }
          else
          {
