@@ -103,8 +103,7 @@ class BasicCppGenerator
 
     def dispatch String toText(ParameterElement item, EObject context)
     {
-        val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(item.paramType)
-        if (is_sequence)
+        if (item.paramType.isSequenceType)
             '''«toText(item.paramType, context.eContainer)» «IF item.direction == ParameterDirection.PARAM_OUT»&«ENDIF»«item.paramName»'''
         else
             '''«toText(item.paramType, context.eContainer)»«IF item.direction == ParameterDirection.PARAM_IN» const«ENDIF» &«item.paramName»'''
@@ -161,7 +160,7 @@ class BasicCppGenerator
         if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
             context instanceof StructDeclaration)
         {
-            val related_event = com.btc.serviceidl.util.Util.getRelatedEvent(item)
+            val related_event = item.relatedEvent
             val makeCompareOperator = item.needsCompareOperator
 
             '''
