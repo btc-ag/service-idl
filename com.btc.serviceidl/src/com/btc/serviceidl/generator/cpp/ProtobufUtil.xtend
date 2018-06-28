@@ -162,7 +162,7 @@ class ProtobufUtil
         resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
         GeneratorUtil.getTransformedModuleName(
-            new ParameterBundle.Builder().reset(moduleStack).with(ProjectType.PROTOBUF).build, ArtifactNature.CPP,
+            new ParameterBundle.Builder().with(moduleStack).with(ProjectType.PROTOBUF).build, ArtifactNature.CPP,
             TransformType.NAMESPACE) + TransformType.NAMESPACE.separator + codec_name
     }
 

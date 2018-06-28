@@ -40,7 +40,7 @@ class ParameterBundle
             this.projectType = bundle.projectType
         }
 
-        def Builder reset(Iterable<ModuleDeclaration> element)
+        def Builder with(Iterable<ModuleDeclaration> element)
         {
             this.moduleStack = ImmutableList.copyOf(element)
             this
@@ -69,7 +69,7 @@ class ParameterBundle
     static def Builder createBuilder(Iterable<ModuleDeclaration> moduleStack)
     {
         val builder = new Builder
-        builder.reset(moduleStack)
+        builder.with(moduleStack)
         return builder
     }
 }

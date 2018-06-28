@@ -256,7 +256,7 @@ class Util
         typeResolver.resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
         GeneratorUtil.getTransformedModuleName(
-            new ParameterBundle.Builder().reset(com.btc.serviceidl.util.Util.getModuleStack(ultimate_type)).with(
+            new ParameterBundle.Builder().with(com.btc.serviceidl.util.Util.getModuleStack(ultimate_type)).with(
                 ProjectType.PROTOBUF).build, ArtifactNature.DOTNET, TransformType.PACKAGE) +
             TransformType.PACKAGE.separator + codec_name
     }

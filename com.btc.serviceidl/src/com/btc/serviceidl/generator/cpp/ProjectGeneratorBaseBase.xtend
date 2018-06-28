@@ -80,7 +80,7 @@ class ProjectGeneratorBaseBase
         this.smart_pointer_map = smart_pointer_map
         this.module = module
 
-        this.param_bundle = new ParameterBundle.Builder().with(type).reset(module.moduleStack).build
+        this.param_bundle = new ParameterBundle.Builder().with(type).with(module.moduleStack).build
     }
 
     protected def createTypeResolver()

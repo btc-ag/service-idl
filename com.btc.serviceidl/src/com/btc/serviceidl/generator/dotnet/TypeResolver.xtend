@@ -157,7 +157,7 @@ class TypeResolver
         val module_stack = com.btc.serviceidl.util.Util.getModuleStack(referenced_object)
         var project_path = ""
 
-        val temp_param = new ParameterBundle.Builder().reset(module_stack).with(project_type).build
+        val temp_param = new ParameterBundle.Builder().with(module_stack).with(project_type).build
 
         val project_name = vsSolution.getCsprojName(temp_param)
 
