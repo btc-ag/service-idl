@@ -102,7 +102,9 @@ class DotNetGenerator
             generateSolutionFile
 
         // TODO generate only either NuGet or Paket file
-        fileSystemAccess.generateFile("paket.dependencies", ArtifactNature.DOTNET.label, generatePaketDependencies)
+        val paketDependenciesContent = generatePaketDependencies
+        if (paketDependenciesContent !== null)
+            fileSystemAccess.generateFile("paket.dependencies", ArtifactNature.DOTNET.label, paketDependenciesContent)
 
     }
    
