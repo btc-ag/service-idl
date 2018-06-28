@@ -55,7 +55,7 @@ class ProjectGeneratorBaseBase
     val Map<String, Set<IProjectReference>> protobuf_project_references
     val Map<EObject, Collection<EObject>> smart_pointer_map
 
-    private var ParameterBundle param_bundle
+    var ParameterBundle param_bundle
     val ModuleDeclaration module
 
     // per-project global variables

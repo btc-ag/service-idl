@@ -68,10 +68,10 @@ class MavenDependency
     @Accessors(PUBLIC_GETTER)
     static class Builder
     {
-        private var String groupId
-        private var String artifactId
-        private var String version
-        private var String scope
+        var String groupId
+        var String artifactId
+        var String version
+        var String scope
 
         def Builder groupId(String value)
         {

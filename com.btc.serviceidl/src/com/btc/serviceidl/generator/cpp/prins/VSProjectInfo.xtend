@@ -27,9 +27,9 @@ class VSProjectInfo
 
     static class Builder
     {
-        private var String project_name
-        private var String project_guid
-        private var String project_path
+        var String project_name
+        var String project_guid
+        var String project_path
 
         def Builder setName(String s)
         {
