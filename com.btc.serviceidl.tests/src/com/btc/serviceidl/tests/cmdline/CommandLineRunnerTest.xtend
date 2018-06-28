@@ -166,6 +166,7 @@ class CommandLineRunnerTest
         ], path)
     }
 
+    // TODO this test case no longer produces any warning
     @Test
     def void testWithValidInputWithWarningsInProcess()
     {
