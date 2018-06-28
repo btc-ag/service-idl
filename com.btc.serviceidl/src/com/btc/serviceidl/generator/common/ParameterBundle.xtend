@@ -51,11 +51,6 @@ class ParameterBundle
             this
         }
 
-        def void reset(ProjectType element)
-        {
-            masterData = new ParameterBundle(if (masterData !== null) masterData.moduleStack else null, element)
-        }
-
         def Builder with(ProjectType element)
         {
             projectType = Optional.of(element)

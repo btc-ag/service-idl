@@ -161,11 +161,9 @@ class ProtobufUtil
 
         resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
-        val temp_param = new ParameterBundle.Builder
-        temp_param.reset(moduleStack)
-        temp_param.reset(ProjectType.PROTOBUF)
-        GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.CPP, TransformType.NAMESPACE) +
-            TransformType.NAMESPACE.separator + codec_name
+        GeneratorUtil.getTransformedModuleName(
+            new ParameterBundle.Builder().reset(moduleStack).with(ProjectType.PROTOBUF).build, ArtifactNature.CPP,
+            TransformType.NAMESPACE) + TransformType.NAMESPACE.separator + codec_name
     }
 
     static def String resolveFailableProtobufType(extension TypeResolver typeResolver, EObject element,

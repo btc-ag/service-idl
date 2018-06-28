@@ -80,10 +80,7 @@ class ProjectGeneratorBaseBase
         this.smart_pointer_map = smart_pointer_map
         this.module = module
 
-        val param_bundle_builder = new ParameterBundle.Builder
-        param_bundle_builder.reset(type)
-        param_bundle_builder.reset(module.moduleStack)
-        this.param_bundle = param_bundle_builder.build
+        this.param_bundle = new ParameterBundle.Builder().with(type).reset(module.moduleStack).build
     }
 
     protected def createTypeResolver()
