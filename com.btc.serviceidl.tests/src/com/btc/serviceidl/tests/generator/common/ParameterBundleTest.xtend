@@ -13,7 +13,6 @@ package com.btc.serviceidl.tests.generator.common
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.IdlFactory
-import java.util.ArrayDeque
 import org.junit.Test
 
 import static org.junit.Assert.*
@@ -29,10 +28,8 @@ class ParameterBundleTest
         val moduleDeclarationB = IdlFactory.eINSTANCE.createModuleDeclaration
         moduleDeclarationB.name = "b"
 
-        val parameterBundle1 = new ParameterBundle(new ArrayDeque(#[moduleDeclarationA, moduleDeclarationB]),
-            ProjectType.SERVICE_API)
-        val parameterBundle2 = new ParameterBundle(new ArrayDeque(#[moduleDeclarationA, moduleDeclarationB]),
-            ProjectType.SERVICE_API)
+        val parameterBundle1 = new ParameterBundle(#[moduleDeclarationA, moduleDeclarationB], ProjectType.SERVICE_API)
+        val parameterBundle2 = new ParameterBundle(#[moduleDeclarationA, moduleDeclarationB], ProjectType.SERVICE_API)
 
         assertEquals(#{parameterBundle1}, #{parameterBundle1, parameterBundle2})
     }
