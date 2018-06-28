@@ -41,7 +41,7 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
     private static class SourceGenerationStrategy implements ISourceGenerationStrategy
     {
 
-        def override String generateProjectSource(BasicCppGenerator basicCppGenerator,
+        override String generateProjectSource(BasicCppGenerator basicCppGenerator,
             InterfaceDeclaration interface_declaration)
         {
             val project_type = basicCppGenerator.paramBundle.projectType
@@ -81,7 +81,7 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
                 if (file_tail.trim.empty) Optional.empty else Optional.of(file_tail))
         }
 
-        def override String generateProjectHeader(BasicCppGenerator basicCppGenerator,
+        override String generateProjectHeader(BasicCppGenerator basicCppGenerator,
             IModuleStructureStrategy moduleStructureStrategy, InterfaceDeclaration interface_declaration,
             String export_header)
         {

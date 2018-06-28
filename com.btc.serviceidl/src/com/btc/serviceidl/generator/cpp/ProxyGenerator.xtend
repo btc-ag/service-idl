@@ -110,7 +110,7 @@ class ProxyGenerator extends BasicCppGenerator {
       '''
     }
     
-    def override generateFunctionBody(InterfaceDeclaration interface_declaration, FunctionDeclaration function)
+    override generateFunctionBody(InterfaceDeclaration interface_declaration, FunctionDeclaration function)
     {
         val protobuf_request_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
         val protobuf_response_message= typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)

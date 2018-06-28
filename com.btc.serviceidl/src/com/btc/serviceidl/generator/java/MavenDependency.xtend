@@ -33,7 +33,7 @@ class MavenDependency
         scope = builder.scope
     }
 
-    def override String toString()
+    override String toString()
     {
         val string_builder = new StringBuilder
         string_builder.append("groupId:")
@@ -50,7 +50,7 @@ class MavenDependency
         string_builder.toString
     }
 
-    def override boolean equals(Object e)
+    override boolean equals(Object e)
     {
         if (e !== null && e instanceof MavenDependency)
         {
@@ -60,7 +60,7 @@ class MavenDependency
         return false
     }
 
-    def override int hashCode()
+    override int hashCode()
     {
         return toString.hashCode
     }

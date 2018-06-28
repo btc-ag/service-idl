@@ -65,7 +65,7 @@ class ResolvedName
     /**
      * By default, return the fully qualified name.
      */
-    def override String toString()
+    override String toString()
     {
         if (fully_qualified)
             fullyQualifiedName
