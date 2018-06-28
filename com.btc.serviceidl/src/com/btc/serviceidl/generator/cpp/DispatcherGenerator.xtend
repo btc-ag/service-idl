@@ -98,10 +98,10 @@ class DispatcherGenerator extends BasicCppGenerator
                       auto const& concreteRequest( protoBufRequest->«protobuf_request_method»() );
                       «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
                           «IF GeneratorUtil.useCodec(param.paramType, ArtifactNature.CPP)»
-                              «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
-                                  «val ulimate_type = com.btc.serviceidl.util.Util.getUltimateType(param.paramType)»
-                                  «val is_uuid = com.btc.serviceidl.util.Util.isUUIDType(ulimate_type)»
-                                  «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
+                              «IF param.paramType.isSequenceType»
+                                  «val ulimate_type = param.paramType.ultimateType»
+                                  «val is_uuid = ulimate_type.isUUIDType»
+                                  «val is_failable = param.paramType.isFailable»
                                   auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, ulimate_type, is_failable, Optional.of(interface_declaration))»::Decode«IF is_failable»Failable«ELSEIF is_uuid»UUID«ENDIF»
                                      «IF !is_uuid || is_failable»
                                          «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.REQUEST).fullyQualifiedName»
@@ -109,7 +109,7 @@ class DispatcherGenerator extends BasicCppGenerator
                                      «ENDIF»
                                      (concreteRequest.«param.paramName.asCppProtobufName»()) );
                               «ELSE»
-                                  auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Decode«IF com.btc.serviceidl.util.Util.isUUIDType(param.paramType)»UUID«ENDIF»(concreteRequest.«param.paramName.asCppProtobufName»()) );
+                                  auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Decode«IF param.paramType.isUUIDType»UUID«ENDIF»(concreteRequest.«param.paramName.asCppProtobufName»()) );
                               «ENDIF»
                           «ELSE»
                               auto «param.paramName»( concreteRequest.«param.paramName.asCppProtobufName»() );
@@ -120,9 +120,9 @@ class DispatcherGenerator extends BasicCppGenerator
                       «IF !output_parameters.empty»
                           // prepare [out] parameters
                           «FOR param : output_parameters»
-                              «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
-                                  «val type_name = resolve(com.btc.serviceidl.util.Util.getUltimateType(param.paramType))»
-                                  «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
+                              «IF param.paramType.isSequenceType»
+                                  «val type_name = resolve(param.paramType.ultimateType)»
+                                  «val is_failable = param.paramType.isFailable»
                                   «if (is_failable) addCabInclude(new Path("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h")).alias("") /* necessary to use InsertableTraits with FailableHandle */»
                                   «val effective_typename = if (is_failable) '''«resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»< «type_name» >''' else type_name»
                                   «resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «effective_typename» >::AutoPtrType «param.paramName»(
@@ -135,7 +135,14 @@ class DispatcherGenerator extends BasicCppGenerator
                       «ENDIF»
                       
                       // call actual method
-               «IF !is_void»auto result( «ENDIF»GetDispatchee().«function.name»(«FOR p : function.parameters SEPARATOR ", "»«IF p.direction == ParameterDirection.PARAM_OUT && com.btc.serviceidl.util.Util.isSequenceType(p.paramType)»*«ENDIF»«IF p.direction == ParameterDirection.PARAM_IN && com.btc.serviceidl.util.Util.isSequenceType(p.paramType)»«resolveSymbol("std::move")»(«ENDIF»«p.paramName»«IF p.direction == ParameterDirection.PARAM_IN && com.btc.serviceidl.util.Util.isSequenceType(p.paramType)»)«ENDIF»«ENDFOR»)«IF !is_sync».Get()«ENDIF»«IF !is_void» )«ENDIF»;
+               «IF !is_void»auto result( «ENDIF»GetDispatchee().«function.name»(
+                        «FOR p : function.parameters SEPARATOR ", "»
+                            «val isSequenceType = p.paramType.isSequenceType»
+                            «IF p.direction == ParameterDirection.PARAM_OUT && isSequenceType»*«ENDIF»
+                            «IF p.direction == ParameterDirection.PARAM_IN && isSequenceType»«resolveSymbol("std::move")»(«ENDIF»
+                            «p.paramName»
+                            «IF p.direction == ParameterDirection.PARAM_IN && isSequenceType»)«ENDIF»
+                        «ENDFOR»)«IF !is_sync».Get()«ENDIF»«IF !is_void» )«ENDIF»;
                
                // prepare response
                «resolveSymbol("BTC::Commons::Core::AutoPtr")»< «protobuf_response_message» > response( BorrowReplyMessage() );
@@ -233,14 +240,14 @@ class DispatcherGenerator extends BasicCppGenerator
     {
         val api_input = if (output_param.present) output_param.get else "result"
         '''
-            «IF GeneratorUtil.useCodec(type, ArtifactNature.CPP) && !(com.btc.serviceidl.util.Util.isByte(type) || com.btc.serviceidl.util.Util.isInt16(type) || com.btc.serviceidl.util.Util.isChar(type))»
-                «IF com.btc.serviceidl.util.Util.isSequenceType(type)»
-                    «val ulimate_type = com.btc.serviceidl.util.Util.getUltimateType(type)»
-                    «val is_failable = com.btc.serviceidl.util.Util.isFailable(type)»
+            «IF GeneratorUtil.useCodec(type, ArtifactNature.CPP) && !(type.isByte || type.isInt16 || type.isChar)»
+                «IF type.isSequenceType»
+                    «val ulimate_type = type.ultimateType»
+                    «val is_failable = type.isFailable»
                     «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.RESPONSE).fullyQualifiedName»
                     «typeResolver.resolveCodecNS(paramBundle, ulimate_type, is_failable, Optional.of(container))»::Encode«IF is_failable»Failable«ENDIF»< «resolve(ulimate_type)», «IF is_failable»«typeResolver.resolveFailableProtobufType(type, container)»«ELSE»«protobuf_type»«ENDIF» >
                        ( «resolveSymbol("std::move")»(«api_input»«IF output_param.present»Future.Get()«ENDIF»), concreteResponse->mutable_«protobuf_name»() );
-                «ELSEIF com.btc.serviceidl.util.Util.isEnumType(type)»
+                «ELSEIF type.isEnumType»
                     concreteResponse->set_«protobuf_name»( «typeResolver.resolveCodecNS(paramBundle, type)»::Encode(«api_input») );
                 «ELSE»
                     «typeResolver.resolveCodecNS(paramBundle, type)»::Encode( «api_input», concreteResponse->mutable_«protobuf_name»() );
