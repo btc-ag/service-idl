@@ -17,7 +17,6 @@ package com.btc.serviceidl.generator.common
 
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.google.common.collect.ImmutableList
-import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Data
 
 @Data
@@ -26,11 +25,10 @@ class ParameterBundle
     val Iterable<ModuleDeclaration> moduleStack
     val ProjectType projectType
 
-    // TODO redesign this, the role of "master_data" is unclear and confusing
     static class Builder
     {
-        Optional<ProjectType> projectType = Optional.empty
-        var ParameterBundle masterData = null
+        var Iterable<ModuleDeclaration> moduleStack = null
+        var ProjectType projectType = null
 
         new()
         {
@@ -38,40 +36,33 @@ class ParameterBundle
 
         new(ParameterBundle bundle)
         {
-            // TODO check if handling of projectType is correct
-            this.masterData = new ParameterBundle(bundle.moduleStack, bundle.projectType)
-
-            this.projectType = Optional.of(bundle.projectType)
+            this.moduleStack = bundle.moduleStack
+            this.projectType = bundle.projectType
         }
 
         def Builder reset(Iterable<ModuleDeclaration> element)
         {
-            masterData = new ParameterBundle(ImmutableList.copyOf(element),
-                if (masterData !== null) masterData.projectType else null)
+            this.moduleStack = ImmutableList.copyOf(element)
             this
         }
 
         def Builder with(ProjectType element)
         {
-            projectType = Optional.of(element)
-            return this
+            this.projectType = element
+            this
         }
 
         def ParameterBundle build()
         {
-            val bundle = new ParameterBundle(masterData.moduleStack, if (projectType.present)
-                projectType.get
-            else
-                masterData.projectType)
+            if (this.moduleStack === null)
+                throw new UnsupportedOperationException("Builder is incomplete")
+                
+            val bundle = new ParameterBundle(this.moduleStack, this.projectType)
 
-            projectType = Optional.empty
+            this.moduleStack = null
+            this.projectType = null
 
-            return bundle
-        }
-
-        def ParameterBundle read()
-        {
-            return masterData
+            bundle
         }
     }
 
