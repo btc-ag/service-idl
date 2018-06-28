@@ -115,9 +115,8 @@ class TypeResolver
         }
 
         var result = GeneratorUtil.getTransformedModuleName(
-            ParameterBundle.createBuilder(
-                com.btc.serviceidl.util.Util.getModuleStack(com.btc.serviceidl.util.Util.getScopeDeterminant(element))).
-                with(project_type).build, ArtifactNature.DOTNET, TransformType.PACKAGE)
+            ParameterBundle.createBuilder(element.scopeDeterminant.moduleStack).with(project_type).build,
+            ArtifactNature.DOTNET, TransformType.PACKAGE)
         result += Constants.SEPARATOR_PACKAGE + if (element instanceof InterfaceDeclaration)
             project_type.getClassName(ArtifactNature.DOTNET, name.lastSegment)
         else
