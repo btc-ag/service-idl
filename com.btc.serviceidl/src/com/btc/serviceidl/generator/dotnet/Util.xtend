@@ -238,12 +238,12 @@ class Util
         val isFailable = isSequence && com.btc.serviceidl.util.Util.isFailable(function.returnedType)
         val basicType = typeResolver.resolve(com.btc.serviceidl.util.Util.getUltimateType(function.returnedType))
         var effectiveType = basicType.toString
-        
+
         if (isSequence)
         {
             effectiveType = '''«typeResolver.resolve("System.Collections.Generic.IEnumerable")»<«IF isFailable»«typeResolver.resolveFailableType(basicType.fullyQualifiedName)»«ELSE»«basicType»«ENDIF»>'''
         }
-  
+
         '''«IF is_void»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»«ELSE»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»<«ENDIF»«effectiveType»«IF !is_sync»>«ENDIF»«ENDIF»'''
     }
 
@@ -251,15 +251,13 @@ class Util
     {
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
 
-        val temp_param = new ParameterBundle.Builder
-        temp_param.reset(com.btc.serviceidl.util.Util.getModuleStack(ultimate_type))
-        temp_param.reset(ProjectType.PROTOBUF)
-
         val codec_name = GeneratorUtil.getCodecName(ultimate_type)
 
         typeResolver.resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 
-        GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.DOTNET, TransformType.PACKAGE) +
+        GeneratorUtil.getTransformedModuleName(
+            new ParameterBundle.Builder().reset(com.btc.serviceidl.util.Util.getModuleStack(ultimate_type)).with(
+                ProjectType.PROTOBUF).build, ArtifactNature.DOTNET, TransformType.PACKAGE) +
             TransformType.PACKAGE.separator + codec_name
     }
 
@@ -270,7 +268,7 @@ class Util
             throw new «typeResolver.resolve("System.NotSupportedException")»("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»");
         '''
     }
-    
+
     static def ResolvedName resolveServiceFaultHandling(TypeResolver typeResolver, EObject owner)
     {
         var prefix = ""
@@ -281,13 +279,13 @@ class Util
         val namespace = typeResolver.resolve(owner, ProjectType.PROTOBUF).namespace
         return new ResolvedName('''«namespace».«prefix»ServiceFaultHandling''', TransformType.PACKAGE)
     }
-   
+
     static def String asEnumerable(TypeResolver typeResolver)
     {
         typeResolver.resolve("System.Linq.Enumerable")
         '''.AsEnumerable()'''
     }
-    
+
     def static getProxyProtocolName(InterfaceDeclaration interfaceDeclaration)
     {
         interfaceDeclaration.name + "Protocol"
