@@ -29,8 +29,8 @@ class ParameterBundle
     // TODO redesign this, the role of "master_data" is unclear and confusing
     static class Builder
     {
-        Optional<ProjectType> project_type = Optional.empty
-        var ParameterBundle master_data = null
+        Optional<ProjectType> projectType = Optional.empty
+        var ParameterBundle masterData = null
 
         new()
         {
@@ -39,51 +39,51 @@ class ParameterBundle
         new(ParameterBundle bundle)
         {
             // TODO check if handling of projectType is correct
-            this.master_data = new ParameterBundle(bundle.moduleStack, bundle.projectType)
+            this.masterData = new ParameterBundle(bundle.moduleStack, bundle.projectType)
 
-            this.project_type = Optional.of(bundle.projectType)
+            this.projectType = Optional.of(bundle.projectType)
         }
 
         def Builder reset(Iterable<ModuleDeclaration> element)
         {
-            master_data = new ParameterBundle(ImmutableList.copyOf(element),
-                if (master_data !== null) master_data.projectType else null)
+            masterData = new ParameterBundle(ImmutableList.copyOf(element),
+                if (masterData !== null) masterData.projectType else null)
             this
         }
 
         def void reset(ProjectType element)
         {
-            master_data = new ParameterBundle(if (master_data !== null) master_data.moduleStack else null, element)
+            masterData = new ParameterBundle(if (masterData !== null) masterData.moduleStack else null, element)
         }
 
         def Builder with(ProjectType element)
         {
-            project_type = Optional.of(element)
+            projectType = Optional.of(element)
             return this
         }
 
         def ParameterBundle build()
         {
-            val bundle = new ParameterBundle(master_data.moduleStack, if (project_type.present)
-                project_type.get
+            val bundle = new ParameterBundle(masterData.moduleStack, if (projectType.present)
+                projectType.get
             else
-                master_data.projectType)
+                masterData.projectType)
 
-            project_type = Optional.empty
+            projectType = Optional.empty
 
             return bundle
         }
 
         def ParameterBundle read()
         {
-            return master_data
+            return masterData
         }
     }
 
-    static def Builder createBuilder(Iterable<ModuleDeclaration> module_stack)
+    static def Builder createBuilder(Iterable<ModuleDeclaration> moduleStack)
     {
         val builder = new Builder
-        builder.reset(module_stack)
+        builder.reset(moduleStack)
         return builder
     }
 }
