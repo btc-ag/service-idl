@@ -24,13 +24,13 @@ import org.eclipse.xtend.lib.annotations.Data
 @Data
 class ParameterBundle
 {
-    private Deque<ModuleDeclaration> moduleStack // TODO can't this be changed to Iterable?
-    private ProjectType projectType
-    
+    Deque<ModuleDeclaration> moduleStack
+    ProjectType projectType
+
     // TODO redesign this, the role of "master_data" is unclear and confusing
     static class Builder
     {
-        private Optional<ProjectType> project_type = Optional.empty
+        Optional<ProjectType> project_type = Optional.empty
         var ParameterBundle master_data = null
 
         new()
