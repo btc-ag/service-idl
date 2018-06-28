@@ -36,10 +36,9 @@ class ProtobufUtil
     static def ResolvedName resolveProtobuf(extension TypeResolver typeResolver, EObject object,
         ProtobufType protobuf_type)
     {
-        if (com.btc.serviceidl.util.Util.isUUIDType(object))
+        if (object.isUUIDType)
             return new ResolvedName(resolveSymbol("std::string"), TransformType.NAMESPACE)
-        else if (com.btc.serviceidl.util.Util.isInt16(object) || com.btc.serviceidl.util.Util.isByte(object) ||
-            com.btc.serviceidl.util.Util.isChar(object))
+        else if (object.isInt16 || object.isByte || object.isChar)
             return new ResolvedName("::google::protobuf::int32", TransformType.NAMESPACE)
         else if (object instanceof PrimitiveType)
             return new ResolvedName(getPrimitiveTypeName(object), TransformType.NAMESPACE)
@@ -82,59 +81,48 @@ class ProtobufUtil
         EObject container, boolean use_codec_ns)
     {
         // handle sequence first, because it may include UUIDs and other types from below
-        if (com.btc.serviceidl.util.Util.isSequenceType(element))
+        if (element.isSequenceType)
         {
-            val is_failable = com.btc.serviceidl.util.Util.isFailable(element)
-            val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(element)
+            val is_failable = element.isFailable
+            val ultimate_type = element.ultimateType
 
             // TODO remove ProtobufType argument
             var protobuf_type = typeResolver.resolveProtobuf(ultimate_type, ProtobufType.REQUEST).fullyQualifiedName
             if (is_failable)
                 protobuf_type = typeResolver.resolveFailableProtobufType(element, container)
-            else if (com.btc.serviceidl.util.Util.isByte(ultimate_type) ||
-                com.btc.serviceidl.util.Util.isInt16(ultimate_type) ||
-                com.btc.serviceidl.util.Util.isChar(ultimate_type))
+            else if (ultimate_type.isByte || ultimate_type.isInt16 || ultimate_type.isChar)
                 protobuf_type = "google::protobuf::int32"
 
-            var decodeMethodName = ""
-            if (is_failable)
-            {
-                if (element.eContainer instanceof MemberElement)
-                    decodeMethodName = '''DecodeFailableToVector'''
-                else
-                    decodeMethodName = '''DecodeFailable'''
-            }
-            else
-            {
-                if (element.eContainer instanceof MemberElement)
+            val isUUIDType = ultimate_type.isUUIDType
+            var decodeMethodName = if (is_failable)
                 {
-                    if (com.btc.serviceidl.util.Util.isUUIDType(ultimate_type))
-                        decodeMethodName = "DecodeUUIDToVector"
-                    else
-                        decodeMethodName = "DecodeToVector"
+                    if (element.eContainer instanceof MemberElement) "DecodeFailableToVector" else "DecodeFailable"
                 }
                 else
                 {
-                    if (com.btc.serviceidl.util.Util.isUUIDType(ultimate_type))
-                        decodeMethodName = "DecodeUUID"
+                    if (element.eContainer instanceof MemberElement)
+                    {
+                        if (isUUIDType) "DecodeUUIDToVector" else "DecodeToVector"
+                    }
                     else
-                        decodeMethodName = "Decode"
+                    {
+                        if (isUUIDType) "DecodeUUID" else "Decode"
+                    }
                 }
-            }
 
-            return '''«IF use_codec_ns»«typeResolver.resolveCodecNS(paramBundle, ultimate_type, is_failable, Optional.of(container))»::«ENDIF»«decodeMethodName»«IF is_failable || !com.btc.serviceidl.util.Util.isUUIDType(ultimate_type)»< «protobuf_type», «resolve(ultimate_type)» >«ENDIF»'''
+            return '''«IF use_codec_ns»«typeResolver.resolveCodecNS(paramBundle, ultimate_type, is_failable, Optional.of(container))»::«ENDIF»«decodeMethodName»«IF is_failable || !isUUIDType»< «protobuf_type», «resolve(ultimate_type)» >«ENDIF»'''
         }
 
-        if (com.btc.serviceidl.util.Util.isUUIDType(element))
+        if (element.isUUIDType)
             return '''«typeResolver.resolveCodecNS(paramBundle, element)»::DecodeUUID'''
 
-        if (com.btc.serviceidl.util.Util.isByte(element))
+        if (element.isByte)
             return '''static_cast<«resolveSymbol("int8_t")»>'''
 
-        if (com.btc.serviceidl.util.Util.isInt16(element))
+        if (element.isInt16)
             return '''static_cast<«resolveSymbol("int16_t")»>'''
 
-        if (com.btc.serviceidl.util.Util.isChar(element))
+        if (element.isChar)
             return '''static_cast<char>'''
 
         return '''«typeResolver.resolveCodecNS(paramBundle, element)»::Decode'''
