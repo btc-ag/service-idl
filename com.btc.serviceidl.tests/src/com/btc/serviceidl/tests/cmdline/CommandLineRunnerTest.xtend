@@ -143,6 +143,30 @@ class CommandLineRunnerTest
     }
 
     @Test
+    def void testWithValidInputSubsetInProcess()
+    {
+        val file = new File(TEST_DATA_DIR + "failable.idl")
+        val path = Files.createTempDirectory("test-gen")
+        assertEquals(0, Main.mainBackend(#[file.absolutePath, "-outputPath", path.toString, "-projectSet", "api"]))
+        assertExpectedFiles(#[
+            "cpp/modules/BTC/Commons/Core/ServiceAPI/BTC.Commons.Core.ServiceAPI.vcxproj",
+            "cpp/modules/BTC/Commons/Core/ServiceAPI/BTC.Commons.Core.ServiceAPI.vcxproj.filters",
+            "cpp/modules/BTC/Commons/Core/ServiceAPI/include/IFoo.h",
+            "cpp/modules/BTC/Commons/Core/ServiceAPI/include/btc_commons_core_serviceapi_export.h",
+            "cpp/modules/BTC/Commons/Core/ServiceAPI/source/Dependencies.cpp",
+            "cpp/modules/BTC/Commons/Core/ServiceAPI/source/IFoo.cpp",
+            "dotnet/BTC/Commons/Core/ServiceAPI/BTC.Commons.Core.ServiceAPI.csproj",
+            "dotnet/BTC/Commons/Core/ServiceAPI/FooConst.cs",
+            "dotnet/BTC/Commons/Core/ServiceAPI/IFoo.cs",
+            "dotnet/BTC/Commons/Core/ServiceAPI/Properties/AssemblyInfo.cs",
+            "dotnet/failable.sln",
+            "java/com.btc.commons.core.foo/pom.xml",
+            "java/com.btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/serviceapi/FooServiceFaultHandlerFactory.java",
+            "java/com.btc.commons.core.foo/src/main/java/com/btc/commons/core/foo/serviceapi/IFoo.java"
+        ], path)
+    }
+
+    @Test
     def void testWithValidInputWithWarningsInProcess()
     {
         val file = new File(TEST_DATA_DIR + "failable.idl")

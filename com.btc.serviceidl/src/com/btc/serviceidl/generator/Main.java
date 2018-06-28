@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -47,6 +48,9 @@ import com.btc.serviceidl.generator.common.ProjectType;
 import com.btc.serviceidl.generator.cpp.cab.CABModuleStructureStrategy;
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSetFactory;
 import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
@@ -62,6 +66,25 @@ public class Main {
     public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ = "prins-vcxproj";
     public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT       = OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ;
     public static final String OPTION_VERSIONS                               = "versions";
+    public static final String OPTION_PROJECT_SET                            = "projectSet";
+    public static final String OPTION_VALUE_PROJECT_SET_API                  = "api";
+    public static final String OPTION_VALUE_PROJECT_SET_CLIENT               = "client";
+    public static final String OPTION_VALUE_PROJECT_SET_SERVER               = "server";
+    public static final String OPTION_VALUE_PROJECT_SET_FULL                 = "full";
+    public static final String OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON   = "full-with-skeleton";
+
+    public static final Set<ProjectType> API_PROJECT_SET    = ImmutableSet.of(ProjectType.SERVICE_API,
+            ProjectType.COMMON);
+    public static final Set<ProjectType> CLIENT_PROJECT_SET = Sets.union(API_PROJECT_SET,
+            ImmutableSet.of(ProjectType.PROTOBUF, ProjectType.PROXY, ProjectType.CLIENT_CONSOLE));
+    public static final Set<ProjectType> SERVER_PROJECT_SET = Sets.union(API_PROJECT_SET,
+            ImmutableSet.of(ProjectType.PROTOBUF, ProjectType.DISPATCHER, ProjectType.SERVER_RUNNER));
+    public static final Set<ProjectType> FULL_PROJECT_SET   = Sets.union(CLIENT_PROJECT_SET, SERVER_PROJECT_SET);
+
+    public static final Map<String, Set<ProjectType>> PROJECT_SET_MAPPING = ImmutableMap.of(
+            OPTION_VALUE_PROJECT_SET_API, API_PROJECT_SET, OPTION_VALUE_PROJECT_SET_CLIENT, CLIENT_PROJECT_SET,
+            OPTION_VALUE_PROJECT_SET_SERVER, SERVER_PROJECT_SET, OPTION_VALUE_PROJECT_SET_FULL, FULL_PROJECT_SET,
+            OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON, ImmutableSet.copyOf(ProjectType.values()));
 
     public static final int EXIT_CODE_GOOD              = 0;
     public static final int EXIT_CODE_GENERATION_FAILED = 1;
@@ -115,7 +138,10 @@ public class Main {
                 commandLine.hasOption(OPTION_CPP_PROJECT_SYSTEM) ? commandLine.getOptionValue(OPTION_CPP_PROJECT_SYSTEM)
                         : OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT,
                 commandLine.hasOption(OPTION_VERSIONS) ? splitVersions(commandLine.getOptionValue(OPTION_VERSIONS))
-                        : new ArrayList<Map.Entry<String, String>>());
+                        : new ArrayList<Map.Entry<String, String>>(),
+                commandLine.hasOption(OPTION_PROJECT_SET)
+                        ? PROJECT_SET_MAPPING.get(commandLine.getOptionValue(OPTION_PROJECT_SET))
+                        : ImmutableSet.copyOf(ProjectType.values()));
 
         return res ? EXIT_CODE_GOOD : EXIT_CODE_GENERATION_FAILED;
     }
@@ -142,6 +168,9 @@ public class Main {
         options.addOption(OPTION_CPP_PROJECT_SYSTEM, true, "C++ project system ("
                 + OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE + "," + OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ + ")");
         options.addOption(OPTION_VERSIONS, true, "target Version overrides");
+        options.addOption(OPTION_PROJECT_SET, true,
+                "set of projects to generate (" + String.join(",", PROJECT_SET_MAPPING.keySet()) + "), default is "
+                        + OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON);
         return options;
     }
 
@@ -172,7 +201,7 @@ public class Main {
     private IGenerationSettingsProvider generationSettingsProvider;
 
     private boolean tryRunGenerator(String[] inputFiles, Map<ArtifactNature, IPath> outputPaths, String projectSystem,
-            Iterable<Map.Entry<String, String>> versions) {
+            Iterable<Map.Entry<String, String>> versions, Set<ProjectType> projectSet) {
         // Load the resource
         ResourceSet set = resourceSetProvider.get();
         for (String inputFile : inputFiles) {
@@ -215,6 +244,7 @@ public class Main {
 
         DefaultGenerationSettingsProvider defaultGenerationSettingsProvider = (DefaultGenerationSettingsProvider) generationSettingsProvider;
         defaultGenerationSettingsProvider.languages = outputPaths.keySet();
+        defaultGenerationSettingsProvider.projectTypes = projectSet;
 
         GeneratorContext context = new GeneratorContext();
         context.setCancelIndicator(CancelIndicator.NullImpl);
