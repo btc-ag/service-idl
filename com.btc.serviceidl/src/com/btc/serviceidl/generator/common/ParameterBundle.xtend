@@ -16,16 +16,15 @@
 package com.btc.serviceidl.generator.common
 
 import com.btc.serviceidl.idl.ModuleDeclaration
-import java.util.ArrayDeque
-import java.util.Deque
+import com.google.common.collect.ImmutableList
 import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Data
 
 @Data
 class ParameterBundle
 {
-    Deque<ModuleDeclaration> moduleStack
-    ProjectType projectType
+    val Iterable<ModuleDeclaration> moduleStack
+    val ProjectType projectType
 
     // TODO redesign this, the role of "master_data" is unclear and confusing
     static class Builder
@@ -47,9 +46,8 @@ class ParameterBundle
 
         def Builder reset(Iterable<ModuleDeclaration> element)
         {
-            val moduleStack = new ArrayDeque<ModuleDeclaration>()
-            moduleStack.addAll(element)
-            master_data = new ParameterBundle(moduleStack, if (master_data !== null) master_data.projectType else null)
+            master_data = new ParameterBundle(ImmutableList.copyOf(element),
+                if (master_data !== null) master_data.projectType else null)
             this
         }
 
