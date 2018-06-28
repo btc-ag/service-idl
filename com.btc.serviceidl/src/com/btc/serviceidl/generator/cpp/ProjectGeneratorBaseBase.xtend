@@ -176,7 +176,8 @@ class ProjectGeneratorBaseBase
 
     protected def IPath getProjectPath()
     {
-        // TODO at least the "modules" part is PRINS-specific and should be determined by PrinsModuleStructureStrategy  
+        // TODO https://github.com/btc-ag/service-idl/issues/129 
+        // at least the "modules" part is PRINS-specific and should be determined by PrinsModuleStructureStrategy  
         new Path("modules").append(
             GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
     }
