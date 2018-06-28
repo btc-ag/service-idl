@@ -27,7 +27,6 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.StructDeclaration
 import java.util.ArrayList
-import java.util.Arrays
 import java.util.HashSet
 import java.util.LinkedHashSet
 import java.util.List
@@ -217,31 +216,26 @@ class CppExtensions
 
     private static def Iterable<EObject> resolvePredecessor(EObject element)
     {
-        val type = com.btc.serviceidl.util.Util.getUltimateType(element, false)
+        val type = element.getUltimateType(false)
         if (declaredInternally(element, type))
-            Arrays.asList(type)
+            #[type]
         else
-            Arrays.asList
+            #[]
     }
 
     static def dispatch Iterable<EObject> predecessors(EObject element)
     {
-        return new ArrayList<EObject> // by default, never need an external include
+        new ArrayList<EObject> // by default, never need an external include
     }
 
     static def private boolean declaredInternally(EObject element, EObject type)
     {
-        return (!(type instanceof PrimitiveType) && com.btc.serviceidl.util.Util.getScopeDeterminant(type) ==
-            com.btc.serviceidl.util.Util.getScopeDeterminant(element))
+        !(type instanceof PrimitiveType) && type.scopeDeterminant == element.scopeDeterminant
     }
-
+    
     private static def dispatch void getUnderlyingTypes(StructDeclaration struct, HashSet<EObject> all_types)
     {
-        val contained_types = struct.members.filter [
-            com.btc.serviceidl.util.Util.getUltimateType(type) instanceof StructDeclaration
-        ].map [
-            com.btc.serviceidl.util.Util.getUltimateType(type) as StructDeclaration
-        ]
+        val contained_types = struct.members.map[type.ultimateType].filter(StructDeclaration)
 
         for (type : contained_types)
         {
@@ -254,11 +248,7 @@ class CppExtensions
 
     private static def dispatch void getUnderlyingTypes(ExceptionDeclaration element, HashSet<EObject> all_types)
     {
-        val contained_types = element.members.filter [
-            com.btc.serviceidl.util.Util.getUltimateType(type) instanceof ExceptionDeclaration
-        ].map [
-            com.btc.serviceidl.util.Util.getUltimateType(type) as ExceptionDeclaration
-        ]
+        val contained_types = element.members.map[type.ultimateType].filter(ExceptionDeclaration)
 
         for (type : contained_types)
         {
