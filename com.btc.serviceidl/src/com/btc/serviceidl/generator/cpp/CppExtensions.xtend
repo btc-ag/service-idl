@@ -264,7 +264,7 @@ class CppExtensions
         // default: no operation
     }
 
-    def public static String openNamespaces(ParameterBundle param_bundle)
+    def static String openNamespaces(ParameterBundle param_bundle)
     {
         '''
             «FOR module : param_bundle.getModuleStack»
@@ -278,7 +278,7 @@ class CppExtensions
         '''
     }
 
-    def public static String closeNamespaces(ParameterBundle param_bundle)
+    def static String closeNamespaces(ParameterBundle param_bundle)
     {
         '''
             «FOR module : param_bundle.moduleStack»}«ENDFOR»«IF param_bundle.getProjectType !== null»}«ENDIF»

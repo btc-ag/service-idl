@@ -13,7 +13,7 @@ package com.btc.serviceidl.generator.java
 class ConfigFilesGenerator
 {
     // TODO this is outdated since log4j is longer used at all
-    def public static String generateLog4jProperties()
+    def static String generateLog4jProperties()
     {
         '''
             # Root logger option
@@ -28,7 +28,7 @@ class ConfigFilesGenerator
     }
 
     // TODO what is the purpose of this? probably it can be removed
-    def public static String generateSpringBeans(String package_name, String program_name)
+    def static String generateSpringBeans(String package_name, String program_name)
     {
         '''
             <?xml version="1.0" encoding="UTF-8"?>

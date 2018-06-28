@@ -40,7 +40,7 @@ class ProxyGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def public String generateProxyImplementation(String class_name, InterfaceDeclaration interface_declaration)
+    def String generateProxyImplementation(String class_name, InterfaceDeclaration interface_declaration)
     {
         val anonymous_event = interface_declaration.anonymousEvent
         val api_name = typeResolver.resolve(interface_declaration)

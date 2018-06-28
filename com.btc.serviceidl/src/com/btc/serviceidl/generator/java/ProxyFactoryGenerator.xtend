@@ -26,7 +26,7 @@ class ProxyFactoryGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def public generateProxyFactory(String class_name, InterfaceDeclaration interface_declaration)
+    def generateProxyFactory(String class_name, InterfaceDeclaration interface_declaration)
     {
         val api_type = typeResolver.resolve(interface_declaration)
 

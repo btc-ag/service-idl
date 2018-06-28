@@ -49,7 +49,7 @@ class BasicCSharpSourceGenerator {
     val Map<String, String> typedef_table    
     val IDLSpecification idl
     
-   def public dispatch String toText(AliasDeclaration element, EObject context)
+   def dispatch String toText(AliasDeclaration element, EObject context)
    {
       var type_name = typedef_table.get(element.name)
       if (type_name === null)
@@ -64,7 +64,7 @@ class BasicCSharpSourceGenerator {
          return type_name
    }
    
-   def public dispatch String toText(AbstractType element, EObject context)
+   def dispatch String toText(AbstractType element, EObject context)
    {
       if (element.primitiveType !== null)
          return toText(element.primitiveType, element)
@@ -76,12 +76,12 @@ class BasicCSharpSourceGenerator {
       throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
    }
    
-   def public dispatch String toText(ParameterElement element, EObject context)
+   def dispatch String toText(ParameterElement element, EObject context)
    {
       '''«element.paramName.asParameter»'''
    }
    
-   def public dispatch String toText(ReturnTypeElement element, EObject context)
+   def dispatch String toText(ReturnTypeElement element, EObject context)
    {
       if (element.isVoid)
          return "void"
@@ -89,12 +89,12 @@ class BasicCSharpSourceGenerator {
       throw new IllegalArgumentException("Unknown ReturnTypeElement: " + element.class.toString)
    }
    
-   def public dispatch String toText(PrimitiveType element, EObject context)
+   def dispatch String toText(PrimitiveType element, EObject context)
    {
       typeResolver.primitiveTypeName(element)
    }
    
-   def public dispatch String toText(EnumDeclaration element, EObject context)
+   def dispatch String toText(EnumDeclaration element, EObject context)
    {
       if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
       '''
@@ -109,12 +109,12 @@ class BasicCSharpSourceGenerator {
          '''«resolve(element)»'''
    }
    
-   def public dispatch String toText(EventDeclaration element, EObject context)
+   def dispatch String toText(EventDeclaration element, EObject context)
    {
       '''«resolve(element.data).alias(getObservableName(element))»'''
    }
    
-   def public dispatch String toText(StructDeclaration element, EObject context)
+   def dispatch String toText(StructDeclaration element, EObject context)
    {
       if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
       {
@@ -157,17 +157,17 @@ class BasicCSharpSourceGenerator {
          '''«resolve(element)»'''
    }
    
-   def public dispatch String toText(ExceptionReferenceDeclaration element, EObject context)
+   def dispatch String toText(ExceptionReferenceDeclaration element, EObject context)
    {
       if (context instanceof FunctionDeclaration) '''«resolve(element)»'''
    }
    
-   def public dispatch String toText(MemberElementWrapper element, EObject context)
+   def dispatch String toText(MemberElementWrapper element, EObject context)
    {
       '''«toText(element.type, null)»'''
    }
    
-   def public dispatch String toText(ExceptionDeclaration element, EObject context)
+   def dispatch String toText(ExceptionDeclaration element, EObject context)
    {
       if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
       {
@@ -204,7 +204,7 @@ class BasicCSharpSourceGenerator {
          '''«resolve(element)»'''
    }
    
-   def public dispatch String toText(SequenceDeclaration element, EObject context)
+   def dispatch String toText(SequenceDeclaration element, EObject context)
    {
       val isFailable = element.failable
       val basicType = resolve(element.type)
@@ -213,12 +213,12 @@ class BasicCSharpSourceGenerator {
       '''«resolve("System.Collections.Generic.IEnumerable")»<«effectiveType»>'''
    }
    
-   def public dispatch String toText(TupleDeclaration element, EObject context)
+   def dispatch String toText(TupleDeclaration element, EObject context)
    {
       '''«resolve("System.Tuple")»<«FOR type : element.types SEPARATOR ","»«toText(type, element)»«ENDFOR»>'''
    }
    
-   def public dispatch String toText(DocCommentElement item, EObject context)
+   def dispatch String toText(DocCommentElement item, EObject context)
    {
       '''/// «com.btc.serviceidl.util.Util.getPlainText(item).replaceAll("\\r", System.lineSeparator + "/// ")»'''
    }

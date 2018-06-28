@@ -34,49 +34,49 @@ import com.btc.serviceidl.idl.PrimitiveType
 
 class Names
 {
-    def public static dispatch String plain(ModuleDeclaration element)
+    def static dispatch String plain(ModuleDeclaration element)
     { return element.name }
 
-    def public static dispatch String plain(ExceptionReferenceDeclaration element)
+    def static dispatch String plain(ExceptionReferenceDeclaration element)
     { return element.name }
 
-    def public static dispatch String plain(ExceptionDeclaration element)
+    def static dispatch String plain(ExceptionDeclaration element)
     { return element.name }
 
-    def public static dispatch String plain(StructDeclaration element)
+    def static dispatch String plain(StructDeclaration element)
     { return element.name }
 
-    def public static dispatch String plain(AliasDeclaration element)
+    def static dispatch String plain(AliasDeclaration element)
     { return element.name }
 
-    def public static dispatch String plain(EnumDeclaration element)
+    def static dispatch String plain(EnumDeclaration element)
     { return element.name }
 
-    def public static dispatch String plain(MemberElement element)
+    def static dispatch String plain(MemberElement element)
     { return element.name }
 
-    def public static dispatch String plain(InterfaceDeclaration element)
+    def static dispatch String plain(InterfaceDeclaration element)
     { return element.name }
 
-    def public static dispatch String plain(FunctionDeclaration element)
+    def static dispatch String plain(FunctionDeclaration element)
     { return element.name }
 
-    def public static dispatch String plain(EventDeclaration element)
+    def static dispatch String plain(EventDeclaration element)
     { return element.name }
 
-    def public static dispatch String plain(ParameterElement element)
+    def static dispatch String plain(ParameterElement element)
     { return element.paramName }
 
-    def public static dispatch String plain(SequenceDeclaration element)
+    def static dispatch String plain(SequenceDeclaration element)
     { return "Sequence" }
 
-    def public static dispatch String plain(TupleDeclaration element)
+    def static dispatch String plain(TupleDeclaration element)
     { return "Tuple" }
 
-    def public static dispatch String plain(ReturnTypeElement element)
+    def static dispatch String plain(ReturnTypeElement element)
     { if (element.isVoid) return "void" }
 
-    def public static dispatch String plain(AbstractType item)
+    def static dispatch String plain(AbstractType item)
     {
         if (item.referenceType !== null)
             return plain(item.referenceType)
@@ -86,7 +86,7 @@ class Names
         throw new IllegalArgumentException("Plain name not supported for " + item)
     }
 
-    def public static dispatch String plain(PrimitiveType item)
+    def static dispatch String plain(PrimitiveType item)
     {
         if (item.integerType !== null)
             return item.integerType

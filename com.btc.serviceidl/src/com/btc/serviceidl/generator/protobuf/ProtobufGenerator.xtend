@@ -83,12 +83,12 @@ class ProtobufGenerator
       throw new IllegalArgumentException("Unsupported artifact nature for project references: " + artifact_nature)
    }
    
-   def public Map<EObject, String> getGeneratedArtifacts()
+   def Map<EObject, String> getGeneratedArtifacts()
    {
       return generated_artifacts
    }
    
-   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Iterable<ArtifactNature> languages)
+   def void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Iterable<ArtifactNature> languages)
    {
       resource = res
       file_system_access = fsa

@@ -24,12 +24,12 @@ class GuidMapper
 
     static val guid_map = new HashMap<EObject, String>
 
-    def public static void put(EObject object, String guid)
+    def static void put(EObject object, String guid)
     {
         guid_map.put(object, guid)
     }
 
-    def public static String get(EObject object)
+    def static String get(EObject object)
     {
         var guid = guid_map.get(object)
         if (guid === null)

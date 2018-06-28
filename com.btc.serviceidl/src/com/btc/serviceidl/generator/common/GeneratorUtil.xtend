@@ -41,7 +41,7 @@ import static extension com.btc.serviceidl.util.Util.*
 
 class GeneratorUtil
 {
-    def public static String getTransformedModuleName(ParameterBundle parameterBundle, ArtifactNature artifactNature,
+    def static String getTransformedModuleName(ParameterBundle parameterBundle, ArtifactNature artifactNature,
         TransformType transformType)
     {
         val parts = parameterBundle.getModuleStack.map [ module |
@@ -80,7 +80,7 @@ class GeneratorUtil
             Arrays.asList(module.name)
     }
 
-    def public static String switchPackageSeperator(String name, TransformType targetTransformType)
+    def static String switchPackageSeperator(String name, TransformType targetTransformType)
     {
         return name.replaceAll(Pattern.quote(Constants.SEPARATOR_PACKAGE), targetTransformType.getSeparator)
     }
@@ -204,7 +204,7 @@ class GeneratorUtil
      * \details If at least one relative parent path is there, the string ALWAYS
      * ends with the path separator!
      */
-    def public static String getRelativePathsUpwards(Iterable<ModuleDeclaration> moduleStack)
+    def static String getRelativePathsUpwards(Iterable<ModuleDeclaration> moduleStack)
     {
         var paths = ""
         for (module : moduleStack)

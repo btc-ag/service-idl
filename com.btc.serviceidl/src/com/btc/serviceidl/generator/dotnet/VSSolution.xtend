@@ -20,7 +20,7 @@ class VSSolution
 
     val vs_projects = new HashMap<String, Entry>
 
-    def public String getCsprojName(ParameterBundle parameterBundle)
+    def String getCsprojName(ParameterBundle parameterBundle)
     {
         return registerCsprojGUID(
             parameterBundle
@@ -40,7 +40,7 @@ class VSSolution
         return projectName
     }
 
-    def public String getCsprojGUID(String projectName)
+    def String getCsprojGUID(String projectName)
     {
         return vs_projects.get(projectName).uuid.toString.toUpperCase
     }

@@ -41,7 +41,7 @@ class ProtobufCodecGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def public generateProtobufCodecBody(EObject container, String codec_name)
+    def generateProtobufCodecBody(EObject container, String codec_name)
     {
         // collect all used data types to avoid duplicates
         val data_types = GeneratorUtil.getEncodableTypes(container)

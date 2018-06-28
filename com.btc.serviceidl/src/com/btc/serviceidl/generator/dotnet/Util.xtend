@@ -34,7 +34,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 // TODO reorganize this according to logical aspects
 class Util
 {
-    def public static String hasField(MemberElementWrapper member)
+    def static String hasField(MemberElementWrapper member)
     {
         return '''Has«member.name.toLowerCase.toFirstUpper»'''
     }
@@ -43,7 +43,7 @@ class Util
      * For optional struct members, this generates an "?" to produce a C# Nullable
      * type; if the type if already Nullable (e.g. string), an empty string is returned.
      */
-    def public static String maybeOptional(MemberElementWrapper member)
+    def static String maybeOptional(MemberElementWrapper member)
     {
         if (member.optional && member.type.isValueType)
         {
@@ -55,7 +55,7 @@ class Util
     /**
      * Is the given type a C# value type (suitable for Nullable)?
      */
-    def public static boolean isValueType(EObject element)
+    def static boolean isValueType(EObject element)
     {
         if (element instanceof PrimitiveType)
         {
@@ -85,7 +85,7 @@ class Util
      * Make a C# property name according to BTC naming conventions
      * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
      */
-    def public static String asProperty(String name)
+    def static String asProperty(String name)
     {
         name.toFirstUpper
     }
@@ -94,7 +94,7 @@ class Util
      * Make a C# member variable name according to BTC naming conventions
      * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
      */
-    def public static String asMember(String name)
+    def static String asMember(String name)
     {
         if (name.allUpperCase)
             name.toLowerCase // it looks better, if ID --> id and not ID --> iD
@@ -106,32 +106,32 @@ class Util
      * Make a C# parameter name according to BTC naming conventions
      * \see https://wiki.btc-ag.com/confluence/display/GEPROD/Codierungsrichtlinien
      */
-    def public static String asParameter(String name)
+    def static String asParameter(String name)
     {
         asMember(name) // currently the same convention
     }
 
-    def public static getEventTypeGuidProperty()
+    def static getEventTypeGuidProperty()
     {
         "EventTypeGuid".asMember
     }
 
-    def public static getTypeGuidProperty()
+    def static getTypeGuidProperty()
     {
         "TypeGuid".asMember
     }
 
-    def public static getTypeNameProperty()
+    def static getTypeNameProperty()
     {
         "TypeName".asMember
     }
 
-    def public static boolean isExecutable(ProjectType pt)
+    def static boolean isExecutable(ProjectType pt)
     {
         return (pt == ProjectType.SERVER_RUNNER || pt == ProjectType.CLIENT_CONSOLE)
     }
 
-    def public static String getObservableName(EventDeclaration event)
+    def static String getObservableName(EventDeclaration event)
     {
         if (event.name === null)
             throw new IllegalArgumentException("No named observable for anonymous events!")
@@ -139,48 +139,48 @@ class Util
         event.name.toFirstUpper + "Observable"
     }
 
-    def public static String getDeserializingObserverName(EventDeclaration event)
+    def static String getDeserializingObserverName(EventDeclaration event)
     {
         (event.name ?: "") + "DeserializingObserver"
     }
 
-    def public static String getTestClassName(InterfaceDeclaration interface_declaration)
+    def static String getTestClassName(InterfaceDeclaration interface_declaration)
     {
         interface_declaration.name + "Test"
     }
 
-    def public static String getProxyFactoryName(InterfaceDeclaration interface_declaration)
+    def static String getProxyFactoryName(InterfaceDeclaration interface_declaration)
     {
         interface_declaration.name + "ProxyFactory"
     }
 
-    def public static String getServerRegistrationName(InterfaceDeclaration interface_declaration)
+    def static String getServerRegistrationName(InterfaceDeclaration interface_declaration)
     {
         interface_declaration.name + "ServerRegistration"
     }
 
-    def public static String getConstName(InterfaceDeclaration interface_declaration)
+    def static String getConstName(InterfaceDeclaration interface_declaration)
     {
         interface_declaration.name + "Const"
     }
 
-    def public static dispatch boolean isNullable(EObject element)
+    def static dispatch boolean isNullable(EObject element)
     {
         false
     }
 
-    def public static dispatch boolean isNullable(PrimitiveType element)
+    def static dispatch boolean isNullable(PrimitiveType element)
     {
         element.booleanType !== null || element.integerType !== null || element.charType !== null ||
             element.floatingPointType !== null || element.uuidType !== null
     }
 
-    def public static dispatch boolean isNullable(AliasDeclaration element)
+    def static dispatch boolean isNullable(AliasDeclaration element)
     {
         isNullable(element.type)
     }
 
-    def public static dispatch boolean isNullable(AbstractType element)
+    def static dispatch boolean isNullable(AbstractType element)
     {
         element.primitiveType !== null && isNullable(element.primitiveType)
     }
@@ -261,7 +261,7 @@ class Util
             TransformType.PACKAGE.separator + codec_name
     }
 
-    def public static String makeDefaultMethodStub(TypeResolver typeResolver)
+    def static String makeDefaultMethodStub(TypeResolver typeResolver)
     {
         '''
             // TODO Auto-generated method stub
