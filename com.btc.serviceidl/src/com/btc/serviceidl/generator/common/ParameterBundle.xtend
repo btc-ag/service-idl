@@ -19,19 +19,19 @@ import com.btc.serviceidl.idl.ModuleDeclaration
 import java.util.ArrayDeque
 import java.util.Deque
 import java.util.Optional
-import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtend.lib.annotations.Data
 
-@Accessors(PUBLIC_GETTER)
+@Data
 class ParameterBundle
 {
     private Deque<ModuleDeclaration> moduleStack // TODO can't this be changed to Iterable?
     private ProjectType projectType
-
+    
     // TODO redesign this, the role of "master_data" is unclear and confusing
     static class Builder
     {
         private Optional<ProjectType> project_type = Optional.empty
-        val master_data = new ParameterBundle
+        var ParameterBundle master_data = null
 
         new()
         {
@@ -39,23 +39,23 @@ class ParameterBundle
 
         new(ParameterBundle bundle)
         {
-            this.master_data.moduleStack = bundle.moduleStack
-
             // TODO check if handling of projectType is correct
-            this.master_data.projectType = bundle.projectType
+            this.master_data = new ParameterBundle(bundle.moduleStack, bundle.projectType)
+
             this.project_type = Optional.of(bundle.projectType)
         }
 
         def Builder reset(Iterable<ModuleDeclaration> element)
         {
-            master_data.moduleStack = new ArrayDeque<ModuleDeclaration>()
-            master_data.moduleStack.addAll(element)
+            val moduleStack = new ArrayDeque<ModuleDeclaration>()
+            moduleStack.addAll(element)
+            master_data = new ParameterBundle(moduleStack, if (master_data !== null) master_data.projectType else null)
             this
         }
 
         def void reset(ProjectType element)
         {
-            master_data.projectType = element
+            master_data = new ParameterBundle(if (master_data !== null) master_data.moduleStack else null, element)
         }
 
         def Builder with(ProjectType element)
@@ -66,14 +66,12 @@ class ParameterBundle
 
         def ParameterBundle build()
         {
-            // initially same as default data
-            val bundle = new ParameterBundle(this)
+            val bundle = new ParameterBundle(master_data.moduleStack, if (project_type.present)
+                project_type.get
+            else
+                master_data.projectType)
 
-            if (project_type.present)
-            {
-                bundle.projectType = project_type.get
-                project_type = Optional.empty // reset
-            }
+            project_type = Optional.empty
 
             return bundle
         }
@@ -82,16 +80,6 @@ class ParameterBundle
         {
             return master_data
         }
-    }
-
-    private new()
-    {
-    }
-
-    private new(Builder builder)
-    {
-        moduleStack = builder.master_data.moduleStack
-        projectType = builder.master_data.projectType
     }
 
     static def Builder createBuilder(Iterable<ModuleDeclaration> module_stack)
