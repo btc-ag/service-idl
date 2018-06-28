@@ -32,6 +32,7 @@ import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.TypeResolverExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors
 class ServiceAPIGenerator extends BasicCppGenerator {
@@ -164,19 +165,17 @@ class ServiceAPIGenerator extends BasicCppGenerator {
    
    private def String generateHClassSignature(InterfaceDeclaration interface_declaration)
    {
-      val is_api = paramBundle.projectType == ProjectType.SERVICE_API
-      val is_proxy = paramBundle.projectType == ProjectType.PROXY
-      val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)
+      val anonymous_event = interface_declaration.anonymousEvent
       
       '''«GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType, interface_declaration.name)» : 
-      «IF is_api»
+      «IF paramBundle.projectType == ProjectType.SERVICE_API»
          virtual public «resolveSymbol("BTC::Commons::Core::Object")»
          «IF anonymous_event !== null», public «resolveSymbol("BTC::Commons::CoreExtras::IObservableRegistration")»<«resolve(anonymous_event.data)»>«ENDIF»
       «ELSE»
          virtual public «resolve(interface_declaration, ProjectType.SERVICE_API)»
          , private «resolveSymbol("BTC::Logging::API::LoggerAware")»
       «ENDIF»
-      «IF is_proxy»
+      «IF paramBundle.projectType == ProjectType.PROXY»
          , private «interface_declaration.asBaseName»
       «ENDIF»
       '''
@@ -230,7 +229,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
          «FOR exception : thrown_exceptions.sortBy[name]»
             «val resolve_exc_name = resolve(exception)»
             «register_service_fault»<«resolve_exc_name»>(
-               serviceFaultHandlerManager, «cab_string»("«com.btc.serviceidl.util.Util.getCommonExceptionName(exception, qualified_name_provider)»"));
+               serviceFaultHandlerManager, «cab_string»("«exception.getCommonExceptionName(qualified_name_provider)»"));
          «ENDFOR»
          
          // most commonly used exception types
