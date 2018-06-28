@@ -17,13 +17,13 @@ import com.btc.serviceidl.util.MemberElementWrapper
 
 class ProtobufUtil
 {
-    public static def String asDotNetProtobufName(String name)
+    static def String asDotNetProtobufName(String name)
     {
         // TODO change this function to accept a model construct rather than a bare name
         asProtobufName(name, CaseFormat.UPPER_CAMEL)
     }
 
-    public static def getProtobufName(MemberElementWrapper element)
+    static def getProtobufName(MemberElementWrapper element)
     {
         asDotNetProtobufName(element.name)
     }

@@ -44,7 +44,7 @@ class PrinsHeaderResolver
          ''', true)
     }
 
-    public static def create()
+    static def create()
     {
         new HeaderResolver.Builder().withPrinsGroups.build
     }
