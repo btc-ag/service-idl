@@ -153,8 +153,8 @@ class ProtobufGenerator
    
    private def void generateProtobufFile(ArtifactNature an, EObject container, String artifact_name, String file_content)
    {
-      var projectPath = if (an == ArtifactNature.JAVA) // special directory structure according to Maven conventions
-                Path.fromPortableString(getJavaProtoLocation(container))
+        var projectPath = if (an == ArtifactNature.JAVA) // special directory structure according to Maven conventions
+                getJavaProtoLocation(container)
             else
                 // TODO this should be done in a target-technology independent way
                 (if (an == ArtifactNature.CPP)
@@ -164,19 +164,12 @@ class ProtobufGenerator
                         GeneratorUtil.getTransformedModuleName(param_bundle, an, TransformType.FILE_SYSTEM))         
          ).append(Constants.PROTOBUF_GENERATION_DIRECTORY_NAME)
 
-      file_system_access.generateFile(projectPath.append(artifact_name.proto).toOSString, an.label, file_content)
-   }
+        file_system_access.generateFile(projectPath.append(artifact_name.proto).toOSString, an.label, file_content)
+    }
    
-   private def String getJavaProtoLocation(EObject container)
+   private def IPath getJavaProtoLocation(EObject container)
    {
-      MavenResolver.getArtifactId(container)
-         + Constants.SEPARATOR_FILE
-         + "src"
-         + Constants.SEPARATOR_FILE
-         + "main"
-         + Constants.SEPARATOR_FILE
-         + "proto"
-         + Constants.SEPARATOR_FILE
+      Path.fromPortableString(MavenResolver.getArtifactId(container)).append("src").append("main").append("proto")
    }
    
    private def String generateInterface(ArtifactNature an, InterfaceDeclaration interface_declaration)
@@ -604,7 +597,7 @@ class ProtobufGenerator
         // TODO unify this across target technologies
         (if (artifact_nature == ArtifactNature.JAVA)
         {
-            Path.fromPortableString(getJavaProtoLocation(container))
+            getJavaProtoLocation(container)
         }
         else
         {
