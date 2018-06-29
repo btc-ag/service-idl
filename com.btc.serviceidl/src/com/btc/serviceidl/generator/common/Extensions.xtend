@@ -18,11 +18,6 @@ import com.btc.serviceidl.util.Util
 
 class Extensions
 {
-    static def ProjectType getProjectType(Builder param)
-    {
-        param.read.getProjectType
-    }
-
     static def ProjectType getMainProjectType(EObject item)
     {
         val scope_determinant = Util.getScopeDeterminant(item)

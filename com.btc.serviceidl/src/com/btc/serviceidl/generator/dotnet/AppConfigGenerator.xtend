@@ -32,7 +32,9 @@ class AppConfigGenerator {
       basicCSharpSourceGenerator.typeResolver.param_bundle
   } 
     
-  def generateAppConfig(ModuleDeclaration module)
+  // TODO for some reason, the return type must be specified here, otherwise we get compile errors
+  // on Jenkins (but not on travis-ci)
+  def CharSequence generateAppConfig(ModuleDeclaration module)
   {
       '''
       <?xml version="1.0"?>

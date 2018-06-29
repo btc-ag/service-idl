@@ -37,7 +37,7 @@ import static extension com.btc.serviceidl.util.Util.*
 class TypeResolver
 {
     public static val PROTOBUF_UUID_TYPE = "Google.ProtocolBuffers.ByteString"
-    
+
     val DotNetFrameworkVersion frameworkVersion
     val IQualifiedNameProvider qualified_name_provider
     val Set<String> namespace_references
@@ -115,9 +115,8 @@ class TypeResolver
         }
 
         var result = GeneratorUtil.getTransformedModuleName(
-            ParameterBundle.createBuilder(
-                com.btc.serviceidl.util.Util.getModuleStack(com.btc.serviceidl.util.Util.getScopeDeterminant(element))).
-                with(project_type).build, ArtifactNature.DOTNET, TransformType.PACKAGE)
+            ParameterBundle.createBuilder(element.scopeDeterminant.moduleStack).with(project_type).build,
+            ArtifactNature.DOTNET, TransformType.PACKAGE)
         result += Constants.SEPARATOR_PACKAGE + if (element instanceof InterfaceDeclaration)
             project_type.getClassName(ArtifactNature.DOTNET, name.lastSegment)
         else
@@ -158,11 +157,9 @@ class TypeResolver
         val module_stack = com.btc.serviceidl.util.Util.getModuleStack(referenced_object)
         var project_path = ""
 
-        val temp_param = new ParameterBundle.Builder()
-        temp_param.reset(module_stack)
-        temp_param.reset(project_type)
+        val temp_param = new ParameterBundle.Builder().with(module_stack).with(project_type).build
 
-        val project_name = vsSolution.getCsprojName(temp_param.build)
+        val project_name = vsSolution.getCsprojName(temp_param)
 
         if (module_stack.elementsEqual(param_bundle.moduleStack))
         {
@@ -171,7 +168,7 @@ class TypeResolver
         else
         {
             project_path = "../" + GeneratorUtil.getRelativePathsUpwards(param_bundle.moduleStack) +
-                GeneratorUtil.getTransformedModuleName(temp_param.build, ArtifactNature.DOTNET,
+                GeneratorUtil.getTransformedModuleName(temp_param, ArtifactNature.DOTNET,
                     TransformType.FILE_SYSTEM) + "/" + project_name
         }
 

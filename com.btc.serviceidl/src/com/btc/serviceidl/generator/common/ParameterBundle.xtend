@@ -16,22 +16,19 @@
 package com.btc.serviceidl.generator.common
 
 import com.btc.serviceidl.idl.ModuleDeclaration
-import java.util.ArrayDeque
-import java.util.Deque
-import java.util.Optional
-import org.eclipse.xtend.lib.annotations.Accessors
+import com.google.common.collect.ImmutableList
+import org.eclipse.xtend.lib.annotations.Data
 
-@Accessors(PUBLIC_GETTER)
+@Data
 class ParameterBundle
 {
-    private Deque<ModuleDeclaration> moduleStack // TODO can't this be changed to Iterable?
-    private ProjectType projectType
+    val Iterable<ModuleDeclaration> moduleStack
+    val ProjectType projectType
 
-    // TODO redesign this, the role of "master_data" is unclear and confusing
     static class Builder
     {
-        private Optional<ProjectType> project_type = Optional.empty
-        val master_data = new ParameterBundle
+        var Iterable<ModuleDeclaration> moduleStack = null
+        var ProjectType projectType = null
 
         new()
         {
@@ -39,65 +36,40 @@ class ParameterBundle
 
         new(ParameterBundle bundle)
         {
-            this.master_data.moduleStack = bundle.moduleStack
-
-            // TODO check if handling of projectType is correct
-            this.master_data.projectType = bundle.projectType
-            this.project_type = Optional.of(bundle.projectType)
+            this.moduleStack = bundle.moduleStack
+            this.projectType = bundle.projectType
         }
 
-        def Builder reset(Iterable<ModuleDeclaration> element)
+        def Builder with(Iterable<ModuleDeclaration> element)
         {
-            master_data.moduleStack = new ArrayDeque<ModuleDeclaration>()
-            master_data.moduleStack.addAll(element)
+            this.moduleStack = ImmutableList.copyOf(element)
             this
-        }
-
-        def void reset(ProjectType element)
-        {
-            master_data.projectType = element
         }
 
         def Builder with(ProjectType element)
         {
-            project_type = Optional.of(element)
-            return this
+            this.projectType = element
+            this
         }
 
         def ParameterBundle build()
         {
-            // initially same as default data
-            val bundle = new ParameterBundle(this)
+            if (this.moduleStack === null)
+                throw new UnsupportedOperationException("Builder is incomplete")
+                
+            val bundle = new ParameterBundle(this.moduleStack, this.projectType)
 
-            if (project_type.present)
-            {
-                bundle.projectType = project_type.get
-                project_type = Optional.empty // reset
-            }
+            this.moduleStack = null
+            this.projectType = null
 
-            return bundle
-        }
-
-        def ParameterBundle read()
-        {
-            return master_data
+            bundle
         }
     }
 
-    private new()
-    {
-    }
-
-    private new(Builder builder)
-    {
-        moduleStack = builder.master_data.moduleStack
-        projectType = builder.master_data.projectType
-    }
-
-    static def Builder createBuilder(Iterable<ModuleDeclaration> module_stack)
+    static def Builder createBuilder(Iterable<ModuleDeclaration> moduleStack)
     {
         val builder = new Builder
-        builder.reset(module_stack)
+        builder.with(moduleStack)
         return builder
     }
 }

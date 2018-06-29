@@ -80,10 +80,7 @@ class ProjectGeneratorBaseBase
         this.smart_pointer_map = smart_pointer_map
         this.module = module
 
-        val param_bundle_builder = new ParameterBundle.Builder
-        param_bundle_builder.reset(type)
-        param_bundle_builder.reset(module.moduleStack)
-        this.param_bundle = param_bundle_builder.build
+        this.param_bundle = new ParameterBundle.Builder().with(type).with(module.moduleStack).build
     }
 
     protected def createTypeResolver()
@@ -176,7 +173,8 @@ class ProjectGeneratorBaseBase
 
     protected def IPath getProjectPath()
     {
-        // TODO at least the "modules" part is PRINS-specific and should be determined by PrinsModuleStructureStrategy  
+        // TODO https://github.com/btc-ag/service-idl/issues/129 
+        // at least the "modules" part is PRINS-specific and should be determined by PrinsModuleStructureStrategy  
         new Path("modules").append(
             GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
     }

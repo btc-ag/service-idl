@@ -186,13 +186,9 @@ class TypeResolver
 
     def void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
     {
-        val module_stack = com.btc.serviceidl.util.Util.getModuleStack(referenced_object)
-
-        val temp_param = new ParameterBundle.Builder()
-        temp_param.reset(module_stack)
-        temp_param.reset(project_type)
-
-        project_references.add(projectSet.resolve(temp_param.build))
+        project_references.add(
+            projectSet.resolve(
+                new ParameterBundle.Builder().with(referenced_object.moduleStack).with(project_type).build))
     }
 
     def getPrimitiveTypeName(PrimitiveType item)

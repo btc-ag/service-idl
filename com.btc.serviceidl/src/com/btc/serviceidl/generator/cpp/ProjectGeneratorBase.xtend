@@ -66,7 +66,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         String export_header_file_name)
     {
         val builder = new ParameterBundle.Builder(param_bundle)
-        builder.reset(interface_declaration.moduleStack)
+        builder.with(interface_declaration.moduleStack)
         val localParamBundle = builder.build
 
         // paths
