@@ -260,7 +260,7 @@ class IdlValidator extends AbstractIdlValidator
             error(Messages.IDENTIFIER_NAME_IS_KEYWORD, element, IdlPackage.Literals.STRUCT_DECLARATION__NAME)
         }
 
-        if (KeywordValidator.isKeyword(element.declarator, Pattern.CASE_INSENSITIVE))
+        if (element.declarator !== null && KeywordValidator.isKeyword(element.declarator, Pattern.CASE_INSENSITIVE))
         {
             error(Messages.IDENTIFIER_NAME_IS_KEYWORD, element, IdlPackage.Literals.ENUM_DECLARATION__DECLARATOR)
         }
