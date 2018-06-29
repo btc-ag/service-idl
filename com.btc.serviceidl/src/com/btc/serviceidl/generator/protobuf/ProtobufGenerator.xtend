@@ -151,20 +151,11 @@ class ProtobufGenerator
       return file_header + file_body
    }
    
-   private def void generateProtobufFile(ArtifactNature an, EObject container, String artifact_name, String file_content)
-   {
-        var projectPath = if (an == ArtifactNature.JAVA) // special directory structure according to Maven conventions
-                getJavaProtoLocation(container)
-            else
-                // TODO this should be done in a target-technology independent way
-                (if (an == ArtifactNature.CPP)
-                    moduleStructureStrategy.getProjectDir(param_bundle)
-                else
-                    Path.fromPortableString(
-                        GeneratorUtil.getTransformedModuleName(param_bundle, an, TransformType.FILE_SYSTEM))         
-         ).append(Constants.PROTOBUF_GENERATION_DIRECTORY_NAME)
-
-        file_system_access.generateFile(projectPath.append(artifact_name.proto).toOSString, an.label, file_content)
+   private def void generateProtobufFile(ArtifactNature an, EObject container, String artifact_name,
+        String file_content)
+    {
+        file_system_access.generateFile(makeProtobufPath(an, container, artifact_name).toOSString, an.label,
+            file_content)
     }
    
    private def IPath getJavaProtoLocation(EObject container)
@@ -552,7 +543,7 @@ class ProtobufGenerator
          
          val result = referenced_project + TransformType.PACKAGE.separator + plain_name
 
-         val import_path = makeImportPath(artifactNature, object_root, if (object_root instanceof InterfaceDeclaration) Names.plain(object_root) else Constants.FILE_NAME_TYPES )
+         val import_path = makeProtobufPath(artifactNature, object_root, if (object_root instanceof InterfaceDeclaration) Names.plain(object_root) else Constants.FILE_NAME_TYPES )
          referenced_files.add(import_path.toPortableString)
 
          if (artifactNature != ArtifactNature.JAVA)
@@ -592,7 +583,7 @@ class ProtobufGenerator
       '''
    }
    
-   private def IPath makeImportPath(ArtifactNature artifact_nature, EObject container, String file_name)
+   private def IPath makeProtobufPath(ArtifactNature artifact_nature, EObject container, String file_name)
     {
         // TODO unify this across target technologies
         (if (artifact_nature == ArtifactNature.JAVA)
@@ -607,7 +598,7 @@ class ProtobufGenerator
                 moduleStructureStrategy.getProjectDir(temp_bundle)
             else
                 Path.fromPortableString(GeneratorUtil.getTransformedModuleName(temp_bundle, artifact_nature,
-                    TransformType.FILE_SYSTEM))).append("gen")
+                    TransformType.FILE_SYSTEM))).append(Constants.PROTOBUF_GENERATION_DIRECTORY_NAME)
         }).append(file_name.proto)
     }
 }
