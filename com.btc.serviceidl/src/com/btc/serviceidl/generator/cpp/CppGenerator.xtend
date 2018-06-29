@@ -75,8 +75,8 @@ class CppGenerator
             // only for the top-level modules, produce a parent project file
             if (projectSet instanceof CMakeProjectSet)
             {
-                new CMakeTopLevelProjectFileGenerator(fileSystemAccess, generationSettingsProvider, projectSet,
-                    module).generate()
+                new CMakeTopLevelProjectFileGenerator(fileSystemAccess, generationSettingsProvider,
+                    projectSet, module).generate()
             }
         }
     }

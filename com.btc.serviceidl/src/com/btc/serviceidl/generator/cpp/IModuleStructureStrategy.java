@@ -3,6 +3,7 @@ package com.btc.serviceidl.generator.cpp;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.xtext.xbase.lib.Pair;
 
+import com.btc.serviceidl.generator.common.ParameterBundle;
 import com.btc.serviceidl.generator.common.ProjectType;
 import com.btc.serviceidl.idl.ModuleDeclaration;
 
@@ -68,5 +69,14 @@ public interface IModuleStructureStrategy {
      * @return a HeaderResolver
      */
     HeaderResolver createHeaderResolver();
+
+    /**
+     * Returns the base directory for a project.
+     * 
+     * @param bundle
+     *            project specification
+     * @return IPath specifying the base directory.
+     */
+    IPath getProjectDir(ParameterBundle bundle);
 
 }

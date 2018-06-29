@@ -132,7 +132,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
         val fileCount = 7
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
         val directory = ArtifactNature.CPP.label +
-            "modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
+            "Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
 
         val contents = ImmutableMap.of(ArtifactNature.CPP.label + "conanfile.py", '''
             from conan_template import *
@@ -170,7 +170,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             set(CAB_INT_SOURCE_DIR ${CMAKE_SOURCE_DIR})
             set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
             
-            include(${CMAKE_CURRENT_LIST_DIR}/modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/build/make.cmakeset)           
+            include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/ServiceAPI/build/make.cmakeset)           
         ''', directory + "build/CMakeLists.txt", '''
             # define target name
             set( TARGET BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI )

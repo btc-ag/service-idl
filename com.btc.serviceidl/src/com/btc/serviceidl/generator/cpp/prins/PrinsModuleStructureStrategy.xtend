@@ -14,6 +14,7 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.HeaderType
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -28,10 +29,8 @@ class PrinsModuleStructureStrategy implements IModuleStructureStrategy
     override getIncludeFilePath(Iterable<ModuleDeclaration> module_stack, ProjectType project_type, String baseName,
         HeaderType headerType)
     {
-        new Path(ReferenceResolver.MODULES_HEADER_PATH_PREFIX).append(
-            GeneratorUtil.asPath(ParameterBundle.createBuilder(module_stack).with(project_type).build,
-                ArtifactNature.CPP)).append(headerType.includeDirectoryName).append(baseName).addFileExtension(
-            headerType.fileExtension)
+        getProjectDir(new ParameterBundle(module_stack, project_type)).append(headerType.includeDirectoryName).append(
+            baseName).addFileExtension(headerType.fileExtension)
     }
 
     override getEncapsulationHeaders()
@@ -43,6 +42,12 @@ class PrinsModuleStructureStrategy implements IModuleStructureStrategy
     override createHeaderResolver()
     {
         PrinsHeaderResolver.create
+    }
+
+    override getProjectDir(ParameterBundle paramBundle)
+    {
+        new Path(ReferenceResolver.MODULES_HEADER_PATH_PREFIX).append(
+            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
     }
 
 }
