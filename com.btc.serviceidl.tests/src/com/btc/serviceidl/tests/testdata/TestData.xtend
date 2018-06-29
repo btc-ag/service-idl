@@ -146,7 +146,10 @@ class TestData
      */
     static def Iterable<Map.Entry<String, CharSequence>> getGoodTestCases()
     {
-        val testCaseFiles = getFilenamesForDirnameFromClassPath("com/btc/serviceidl/tests/testdata/good/")
+        val testCaseFiles = #[
+            getFilenamesForDirnameFromClassPath("com/btc/serviceidl/tests/testdata/good/"),
+            getFilenamesForDirnameFromClassPath("com/btc/serviceidl/tests/testdata/good_ext/")
+        ].flatten
 
         val resultMap = new HashMap<String, CharSequence>
         for (testCaseFile : testCaseFiles)
