@@ -487,7 +487,9 @@ class DotNetGenerator
       new ServerRunnerGenerator(basicCSharpSourceGenerator).generate(className)      
    }
 
-   private def generateAppConfig(ModuleDeclaration module)
+   // TODO for some reason, the return type must be specified here, otherwise we get compile errors
+   // on Jenkins (but not on travis-ci)
+   private def CharSequence generateAppConfig(ModuleDeclaration module)
    {
       reinitializeFile
       new AppConfigGenerator(basicCSharpSourceGenerator).generateAppConfig(module)
