@@ -24,7 +24,7 @@ class ServerRunnerGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def public generateServerRunnerImplementation(String class_name, InterfaceDeclaration interface_declaration)
+    def generateServerRunnerImplementation(String class_name, InterfaceDeclaration interface_declaration)
     {
         val api_name = typeResolver.resolve(interface_declaration)
         val impl_name = typeResolver.resolve(interface_declaration, ProjectType.IMPL)
@@ -80,7 +80,7 @@ class ServerRunnerGenerator
         '''
     }
 
-    def public generateServerRunnerProgram(String class_name, String server_runner_class_name, String beans_name,
+    def generateServerRunnerProgram(String class_name, String server_runner_class_name, String beans_name,
         String log4j_name, InterfaceDeclaration interface_declaration)
     {
         val resources_location = MavenArtifactType.TEST_RESOURCES.directoryLayout

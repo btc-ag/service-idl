@@ -51,7 +51,7 @@ class Util
     /**
      * Given a predicate, add a new line or return empty string
      */
-    def public static String addNewLine(boolean add_new_line)
+    def static String addNewLine(boolean add_new_line)
     {
         '''
             «IF add_new_line»
@@ -68,7 +68,7 @@ class Util
     /**
      * Converts the given name into Protobuf request message name.
      */
-    def public static String asRequest(String name)
+    def static String asRequest(String name)
     {
         makeBasicMessageName(name, Constants.PROTOBUF_REQUEST)
     }
@@ -76,12 +76,12 @@ class Util
     /**
      * Converts given name into Protobuf response message name.
      */
-    def public static String asResponse(String name)
+    def static String asResponse(String name)
     {
         makeBasicMessageName(name, Constants.PROTOBUF_RESPONSE)
     }
 
-    def public static Deque<ModuleDeclaration> getModuleStack(EObject element)
+    def static Deque<ModuleDeclaration> getModuleStack(EObject element)
     {
         var module_stack = new ArrayDeque<ModuleDeclaration>
         var current_container = if (element instanceof ModuleDeclaration) element else element.eContainer
@@ -96,12 +96,12 @@ class Util
         return module_stack
     }
 
-    def public static <T> T getParent(EObject element, Class<T> t)
+    def static <T> T getParent(EObject element, Class<T> t)
     {
         if (t.isAssignableFrom(element.class)) element as T else getParent(element.eContainer, t)
     }
 
-    def public static EObject getScopeDeterminant(EObject element)
+    def static EObject getScopeDeterminant(EObject element)
     {
         var container = element
         while (container !== null)
@@ -115,12 +115,12 @@ class Util
         return EcoreUtil.getRootContainer(element)
     }
 
-    def public static EventDeclaration getRelatedEvent(StructDeclaration object)
+    def static EventDeclaration getRelatedEvent(StructDeclaration object)
     {
         return object.getParent(IDLSpecification).eAllContents.filter(EventDeclaration).findFirst[data === object]
     }
 
-    def public static EventDeclaration getAnonymousEvent(InterfaceDeclaration interface_declaration)
+    def static EventDeclaration getAnonymousEvent(InterfaceDeclaration interface_declaration)
     {
         return interface_declaration.contains.filter(EventDeclaration).filter[name === null].head as EventDeclaration
     }
@@ -128,7 +128,7 @@ class Util
     /**
      * Get all structures which act message types in event within the given interface.
      */
-    def public static Iterable<StructDeclaration> getEventStructures(IDLSpecification idl,
+    def static Iterable<StructDeclaration> getEventStructures(IDLSpecification idl,
         InterfaceDeclaration interface_declaration)
     {
         val event_structs = new HashSet<StructDeclaration>
@@ -140,7 +140,7 @@ class Util
         return event_structs
     }
 
-    def public static Iterable<AbstractException> getRaisedExceptions(EObject container)
+    def static Iterable<AbstractException> getRaisedExceptions(EObject container)
     {
         val exceptions = new HashSet<AbstractException>
         for (function : container.eContents.filter(FunctionDeclaration))
@@ -158,7 +158,7 @@ class Util
      * Is the given element a sequence? For example, we then need to call the
      * Google Protobuf method as get...List()
      */
-    def public static boolean isSequenceType(EObject element)
+    def static boolean isSequenceType(EObject element)
     {
         tryGetSequence(element).present
     }
@@ -166,7 +166,7 @@ class Util
     /**
      * Does the given element represents a UUID type? 
      */
-    def public static boolean isUUIDType(EObject element)
+    def static boolean isUUIDType(EObject element)
     {
         if (element === null) return false
 
@@ -189,7 +189,7 @@ class Util
     /**
      * Does the given element represents an Enum type? 
      */
-    def public static boolean isEnumType(EObject element)
+    def static boolean isEnumType(EObject element)
     {
         if (element === null) return false
 
@@ -212,7 +212,7 @@ class Util
     /**
      * Does the given element represents a Byte type? 
      */
-    def public static boolean isByte(EObject element)
+    def static boolean isByte(EObject element)
     {
         if (element === null) return false
 
@@ -235,7 +235,7 @@ class Util
     /**
      * Does the given element represents a Int16 type? 
      */
-    def public static boolean isInt16(EObject element)
+    def static boolean isInt16(EObject element)
     {
         if (element === null) return false
 
@@ -258,7 +258,7 @@ class Util
     /**
      * Does the given element represents a Char type? 
      */
-    def public static boolean isChar(EObject element)
+    def static boolean isChar(EObject element)
     {
         if (element === null) return false
 
@@ -281,7 +281,7 @@ class Util
     /**
      * Does the given element represents a primitive type? 
      */
-    def public static boolean isPrimitive(EObject element)
+    def static boolean isPrimitive(EObject element)
     {
         if (element === null) return false
 
@@ -304,7 +304,7 @@ class Util
     /**
      * Does the given element represents a structure type? 
      */
-    def public static boolean isStruct(EObject element)
+    def static boolean isStruct(EObject element)
     {
         if (element === null) return false
 
@@ -327,7 +327,7 @@ class Util
     /**
      * Does the given element represents an exception type? 
      */
-    def public static boolean isException(EObject element)
+    def static boolean isException(EObject element)
     {
         if (element === null) return false
 
@@ -350,7 +350,7 @@ class Util
     /**
      * Does the given element represents an abstract cross reference type? 
      */
-    def public static boolean isAbstractCrossReferenceType(EObject element)
+    def static boolean isAbstractCrossReferenceType(EObject element)
     {
         if (element === null) return false
 
@@ -369,7 +369,7 @@ class Util
     /**
      * Does the given element represents an alias type? 
      */
-    def public static boolean isAlias(EObject element)
+    def static boolean isAlias(EObject element)
     {
         if (element === null) return false
 
@@ -388,7 +388,7 @@ class Util
     /**
      * Return the path to the *.proto file with base type definitions.
      */
-    def public static String getProtobufBaseTypesPath()
+    def static String getProtobufBaseTypesPath()
     {
         return "ServiceComm/ProtobufUtil/gen/BaseTypes.proto"
     }
@@ -397,18 +397,18 @@ class Util
      * If given element is a sequence (of sequence of sequence... of type T),
      * go deep to retrieve T; otherwise return element immediately. 
      */
-    def public static EObject getUltimateType(EObject element)
+    def static EObject getUltimateType(EObject element)
     {
         return getUltimateType(element, true)
     }
 
-    def public static boolean isFailable(EObject element)
+    def static boolean isFailable(EObject element)
     {
         val sequence = tryGetSequence(element)
         return (sequence.present && sequence.get.failable)
     }
 
-    def public static Optional<SequenceDeclaration> tryGetSequence(EObject element)
+    def static Optional<SequenceDeclaration> tryGetSequence(EObject element)
     {
         if (element instanceof SequenceDeclaration)
             return Optional.of(element)
@@ -432,7 +432,7 @@ class Util
      * Core logic for getUltimateType; the flag "decompose_typedef" allows us either
      * to get the basic type defined by this typedef (true) or the typedef itself (false).
      */
-    def public static EObject getUltimateType(EObject element, boolean decompose_typedef)
+    def static EObject getUltimateType(EObject element, boolean decompose_typedef)
     {
         if (element instanceof SequenceDeclaration)
             return getUltimateType(element.type, decompose_typedef)
@@ -458,7 +458,7 @@ class Util
     /**
      * Format a comment element as plain text. Line breaks are preserved at proper places!
      */
-    def public static String getPlainText(DocCommentElement comment)
+    def static String getPlainText(DocCommentElement comment)
     {
         return comment.text.replaceAll("\\p{Blank}+", " ").replaceAll("\\p{Cntrl}\\p{Blank}", "").replaceAll(
             Pattern.quote("<#"), "").replaceAll(Pattern.quote("#>"), "").replaceFirst("^" + Pattern.quote("#"), "").trim

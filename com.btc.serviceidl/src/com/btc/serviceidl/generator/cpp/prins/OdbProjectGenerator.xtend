@@ -148,7 +148,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
    
    private static class OdbSourceGenerationStrategy implements ISourceGenerationStrategy
     {
-        def override String generateProjectSource(BasicCppGenerator basicCppGenerator, InterfaceDeclaration interface_declaration)
+        override String generateProjectSource(BasicCppGenerator basicCppGenerator, InterfaceDeclaration interface_declaration)
         {
             val file_content = generateCppImpl(basicCppGenerator.typeResolver, basicCppGenerator.targetVersionProvider, 
                 basicCppGenerator.paramBundle, interface_declaration
@@ -157,7 +157,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
             generateSource(basicCppGenerator, file_content.toString, Optional.empty)
         }
 
-        def override String generateProjectHeader(BasicCppGenerator basicCppGenerator, IModuleStructureStrategy moduleStructureStrategy, 
+        override String generateProjectHeader(BasicCppGenerator basicCppGenerator, IModuleStructureStrategy moduleStructureStrategy, 
             InterfaceDeclaration interface_declaration, String export_header)
         {
             val file_content = generateInterface(basicCppGenerator.typeResolver, basicCppGenerator.targetVersionProvider, 

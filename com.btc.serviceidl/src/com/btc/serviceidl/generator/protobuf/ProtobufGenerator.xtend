@@ -60,12 +60,12 @@ import com.google.common.base.CaseFormat
 class ProtobufGenerator
 {
    // global variables
-   private var Resource resource
-   private var IFileSystemAccess file_system_access
-   private var IQualifiedNameProvider qualified_name_provider
-   private var IScopeProvider scope_provider
+   var Resource resource
+   var IFileSystemAccess file_system_access
+   var IQualifiedNameProvider qualified_name_provider
+   var IScopeProvider scope_provider
    
-   private var ParameterBundle param_bundle
+   var ParameterBundle param_bundle
    
    val referenced_files = new HashSet<String>
    val generated_artifacts = new HashMap<EObject, String>
@@ -83,12 +83,12 @@ class ProtobufGenerator
       throw new IllegalArgumentException("Unsupported artifact nature for project references: " + artifact_nature)
    }
    
-   def public Map<EObject, String> getGeneratedArtifacts()
+   def Map<EObject, String> getGeneratedArtifacts()
    {
       return generated_artifacts
    }
    
-   def public void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Iterable<ArtifactNature> languages)
+   def void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Iterable<ArtifactNature> languages)
    {
       resource = res
       file_system_access = fsa

@@ -110,7 +110,7 @@ class ProxyGenerator extends BasicCppGenerator {
       '''
     }
     
-    def override generateFunctionBody(InterfaceDeclaration interface_declaration, FunctionDeclaration function)
+    override generateFunctionBody(InterfaceDeclaration interface_declaration, FunctionDeclaration function)
     {
         val protobuf_request_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
         val protobuf_response_message= typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
@@ -121,14 +121,14 @@ class ProxyGenerator extends BasicCppGenerator {
            // encode request -->
            auto * const concreteRequest( request->mutable_«function.name.asRequest.asCppProtobufName»() );
            «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
-              «IF GeneratorUtil.useCodec(param.paramType, ArtifactNature.CPP) && !(com.btc.serviceidl.util.Util.isByte(param.paramType) || com.btc.serviceidl.util.Util.isInt16(param.paramType) || com.btc.serviceidl.util.Util.isChar(param.paramType))»
-                 «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
-                    «val ulimate_type = com.btc.serviceidl.util.Util.getUltimateType(param.paramType)»
-                    «val is_failable = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
+              «IF GeneratorUtil.useCodec(param.paramType, ArtifactNature.CPP) && !(param.paramType.isByte || param.paramType.isInt16 || param.paramType.isChar)»
+                 «IF param.paramType.isSequenceType»
+                    «val ulimate_type = param.paramType.ultimateType»
+                    «val is_failable = param.paramType.isFailable»
                     «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.RESPONSE).fullyQualifiedName»
                     «typeResolver.resolveCodecNS(paramBundle, ulimate_type, is_failable, Optional.of(interface_declaration))»::Encode«IF is_failable»Failable«ENDIF»< «resolve(ulimate_type)», «IF is_failable»«typeResolver.resolveFailableProtobufType(param.paramType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF» >
                        ( «resolveSymbol("std::move")»(«param.paramName»), concreteRequest->mutable_«param.paramName.asCppProtobufName»() );
-                 «ELSEIF com.btc.serviceidl.util.Util.isEnumType(param.paramType)»
+                 «ELSEIF param.paramType.isEnumType»
                     concreteRequest->set_«param.paramName.asCppProtobufName»( «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Encode(«param.paramName») );
                  «ELSE»
                     «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Encode( «param.paramName», concreteRequest->mutable_«param.paramName.asCppProtobufName»() );
@@ -150,7 +150,7 @@ class ProxyGenerator extends BasicCppGenerator {
                  «IF !output_parameters.empty»
                     // handle [out] parameters
                     «FOR param : output_parameters»
-                       «IF com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
+                       «IF param.paramType.isSequenceType»
                           «typeResolver.resolveDecode(paramBundle, param.paramType, interface_declaration)»( concreteResponse.«param.paramName.asCppProtobufName»(), «param.paramName» );
                        «ELSE»
                           «param.paramName» = «makeDecodeResponse(param.paramType, interface_declaration, param.paramName.asCppProtobufName)»

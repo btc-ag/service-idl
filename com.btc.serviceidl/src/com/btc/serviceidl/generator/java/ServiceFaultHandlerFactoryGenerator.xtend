@@ -30,7 +30,7 @@ class ServiceFaultHandlerFactoryGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def public generateServiceFaultHandlerFactory(String class_name, EObject container)
+    def generateServiceFaultHandlerFactory(String class_name, EObject container)
     {
         val service_fault_handler = typeResolver.resolve(JavaClassNames.DEFAULT_SERVICE_FAULT_HANDLER)
         val i_error = typeResolver.resolve(JavaClassNames.ERROR)

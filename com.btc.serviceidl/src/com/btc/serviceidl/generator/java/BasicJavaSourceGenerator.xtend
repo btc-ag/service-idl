@@ -54,27 +54,27 @@ class BasicJavaSourceGenerator
         ServiceCommVersion.get(targetVersionProvider.getTargetVersion(JavaConstants.SERVICECOMM_VERSION_KIND))
     }
 
-    def public dispatch String toText(ExceptionDeclaration element)
+    def dispatch String toText(ExceptionDeclaration element)
     {
         typeResolver.resolveException(qualified_name_provider.getFullyQualifiedName(element).toString) ?:
             '''«typeResolver.resolve(element)»'''
     }
 
-    def public dispatch String toText(SequenceDeclaration item)
+    def dispatch String toText(SequenceDeclaration item)
     {
         val is_failable = item.failable
 
         '''«typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«toText(item.type)»«IF is_failable»>«ENDIF»>'''
     }
 
-    def public dispatch String toText(ParameterElement element)
+    def dispatch String toText(ParameterElement element)
     {
         '''
             «typeResolver.resolve(element)»
         '''
     }
 
-    def public dispatch String toText(MemberElement element)
+    def dispatch String toText(MemberElement element)
     {
         new MemberElementWrapper(element).format.toString
     }
@@ -89,7 +89,7 @@ class BasicJavaSourceGenerator
         '''«IF isOptional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«typeName»«IF isOptional»>«ENDIF»'''
     }
 
-    def public dispatch String toText(ReturnTypeElement element)
+    def dispatch String toText(ReturnTypeElement element)
     {
         if (element.isVoid)
             return "void"
@@ -97,7 +97,7 @@ class BasicJavaSourceGenerator
         throw new IllegalArgumentException("Unknown ReturnTypeElement: " + element.class.toString)
     }
 
-    def public dispatch String toText(AbstractType element)
+    def dispatch String toText(AbstractType element)
     {
         if (element.primitiveType !== null)
             return toText(element.primitiveType)
@@ -109,12 +109,12 @@ class BasicJavaSourceGenerator
         throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
     }
 
-    def public dispatch String toText(PrimitiveType element)
+    def dispatch String toText(PrimitiveType element)
     {
         return typeResolver.resolve(element).toString
     }
 
-    def public dispatch String toText(AliasDeclaration element)
+    def dispatch String toText(AliasDeclaration element)
     {
         var type_name = typedef_table.get(element.name)
         val ultimate_type = element.type.ultimateType
@@ -129,29 +129,29 @@ class BasicJavaSourceGenerator
         return type_name.toString
     }
 
-    def public dispatch String toText(EnumDeclaration element)
+    def dispatch String toText(EnumDeclaration element)
     {
         '''«typeResolver.resolve(element)»'''
     }
 
-    def public dispatch String toText(EventDeclaration element)
+    def dispatch String toText(EventDeclaration element)
     {
         '''«typeResolver.resolve(element)»'''
     }
 
-    def public dispatch String toText(StructDeclaration element)
+    def dispatch String toText(StructDeclaration element)
     {
         '''«typeResolver.resolve(element)»'''
     }
 
-    def public dispatch String toDeclaration(EObject element)
+    def dispatch String toDeclaration(EObject element)
     {
         '''
             // TODO: implement this...
         '''
     }
 
-    def public dispatch String toDeclaration(ExceptionDeclaration element)
+    def dispatch String toDeclaration(ExceptionDeclaration element)
     {
         val class_members = new ArrayList<Pair<String, String>>
         for (member : element.effectiveMembers)
@@ -191,7 +191,7 @@ class BasicJavaSourceGenerator
         '''
     }
 
-    def public dispatch String toDeclaration(EnumDeclaration element)
+    def dispatch String toDeclaration(EnumDeclaration element)
     {
         '''
             public enum «element.name» {
@@ -202,7 +202,7 @@ class BasicJavaSourceGenerator
         '''
     }
 
-    def public dispatch String toDeclaration(StructDeclaration element)
+    def dispatch String toDeclaration(StructDeclaration element)
     {
         val class_members = new ArrayList<Pair<String, String>>
         for (member : element.effectiveMembers)
@@ -246,7 +246,7 @@ class BasicJavaSourceGenerator
         '''
     }
 
-    def public String makeInterfaceMethodSignature(FunctionDeclaration function)
+    def String makeInterfaceMethodSignature(FunctionDeclaration function)
     {
         val is_sync = function.isSync
         val is_void = function.returnedType.isVoid
@@ -259,7 +259,7 @@ class BasicJavaSourceGenerator
         ) throws«FOR exception : function.raisedExceptions SEPARATOR ',' AFTER ','» «toText(exception)»«ENDFOR» Exception'''
     }
 
-    def public dispatch String makeDefaultValue(PrimitiveType element)
+    def dispatch String makeDefaultValue(PrimitiveType element)
     {
         if (element.isString)
             '''""'''
@@ -283,17 +283,17 @@ class BasicJavaSourceGenerator
             '''0'''
     }
 
-    def public dispatch String makeDefaultValue(AliasDeclaration element)
+    def dispatch String makeDefaultValue(AliasDeclaration element)
     {
         makeDefaultValue(element.type)
     }
 
-    def public dispatch String makeDefaultValue(AbstractType element)
+    def dispatch String makeDefaultValue(AbstractType element)
     {
         makeDefaultValue(element.referenceType ?: element.primitiveType ?: element.collectionType)
     }
 
-    def public dispatch String makeDefaultValue(SequenceDeclaration element)
+    def dispatch String makeDefaultValue(SequenceDeclaration element)
     {
         val type = toText(element.type)
         val is_failable = element.failable
@@ -302,17 +302,17 @@ class BasicJavaSourceGenerator
         '''new «typeResolver.resolve("java.util.Vector")»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«type»«IF is_failable»>«ENDIF»>()'''
     }
 
-    def public dispatch String makeDefaultValue(StructDeclaration element)
+    def dispatch String makeDefaultValue(StructDeclaration element)
     {
         '''new «typeResolver.resolve(element)»(«FOR member : element.allMembers SEPARATOR ", "»«IF member.optional»«typeResolver.resolve(JavaClassNames.OPTIONAL)».empty()«ELSE»«makeDefaultValue(member.type)»«ENDIF»«ENDFOR»)'''
     }
 
-    def public dispatch String makeDefaultValue(EnumDeclaration element)
+    def dispatch String makeDefaultValue(EnumDeclaration element)
     {
         '''«toText(element)».«element.containedIdentifiers.head»'''
     }
 
-    def public dispatch String makeDefaultValue(EObject element)
+    def dispatch String makeDefaultValue(EObject element)
     {
         throw new IllegalArgumentException("Cannot make default value for element of type " + element.eClass.name)
     }
@@ -326,7 +326,7 @@ class BasicJavaSourceGenerator
         '''
     }
 
-    def public static String makeGetter(String type_name, String var_name)
+    def static String makeGetter(String type_name, String var_name)
     {
         '''
             public «type_name» get«var_name.toFirstUpper»() {
@@ -344,30 +344,30 @@ class BasicJavaSourceGenerator
         '''
     }
 
-    def public static String newLine()
+    def static String newLine()
     {
         '''
         
         '''
     }
 
-    def public static String asMethod(String name)
+    def static String asMethod(String name)
     {
         name.toFirstLower
     }
 
-    def public static String asParameter(String name)
+    def static String asParameter(String name)
     {
         name.toFirstLower
     }
 
-    def public static String asServiceFaultHandlerFactory(EObject container)
+    def static String asServiceFaultHandlerFactory(EObject container)
     {
         val name = if (container instanceof InterfaceDeclaration) container.name else ""
         '''«name»ServiceFaultHandlerFactory'''
     }
 
-    def public static String makeDefaultMethodStub()
+    def static String makeDefaultMethodStub()
     {
         '''
             // TODO Auto-generated method stub

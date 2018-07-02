@@ -94,7 +94,7 @@ class ProtobufUtil
             false
     }
 
-    public static def String asJavaProtobufName(String name)
+    static def String asJavaProtobufName(String name)
     {
         // TODO change this function to accept a model construct rather than a bare name
         asProtobufName(name, CaseFormat.UPPER_CAMEL)

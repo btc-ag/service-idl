@@ -58,12 +58,12 @@ class TypeResolver
         this.dependencies = dependencies
     }
     
-    def public addDependency(MavenDependency dependency)
+    def addDependency(MavenDependency dependency)
     {
         dependencies.add(dependency)
     }
 
-    def public ResolvedName resolve(String name)
+    def ResolvedName resolve(String name)
     {
         val fully_qualified_name = QualifiedName.create(name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
         referenced_types.add(name)
@@ -72,7 +72,7 @@ class TypeResolver
         return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, false)
     }
 
-    def public ResolvedName resolve(PrimitiveType element)
+    def ResolvedName resolve(PrimitiveType element)
     {
         if (element.isUUID)
             return resolve(JavaClassNames.UUID)
@@ -104,12 +104,12 @@ class TypeResolver
         throw new IllegalArgumentException("Unknown PrimitiveType: " + element.class.toString)
     }
 
-    def public ResolvedName resolve(EObject element)
+    def ResolvedName resolve(EObject element)
     {
         return resolve(element, element.mainProjectType)
     }
 
-    def public ResolvedName resolve(EObject element, ProjectType project_type)
+    def ResolvedName resolve(EObject element, ProjectType project_type)
     {
         var name = qualified_name_provider.getFullyQualifiedName(element)
 
@@ -164,7 +164,7 @@ class TypeResolver
         return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, fully_qualified)
     }
 
-    def public String resolveException(String name)
+    def String resolveException(String name)
     {
         // temporarily some special handling for exceptions, because not all
         // C++ CAB exceptions are supported by the Java CAB

@@ -30,7 +30,7 @@ class ClientConsoleGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def public generateClientConsoleProgram(String class_name, String log4j_name,
+    def generateClientConsoleProgram(String class_name, String log4j_name,
         InterfaceDeclaration interface_declaration)
     {
         val resources_location = MavenArtifactType.TEST_RESOURCES.directoryLayout

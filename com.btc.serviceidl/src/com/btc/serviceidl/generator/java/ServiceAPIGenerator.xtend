@@ -32,7 +32,7 @@ class ServiceAPIGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def public generateEvent(EventDeclaration event)
+    def generateEvent(EventDeclaration event)
     {
         val keys = new ArrayList<Pair<String, String>>
         for (key : event.keys)

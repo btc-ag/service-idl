@@ -26,6 +26,7 @@ import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.TypeResolverExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors
 class CodecGenerator extends BasicCppGenerator
@@ -102,9 +103,9 @@ class CodecGenerator extends BasicCppGenerator
             {
                «resolveSymbol("std::call_once")»(register_fault_handlers, [&]()
                {
-                  «FOR exception : com.btc.serviceidl.util.Util.getFailableExceptions(owner)»
+                  «FOR exception : owner.failableExceptions»
                       «val exception_type = resolve(exception)»
-                      «val exception_name = com.btc.serviceidl.util.Util.getCommonExceptionName(exception, qualified_name_provider)»
+                      «val exception_name = exception.getCommonExceptionName(qualified_name_provider)»
                       fault_handlers["«exception_name»"] = [](«cab_string» const& msg) { return «cab_create_unique»<«exception_type»>(msg); };
                   «ENDFOR»
                   
@@ -561,9 +562,9 @@ class CodecGenerator extends BasicCppGenerator
         val use_codec = GeneratorUtil.useCodec(element.type, ArtifactNature.CPP)
         val is_pointer = useSmartPointer(element.container, element.type)
         val is_optional = element.optional
-        val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(element.type)
+        val is_sequence = element.type.isSequenceType
         val protobuf_name = element.name.asCppProtobufName
-        val is_failable = com.btc.serviceidl.util.Util.isFailable(element.type)
+        val is_failable = element.type.isFailable
         val codec_name = if (use_codec) typeResolver.resolveDecode(paramBundle, element.type, container, !is_failable)
 
         '''
@@ -612,11 +613,11 @@ class CodecGenerator extends BasicCppGenerator
     {
         val use_codec = GeneratorUtil.useCodec(element.type, ArtifactNature.CPP)
         val optional = element.optional
-        val is_enum = com.btc.serviceidl.util.Util.isEnumType(element.type)
+        val is_enum = element.type.isEnumType
         val is_pointer = useSmartPointer(element.container, element.type)
         '''
             «IF optional»if (api_input.«element.name.asMember»«IF is_pointer» !== nullptr«ELSE».GetIsPresent()«ENDIF»)«ENDIF»
-            «IF use_codec && !(com.btc.serviceidl.util.Util.isByte(element.type) || com.btc.serviceidl.util.Util.isInt16(element.type) || com.btc.serviceidl.util.Util.isChar(element.type) || is_enum)»
+            «IF use_codec && !(element.type.isByte || element.type.isInt16 || element.type.isChar || is_enum)»
                 «IF optional»   «ENDIF»«resolveEncode(element.type)»( «IF optional»*( «ENDIF»api_input.«element.name.asMember»«IF optional && !is_pointer».GetValue()«ENDIF»«IF optional» )«ENDIF», protobuf_output->mutable_«element.name.asCppProtobufName»() );
             «ELSE»
                 «IF optional»   «ENDIF»protobuf_output->set_«element.name.asCppProtobufName»(«IF is_enum»«resolveEncode(element.type)»( «ENDIF»«IF optional»*«ENDIF»api_input.«element.name.asMember»«IF optional && !is_pointer».GetValue()«ENDIF» «IF is_enum»)«ENDIF»);
@@ -632,26 +633,20 @@ class CodecGenerator extends BasicCppGenerator
 
     private def String resolveEncode(EObject element)
     {
-        val is_failable = com.btc.serviceidl.util.Util.isFailable(element)
-        if (is_failable)
-            return '''EncodeFailable'''
-
-        if (com.btc.serviceidl.util.Util.isUUIDType(element))
-            return '''Encode'''
-
-        return '''«typeResolver.resolveCodecNS(paramBundle, element)»::Encode'''
+        if (element.isFailable)
+            "EncodeFailable"
+        else if (element.isUUIDType)
+            "Encode"
+        else
+            '''«typeResolver.resolveCodecNS(paramBundle, element)»::Encode'''
     }
 
     private static def boolean isMutableField(EObject type)
     {
-        val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(type)
-        val use_codec = GeneratorUtil.useCodec(ultimate_type, ArtifactNature.CPP)
-        val is_enum = com.btc.serviceidl.util.Util.isEnumType(ultimate_type)
+        val ultimate_type = type.ultimateType
 
-        return ( use_codec &&
-            !(com.btc.serviceidl.util.Util.isByte(ultimate_type) ||
-                com.btc.serviceidl.util.Util.isInt16(ultimate_type) ||
-                com.btc.serviceidl.util.Util.isChar(ultimate_type) || is_enum) )
+        return GeneratorUtil.useCodec(ultimate_type, ArtifactNature.CPP) &&
+            !(ultimate_type.isByte || ultimate_type.isInt16 || ultimate_type.isChar || ultimate_type.isEnumType)
     }
 
     def generateHeaderFileBody(EObject owner)

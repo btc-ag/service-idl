@@ -31,7 +31,7 @@ class TestGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def public generateFileImplTest(String class_name, String super_class,
+    def generateFileImplTest(String class_name, String super_class,
         InterfaceDeclaration interface_declaration)
     {
         '''
@@ -46,7 +46,7 @@ class TestGenerator
         '''
     }
 
-    def public generateTestStub(String class_name, IPath src_root_path,
+    def generateTestStub(String class_name, IPath src_root_path,
         InterfaceDeclaration interface_declaration)
     {
         // TODO is this really useful? it only generates a stub, what should be done when regenerating?
@@ -115,7 +115,7 @@ class TestGenerator
         '''
     }
 
-    def public generateFileZeroMQItegrationTest(String class_name, String super_class, String log4j_name,
+    def generateFileZeroMQItegrationTest(String class_name, String super_class, String log4j_name,
         IPath src_root_path, InterfaceDeclaration interface_declaration)
     {
         val resources_location = MavenArtifactType.TEST_RESOURCES.directoryLayout
