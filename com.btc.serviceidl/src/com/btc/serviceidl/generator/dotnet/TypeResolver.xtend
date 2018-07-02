@@ -172,8 +172,7 @@ class TypeResolver
             else
             {
                 GeneratorUtil.getRelativePathsUpwards(parameterBundle.moduleStack).append(
-                    GeneratorUtil.getTransformedModuleName(temp_param, ArtifactNature.DOTNET,
-                        TransformType.FILE_SYSTEM)).append(project_name)
+                    GeneratorUtil.asPath(temp_param, ArtifactNature.DOTNET)).append(project_name)
             }))
     }
 
