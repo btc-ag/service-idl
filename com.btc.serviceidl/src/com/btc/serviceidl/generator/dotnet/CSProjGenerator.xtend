@@ -17,6 +17,7 @@ import com.btc.serviceidl.generator.common.TransformType
 import java.util.Map
 import org.eclipse.core.runtime.IPath
 
+import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 
 class CSProjGenerator {
@@ -140,7 +141,7 @@ class CSProjGenerator {
           <Compile Include="Properties\AssemblyInfo.cs" />
         </ItemGroup>
           «FOR name : project_references.keySet.filter[it != project_name] BEFORE "  <ItemGroup>" AFTER "  </ItemGroup>"»
-             <ProjectReference Include="«project_references.get(name).toPortableString.replace(IPath.SEPARATOR, "\\")».csproj">
+             <ProjectReference Include="$(SolutionDir)«project_references.get(name).toWindowsString».csproj">
                <Project>{«vsSolution.getCsprojGUID(name)»}</Project>
                <Name>«name»</Name>
              </ProjectReference>

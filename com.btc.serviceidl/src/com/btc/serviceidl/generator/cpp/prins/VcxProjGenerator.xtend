@@ -314,7 +314,7 @@ class VcxProjGenerator
           «IF !effective_project_references.empty»
               <ItemGroup>
                 «FOR name : effective_project_references»
-                    <ProjectReference Include="«vsSolution.getVcxProjPath(name)».vcxproj">
+                    <ProjectReference Include="$(SolutionDir)«vsSolution.getVcxProjPath(name)».vcxproj">
                       <Project>{«vsSolution.getVcxprojGUID(name)»}</Project>
                     </ProjectReference>
                 «ENDFOR»

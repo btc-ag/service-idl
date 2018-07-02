@@ -17,11 +17,12 @@ import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.HeaderResolver
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
-import com.btc.serviceidl.util.Constants
 import java.util.HashMap
 import java.util.UUID
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Data
+
+import static extension com.btc.serviceidl.generator.common.Extensions.*
 
 class VSSolution implements IProjectSet
 {
@@ -118,6 +119,6 @@ class VSSolution implements IProjectSet
 
     private static def String makeProjectPath(IPath projectPath, String project_name)
     {
-        '''$(SolutionDir)\«projectPath.toString.replace(Constants.SEPARATOR_FILE, Constants.SEPARATOR_BACKSLASH)»\«project_name»'''
+        projectPath.append(project_name).toWindowsString
     }
 }

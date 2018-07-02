@@ -41,7 +41,6 @@ import java.util.HashMap
 import java.util.HashSet
 import java.util.Set
 import org.eclipse.core.runtime.IPath
-import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -72,14 +71,14 @@ class DotNetGenerator
    val vsSolution = new VSSolution
    val csFiles = new HashSet<String>
    val protobufFiles = new HashSet<String>
-   var protobufProjectReferences = new HashMap<String, HashMap<String, String>>
+   var protobufProjectReferences = new HashMap<String, HashMap<String, IPath>>
    var extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
     
    val paketDependencies = new HashSet<Pair<String, String>>
    
    new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes,
-        HashMap<String, HashMap<String, String>> protobufProjectReferences)
+        HashMap<String, HashMap<String, IPath>> protobufProjectReferences)
     {
         this.idl = idl
         this.fileSystemAccess = fileSystemAccess
@@ -655,7 +654,7 @@ class DotNetGenerator
             for (key : protobufReferences.keySet)
             {
                if (!typeResolver.projectReferences.containsKey(key))
-                  typeResolver.projectReferences.put(key, Path.fromPortableString(protobufReferences.get(key)))
+                  typeResolver.projectReferences.put(key, protobufReferences.get(key))
             }
          }
       }

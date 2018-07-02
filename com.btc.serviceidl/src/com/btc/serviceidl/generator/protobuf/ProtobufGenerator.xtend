@@ -75,10 +75,10 @@ class ProtobufGenerator
    val referenced_files = new HashSet<String>
    val generated_artifacts = new HashMap<EObject, String>
    val typedef_table = new HashMap<String, String>
-   val cpp_project_references = new HashMap<String, HashMap<String, String>>
-   val dotnet_project_references = new HashMap<String, HashMap<String, String>>
+   val cpp_project_references = new HashMap<String, HashMap<String, IPath>>
+   val dotnet_project_references = new HashMap<String, HashMap<String, IPath>>
    
-   def HashMap<String, HashMap<String, String>> getProjectReferences(ArtifactNature artifact_nature)
+   def HashMap<String, HashMap<String, IPath>> getProjectReferences(ArtifactNature artifact_nature)
    {
       if (artifact_nature == ArtifactNature.CPP)
          return cpp_project_references
@@ -525,8 +525,6 @@ class ProtobufGenerator
       {
          val temp_bundle = ParameterBundle.createBuilder(Util.getModuleStack(object_root)).with(ProjectType.PROTOBUF).build
 
-         val root_path = GeneratorUtil.getTransformedModuleName(temp_bundle, artifactNature, TransformType.FILE_SYSTEM)
-         
          var String referenced_project
          var String current_project
          
@@ -550,11 +548,13 @@ class ProtobufGenerator
          {
             if (current_project != referenced_project)
             {
-               val project_references = getProjectReferences(artifactNature)
-               val project_path = "$(SolutionDir)" + ( if (artifactNature == ArtifactNature.DOTNET) "../" else "/" ) + root_path + "/" + referenced_project
-               val HashMap<String, String> references = project_references.get(current_project) ?: new HashMap<String, String>
-               references.put(referenced_project, project_path)
-               project_references.put(current_project, references)
+                val project_references = getProjectReferences(artifactNature)
+                // TODO this makes some assumptions on the directory structure, which should be determined by the IModuleStructureStrategy
+                val project_path = ( if (artifactNature == ArtifactNature.DOTNET) Path.
+                    fromPortableString("..") else Path.EMPTY ).append(GeneratorUtil.asPath(temp_bundle, artifactNature)).append(referenced_project)
+                val references = project_references.get(current_project) ?: new HashMap<String, IPath>
+                references.put(referenced_project, project_path)
+                project_references.put(current_project, references)
             }
          }
          
