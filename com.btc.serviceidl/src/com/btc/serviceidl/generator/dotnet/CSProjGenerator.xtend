@@ -176,7 +176,7 @@ class CSProjGenerator {
     
     static def makeProtobufFilePath(ParameterBundle parameterBundle, String protobufFileBasename)
     {
-        '''$(SolutionDir)/«GeneratorUtil.getTransformedModuleName(parameterBundle, ArtifactNature.DOTNET, TransformType.FILE_SYSTEM)»/gen/«protobufFileBasename».proto'''
+        '''$(SolutionDir)/«GeneratorUtil.asPath(parameterBundle, ArtifactNature.DOTNET)»/gen/«protobufFileBasename».proto'''
     }
 
    /**
