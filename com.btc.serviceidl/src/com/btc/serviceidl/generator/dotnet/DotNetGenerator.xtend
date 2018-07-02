@@ -658,7 +658,7 @@ class DotNetGenerator
             }
          }
       }
-
+      
       CSProjGenerator.generateCSProj(
             projectName,
             vsSolution,
@@ -667,7 +667,7 @@ class DotNetGenerator
             nugetPackages.resolvedPackages,
             typeResolver.projectReferences,
             csFiles,
-            if (isProtobuf) protobufFiles else null
+            protobufFiles
         )      
    }
    

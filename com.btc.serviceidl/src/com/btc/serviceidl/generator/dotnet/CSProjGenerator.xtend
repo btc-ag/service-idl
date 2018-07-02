@@ -130,14 +130,12 @@ class CSProjGenerator {
           «ENDFOR»
         </ItemGroup>
         <ItemGroup>
-        «IF protobuf_files !== null»
-          «FOR protobuf_file : protobuf_files»
-            <Compile Include="«protobuf_file».cs" />
-          «ENDFOR»
-        «ENDIF»
-          «FOR cs_file : cs_files»
-            <Compile Include="«cs_file».cs" />
-          «ENDFOR»
+        «FOR protobuf_file : protobuf_files»
+          <Compile Include="«protobuf_file».cs" />
+        «ENDFOR»
+        «FOR cs_file : cs_files»
+          <Compile Include="«cs_file».cs" />
+        «ENDFOR»
           <Compile Include="Properties\AssemblyInfo.cs" />
         </ItemGroup>
           «FOR name : project_references.keySet.filter[it != project_name] BEFORE "  <ItemGroup>" AFTER "  </ItemGroup>"»
@@ -150,7 +148,7 @@ class CSProjGenerator {
         <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
         «/** TODO protobufBaseDir was "$(SolutionDir)..", this must be generalized */»
         «val protobufBaseDir = "$(SolutionDir)"»
-        «IF protobuf_files !== null»
+        «IF !protobuf_files.empty»
           <PropertyGroup>
             <PreBuildEvent>
             «FOR protobufFileBasename : protobuf_files»
