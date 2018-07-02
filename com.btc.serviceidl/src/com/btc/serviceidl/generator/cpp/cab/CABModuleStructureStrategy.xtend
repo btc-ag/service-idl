@@ -47,7 +47,6 @@ class CABModuleStructureStrategy implements IModuleStructureStrategy
 
     override getProjectDir(ParameterBundle paramBundle)
     {
-        Path.fromPortableString(
-            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
+        GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP)
     }
 }
