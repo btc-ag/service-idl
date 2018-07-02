@@ -2,10 +2,9 @@ package com.btc.serviceidl.generator.cpp.cmake
 
 import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
-import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
-import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.CppConstants
+import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -119,10 +118,7 @@ class CMakeTopLevelProjectFileGenerator
 
     private def relativePath(ParameterBundle paramBundle)
     {
-        // TODO this depends on the implementation of ProjectGeneratorBaseBase.getProjectPath
-        val projectDir = new Path("modules").append(
-            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
-        projectDir.makeRelativeTo(modulePath)
+        generationSettingsProvider.moduleStructureStrategy.getProjectDir(paramBundle).makeRelativeTo(modulePath)
     }
 
 }

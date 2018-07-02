@@ -14,17 +14,16 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.HeaderResolver
 import com.btc.serviceidl.generator.cpp.HeaderType
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.TypeResolver
-import com.btc.serviceidl.generator.cpp.prins.ReferenceResolver
 import com.btc.serviceidl.idl.ModuleDeclaration
 import org.eclipse.core.runtime.Path
 
-import static extension com.btc.serviceidl.generator.cpp.Util.*
-
 import static extension com.btc.serviceidl.generator.cpp.HeaderResolver.Builder.*
+import static extension com.btc.serviceidl.generator.cpp.Util.*
 
 class CABModuleStructureStrategy implements IModuleStructureStrategy
 {
@@ -32,11 +31,8 @@ class CABModuleStructureStrategy implements IModuleStructureStrategy
     override getIncludeFilePath(Iterable<ModuleDeclaration> module_stack, ProjectType project_type, String baseName,
         HeaderType headerType)
     {
-        // TODO remove MODULES_HEADER_PATH_PREFIX here, and add a method to IModuleStructureStrategy that determines that
-        new Path(ReferenceResolver.MODULES_HEADER_PATH_PREFIX).append(
-            GeneratorUtil.asPath(ParameterBundle.createBuilder(module_stack).with(project_type).build,
-                ArtifactNature.CPP)).append(headerType.includeDirectoryName).append(baseName).addFileExtension(
-            headerType.fileExtension)
+        getProjectDir(new ParameterBundle(module_stack, project_type)).append(headerType.includeDirectoryName).append(
+            baseName).addFileExtension(headerType.fileExtension)
     }
 
     override getEncapsulationHeaders()
@@ -51,4 +47,9 @@ class CABModuleStructureStrategy implements IModuleStructureStrategy
             TypeResolver.STL_INCLUDE_GROUP, 30, "", "", true).build
     }
 
+    override getProjectDir(ParameterBundle paramBundle)
+    {
+        Path.fromPortableString(
+            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
+    }
 }

@@ -22,6 +22,7 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.java.MavenResolver
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
@@ -39,23 +40,26 @@ import com.btc.serviceidl.idl.TupleDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
 import com.btc.serviceidl.util.Util
+import com.google.common.base.CaseFormat
 import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicInteger
+import org.eclipse.core.runtime.IPath
+import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
+import static com.btc.serviceidl.generator.common.GeneratorUtil.*
+
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
-import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.google.common.base.CaseFormat
 
 class ProtobufGenerator
 {
@@ -64,6 +68,7 @@ class ProtobufGenerator
    var IFileSystemAccess file_system_access
    var IQualifiedNameProvider qualified_name_provider
    var IScopeProvider scope_provider
+   var IModuleStructureStrategy moduleStructureStrategy
    
    var ParameterBundle param_bundle
    
@@ -88,12 +93,14 @@ class ProtobufGenerator
       return generated_artifacts
    }
    
-   def void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp, Iterable<ArtifactNature> languages)
+   def void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp,
+        IModuleStructureStrategy moduleStructureStrategy, Iterable<ArtifactNature> languages)
    {
       resource = res
       file_system_access = fsa
       qualified_name_provider = qnp
       scope_provider = sp
+      this.moduleStructureStrategy = moduleStructureStrategy
       
       // handle all interfaces
       for (interface_declaration : resource.allContents.filter(InterfaceDeclaration).toIterable)
@@ -144,33 +151,16 @@ class ProtobufGenerator
       return file_header + file_body
    }
    
-   private def void generateProtobufFile(ArtifactNature an, EObject container, String artifact_name, String file_content)
-   {
-      var project_path = "";
-      // TODO this depends on the PRINS directory structure
-      if (an == ArtifactNature.CPP)
-         project_path += "modules" + Constants.SEPARATOR_FILE
-      if (an == ArtifactNature.JAVA) // special directory structure according to Maven conventions
-         project_path += getJavaProtoLocation(container)
-      else
-         project_path += GeneratorUtil.getTransformedModuleName(param_bundle, an, TransformType.FILE_SYSTEM)
-         + Constants.SEPARATOR_FILE
-         + Constants.PROTOBUF_GENERATION_DIRECTORY_NAME
-         + Constants.SEPARATOR_FILE
-
-      file_system_access.generateFile(project_path + artifact_name.proto, an.label, file_content)
-   }
+   private def void generateProtobufFile(ArtifactNature an, EObject container, String artifact_name,
+        String file_content)
+    {
+        file_system_access.generateFile(makeProtobufPath(an, container, artifact_name).toOSString, an.label,
+            file_content)
+    }
    
-   private def String getJavaProtoLocation(EObject container)
+   private def IPath getJavaProtoLocation(EObject container)
    {
-      MavenResolver.getArtifactId(container)
-         + Constants.SEPARATOR_FILE
-         + "src"
-         + Constants.SEPARATOR_FILE
-         + "main"
-         + Constants.SEPARATOR_FILE
-         + "proto"
-         + Constants.SEPARATOR_FILE
+      Path.fromPortableString(MavenResolver.getArtifactId(container)).append("src").append("main").append("proto")
    }
    
    private def String generateInterface(ArtifactNature an, InterfaceDeclaration interface_declaration)
@@ -553,8 +543,8 @@ class ProtobufGenerator
          
          val result = referenced_project + TransformType.PACKAGE.separator + plain_name
 
-         val import_path = makeImportPath(artifactNature, object_root, if (object_root instanceof InterfaceDeclaration) Names.plain(object_root) else Constants.FILE_NAME_TYPES )
-         referenced_files.add(import_path)
+         val import_path = makeProtobufPath(artifactNature, object_root, if (object_root instanceof InterfaceDeclaration) Names.plain(object_root) else Constants.FILE_NAME_TYPES )
+         referenced_files.add(import_path.toPortableString)
 
          if (artifactNature != ArtifactNature.JAVA)
          {
@@ -593,20 +583,22 @@ class ProtobufGenerator
       '''
    }
    
-   private def String makeImportPath(ArtifactNature artifact_nature, EObject container, String file_name)
+   private def IPath makeProtobufPath(ArtifactNature artifact_nature, EObject container, String file_name)
     {
-        if (artifact_nature == ArtifactNature.JAVA)
+        // TODO unify this across target technologies
+        (if (artifact_nature == ArtifactNature.JAVA)
         {
-            getJavaProtoLocation(container) + file_name.proto
+            getJavaProtoLocation(container)
         }
         else
         {
-            val temp_bundle = ParameterBundle.createBuilder(container.moduleStack).with(ProjectType.PROTOBUF).
-                build
-            val root_path = GeneratorUtil.getTransformedModuleName(temp_bundle, artifact_nature, TransformType.FILE_SYSTEM)
+            val temp_bundle = ParameterBundle.createBuilder(container.moduleStack).with(ProjectType.PROTOBUF).build()
 
-            // TODO this depends on the PRINS module structure!
-            (if (artifact_nature == ArtifactNature.CPP) "modules/" else "") + root_path + "/gen/" + file_name.proto
-        }
+            (if (artifact_nature == ArtifactNature.CPP)
+                moduleStructureStrategy.getProjectDir(temp_bundle)
+            else
+                Path.fromPortableString(GeneratorUtil.getTransformedModuleName(temp_bundle, artifact_nature,
+                    TransformType.FILE_SYSTEM))).append(Constants.PROTOBUF_GENERATION_DIRECTORY_NAME)
+        }).append(file_name.proto)
     }
 }

@@ -136,16 +136,13 @@ class CommandLineRunnerTest
         assertEquals(0, Main.mainBackend(
             Arrays.asList(file.absolutePath, "-cppOutputPath", path.toString + "/cpp", "-cppProjectSystem", "cmake")))
         assertExpectedFiles(
-            #["cpp/CMakeLists.txt", "cpp/conanfile.py", "cpp/modules/BTC/Commons/Core/Common/build/CMakeLists.txt",
-                "cpp/modules/BTC/Commons/Core/Common/build/make.cmakeset",
-                "cpp/modules/BTC/Commons/Core/Common/include/Types.h",
-                "cpp/modules/BTC/Commons/Core/Common/include/btc_commons_core_common_export.h",
-                "cpp/modules/BTC/Commons/Core/Common/source/Types.cpp",
-                "cpp/modules/BTC/Commons/Core/Protobuf/build/CMakeLists.txt",
-                "cpp/modules/BTC/Commons/Core/Protobuf/build/make.cmakeset",
-                "cpp/modules/BTC/Commons/Core/Protobuf/gen/Types.proto",
-                "cpp/modules/BTC/Commons/Core/Protobuf/include/TypesCodec.h",
-                "cpp/modules/BTC/Commons/Core/Protobuf/include/btc_commons_core_protobuf_export.h"], path)
+            #["cpp/CMakeLists.txt", "cpp/conanfile.py", "cpp/BTC/Commons/Core/Common/build/CMakeLists.txt",
+                "cpp/BTC/Commons/Core/Common/build/make.cmakeset", "cpp/BTC/Commons/Core/Common/include/Types.h",
+                "cpp/BTC/Commons/Core/Common/include/btc_commons_core_common_export.h",
+                "cpp/BTC/Commons/Core/Common/source/Types.cpp", "cpp/BTC/Commons/Core/Protobuf/build/CMakeLists.txt",
+                "cpp/BTC/Commons/Core/Protobuf/build/make.cmakeset", "cpp/BTC/Commons/Core/Protobuf/gen/Types.proto",
+                "cpp/BTC/Commons/Core/Protobuf/include/TypesCodec.h",
+                "cpp/BTC/Commons/Core/Protobuf/include/btc_commons_core_protobuf_export.h"], path)
     }
 
     @Test
