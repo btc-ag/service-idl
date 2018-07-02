@@ -17,7 +17,6 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
-import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
@@ -83,10 +82,9 @@ abstract class BasicProjectGenerator
       
       if (pathType == PathType.FULL)
       {
-         val tempParameterBundleBuilder = new ParameterBundle.Builder()
-         tempParameterBundleBuilder.with(Util.getModuleStack(container))
-         
-         result = result.append(GeneratorUtil.getTransformedModuleName(tempParameterBundleBuilder.build, ArtifactNature.JAVA, TransformType.FILE_SYSTEM))
+         result = result.append(
+                GeneratorUtil.asPath(
+                    new ParameterBundle.Builder().with(Util.getModuleStack(container)).build, ArtifactNature.JAVA))
          if (container instanceof InterfaceDeclaration) result = result.append(container.name.toLowerCase)
          result = result.append(projectType.getName.toLowerCase)
       }
