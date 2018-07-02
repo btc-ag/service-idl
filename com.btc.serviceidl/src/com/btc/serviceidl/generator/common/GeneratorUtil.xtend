@@ -32,6 +32,7 @@ import com.google.common.base.CaseFormat
 import java.util.Arrays
 import java.util.HashSet
 import java.util.regex.Pattern
+import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -204,13 +205,13 @@ class GeneratorUtil
      * \details If at least one relative parent path is there, the string ALWAYS
      * ends with the path separator!
      */
-    def static String getRelativePathsUpwards(Iterable<ModuleDeclaration> moduleStack)
+    def static IPath getRelativePathsUpwards(Iterable<ModuleDeclaration> moduleStack)
     {
-        var paths = ""
+        var paths = Path.EMPTY
         for (module : moduleStack)
         {
             if (!module.virtual) // = non-virtual
-                paths += ".." + TransformType.FILE_SYSTEM.separator
+                paths.append("..")
         }
         return paths
     }
@@ -220,9 +221,8 @@ class GeneratorUtil
         new Path(getTransformedModuleName(bundle, nature, TransformType.FILE_SYSTEM))
     }
 
-
-    static def String asProtobufName(String name, CaseFormat targetFormat) 
-    { 
+    static def String asProtobufName(String name, CaseFormat targetFormat)
+    {
         // TODO instead of applying a heuristic, this should be configured explicitly, see 
         // https://github.com/btc-ag/service-idl/issues/90
         val caseFormat = if (name.contains('_'))
@@ -232,10 +232,11 @@ class GeneratorUtil
             else
                 CaseFormat.LOWER_CAMEL)
 
-        caseFormat.to(targetFormat, name.fixAbbreviation)       
+        caseFormat.to(targetFormat, name.fixAbbreviation)
     }
-    
-    private def static String fixAbbreviation(String intermediate) {
+
+    private def static String fixAbbreviation(String intermediate)
+    {
         val res = new StringBuilder
         var StringBuilder currentAbbrev = null
         for (c : intermediate.toCharArray)
@@ -263,7 +264,7 @@ class GeneratorUtil
             }
         }
         if (currentAbbrev !== null) res.append(currentAbbrev)
-        
+
         res.toString
     }
 }

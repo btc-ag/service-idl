@@ -22,9 +22,12 @@ import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
+import java.util.HashMap
 import java.util.Map
 import java.util.Set
 import java.util.regex.Pattern
+import org.eclipse.core.runtime.IPath
+import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -43,7 +46,7 @@ class TypeResolver
     val Set<String> namespace_references
     val Set<FailableAlias> failableAliases
     val Set<String> referenced_assemblies
-    val Map<String, String> project_references
+    val Map<String, IPath> projectReferences = new HashMap<String, IPath>
     val NuGetPackageResolver nugetPackageResolver
     val VSSolution vsSolution
     val ParameterBundle param_bundle
@@ -155,24 +158,22 @@ class TypeResolver
     def void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
     {
         val module_stack = com.btc.serviceidl.util.Util.getModuleStack(referenced_object)
-        var project_path = ""
 
         val temp_param = new ParameterBundle.Builder().with(module_stack).with(project_type).build
 
         val project_name = vsSolution.getCsprojName(temp_param)
 
-        if (module_stack.elementsEqual(param_bundle.moduleStack))
-        {
-            project_path = "../" + project_type.getName + "/" + project_name
-        }
-        else
-        {
-            project_path = "../" + GeneratorUtil.getRelativePathsUpwards(param_bundle.moduleStack) +
-                GeneratorUtil.getTransformedModuleName(temp_param, ArtifactNature.DOTNET,
-                    TransformType.FILE_SYSTEM) + "/" + project_name
-        }
-
-        project_references.put(project_name, project_path)
+        projectReferences.put(project_name, Path.fromPortableString("..").append(
+            if (module_stack.elementsEqual(param_bundle.moduleStack))
+            {
+                Path.fromPortableString(project_type.getName).append(project_name)
+            }
+            else
+            {
+                GeneratorUtil.getRelativePathsUpwards(param_bundle.moduleStack).append(
+                    GeneratorUtil.getTransformedModuleName(temp_param, ArtifactNature.DOTNET,
+                        TransformType.FILE_SYSTEM)).append(project_name)
+            }))
     }
 
     def primitiveTypeName(PrimitiveType element)

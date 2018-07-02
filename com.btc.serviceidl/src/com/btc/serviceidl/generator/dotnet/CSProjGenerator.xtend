@@ -10,16 +10,19 @@
 **********************************************************************/
 package com.btc.serviceidl.generator.dotnet
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.TransformType
 import java.util.Map
+import org.eclipse.core.runtime.IPath
 
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
-import com.btc.serviceidl.generator.common.ArtifactNature
 
 class CSProjGenerator {
-  static def String generateCSProj(String project_name, VSSolution vsSolution, ParameterBundle param_bundle, Iterable<String> referenced_assemblies, Iterable<NuGetPackage> nuget_packages, Map<String, String> project_references, Iterable<String> cs_files, Iterable<String> protobuf_files)
+  static def String generateCSProj(String project_name, VSSolution vsSolution, ParameterBundle param_bundle,
+        Iterable<String> referenced_assemblies, Iterable<NuGetPackage> nuget_packages,
+        Map<String, IPath> project_references, Iterable<String> cs_files, Iterable<String> protobuf_files)
   {
       // Please do NOT edit line indents in the code below (even though they
       // may look misplaced) unless you are fully aware of what you are doing!!!
@@ -137,7 +140,7 @@ class CSProjGenerator {
           <Compile Include="Properties\AssemblyInfo.cs" />
         </ItemGroup>
           «FOR name : project_references.keySet.filter[it != project_name] BEFORE "  <ItemGroup>" AFTER "  </ItemGroup>"»
-             <ProjectReference Include="«project_references.get(name)».csproj">
+             <ProjectReference Include="«project_references.get(name).toPortableString.replace(IPath.SEPARATOR, "\\")».csproj">
                <Project>{«vsSolution.getCsprojGUID(name)»}</Project>
                <Name>«name»</Name>
              </ProjectReference>

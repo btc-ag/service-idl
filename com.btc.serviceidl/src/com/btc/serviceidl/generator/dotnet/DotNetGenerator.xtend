@@ -41,6 +41,7 @@ import java.util.HashMap
 import java.util.HashSet
 import java.util.Set
 import org.eclipse.core.runtime.IPath
+import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -69,7 +70,6 @@ class DotNetGenerator
    val failableAliases = new HashSet<FailableAlias>
    val referencedAssemblies = new HashSet<String>
    var nugetPackages = new NuGetPackageResolver
-   val projectReferences = new HashMap<String, String>
    val vsSolution = new VSSolution
    val csFiles = new HashSet<String>
    val protobufFiles = new HashSet<String>
@@ -293,7 +293,6 @@ class DotNetGenerator
       reinitializeFile
       paramBundle = ParameterBundle.createBuilder(paramBundle.moduleStack).with(projectType).build
       referencedAssemblies.clear
-      projectReferences.clear
       protobufFiles.clear
       nugetPackages = new NuGetPackageResolver
       csFiles.clear
@@ -304,7 +303,6 @@ class DotNetGenerator
             namespaceReferences,
             failableAliases,
             referencedAssemblies,
-            projectReferences,
             nugetPackages,
             vsSolution,
             paramBundle
@@ -659,14 +657,22 @@ class DotNetGenerator
          {
             for (key : protobufReferences.keySet)
             {
-               if (!projectReferences.containsKey(key))
-                  projectReferences.put(key, protobufReferences.get(key))
+               if (!typeResolver.projectReferences.containsKey(key))
+                  typeResolver.projectReferences.put(key, Path.fromPortableString(protobufReferences.get(key)))
             }
          }
       }
 
-      CSProjGenerator.generateCSProj(projectName, vsSolution, paramBundle, referencedAssemblies, nugetPackages.resolvedPackages, projectReferences, csFiles, if (isProtobuf) protobufFiles else null
-      )      
+      CSProjGenerator.generateCSProj(
+            projectName,
+            vsSolution,
+            paramBundle,
+            referencedAssemblies,
+            nugetPackages.resolvedPackages,
+            typeResolver.projectReferences,
+            csFiles,
+            if (isProtobuf) protobufFiles else null
+        )      
    }
    
    private def generateEvent(EventDeclaration event)
