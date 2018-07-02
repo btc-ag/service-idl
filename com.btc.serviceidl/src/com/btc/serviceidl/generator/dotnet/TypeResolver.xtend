@@ -23,6 +23,7 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
 import java.util.HashMap
+import java.util.HashSet
 import java.util.Map
 import java.util.Set
 import java.util.regex.Pattern
@@ -45,7 +46,7 @@ class TypeResolver
     val IQualifiedNameProvider qualifiedNameProvider
     val Set<String> namespaceReferences
     val Set<FailableAlias> failableAliases
-    val Set<String> referencedAssemblies
+    val Set<String> referencedAssemblies = new HashSet<String>
     val Map<String, IPath> projectReferences = new HashMap<String, IPath>
     val NuGetPackageResolver nugetPackageResolver
     val VSSolution vsSolution

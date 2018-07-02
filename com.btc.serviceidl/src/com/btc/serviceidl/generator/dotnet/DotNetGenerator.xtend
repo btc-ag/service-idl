@@ -68,7 +68,6 @@ class DotNetGenerator
    val typedefTable = new HashMap<String, String>
    val namespaceReferences = new HashSet<String>
    val failableAliases = new HashSet<FailableAlias>
-   val referencedAssemblies = new HashSet<String>
    var nugetPackages = new NuGetPackageResolver
    val vsSolution = new VSSolution
    val csFiles = new HashSet<String>
@@ -292,7 +291,6 @@ class DotNetGenerator
    {
       reinitializeFile
       paramBundle = ParameterBundle.createBuilder(paramBundle.moduleStack).with(projectType).build
-      referencedAssemblies.clear
       protobufFiles.clear
       nugetPackages = new NuGetPackageResolver
       csFiles.clear
@@ -302,7 +300,6 @@ class DotNetGenerator
             qualifiedNameProvider,
             namespaceReferences,
             failableAliases,
-            referencedAssemblies,
             nugetPackages,
             vsSolution,
             paramBundle
@@ -667,7 +664,7 @@ class DotNetGenerator
             projectName,
             vsSolution,
             paramBundle,
-            referencedAssemblies,
+            typeResolver.referencedAssemblies,
             nugetPackages.resolvedPackages,
             typeResolver.projectReferences,
             csFiles,
