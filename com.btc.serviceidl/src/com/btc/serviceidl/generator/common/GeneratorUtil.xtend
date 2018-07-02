@@ -29,7 +29,6 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
 import com.google.common.base.CaseFormat
-import java.util.Arrays
 import java.util.HashSet
 import java.util.regex.Pattern
 import org.eclipse.core.runtime.IPath
@@ -49,11 +48,11 @@ class GeneratorUtil
             if (!module.virtual || transformType.useVirtual || artifactNature == ArtifactNature.JAVA)
                 getEffectiveModuleName(module, artifactNature)
             else
-                Arrays.asList()
+                #[]
         ].flatten + if (parameterBundle.projectType !== null)
-            Arrays.asList(parameterBundle.projectType.getName)
+            #[parameterBundle.projectType.getName]
         else
-            Arrays.asList()
+            #[]
         val result = parts.join(transformType.separator)
 
         if (artifactNature == ArtifactNature.JAVA)
@@ -67,18 +66,18 @@ class GeneratorUtil
         if (artifactNature == ArtifactNature.DOTNET && module.main)
         {
             // TODO shouldn't this return two parts instead of a single one containg "."?
-            if (module.main) Arrays.asList(module.name + ".NET") else Arrays.asList(module.name)
+            #[if (module.main) module.name + ".NET" else module.name]
         }
         else if (artifactNature == ArtifactNature.JAVA)
         {
             // TODO this must be changed... prefixing "com" is not appropriate in general
             if (module.eContainer === null || (module.eContainer instanceof IDLSpecification))
-                Arrays.asList("com", module.name)
+                #["com", module.name]
             else
-                Arrays.asList(module.name)
+                #[module.name]
         }
         else
-            Arrays.asList(module.name)
+            #[module.name]
     }
 
     def static String switchPackageSeperator(String name, TransformType targetTransformType)
@@ -122,15 +121,14 @@ class GeneratorUtil
 
     static def String asFailable(EObject element, EObject container, IQualifiedNameProvider qualifiedNameProvider)
     {
-        Arrays.asList(Arrays.asList("Failable"),
-            qualifiedNameProvider.getFullyQualifiedName(container).segments, getTypeName(Util.getUltimateType(element),
-                qualifiedNameProvider).map[toFirstUpper]).flatten.join(FAILABLE_SEPARATOR)
+        #[#["Failable"], qualifiedNameProvider.getFullyQualifiedName(container).segments, getTypeName(
+            Util.getUltimateType(element), qualifiedNameProvider).map[toFirstUpper]].flatten.join(FAILABLE_SEPARATOR)
     }
 
     private static def Iterable<String> getTypeName(EObject type, IQualifiedNameProvider qualifiedNameProvider)
     {
         if (type.isPrimitive)
-            Arrays.asList(Names.plain(type))
+            #[Names.plain(type)]
         else
             qualifiedNameProvider.getFullyQualifiedName(type).segments
     }
