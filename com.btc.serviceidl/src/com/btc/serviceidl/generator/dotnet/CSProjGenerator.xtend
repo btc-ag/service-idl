@@ -14,22 +14,22 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.TransformType
-import java.util.Map
-import org.eclipse.core.runtime.IPath
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
+import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
+import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 
 class CSProjGenerator {
   static def String generateCSProj(String project_name, VSSolution vsSolution, ParameterBundle param_bundle,
         Iterable<String> referenced_assemblies, Iterable<NuGetPackage> nuget_packages,
-        Map<String, IPath> project_references, Iterable<String> cs_files, Iterable<String> protobuf_files)
+        Iterable<ParameterBundle> project_references, Iterable<String> cs_files, Iterable<String> protobuf_files)
   {
       // Please do NOT edit line indents in the code below (even though they
       // may look misplaced) unless you are fully aware of what you are doing!!!
       // Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
       
-      val project_guid = vsSolution.getCsprojGUID(project_name)
+      val project_guid = vsSolution.getCsprojGUID(param_bundle)
       val is_exe = isExecutable(param_bundle.projectType)
       val prins = false
       '''
@@ -138,10 +138,10 @@ class CSProjGenerator {
         «ENDFOR»
           <Compile Include="Properties\AssemblyInfo.cs" />
         </ItemGroup>
-          «FOR name : project_references.keySet.filter[it != project_name] BEFORE "  <ItemGroup>" AFTER "  </ItemGroup>"»
-             <ProjectReference Include="$(SolutionDir)«project_references.get(name).toWindowsString».csproj">
-               <Project>{«vsSolution.getCsprojGUID(name)»}</Project>
-               <Name>«name»</Name>
+          «FOR projectReference : project_references.filter[it != param_bundle] BEFORE "  <ItemGroup>" AFTER "  </ItemGroup>"»
+             <ProjectReference Include="$(SolutionDir)«projectReference.asPath(ArtifactNature.DOTNET).append(projectReference.getTransformedModuleName(ArtifactNature.DOTNET, TransformType.PACKAGE).csproj).toWindowsString»">
+               <Project>{«vsSolution.getCsprojGUID(projectReference)»}</Project>
+               <Name>«projectReference.getTransformedModuleName(ArtifactNature.DOTNET, TransformType.PACKAGE)»</Name>
              </ProjectReference>
           «ENDFOR»
 

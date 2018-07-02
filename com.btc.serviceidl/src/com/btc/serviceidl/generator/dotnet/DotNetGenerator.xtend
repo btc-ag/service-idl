@@ -39,6 +39,7 @@ import com.google.common.collect.Sets
 import java.util.Arrays
 import java.util.HashMap
 import java.util.HashSet
+import java.util.Map
 import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.emf.ecore.EObject
@@ -71,14 +72,14 @@ class DotNetGenerator
    val vsSolution = new VSSolution
    val csFiles = new HashSet<String>
    val protobufFiles = new HashSet<String>
-   var protobufProjectReferences = new HashMap<String, HashMap<String, IPath>>
+   val Map<String, Set<ParameterBundle>> protobufProjectReferences
    var extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
     
    val paketDependencies = new HashSet<Pair<String, String>>
    
    new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes,
-        HashMap<String, HashMap<String, IPath>> protobufProjectReferences)
+        Map<String, Set<ParameterBundle>> protobufProjectReferences)
     {
         this.idl = idl
         this.fileSystemAccess = fileSystemAccess
@@ -644,18 +645,12 @@ class DotNetGenerator
    {
       val projectName = vsSolution.getCsprojName(paramBundle)
       
-      val isProtobuf = paramBundle.projectType == ProjectType.PROTOBUF
-      
-      if (isProtobuf)
+      if (paramBundle.projectType == ProjectType.PROTOBUF)
       {
          val protobufReferences = protobufProjectReferences.get(projectName)
          if (protobufReferences !== null)
          {
-            for (key : protobufReferences.keySet)
-            {
-               if (!typeResolver.projectReferences.containsKey(key))
-                  typeResolver.projectReferences.put(key, protobufReferences.get(key))
-            }
+             typeResolver.projectReferences.addAll(protobufReferences)
          }
       }
       

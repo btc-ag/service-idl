@@ -16,6 +16,7 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.IGenerationSettingsProvider
+import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
 import com.btc.serviceidl.generator.cpp.cmake.CMakeTopLevelProjectFileGenerator
@@ -27,7 +28,6 @@ import java.util.Collection
 import java.util.HashMap
 import java.util.Map
 import java.util.Set
-import org.eclipse.core.runtime.IPath
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -51,7 +51,7 @@ class CppGenerator
 
     new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IScopeProvider scopeProvider, IGenerationSettingsProvider generationSettingsProvider,
-        Map<String, HashMap<String, IPath>> protobufProjectReferences)
+        Map<String, Set<ParameterBundle>> protobufProjectReferences)
     {
         this.idl = idl
         this.fileSystemAccess = fileSystemAccess

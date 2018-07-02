@@ -22,13 +22,9 @@ import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
-import java.util.HashMap
 import java.util.HashSet
-import java.util.Map
 import java.util.Set
 import java.util.regex.Pattern
-import org.eclipse.core.runtime.IPath
-import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -47,7 +43,7 @@ class TypeResolver
     val Set<String> namespaceReferences
     val Set<FailableAlias> failableAliases
     val Set<String> referencedAssemblies = new HashSet<String>
-    val Map<String, IPath> projectReferences = new HashMap<String, IPath>
+    val Set<ParameterBundle> projectReferences = new HashSet<ParameterBundle>
     val NuGetPackageResolver nugetPackageResolver
     val VSSolution vsSolution
     val ParameterBundle parameterBundle
@@ -158,21 +154,8 @@ class TypeResolver
 
     def void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
     {
-        val module_stack = com.btc.serviceidl.util.Util.getModuleStack(referenced_object)
-
-        val temp_param = new ParameterBundle.Builder().with(module_stack).with(project_type).build
-
-        val project_name = vsSolution.getCsprojName(temp_param)
-
-        projectReferences.put(project_name, if (module_stack.elementsEqual(parameterBundle.moduleStack))
-        {
-            Path.fromPortableString(project_type.getName).append(project_name)
-        }
-        else
-        {
-            GeneratorUtil.getRelativePathsUpwards(parameterBundle.moduleStack).append(
-                GeneratorUtil.asPath(temp_param, ArtifactNature.DOTNET)).append(project_name)
-        })
+        projectReferences.add(
+            new ParameterBundle.Builder().with(referenced_object.moduleStack).with(project_type).build)
     }
 
     def primitiveTypeName(PrimitiveType element)

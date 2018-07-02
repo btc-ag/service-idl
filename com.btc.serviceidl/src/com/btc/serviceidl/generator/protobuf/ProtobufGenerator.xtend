@@ -46,6 +46,7 @@ import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
 import java.util.Optional
+import java.util.Set
 import java.util.concurrent.atomic.AtomicInteger
 import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
@@ -75,18 +76,15 @@ class ProtobufGenerator
    val referenced_files = new HashSet<String>
    val generated_artifacts = new HashMap<EObject, String>
    val typedef_table = new HashMap<String, String>
-   val cpp_project_references = new HashMap<String, HashMap<String, IPath>>
-   val dotnet_project_references = new HashMap<String, HashMap<String, IPath>>
+   val allProjectReferences = new HashMap<ArtifactNature, Map<String, Set<ParameterBundle>>>
    
-   def HashMap<String, HashMap<String, IPath>> getProjectReferences(ArtifactNature artifact_nature)
-   {
-      if (artifact_nature == ArtifactNature.CPP)
-         return cpp_project_references
-      else if (artifact_nature == ArtifactNature.DOTNET)
-         return dotnet_project_references
-      
-      throw new IllegalArgumentException("Unsupported artifact nature for project references: " + artifact_nature)
-   }
+   def Map<String, Set<ParameterBundle>> getProjectReferences(ArtifactNature artifactNature)
+    {
+        if (!allProjectReferences.containsKey(artifactNature))
+            allProjectReferences.put(artifactNature, new HashMap<String, Set<ParameterBundle>>)
+        
+        allProjectReferences.get(artifactNature)
+    }
    
    def Map<EObject, String> getGeneratedArtifacts()
    {
@@ -549,10 +547,8 @@ class ProtobufGenerator
             if (current_project != referenced_project)
             {
                 val project_references = getProjectReferences(artifactNature)
-                // TODO this makes some assumptions on the directory structure, which should be determined by the IModuleStructureStrategy
-                val project_path = GeneratorUtil.asPath(temp_bundle, artifactNature).append(referenced_project)
-                val references = project_references.get(current_project) ?: new HashMap<String, IPath>
-                references.put(referenced_project, project_path)
+                val references = project_references.get(current_project) ?: new HashSet<ParameterBundle>
+                references.add(temp_bundle)
                 project_references.put(current_project, references)
             }
          }
