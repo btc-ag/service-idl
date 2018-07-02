@@ -42,7 +42,11 @@ class VSSolution
 
     def String getCsprojGUID(String projectName)
     {
-        return vs_projects.get(projectName).uuid.toString.toUpperCase
+        val entry = vs_projects.get(projectName)
+        if (entry === null)
+            throw new IllegalArgumentException("Unknown project '" + projectName + '", cannot determine its UUID')
+        
+        return entry.uuid.toString.toUpperCase
     }
 
     def getAllProjects()
