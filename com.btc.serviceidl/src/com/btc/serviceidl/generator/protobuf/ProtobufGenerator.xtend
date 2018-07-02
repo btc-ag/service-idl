@@ -597,8 +597,7 @@ class ProtobufGenerator
             (if (artifact_nature == ArtifactNature.CPP)
                 moduleStructureStrategy.getProjectDir(temp_bundle)
             else
-                Path.fromPortableString(GeneratorUtil.getTransformedModuleName(temp_bundle, artifact_nature,
-                    TransformType.FILE_SYSTEM))).append(Constants.PROTOBUF_GENERATION_DIRECTORY_NAME)
+                GeneratorUtil.asPath(temp_bundle, artifact_nature)).append(Constants.PROTOBUF_GENERATION_DIRECTORY_NAME)
         }).append(file_name.proto)
     }
 }
