@@ -550,8 +550,7 @@ class ProtobufGenerator
             {
                 val project_references = getProjectReferences(artifactNature)
                 // TODO this makes some assumptions on the directory structure, which should be determined by the IModuleStructureStrategy
-                val project_path = ( if (artifactNature == ArtifactNature.DOTNET) Path.
-                    fromPortableString("..") else Path.EMPTY ).append(GeneratorUtil.asPath(temp_bundle, artifactNature)).append(referenced_project)
+                val project_path = GeneratorUtil.asPath(temp_bundle, artifactNature).append(referenced_project)
                 val references = project_references.get(current_project) ?: new HashMap<String, IPath>
                 references.put(referenced_project, project_path)
                 project_references.put(current_project, references)

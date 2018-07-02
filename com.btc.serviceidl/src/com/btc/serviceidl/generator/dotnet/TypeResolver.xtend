@@ -164,16 +164,15 @@ class TypeResolver
 
         val project_name = vsSolution.getCsprojName(temp_param)
 
-        projectReferences.put(project_name, Path.fromPortableString("..").append(
-            if (module_stack.elementsEqual(parameterBundle.moduleStack))
-            {
-                Path.fromPortableString(project_type.getName).append(project_name)
-            }
-            else
-            {
-                GeneratorUtil.getRelativePathsUpwards(parameterBundle.moduleStack).append(
-                    GeneratorUtil.asPath(temp_param, ArtifactNature.DOTNET)).append(project_name)
-            }))
+        projectReferences.put(project_name, if (module_stack.elementsEqual(parameterBundle.moduleStack))
+        {
+            Path.fromPortableString(project_type.getName).append(project_name)
+        }
+        else
+        {
+            GeneratorUtil.getRelativePathsUpwards(parameterBundle.moduleStack).append(
+                GeneratorUtil.asPath(temp_param, ArtifactNature.DOTNET)).append(project_name)
+        })
     }
 
     def primitiveTypeName(PrimitiveType element)
