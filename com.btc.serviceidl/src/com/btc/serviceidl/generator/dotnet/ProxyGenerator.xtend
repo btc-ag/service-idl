@@ -71,7 +71,7 @@ class ProxyGenerator extends ProxyDispatcherGeneratorBase {
                   «val isFailable = isSequence && com.btc.serviceidl.util.Util.isFailable(param.paramType)»
                   «val use_codec = isFailable || GeneratorUtil.useCodec(param, ArtifactNature.DOTNET)»
                   «val encodeMethod = getEncodeMethod(param.paramType, interface_declaration)»
-                  «val codec = resolveCodec(typeResolver, param_bundle, param.paramType)»
+                  «val codec = resolveCodec(typeResolver, parameterBundle, param.paramType)»
                   «val useCast = use_codec && !isFailable»
                   methodRequestBuilder.«IF isSequence»AddRange«ELSE»Set«ENDIF»«param.paramName.asDotNetProtobufName»(«IF use_codec»«IF useCast»(«resolveEncode(param.paramType)») «ENDIF»«codec».«encodeMethod»(«ENDIF»«toText(param, function)»«IF use_codec»)«ENDIF»);
                «ENDFOR»
@@ -94,7 +94,7 @@ class ProxyGenerator extends ProxyDispatcherGeneratorBase {
                   «val useCast = use_codec && !isFailable»
                   «val decodeMethod = getDecodeMethod(function.returnedType, interface_declaration)»
                   «val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)»
-                  «val codec = resolveCodec(typeResolver, param_bundle, function.returnedType)»
+                  «val codec = resolveCodec(typeResolver, parameterBundle, function.returnedType)»
                   «IF !out_params.empty»
                      // handle [out] parameters
                   «ENDIF»
@@ -104,7 +104,7 @@ class ProxyGenerator extends ProxyDispatcherGeneratorBase {
                      «val is_sequence_param = com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
                      «val use_codec_param = isFailableParam || GeneratorUtil.useCodec(param.paramType, ArtifactNature.DOTNET)»
                      «val decode_method_param = getDecodeMethod(param.paramType, interface_declaration)»
-                     «val codec_param = resolveCodec(typeResolver, param_bundle, param.paramType)»
+                     «val codec_param = resolveCodec(typeResolver, parameterBundle, param.paramType)»
                      «val useCastParam = use_codec_param && !isFailableParam»
                      «basic_name»Placeholder = «IF use_codec_param»«IF useCastParam»(«resolveDecode(param.paramType)») «ENDIF»«codec_param».«decode_method_param»(«ENDIF»response.«function.name.asDotNetProtobufName»Response.«basic_name.asDotNetProtobufName»«IF is_sequence_param»List«ENDIF»«IF use_codec_param»)«ENDIF»;
                   «ENDFOR»
@@ -157,7 +157,7 @@ class ProxyGenerator extends ProxyDispatcherGeneratorBase {
                 public void OnNext(«resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")» value)
                 {
                     var protobufEvent = «resolveProtobuf(anonymous_event.data)».ParseFrom(value.PopFront());
-                    _subscriber.OnNext((«toText(anonymous_event.data, anonymous_event)»)«resolveCodec(typeResolver, param_bundle, interface_declaration)».decode(protobufEvent));
+                    _subscriber.OnNext((«toText(anonymous_event.data, anonymous_event)»)«resolveCodec(typeResolver, parameterBundle, interface_declaration)».decode(protobufEvent));
                 }
 
                 public void OnError(Exception error)

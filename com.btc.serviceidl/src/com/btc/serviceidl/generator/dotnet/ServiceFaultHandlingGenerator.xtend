@@ -44,7 +44,7 @@ class ServiceFaultHandlingGenerator extends GeneratorBase
             errorMap["«Constants.UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER»"] = typeof(«resolve("System.NotSupportedException").fullyQualifiedName»);
             
             «FOR e : raisedExceptions.sortBy[name] SEPARATOR System.lineSeparator»
-               errorMap["«e.getCommonExceptionName(qualified_name_provider)»"] = typeof(«resolve(e)»);
+               errorMap["«e.getCommonExceptionName(qualifiedNameProvider)»"] = typeof(«resolve(e)»);
             «ENDFOR»
          }
          
