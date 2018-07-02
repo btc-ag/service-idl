@@ -46,7 +46,7 @@ class PrinsModuleStructureStrategy implements IModuleStructureStrategy
     override getProjectDir(ParameterBundle paramBundle)
     {
         new Path(ReferenceResolver.MODULES_HEADER_PATH_PREFIX).append(
-            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
+            GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP))
     }
 
 }
