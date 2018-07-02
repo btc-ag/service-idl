@@ -57,11 +57,9 @@ class CppGenerator
         this.fileSystemAccess = fileSystemAccess
         this.qualifiedNameProvider = qualifiedNameProvider
         this.scopeProvider = scopeProvider
-        // TODO the protobuf projects must be added to the vsSolution, and converted into IProjectReference
-        // this.protobufProjectReferences = pr?.immutableCopy  
-        this.protobufProjectReferences = null
 
         this.projectSet = generationSettingsProvider.projectSetFactory.create
+        this.protobufProjectReferences = protobufProjectReferences?.mapValues[map[projectSet.resolve(it)].toSet]
         this.moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
         this.generationSettingsProvider = generationSettingsProvider
     }
