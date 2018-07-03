@@ -85,7 +85,7 @@ class ProjectGeneratorBaseBase
         createTypeResolver(this.param_bundle)
     }
 
-    protected def createTypeResolver(ParameterBundle param_bundle)
+    private def createTypeResolver(ParameterBundle param_bundle)
     {
         new TypeResolver(qualified_name_provider, vsSolution, moduleStructureStrategy, project_references, cab_libs,
             smart_pointer_map)
