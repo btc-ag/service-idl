@@ -74,15 +74,15 @@ class TypeResolver
 
     def ResolvedName resolve(EObject element, ProjectType project_type)
     {
-        var name = qualifiedNameProvider.getFullyQualifiedName(element)
         val fully_qualified = true
 
         // use the underlying type for typedefs
         if (element instanceof AliasDeclaration)
         {
-            return resolve(com.btc.serviceidl.util.Util.getUltimateType(element))
+            return resolve(element.ultimateType)
         }
 
+        val name = qualifiedNameProvider.getFullyQualifiedName(element)
         if (name === null)
         {
             if (element instanceof AbstractType)
