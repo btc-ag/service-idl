@@ -14,15 +14,12 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.generator.cpp.HeaderResolver
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import java.util.HashMap
 import java.util.UUID
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Data
-
-import static extension com.btc.serviceidl.generator.common.Extensions.*
 
 class VSSolution implements IProjectSet
 {
@@ -68,13 +65,6 @@ class VSSolution implements IProjectSet
     def String getVcxprojGUID(ProjectReference projectReference)
     {
         return vs_projects.get(projectReference.projectName).uuid.toString.toUpperCase
-    }
-
-    override ProjectReference resolveHeader(HeaderResolver.GroupedHeader header)
-    {
-        val project_reference = ReferenceResolver.getProjectReference(header)
-        add(project_reference.project_name, UUID.fromString(project_reference.project_guid),
-            project_reference.project_path)
     }
 
     @Deprecated

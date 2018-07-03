@@ -16,32 +16,15 @@
 package com.btc.serviceidl.generator.cpp.prins
 
 import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.generator.cpp.HeaderResolver
 import org.eclipse.core.runtime.IPath
 
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 
 class ReferenceResolver
 {
-    // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    static val vs_projects_mapper = #{
-        "BTC.PRINS.Commons" ->
-            new VSProjectInfo.Builder().setName("BTC.PRINS.Commons").setGUID("68E95AE7-BBFA-412B-8F65-026108BD8B28").
-                setPath('''$(SolutionDir)\Commons\BTC.PRINS.Commons''').build,
-        "BTC.PRINS.Commons.Utilities" ->
-            new VSProjectInfo.Builder().setName("BTC.PRINS.Commons.Utilities").setGUID(
-                "F34EA1D9-B1A7-47AD-B083-2AB267117D45").
-                setPath('''$(SolutionDir)\Commons\Utilities\BTC.PRINS.Commons.Utilities''').build
-    }
-
     public static val MODULES_HEADER_PATH_PREFIX = "modules"
     static val MODULES_HEADER_INCLUDE_SEGMENT = "include"
     static val MODULES_MODULE_NAME_PREFIX = "BTC.PRINS."
-
-    static def VSProjectInfo getProjectReference(HeaderResolver.GroupedHeader header)
-    {
-        throw new IllegalArgumentException("Could not find project reference mapping for header: " + header.toString)
-    }
 
     static def String modulesHeaderPathToModuleName(IPath headerPath)
     {

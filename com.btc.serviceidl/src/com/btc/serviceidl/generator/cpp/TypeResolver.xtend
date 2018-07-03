@@ -37,6 +37,8 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.generator.cpp.prins.OdbConstants
+import com.btc.serviceidl.generator.cpp.prins.PrinsHeaderResolver
 
 @Accessors(NONE)
 class TypeResolver
@@ -130,10 +132,20 @@ class TypeResolver
     private def void resolveLibrary(HeaderResolver.GroupedHeader header)
     {
         // TODO resolve and add to libs generically
-        if (header.includeGroup == CAB_INCLUDE_GROUP)
-            cab_libs.addAll(LibResolver.getCABLibs(header.path))
-        if (header.includeGroup == TARGET_INCLUDE_GROUP)
-            project_references.add(projectSet.resolveHeader(header))
+        switch (header.includeGroup)
+        {
+            case CAB_INCLUDE_GROUP:
+                cab_libs.addAll(LibResolver.getCABLibs(header.path))
+            case STL_INCLUDE_GROUP:
+                // do nothing
+                {}
+            case PrinsHeaderResolver.ODB_INCLUDE_GROUP:
+                // TODO remove this here, make a subclass in prins.* or so
+                // do nothing
+                {}
+            default:
+                throw new IllegalArgumentException("Cannot resolve a library for this header: " + header.toString)
+        }
     }
 
     def String resolveSymbolWithImplementation(String symbolName)
@@ -186,9 +198,8 @@ class TypeResolver
 
     def void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
     {
-        project_references.add(
-            projectSet.resolve(
-                new ParameterBundle.Builder().with(referenced_object.moduleStack).with(project_type).build))
+        project_references.add(projectSet.resolve(
+            new ParameterBundle.Builder().with(referenced_object.moduleStack).with(project_type).build))
     }
 
     def getPrimitiveTypeName(PrimitiveType item)
