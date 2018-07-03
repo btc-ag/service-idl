@@ -136,12 +136,14 @@ class TypeResolver
             case CAB_INCLUDE_GROUP:
                 cab_libs.addAll(LibResolver.getCABLibs(header.path))
             case STL_INCLUDE_GROUP:
-                // do nothing
-                {}
+            // do nothing
+            {
+            }
             case PrinsHeaderResolver.ODB_INCLUDE_GROUP:
-                // TODO remove this here, make a subclass in prins.* or so
-                // do nothing
-                {}
+            // TODO remove this here, make a subclass in prins.* or so
+            // do nothing
+            {
+            }
             default:
                 throw new IllegalArgumentException("Cannot resolve a library for this header: " + header.toString)
         }
@@ -182,13 +184,8 @@ class TypeResolver
         }
         else
         {
-            var result = GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(
-                object.scopeDeterminant.moduleStack
-            ).with(project_type).build, ArtifactNature.CPP, TransformType.NAMESPACE)
-            result += Constants.SEPARATOR_NAMESPACE + if (object instanceof InterfaceDeclaration)
-                project_type.getClassName(ArtifactNature.CPP, qualified_name.lastSegment)
-            else
-                qualified_name.lastSegment
+            var result = GeneratorUtil.getFullyQualifiedClassName(object, qualified_name, project_type,
+                ArtifactNature.CPP, TransformType.NAMESPACE)
             addToGroup(TARGET_INCLUDE_GROUP, object.getIncludeFilePath(project_type, moduleStructureStrategy))
             object.resolveProjectFilePath(project_type)
             return new ResolvedName(result, TransformType.NAMESPACE)

@@ -38,6 +38,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import org.eclipse.xtext.naming.QualifiedName
 
 class GeneratorUtil
 {
@@ -264,5 +265,16 @@ class GeneratorUtil
         if (currentAbbrev !== null) res.append(currentAbbrev)
 
         res.toString
+    }
+
+    static def getFullyQualifiedClassName(EObject object, QualifiedName qualifiedName, ProjectType projectType,
+        ArtifactNature artifactNature, TransformType transformType)
+    {
+        String.join(transformType.separator, #[getTransformedModuleName(ParameterBundle.createBuilder(
+            object.scopeDeterminant.moduleStack
+        ).with(projectType).build, artifactNature, transformType), if (object instanceof InterfaceDeclaration)
+            projectType.getClassName(artifactNature, qualifiedName.lastSegment)
+        else
+            qualifiedName.lastSegment])
     }
 }
