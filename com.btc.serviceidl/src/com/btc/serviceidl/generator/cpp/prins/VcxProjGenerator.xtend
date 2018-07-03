@@ -22,6 +22,7 @@ import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 
+import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 
 @Accessors
@@ -314,7 +315,7 @@ class VcxProjGenerator
           «IF !effective_project_references.empty»
               <ItemGroup>
                 «FOR name : effective_project_references»
-                    <ProjectReference Include="$(SolutionDir)«vsSolution.getVcxProjPath(name)».vcxproj">
+                    <ProjectReference Include="$(SolutionDir)«vsSolution.getVcxProjPath(name).toWindowsString».vcxproj">
                       <Project>{«vsSolution.getVcxprojGUID(name)»}</Project>
                     </ProjectReference>
                 «ENDFOR»

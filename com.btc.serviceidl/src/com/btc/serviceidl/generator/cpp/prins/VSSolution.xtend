@@ -32,7 +32,7 @@ class VSSolution implements IProjectSet
     private static class Entry
     {
         UUID uuid
-        String path
+        IPath path
     }
 
     override String getVcxprojName(ParameterBundle paramBundle)
@@ -44,7 +44,7 @@ class VSSolution implements IProjectSet
         return project_name
     }
 
-    protected def ensureEntryExists(String project_name, String projectPath)
+    protected def ensureEntryExists(String project_name, IPath projectPath)
     {
         if (!vs_projects.containsKey(project_name))
         {
@@ -85,12 +85,6 @@ class VSSolution implements IProjectSet
         new ProjectReference(getVcxprojName(paramBundle))
     }
 
-    private def add(String name, UUID uuid, String project_path)
-    {
-        vs_projects.put(name, new Entry(uuid, project_path))
-        new ProjectReference(name)
-    }
-
     @Data
     static class ProjectReference implements IProjectReference
     {
@@ -102,13 +96,13 @@ class VSSolution implements IProjectSet
         vs_projects.get(project_name.projectName).path
     }
 
-    private static def String makeProjectPath(ParameterBundle paramBundle, String project_name)
+    private static def IPath makeProjectPath(ParameterBundle paramBundle, String project_name)
     {
         makeProjectPath(GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP), project_name)
     }
 
-    private static def String makeProjectPath(IPath projectPath, String project_name)
+    private static def IPath makeProjectPath(IPath projectPath, String project_name)
     {
-        projectPath.append(project_name).toWindowsString
+        projectPath.append(project_name)
     }
 }
