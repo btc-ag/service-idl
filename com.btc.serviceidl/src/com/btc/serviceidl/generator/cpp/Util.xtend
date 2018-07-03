@@ -19,9 +19,9 @@ class Util
     static def getIncludeDirectoryName(HeaderType headerType)
     {
         // TODO probably, this should also be made part of a strategy, at least the non-protobuf folder name may be chosen arbitrarily
-         if (headerType == HeaderType.PROTOBUF_HEADER) CppConstants.PROTOBUF_INCLUDE_DIRECTORY_NAME else "include"
+        if (headerType == HeaderType.PROTOBUF_HEADER) CppConstants.PROTOBUF_INCLUDE_DIRECTORY_NAME else "include"
     }
-    
+
     static def getFileExtension(HeaderType headerType)
     {
         // TODO probably, this should also be made part of a strategy, at least the non-protobuf folder name may be chosen arbitrarily
@@ -51,6 +51,7 @@ class Util
      */
     static def String asMember(String name)
     {
+        // TODO this should somehow use CaseFormat
         if (name.allUpperCase)
             name.toLowerCase // it looks better, if ID --> id and not ID --> iD
         else
@@ -78,8 +79,8 @@ class Util
 
     static def String getObservableName(EventDeclaration event)
     {
-        var basic_name = event.name ?: ""
-        basic_name += "Observable"
+        val basic_name = (event.name ?: "") + "Observable"
+
         '''m_«basic_name.asMember»'''
     }
 
@@ -95,16 +96,9 @@ class Util
 
     static def int calculateMaximalNameLength(MemberElementWrapper member)
     {
-        val result = member.name.length
-        var max = 0
-        if (member.type.isStruct)
-        {
-            val struct = member.type.ultimateType as StructDeclaration
-            for (m : struct.allMembers)
-            {
-                max = Math.max(max, calculateMaximalNameLength(m))
-            }
-        }
-        return result + max
+        return member.name.length + if (member.type.isStruct)
+            (member.type.ultimateType as StructDeclaration).allMembers.map[calculateMaximalNameLength(it)].max
+        else
+            0
     }
 }
