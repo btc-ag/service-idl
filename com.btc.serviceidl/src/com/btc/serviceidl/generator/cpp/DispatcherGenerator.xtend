@@ -27,6 +27,7 @@ import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.idl.FunctionDeclaration
 
 @Accessors
 class DispatcherGenerator extends BasicCppGenerator
@@ -87,84 +88,7 @@ class DispatcherGenerator extends BasicCppGenerator
                ParseRequestOrLogAndThrow( «class_name.shortName»::GetLogger(), *protoBufRequest, «IF targetVersion == ServiceCommVersion.V0_10»(*request)[0]«ELSE»*request«ENDIF» );
                
                «FOR function : interface_declaration.functions»
-                   «val protobuf_request_method = function.name.asRequest.asCppProtobufName»
-                   «val is_sync = function.isSync»
-                   «val is_void = function.returnedType.isVoid»
-                   «val protobuf_response_method = function.name.asResponse.asCppProtobufName»
-                   «val output_parameters = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
-                   if ( protoBufRequest->has_«protobuf_request_method»() )
-                   {
-                      // decode request -->
-                      auto const& concreteRequest( protoBufRequest->«protobuf_request_method»() );
-                      «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
-                          «IF GeneratorUtil.useCodec(param.paramType, ArtifactNature.CPP)»
-                              «IF param.paramType.isSequenceType»
-                                  «val ulimate_type = param.paramType.ultimateType»
-                                  «val is_uuid = ulimate_type.isUUIDType»
-                                  «val is_failable = param.paramType.isFailable»
-                                  auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, ulimate_type, is_failable, Optional.of(interface_declaration))»::Decode«IF is_failable»Failable«ELSEIF is_uuid»UUID«ENDIF»
-                                     «IF !is_uuid || is_failable»
-                                         «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.REQUEST).fullyQualifiedName»
-                                         < «IF is_failable»«typeResolver.resolveFailableProtobufType(param.paramType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF», «resolve(ulimate_type)» >
-                                     «ENDIF»
-                                     (concreteRequest.«param.paramName.asCppProtobufName»()) );
-                              «ELSE»
-                                  auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Decode«IF param.paramType.isUUIDType»UUID«ENDIF»(concreteRequest.«param.paramName.asCppProtobufName»()) );
-                              «ENDIF»
-                          «ELSE»
-                              auto «param.paramName»( concreteRequest.«param.paramName.asCppProtobufName»() );
-                          «ENDIF»
-                      «ENDFOR»
-                      // decode request <--
-                      
-                      «IF !output_parameters.empty»
-                          // prepare [out] parameters
-                          «FOR param : output_parameters»
-                              «IF param.paramType.isSequenceType»
-                                  «val type_name = resolve(param.paramType.ultimateType)»
-                                  «val is_failable = param.paramType.isFailable»
-                                  «if (is_failable) addCabInclude(new Path("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h")).alias("") /* necessary to use InsertableTraits with FailableHandle */»
-                                  «val effective_typename = if (is_failable) '''«resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»< «type_name» >''' else type_name»
-                                  «resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «effective_typename» >::AutoPtrType «param.paramName»(
-                                     «resolveSymbol("BTC::Commons::FutureUtil::GetOrCreateDefaultInsertable")»(«resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «effective_typename» >::MakeEmptyInsertablePtr()) );
-                                  auto «param.paramName»Future = «param.paramName»->GetFuture();
-                              «ELSE»
-                                  «toText(param.paramType, param)» «param.paramName»;
-                              «ENDIF»
-                          «ENDFOR»
-                      «ENDIF»
-                      
-                      // call actual method
-               «IF !is_void»auto result( «ENDIF»GetDispatchee().«function.name»(
-                        «FOR p : function.parameters SEPARATOR ", "»
-                            «val isSequenceType = p.paramType.isSequenceType»
-                            «IF p.direction == ParameterDirection.PARAM_OUT && isSequenceType»*«ENDIF»
-                            «IF p.direction == ParameterDirection.PARAM_IN && isSequenceType»«resolveSymbol("std::move")»(«ENDIF»
-                            «p.paramName»
-                            «IF p.direction == ParameterDirection.PARAM_IN && isSequenceType»)«ENDIF»
-                        «ENDFOR»)«IF !is_sync».Get()«ENDIF»«IF !is_void» )«ENDIF»;
-               
-               // prepare response
-               «resolveSymbol("BTC::Commons::Core::AutoPtr")»< «protobuf_response_message» > response( BorrowReplyMessage() );
-               
-               «IF !is_void || !output_parameters.empty»
-                   // encode response -->
-                   auto * const concreteResponse( response->mutable_«protobuf_response_method»() );
-                   «IF !is_void»«makeEncodeResponse(function.returnedType, interface_declaration, function.name.asCppProtobufName, Optional.empty)»«ENDIF»
-                   «IF !output_parameters.empty»
-                       // handle [out] parameters
-                       «FOR param : output_parameters»
-                           «makeEncodeResponse(param.paramType, interface_declaration, param.paramName.asCppProtobufName, Optional.of(param.paramName))»
-                       «ENDFOR»
-                   «ENDIF»
-                   // encode response <--
-               «ENDIF»
-               
-               // send return message
-               return «makeToMessagePtrType('''«resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ProtobufToMessagePart(
-                     GetMessagePartPool()
-                    ,*response )''')»;                    
-                   }
+                  «generateFunctionHandler(function, interface_declaration)»                  
                «ENDFOR»
                
                «resolveSymbol("CABLOG_ERROR")»("Invalid request: " << protoBufRequest->DebugString().c_str());
@@ -220,6 +144,91 @@ class DispatcherGenerator extends BasicCppGenerator
                , «resolveSymbol("CABTYPENAME")»(«api_class_name»)
                , instanceName.IsNotEmpty() ? instanceName : («resolveSymbol("CABTYPENAME")»(«api_class_name») + " default instance")
                );
+            }
+        '''
+    }
+    
+    def generateFunctionHandler(FunctionDeclaration function, InterfaceDeclaration interface_declaration)
+    {
+        val protobuf_request_method = function.name.asRequest.asCppProtobufName
+        val is_sync = function.isSync
+        val is_void = function.returnedType.isVoid
+        val protobuf_response_method = function.name.asResponse.asCppProtobufName
+        val output_parameters = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]
+        val protobuf_response_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
+        '''
+            if ( protoBufRequest->has_«protobuf_request_method»() )
+            {
+           // decode request -->
+           auto const& concreteRequest( protoBufRequest->«protobuf_request_method»() );
+           «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
+               «IF GeneratorUtil.useCodec(param.paramType, ArtifactNature.CPP)»
+                   «IF param.paramType.isSequenceType»
+                       «val ulimate_type = param.paramType.ultimateType»
+                       «val is_uuid = ulimate_type.isUUIDType»
+                       «val is_failable = param.paramType.isFailable»
+                       auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, ulimate_type, is_failable, Optional.of(interface_declaration))»::Decode«IF is_failable»Failable«ELSEIF is_uuid»UUID«ENDIF»
+                          «IF !is_uuid || is_failable»
+                              «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.REQUEST).fullyQualifiedName»
+                              < «IF is_failable»«typeResolver.resolveFailableProtobufType(param.paramType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF», «resolve(ulimate_type)» >
+                          «ENDIF»
+                          (concreteRequest.«param.paramName.asCppProtobufName»()) );
+                   «ELSE»
+                       auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Decode«IF param.paramType.isUUIDType»UUID«ENDIF»(concreteRequest.«param.paramName.asCppProtobufName»()) );
+                   «ENDIF»
+               «ELSE»
+                   auto «param.paramName»( concreteRequest.«param.paramName.asCppProtobufName»() );
+               «ENDIF»
+           «ENDFOR»
+           // decode request <--
+           
+           «IF !output_parameters.empty»
+               // prepare [out] parameters
+               «FOR param : output_parameters»
+                   «IF param.paramType.isSequenceType»
+                       «val type_name = resolve(param.paramType.ultimateType)»
+                       «val is_failable = param.paramType.isFailable»
+                       «if (is_failable) addCabInclude(new Path("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h")).alias("") /* necessary to use InsertableTraits with FailableHandle */»
+                       «val effective_typename = if (is_failable) '''«resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»< «type_name» >''' else type_name»
+                       «resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «effective_typename» >::AutoPtrType «param.paramName»(
+                          «resolveSymbol("BTC::Commons::FutureUtil::GetOrCreateDefaultInsertable")»(«resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «effective_typename» >::MakeEmptyInsertablePtr()) );
+                       auto «param.paramName»Future = «param.paramName»->GetFuture();
+                   «ELSE»
+                       «toText(param.paramType, param)» «param.paramName»;
+                   «ENDIF»
+               «ENDFOR»
+           «ENDIF»
+           
+           // call actual method
+        «IF !is_void»auto result( «ENDIF»GetDispatchee().«function.name»(
+                 «FOR p : function.parameters SEPARATOR ", "»
+                     «val isSequenceType = p.paramType.isSequenceType»
+                     «IF p.direction == ParameterDirection.PARAM_OUT && isSequenceType»*«ENDIF»
+                     «IF p.direction == ParameterDirection.PARAM_IN && isSequenceType»«resolveSymbol("std::move")»(«ENDIF»
+                     «p.paramName»
+                     «IF p.direction == ParameterDirection.PARAM_IN && isSequenceType»)«ENDIF»
+                 «ENDFOR»)«IF !is_sync».Get()«ENDIF»«IF !is_void» )«ENDIF»;
+        
+        // prepare response
+        «resolveSymbol("BTC::Commons::Core::AutoPtr")»< «protobuf_response_message» > response( BorrowReplyMessage() );
+        
+        «IF !is_void || !output_parameters.empty»
+            // encode response -->
+            auto * const concreteResponse( response->mutable_«protobuf_response_method»() );
+            «IF !is_void»«makeEncodeResponse(function.returnedType, interface_declaration, function.name.asCppProtobufName, Optional.empty)»«ENDIF»
+            «IF !output_parameters.empty»
+                // handle [out] parameters
+                «FOR param : output_parameters»
+                    «makeEncodeResponse(param.paramType, interface_declaration, param.paramName.asCppProtobufName, Optional.of(param.paramName))»
+                «ENDFOR»
+            «ENDIF»
+            // encode response <--
+        «ENDIF»
+        
+        // send return message
+        return «makeToMessagePtrType('''«resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ProtobufToMessagePart(
+                 GetMessagePartPool()
+                ,*response )''')»;
             }
         '''
     }
