@@ -14,10 +14,8 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.generator.cpp.HeaderResolver
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
-import com.btc.serviceidl.util.Constants
 import java.util.HashMap
 import java.util.UUID
 import org.eclipse.core.runtime.IPath
@@ -34,7 +32,7 @@ class VSSolution implements IProjectSet
     private static class Entry
     {
         UUID uuid
-        String path
+        IPath path
     }
 
     override String getVcxprojName(ParameterBundle paramBundle)
@@ -46,7 +44,7 @@ class VSSolution implements IProjectSet
         return project_name
     }
 
-    protected def ensureEntryExists(String project_name, String projectPath)
+    protected def ensureEntryExists(String project_name, IPath projectPath)
     {
         if (!vs_projects.containsKey(project_name))
         {
@@ -69,13 +67,6 @@ class VSSolution implements IProjectSet
         return vs_projects.get(projectReference.projectName).uuid.toString.toUpperCase
     }
 
-    override ProjectReference resolveHeader(HeaderResolver.GroupedHeader header)
-    {
-        val project_reference = ReferenceResolver.getProjectReference(header)
-        add(project_reference.project_name, UUID.fromString(project_reference.project_guid),
-            project_reference.project_path)
-    }
-
     @Deprecated
     def resolve(String projectName, IPath projectPath)
     {
@@ -94,12 +85,6 @@ class VSSolution implements IProjectSet
         new ProjectReference(getVcxprojName(paramBundle))
     }
 
-    private def add(String name, UUID uuid, String project_path)
-    {
-        vs_projects.put(name, new Entry(uuid, project_path))
-        new ProjectReference(name)
-    }
-
     @Data
     static class ProjectReference implements IProjectReference
     {
@@ -111,13 +96,13 @@ class VSSolution implements IProjectSet
         vs_projects.get(project_name.projectName).path
     }
 
-    private static def String makeProjectPath(ParameterBundle paramBundle, String project_name)
+    private static def IPath makeProjectPath(ParameterBundle paramBundle, String project_name)
     {
         makeProjectPath(GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP), project_name)
     }
 
-    private static def String makeProjectPath(IPath projectPath, String project_name)
+    private static def IPath makeProjectPath(IPath projectPath, String project_name)
     {
-        '''$(SolutionDir)\«projectPath.toString.replace(Constants.SEPARATOR_FILE, Constants.SEPARATOR_BACKSLASH)»\«project_name»'''
+        projectPath.append(project_name)
     }
 }

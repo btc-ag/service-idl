@@ -22,7 +22,7 @@ import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
-import java.util.Map
+import java.util.HashSet
 import java.util.Set
 import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EObject
@@ -39,14 +39,14 @@ class TypeResolver
     public static val PROTOBUF_UUID_TYPE = "Google.ProtocolBuffers.ByteString"
 
     val DotNetFrameworkVersion frameworkVersion
-    val IQualifiedNameProvider qualified_name_provider
-    val Set<String> namespace_references
+    val IQualifiedNameProvider qualifiedNameProvider
+    val Set<String> namespaceReferences
     val Set<FailableAlias> failableAliases
-    val Set<String> referenced_assemblies
-    val Map<String, String> project_references
+    val Set<String> referencedAssemblies = new HashSet<String>
+    val Set<ParameterBundle> projectReferences = new HashSet<ParameterBundle>
     val NuGetPackageResolver nugetPackageResolver
     val VSSolution vsSolution
-    val ParameterBundle param_bundle
+    val ParameterBundle parameterBundle
 
     def ResolvedName resolve(String name)
     {
@@ -56,14 +56,14 @@ class TypeResolver
         val namespace = fully_qualified_name.skipLast(1).toString
 
         if (namespace.startsWith("System"))
-            referenced_assemblies.add(DotNetAssemblies.getAssemblyForNamespace(namespace, frameworkVersion))
+            referencedAssemblies.add(DotNetAssemblies.getAssemblyForNamespace(namespace, frameworkVersion))
         else
         {
             val assemblyName = AssemblyResolver.resolveReference(namespace)
             nugetPackageResolver.resolvePackage(assemblyName)
         }
 
-        namespace_references.add(namespace)
+        namespaceReferences.add(namespace)
         return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, false)
     }
 
@@ -74,7 +74,7 @@ class TypeResolver
 
     def ResolvedName resolve(EObject element, ProjectType project_type)
     {
-        var name = qualified_name_provider.getFullyQualifiedName(element)
+        var name = qualifiedNameProvider.getFullyQualifiedName(element)
         val fully_qualified = true
 
         // use the underlying type for typedefs
@@ -126,7 +126,7 @@ class TypeResolver
         if (!isSameProject(package_name))
         {
             // just use namespace, no assembly required - project reference will be used instead!
-            namespace_references.add(package_name.toString)
+            namespaceReferences.add(package_name.toString)
             element.resolveProjectFilePath(project_type)
         }
 
@@ -148,31 +148,14 @@ class TypeResolver
 
     private def boolean isSameProject(QualifiedName referenced_package)
     {
-        GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.DOTNET, TransformType.PACKAGE) ==
+        GeneratorUtil.getTransformedModuleName(parameterBundle, ArtifactNature.DOTNET, TransformType.PACKAGE) ==
             referenced_package.toString
     }
 
     def void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
     {
-        val module_stack = com.btc.serviceidl.util.Util.getModuleStack(referenced_object)
-        var project_path = ""
-
-        val temp_param = new ParameterBundle.Builder().with(module_stack).with(project_type).build
-
-        val project_name = vsSolution.getCsprojName(temp_param)
-
-        if (module_stack.elementsEqual(param_bundle.moduleStack))
-        {
-            project_path = "../" + project_type.getName + "/" + project_name
-        }
-        else
-        {
-            project_path = "../" + GeneratorUtil.getRelativePathsUpwards(param_bundle.moduleStack) +
-                GeneratorUtil.getTransformedModuleName(temp_param, ArtifactNature.DOTNET,
-                    TransformType.FILE_SYSTEM) + "/" + project_name
-        }
-
-        project_references.put(project_name, project_path)
+        projectReferences.add(
+            new ParameterBundle.Builder().with(referenced_object.moduleStack).with(project_type).build)
     }
 
     def primitiveTypeName(PrimitiveType element)
@@ -223,7 +206,7 @@ class TypeResolver
             TransformType.PACKAGE
         )
         return namespace + TransformType.PACKAGE.separator +
-            GeneratorUtil.asFailable(element, container, qualified_name_provider)
+            GeneratorUtil.asFailable(element, container, qualifiedNameProvider)
     }
 
     def String resolveFailableType(String basicType)

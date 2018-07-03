@@ -78,8 +78,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                   public static readonly string typeName = typeof(BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.IKeyValueStore).FullName;
                }
             }
-        ''', baseDirectory + "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.csproj" -> 
-        '''
+        ''', baseDirectory + "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.csproj" -> '''
             <?xml version="1.0" encoding="utf-8"?>
             <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
               <PropertyGroup>
@@ -168,8 +167,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
               </Target>
               -->
             </Project>
-        ''', baseDirectory + "Properties/AssemblyInfo.cs" ->
-        '''
+        ''', baseDirectory + "Properties/AssemblyInfo.cs" -> '''
             using System.Reflection;
             using System.Runtime.CompilerServices;
             using System.Runtime.InteropServices;
@@ -196,6 +194,141 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
         '''}
 
         checkGenerators(TestData.basic, setOf(ProjectType.SERVICE_API), fileCount, contents)
+    }
+
+    @Test
+    def void testBasicProtobufCSProjFile()
+    {
+        val fileCount = 19
+        val baseDirectory = ArtifactNature.DOTNET.label + "Infrastructure/ServiceHost/Demo/API/Protobuf/"
+        val contents = #{baseDirectory + "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf.csproj" -> '''
+            <?xml version="1.0" encoding="utf-8"?>
+            <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+              <PropertyGroup>
+                <ProjectGuid>{ABD62783-C17A-3EAA-8C93-FE69A650E4DD}</ProjectGuid>
+                <OutputType>Library</OutputType>
+                <RootNamespace>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf</RootNamespace>
+                <AssemblyName>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf</AssemblyName>
+                <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+                <TargetFrameworkProfile />
+              </PropertyGroup>
+              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+                <DebugSymbols>true</DebugSymbols>
+                <DebugType>full</DebugType>
+                <Optimize>false</Optimize>
+                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <DefineConstants>DEBUG;TRACE</DefineConstants>
+                <ErrorReport>prompt</ErrorReport>
+                <WarningLevel>4</WarningLevel>
+                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+              </PropertyGroup>
+              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+                <DebugType>pdbonly</DebugType>
+                <Optimize>true</Optimize>
+                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <DefineConstants>TRACE</DefineConstants>
+                <ErrorReport>prompt</ErrorReport>
+                <WarningLevel>4</WarningLevel>
+                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+              </PropertyGroup>
+              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Win32' ">
+                <DebugSymbols>true</DebugSymbols>
+                <DebugType>full</DebugType>
+                <Optimize>false</Optimize>
+                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <DefineConstants>DEBUG;TRACE</DefineConstants>
+                <ErrorReport>prompt</ErrorReport>
+                <WarningLevel>4</WarningLevel>
+                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+              </PropertyGroup>
+              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Win32' ">
+                <DebugType>pdbonly</DebugType>
+                <Optimize>true</Optimize>
+                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <DefineConstants>TRACE</DefineConstants>
+                <ErrorReport>prompt</ErrorReport>
+                <WarningLevel>4</WarningLevel>
+                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+              </PropertyGroup>
+              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+                <DebugSymbols>true</DebugSymbols>
+                <DebugType>full</DebugType>
+                <Optimize>false</Optimize>
+                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <DefineConstants>DEBUG;TRACE</DefineConstants>
+                <ErrorReport>prompt</ErrorReport>
+                <WarningLevel>4</WarningLevel>
+                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+              </PropertyGroup>
+              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+                <DebugType>pdbonly</DebugType>
+                <Optimize>true</Optimize>
+                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <DefineConstants>TRACE</DefineConstants>
+                <ErrorReport>prompt</ErrorReport>
+                <WarningLevel>4</WarningLevel>
+                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+              </PropertyGroup>
+              <ItemGroup>
+                <Reference Include="System.Reflection">
+                  <SpecificVersion>False</SpecificVersion>
+                  <HintPath>$(SolutionDir)..\lib\AnyCPU\Release\System.Reflection.dll</HintPath>
+                </Reference>
+                <Reference Include="System.Linq">
+                  <SpecificVersion>False</SpecificVersion>
+                  <HintPath>$(SolutionDir)..\lib\AnyCPU\Release\System.Linq.dll</HintPath>
+                </Reference>
+                <Reference Include="System">
+                  <SpecificVersion>False</SpecificVersion>
+                  <HintPath>$(SolutionDir)..\lib\AnyCPU\Release\System.dll</HintPath>
+                </Reference>
+                <Reference Include="System.Threading.Tasks">
+                  <SpecificVersion>False</SpecificVersion>
+                  <HintPath>$(SolutionDir)..\lib\AnyCPU\Release\System.Threading.Tasks.dll</HintPath>
+                </Reference>
+                <Reference Include="Google.ProtocolBuffers.Serialization">
+                  <HintPath>$(SolutionDir)packages\Google.ProtocolBuffers\lib\net40\Google.ProtocolBuffers.Serialization.dll</HintPath>
+                </Reference>                
+                <Reference Include="Google.ProtocolBuffers">
+                  <HintPath>$(SolutionDir)packages\Google.ProtocolBuffers\lib\net40\Google.ProtocolBuffers.dll</HintPath>
+                </Reference>                
+              </ItemGroup>
+              <ItemGroup>
+                <Compile Include="Types.cs" />
+                <Compile Include="DemoX.cs" />
+                <Compile Include="ServiceFaultHandling.cs" />
+                <Compile Include="TypesCodec.cs" />
+                <Compile Include="DemoXServiceFaultHandling.cs" />
+                <Compile Include="DemoXCodec.cs" />
+                  <Compile Include="Properties\AssemblyInfo.cs" />
+              </ItemGroup>
+              <ItemGroup>
+                <ProjectReference Include="$(SolutionDir)Infrastructure\ServiceHost\Demo\API\Common\BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Common.csproj">
+                  <Project>{AD599B77-55B0-3DE4-8CF0-2D96A3B65830}</Project>
+                  <Name>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Common</Name>
+                </ProjectReference>
+              </ItemGroup>
+              <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+              <PropertyGroup>
+                <PreBuildEvent>
+                $(SolutionDir)\\packages\\Google.ProtocolBuffers\\tools\\protoc.exe --include_imports --proto_path=$(SolutionDir) --descriptor_set_out=$(ProjectDir)gen\Types.protobin $(SolutionDir)/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/Types.proto
+                $(SolutionDir)\\packages\\Google.ProtocolBuffers\\tools\\Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\Types.protobin
+                $(SolutionDir)\\packages\\Google.ProtocolBuffers\\tools\\protoc.exe --include_imports --proto_path=$(SolutionDir) --descriptor_set_out=$(ProjectDir)gen\DemoX.protobin $(SolutionDir)/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/DemoX.proto
+                $(SolutionDir)\\packages\\Google.ProtocolBuffers\\tools\\Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\DemoX.protobin
+                </PreBuildEvent>
+              </PropertyGroup>
+              <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+                   Other similar extension points exist, see Microsoft.Common.targets.
+              <Target Name="BeforeBuild">
+              </Target>
+              <Target Name="AfterBuild">
+              </Target>
+              -->
+            </Project>
+        '''}
+
+        checkGenerators(TestData.full, setOf(ProjectType.SERVICE_API, ProjectType.COMMON, ProjectType.PROTOBUF),
+            fileCount, contents)
     }
 
     def void checkGenerators(CharSequence input, Set<ProjectType> projectTypes, int fileCount,

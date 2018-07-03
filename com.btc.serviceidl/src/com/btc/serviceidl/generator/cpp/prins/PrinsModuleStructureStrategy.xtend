@@ -14,7 +14,6 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.HeaderType
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -47,7 +46,7 @@ class PrinsModuleStructureStrategy implements IModuleStructureStrategy
     override getProjectDir(ParameterBundle paramBundle)
     {
         new Path(ReferenceResolver.MODULES_HEADER_PATH_PREFIX).append(
-            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
+            GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP))
     }
 
 }

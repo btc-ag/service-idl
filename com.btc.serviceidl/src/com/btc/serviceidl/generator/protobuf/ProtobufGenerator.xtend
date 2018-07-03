@@ -46,6 +46,7 @@ import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
 import java.util.Optional
+import java.util.Set
 import java.util.concurrent.atomic.AtomicInteger
 import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
@@ -75,18 +76,15 @@ class ProtobufGenerator
    val referenced_files = new HashSet<String>
    val generated_artifacts = new HashMap<EObject, String>
    val typedef_table = new HashMap<String, String>
-   val cpp_project_references = new HashMap<String, HashMap<String, String>>
-   val dotnet_project_references = new HashMap<String, HashMap<String, String>>
+   val allProjectReferences = new HashMap<ArtifactNature, Map<String, Set<ParameterBundle>>>
    
-   def HashMap<String, HashMap<String, String>> getProjectReferences(ArtifactNature artifact_nature)
-   {
-      if (artifact_nature == ArtifactNature.CPP)
-         return cpp_project_references
-      else if (artifact_nature == ArtifactNature.DOTNET)
-         return dotnet_project_references
-      
-      throw new IllegalArgumentException("Unsupported artifact nature for project references: " + artifact_nature)
-   }
+   def Map<String, Set<ParameterBundle>> getProjectReferences(ArtifactNature artifactNature)
+    {
+        if (!allProjectReferences.containsKey(artifactNature))
+            allProjectReferences.put(artifactNature, new HashMap<String, Set<ParameterBundle>>)
+        
+        allProjectReferences.get(artifactNature)
+    }
    
    def Map<EObject, String> getGeneratedArtifacts()
    {
@@ -525,8 +523,6 @@ class ProtobufGenerator
       {
          val temp_bundle = ParameterBundle.createBuilder(Util.getModuleStack(object_root)).with(ProjectType.PROTOBUF).build
 
-         val root_path = GeneratorUtil.getTransformedModuleName(temp_bundle, artifactNature, TransformType.FILE_SYSTEM)
-         
          var String referenced_project
          var String current_project
          
@@ -550,11 +546,10 @@ class ProtobufGenerator
          {
             if (current_project != referenced_project)
             {
-               val project_references = getProjectReferences(artifactNature)
-               val project_path = "$(SolutionDir)" + ( if (artifactNature == ArtifactNature.DOTNET) "../" else "/" ) + root_path + "/" + referenced_project
-               val HashMap<String, String> references = project_references.get(current_project) ?: new HashMap<String, String>
-               references.put(referenced_project, project_path)
-               project_references.put(current_project, references)
+                val project_references = getProjectReferences(artifactNature)
+                val references = project_references.get(current_project) ?: new HashSet<ParameterBundle>
+                references.add(temp_bundle)
+                project_references.put(current_project, references)
             }
          }
          
@@ -597,8 +592,7 @@ class ProtobufGenerator
             (if (artifact_nature == ArtifactNature.CPP)
                 moduleStructureStrategy.getProjectDir(temp_bundle)
             else
-                Path.fromPortableString(GeneratorUtil.getTransformedModuleName(temp_bundle, artifact_nature,
-                    TransformType.FILE_SYSTEM))).append(Constants.PROTOBUF_GENERATION_DIRECTORY_NAME)
+                GeneratorUtil.asPath(temp_bundle, artifact_nature)).append(Constants.PROTOBUF_GENERATION_DIRECTORY_NAME)
         }).append(file_name.proto)
     }
 }

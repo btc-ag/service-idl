@@ -16,6 +16,7 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.IGenerationSettingsProvider
+import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
 import com.btc.serviceidl.generator.cpp.cmake.CMakeTopLevelProjectFileGenerator
@@ -50,17 +51,15 @@ class CppGenerator
 
     new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IScopeProvider scopeProvider, IGenerationSettingsProvider generationSettingsProvider,
-        Map<String, HashMap<String, String>> protobufProjectReferences)
+        Map<String, Set<ParameterBundle>> protobufProjectReferences)
     {
         this.idl = idl
         this.fileSystemAccess = fileSystemAccess
         this.qualifiedNameProvider = qualifiedNameProvider
         this.scopeProvider = scopeProvider
-        // TODO the protobuf projects must be added to the vsSolution, and converted into IProjectReference
-        // this.protobufProjectReferences = pr?.immutableCopy  
-        this.protobufProjectReferences = null
 
         this.projectSet = generationSettingsProvider.projectSetFactory.create
+        this.protobufProjectReferences = protobufProjectReferences?.mapValues[map[projectSet.resolve(it)].toSet]
         this.moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
         this.generationSettingsProvider = generationSettingsProvider
     }

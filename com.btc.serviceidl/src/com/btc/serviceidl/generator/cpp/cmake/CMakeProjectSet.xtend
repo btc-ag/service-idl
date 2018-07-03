@@ -14,7 +14,6 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.generator.cpp.HeaderResolver.GroupedHeader
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import java.util.HashSet
@@ -41,11 +40,6 @@ class CMakeProjectSet implements IProjectSet
     {
         projects.add(paramBundle)
         new ProjectReference(getVcxprojName(paramBundle))        
-    }
-
-    override resolveHeader(GroupedHeader header)
-    {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
     }
 
 }

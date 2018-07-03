@@ -27,9 +27,9 @@ class AppConfigGenerator {
       basicCSharpSourceGenerator.typeResolver
   } 
 
-  private def getParam_bundle()
+  private def getParameterBundle()
   {
-      basicCSharpSourceGenerator.typeResolver.param_bundle
+      basicCSharpSourceGenerator.typeResolver.parameterBundle
   } 
     
   // TODO for some reason, the return type must be specified here, otherwise we get compile errors
@@ -47,7 +47,7 @@ class AppConfigGenerator {
           </sectionGroup>
         </configSections>
       
-        <log4net configSource="«param_bundle.log4NetConfigFile»" />
+        <log4net configSource="«parameterBundle.log4NetConfigFile»" />
       
         <spring>
           <context>
@@ -56,7 +56,7 @@ class AppConfigGenerator {
           <objects xmlns="http://www.springframework.net">
             <object id="BTC.CAB.Logging.API.NET.LoggerFactory" type="«typeResolver.resolve("BTC.CAB.Logging.Log4NET.Log4NETLoggerFactory").fullyQualifiedName», BTC.CAB.Logging.Log4NET"/>
             
-            «IF param_bundle.projectType == ProjectType.SERVER_RUNNER»
+            «IF parameterBundle.projectType == ProjectType.SERVER_RUNNER»
                «val protobuf_server_helper = typeResolver.resolve("BTC.CAB.ServiceComm.NET.ProtobufUtil.ProtoBufServerHelper").fullyQualifiedName»
                «val service_descriptor = '''«typeResolver.resolve("BTC.CAB.ServiceComm.NET.API.DTO.ServiceDescriptor").fullyQualifiedName»'''»
                «val service_dispatcher = typeResolver.resolve("BTC.CAB.ServiceComm.NET.API.IServiceDispatcher").fullyQualifiedName»
@@ -103,7 +103,7 @@ class AppConfigGenerator {
                    </dictionary>
                  </constructor-arg>
                </object>
-            «ELSEIF param_bundle.projectType == ProjectType.CLIENT_CONSOLE»
+            «ELSEIF parameterBundle.projectType == ProjectType.CLIENT_CONSOLE»
                <!--ZeroMQ client factory-->
                <object id="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ">
                  <constructor-arg name="connectionOptions" expression="T(BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory, BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ).DefaultClientConnectionOptions" />

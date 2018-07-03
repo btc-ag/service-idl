@@ -29,9 +29,9 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
 import com.google.common.base.CaseFormat
-import java.util.Arrays
 import java.util.HashSet
 import java.util.regex.Pattern
+import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -48,11 +48,11 @@ class GeneratorUtil
             if (!module.virtual || transformType.useVirtual || artifactNature == ArtifactNature.JAVA)
                 getEffectiveModuleName(module, artifactNature)
             else
-                Arrays.asList()
+                #[]
         ].flatten + if (parameterBundle.projectType !== null)
-            Arrays.asList(parameterBundle.projectType.getName)
+            #[parameterBundle.projectType.getName]
         else
-            Arrays.asList()
+            #[]
         val result = parts.join(transformType.separator)
 
         if (artifactNature == ArtifactNature.JAVA)
@@ -66,18 +66,18 @@ class GeneratorUtil
         if (artifactNature == ArtifactNature.DOTNET && module.main)
         {
             // TODO shouldn't this return two parts instead of a single one containg "."?
-            if (module.main) Arrays.asList(module.name + ".NET") else Arrays.asList(module.name)
+            #[if (module.main) module.name + ".NET" else module.name]
         }
         else if (artifactNature == ArtifactNature.JAVA)
         {
             // TODO this must be changed... prefixing "com" is not appropriate in general
             if (module.eContainer === null || (module.eContainer instanceof IDLSpecification))
-                Arrays.asList("com", module.name)
+                #["com", module.name]
             else
-                Arrays.asList(module.name)
+                #[module.name]
         }
         else
-            Arrays.asList(module.name)
+            #[module.name]
     }
 
     def static String switchPackageSeperator(String name, TransformType targetTransformType)
@@ -121,15 +121,14 @@ class GeneratorUtil
 
     static def String asFailable(EObject element, EObject container, IQualifiedNameProvider qualifiedNameProvider)
     {
-        Arrays.asList(Arrays.asList("Failable"),
-            qualifiedNameProvider.getFullyQualifiedName(container).segments, getTypeName(Util.getUltimateType(element),
-                qualifiedNameProvider).map[toFirstUpper]).flatten.join(FAILABLE_SEPARATOR)
+        #[#["Failable"], qualifiedNameProvider.getFullyQualifiedName(container).segments, getTypeName(
+            Util.getUltimateType(element), qualifiedNameProvider).map[toFirstUpper]].flatten.join(FAILABLE_SEPARATOR)
     }
 
     private static def Iterable<String> getTypeName(EObject type, IQualifiedNameProvider qualifiedNameProvider)
     {
         if (type.isPrimitive)
-            Arrays.asList(Names.plain(type))
+            #[Names.plain(type)]
         else
             qualifiedNameProvider.getFullyQualifiedName(type).segments
     }
@@ -204,13 +203,13 @@ class GeneratorUtil
      * \details If at least one relative parent path is there, the string ALWAYS
      * ends with the path separator!
      */
-    def static String getRelativePathsUpwards(Iterable<ModuleDeclaration> moduleStack)
+    def static IPath getRelativePathsUpwards(Iterable<ModuleDeclaration> moduleStack)
     {
-        var paths = ""
+        var paths = Path.EMPTY
         for (module : moduleStack)
         {
             if (!module.virtual) // = non-virtual
-                paths += ".." + TransformType.FILE_SYSTEM.separator
+                paths.append("..")
         }
         return paths
     }
@@ -220,9 +219,8 @@ class GeneratorUtil
         new Path(getTransformedModuleName(bundle, nature, TransformType.FILE_SYSTEM))
     }
 
-
-    static def String asProtobufName(String name, CaseFormat targetFormat) 
-    { 
+    static def String asProtobufName(String name, CaseFormat targetFormat)
+    {
         // TODO instead of applying a heuristic, this should be configured explicitly, see 
         // https://github.com/btc-ag/service-idl/issues/90
         val caseFormat = if (name.contains('_'))
@@ -232,10 +230,11 @@ class GeneratorUtil
             else
                 CaseFormat.LOWER_CAMEL)
 
-        caseFormat.to(targetFormat, name.fixAbbreviation)       
+        caseFormat.to(targetFormat, name.fixAbbreviation)
     }
-    
-    private def static String fixAbbreviation(String intermediate) {
+
+    private def static String fixAbbreviation(String intermediate)
+    {
         val res = new StringBuilder
         var StringBuilder currentAbbrev = null
         for (c : intermediate.toCharArray)
@@ -263,7 +262,7 @@ class GeneratorUtil
             }
         }
         if (currentAbbrev !== null) res.append(currentAbbrev)
-        
+
         res.toString
     }
 }

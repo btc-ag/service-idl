@@ -14,13 +14,11 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.HeaderResolver
 import com.btc.serviceidl.generator.cpp.HeaderType
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.TypeResolver
 import com.btc.serviceidl.idl.ModuleDeclaration
-import org.eclipse.core.runtime.Path
 
 import static extension com.btc.serviceidl.generator.cpp.HeaderResolver.Builder.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
@@ -49,7 +47,6 @@ class CABModuleStructureStrategy implements IModuleStructureStrategy
 
     override getProjectDir(ParameterBundle paramBundle)
     {
-        Path.fromPortableString(
-            GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.FILE_SYSTEM))
+        GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP)
     }
 }

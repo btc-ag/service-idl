@@ -12,10 +12,8 @@ package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
-import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectFileGenerator
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
 import com.btc.serviceidl.generator.cpp.prins.OdbConstants
@@ -31,7 +29,6 @@ import java.util.Map
 import java.util.Optional
 import java.util.Set
 import org.eclipse.core.runtime.IPath
-import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess

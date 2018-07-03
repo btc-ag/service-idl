@@ -284,7 +284,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
             «api_type_name» typedData = («api_type_name») plainData;
             var builder = «protobuf_type_name».CreateBuilder();
             «FOR member : members»
-                «val codec = resolveCodec(typeResolver, param_bundle, member.type)»
+                «val codec = resolveCodec(typeResolver, parameterBundle, member.type)»
                 «val isFailable = member.type.isFailable»
                 «val useCodec = isFailable || GeneratorUtil.useCodec(member.type, ArtifactNature.DOTNET)»
                 «val useCast = useCodec && !isFailable»
@@ -306,11 +306,11 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                 «ENDIF»
             «ENDFOR»
                 «FOR struct_decl : type_declarations.filter(StructDeclaration).filter[declarator !== null]»
-                «val codec = resolveCodec(typeResolver, param_bundle, struct_decl)»
+                «val codec = resolveCodec(typeResolver, parameterBundle, struct_decl)»
                 builder.Set«new MemberElementWrapper(struct_decl).protobufName»((«protobuf_type_name».Types.«struct_decl.name») «codec».encode(typedData.«struct_decl.declarator.asProperty»));
                 «ENDFOR»
                 «FOR enum_decl : type_declarations.filter(EnumDeclaration).filter[declarator !== null]»
-                «val codec = resolveCodec(typeResolver, param_bundle, enum_decl)»
+                «val codec = resolveCodec(typeResolver, parameterBundle, enum_decl)»
                 builder.Set«new MemberElementWrapper(enum_decl).protobufName»((«protobuf_type_name».Types.«enum_decl.name») «codec».encode(typedData.«enum_decl.declarator»));
                 «ENDFOR»
             return builder.BuildPartial();
@@ -354,7 +354,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
             «protobuf_type_name» typedData = («protobuf_type_name») encodedData;
             return new «api_type_name» (
                «FOR member : members SEPARATOR ","»
-                   «val codec = resolveCodec(typeResolver, param_bundle, member.type)»
+                   «val codec = resolveCodec(typeResolver, parameterBundle, member.type)»
                    «val isFailable = com.btc.serviceidl.util.Util.isFailable(member.type)»
                    «val useCodec = isFailable || GeneratorUtil.useCodec(member.type, ArtifactNature.DOTNET)»
                    «val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(member.type)»
@@ -368,11 +368,11 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
                    «ENDIF»
                «ENDFOR»
                 «FOR struct_decl : type_declarations.filter(StructDeclaration).filter[declarator !== null] SEPARATOR ","»
-                    «val codec = resolveCodec(typeResolver, param_bundle, struct_decl)»
+                    «val codec = resolveCodec(typeResolver, parameterBundle, struct_decl)»
                     «struct_decl.declarator.asParameter»: («resolve(struct_decl)») «codec».decode(typedData.«new MemberElementWrapper(struct_decl).protobufName»)
                 «ENDFOR»
                 «FOR enum_decl : type_declarations.filter(EnumDeclaration).filter[declarator !== null] SEPARATOR ","»
-                    «val codec = resolveCodec(typeResolver, param_bundle, enum_decl)»
+                    «val codec = resolveCodec(typeResolver, parameterBundle, enum_decl)»
                     «enum_decl.declarator.asParameter»: («api_type_name + Constants.SEPARATOR_PACKAGE + enum_decl.name») «codec».decode(typedData.«new MemberElementWrapper(enum_decl).protobufName»)
                 «ENDFOR»
                );

@@ -53,7 +53,7 @@ class ProxyEventGenerator extends ProxyDispatcherGeneratorBase
                       public void OnNext(«resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")» value)
                       {
                 var protobufEvent = «resolveProtobuf(event.data)».ParseFrom(value.PopFront());
-                _subscriber.OnNext((«toText(event.data, event)»)«resolveCodec(typeResolver, param_bundle, interface_declaration)».decode(protobufEvent));
+                _subscriber.OnNext((«toText(event.data, event)»)«resolveCodec(typeResolver, parameterBundle, interface_declaration)».decode(protobufEvent));
                       }
             
                       public void OnError(Exception error)

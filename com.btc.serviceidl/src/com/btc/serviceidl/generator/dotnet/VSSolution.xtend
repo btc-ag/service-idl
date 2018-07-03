@@ -33,16 +33,17 @@ class VSSolution
             TransformType.PACKAGE)
         if (!vs_projects.containsKey(projectName))
         {
-            vs_projects.put(projectName,
-                new Entry(UUID.nameUUIDFromBytes(projectName.bytes),
-                    GeneratorUtil.asPath(parameterBundle, ArtifactNature.DOTNET)))
+            vs_projects.put(projectName, new Entry(UUID.nameUUIDFromBytes(projectName.bytes),
+                GeneratorUtil.asPath(parameterBundle, ArtifactNature.DOTNET)))
         }
         return projectName
     }
 
-    def String getCsprojGUID(String projectName)
+    def String getCsprojGUID(ParameterBundle parameterBundle)
     {
-        return vs_projects.get(projectName).uuid.toString.toUpperCase
+        // TODO this is used to reference other projects. Make registration & referencing explicit, 
+        // and check at the end of generation that all forward references have been resolved.
+        vs_projects.get(registerCsprojGUID(parameterBundle)).uuid.toString.toUpperCase
     }
 
     def getAllProjects()

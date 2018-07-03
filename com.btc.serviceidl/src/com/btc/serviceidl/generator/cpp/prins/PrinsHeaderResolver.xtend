@@ -16,7 +16,7 @@ import java.util.Arrays
 
 class PrinsHeaderResolver
 {
-    static val ODB_INCLUDE_GROUP = new TypeResolver.IncludeGroup("ODB")
+    public static val ODB_INCLUDE_GROUP = new TypeResolver.IncludeGroup("ODB")
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
     static val odb_header_mapper = #{
