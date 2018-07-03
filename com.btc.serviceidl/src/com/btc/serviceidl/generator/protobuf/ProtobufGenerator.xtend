@@ -80,10 +80,7 @@ class ProtobufGenerator
    
    def Map<String, Set<ParameterBundle>> getProjectReferences(ArtifactNature artifactNature)
     {
-        if (!allProjectReferences.containsKey(artifactNature))
-            allProjectReferences.put(artifactNature, new HashMap<String, Set<ParameterBundle>>)
-        
-        allProjectReferences.get(artifactNature)
+        allProjectReferences.computeIfAbsent(artifactNature, [new HashMap<String, Set<ParameterBundle>>])
     }
    
    def Map<EObject, String> getGeneratedArtifacts()
@@ -116,7 +113,7 @@ class ProtobufGenerator
       // handle all module contents (excluding interfaces)
       for (module : resource.allContents.filter(ModuleDeclaration).filter[!isVirtual].toIterable)
       {
-         var module_contents = module.eContents.filter( [e | !(e instanceof ModuleDeclaration || e instanceof InterfaceDeclaration)])
+         val module_contents = module.eContents.filter( [e | !(e instanceof ModuleDeclaration || e instanceof InterfaceDeclaration)])
          if ( !module_contents.empty )
          {
             param_bundle = ParameterBundle.createBuilder(Util.getModuleStack(module)).with(ProjectType.PROTOBUF).build
@@ -134,13 +131,13 @@ class ProtobufGenerator
    {
       referenced_files.clear
       
-      var file_body =
+      val file_body =
       '''
       «generateFailable(an, module)»
       «generateTypes(an, module, module.moduleComponents.filter[ e | !(e instanceof InterfaceDeclaration)].toList)»
       '''
       
-      var file_header =
+      val file_header =
       '''
       «generatePackageName(an, module)»
       «generateImports(an, module)»
@@ -503,59 +500,62 @@ class ProtobufGenerator
    }
    
    private def String resolve(ArtifactNature artifactNature, EObject object, EObject context, EObject container)
-   {
-      if (Util.isSequenceType(object))
-         return toText(object, artifactNature, context, container, new AtomicInteger)
-      
-      val actual_type = Util.getUltimateType(object)
-      if (Util.isPrimitive(actual_type))
-         return toText(actual_type, artifactNature, context, container, new AtomicInteger)
+    {
+        if (Util.isSequenceType(object))
+            return toText(object, artifactNature, context, container, new AtomicInteger)
 
-      var plain_name = Names.plain(actual_type)
-      
-      // first, check if we are within the same namespace
-      var object_root = Util.getScopeDeterminant(actual_type)
-      var context_root = Util.getScopeDeterminant(context)
-      
-      if (object_root == context_root)
-         return plain_name
-      else
-      {
-         val temp_bundle = ParameterBundle.createBuilder(Util.getModuleStack(object_root)).with(ProjectType.PROTOBUF).build
+        val actual_type = Util.getUltimateType(object)
+        if (Util.isPrimitive(actual_type))
+            return toText(actual_type, artifactNature, context, container, new AtomicInteger)
 
-         var String referenced_project
-         var String current_project
-         
-         if (artifactNature != ArtifactNature.JAVA)
-         {
-            referenced_project = GeneratorUtil.getTransformedModuleName(temp_bundle, artifactNature, TransformType.PACKAGE)
-            current_project = GeneratorUtil.getTransformedModuleName(param_bundle, artifactNature, TransformType.PACKAGE)
-         }
-         else
-         {
-            referenced_project = MavenResolver.resolvePackage(object_root, Optional.of(ProjectType.PROTOBUF))
-            current_project = MavenResolver.resolvePackage(context_root, Optional.of(ProjectType.PROTOBUF))
-         }
-         
-         val result = referenced_project + TransformType.PACKAGE.separator + plain_name
+        var plain_name = Names.plain(actual_type)
 
-         val import_path = makeProtobufPath(artifactNature, object_root, if (object_root instanceof InterfaceDeclaration) Names.plain(object_root) else Constants.FILE_NAME_TYPES )
-         referenced_files.add(import_path.toPortableString)
+        // first, check if we are within the same namespace
+        var object_root = Util.getScopeDeterminant(actual_type)
+        var context_root = Util.getScopeDeterminant(context)
 
-         if (artifactNature != ArtifactNature.JAVA)
-         {
-            if (current_project != referenced_project)
+        if (object_root == context_root)
+            return plain_name
+        else
+        {
+            val temp_bundle = ParameterBundle.createBuilder(Util.getModuleStack(object_root)).with(
+                ProjectType.PROTOBUF).build
+
+            var String referenced_project
+            var String current_project
+
+            if (artifactNature != ArtifactNature.JAVA)
             {
-                val project_references = getProjectReferences(artifactNature)
-                val references = project_references.get(current_project) ?: new HashSet<ParameterBundle>
-                references.add(temp_bundle)
-                project_references.put(current_project, references)
+                referenced_project = GeneratorUtil.getTransformedModuleName(temp_bundle, artifactNature,
+                    TransformType.PACKAGE)
+                current_project = GeneratorUtil.getTransformedModuleName(param_bundle, artifactNature,
+                    TransformType.PACKAGE)
             }
-         }
-         
-         return result
-      }
-   }
+            else
+            {
+                referenced_project = MavenResolver.resolvePackage(object_root, Optional.of(ProjectType.PROTOBUF))
+                current_project = MavenResolver.resolvePackage(context_root, Optional.of(ProjectType.PROTOBUF))
+            }
+
+            val result = referenced_project + TransformType.PACKAGE.separator + plain_name
+
+            val import_path = makeProtobufPath(artifactNature, object_root,
+                if (object_root instanceof InterfaceDeclaration) Names.plain(object_root) else Constants.
+                    FILE_NAME_TYPES)
+            referenced_files.add(import_path.toPortableString)
+
+            if (artifactNature != ArtifactNature.JAVA)
+            {
+                if (current_project != referenced_project)
+                {
+                    getProjectReferences(artifactNature).computeIfAbsent(
+                        current_project, [new HashSet<ParameterBundle>]).add(temp_bundle)
+                }
+            }
+
+            return result
+        }
+    }
    
    private def String generateTypes(ArtifactNature artifactNature, EObject container, Collection<? extends EObject> contents)
    {
