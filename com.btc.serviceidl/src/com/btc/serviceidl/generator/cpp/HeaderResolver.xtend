@@ -301,13 +301,7 @@ class HeaderResolver
     {
         val key = GeneratorUtil.switchSeparator(class_name, TransformType.PACKAGE, TransformType.NAMESPACE)
 
-        if (cab_header_mapper.containsKey(key))
-            return true
-
-        if (cab_impl_header_mapper.containsKey(key))
-            return true
-
-        return false
+        cab_header_mapper.containsKey(key) || cab_impl_header_mapper.containsKey(key)
     }
 
     @Deprecated

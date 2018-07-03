@@ -54,15 +54,7 @@ class CMakeProjectFileGenerator
 
     private def getMyProtobufProjectReferences()
     {
-        if (protobuf_project_references === null) return null
-
-        // TODO this should be possible to be simplified
-        val res = new HashMap<String, Set<CMakeProjectSet.ProjectReference>>
-        for (entry : protobuf_project_references.entrySet)
-        {
-            res.put(entry.key, entry.value.downcast)
-        }
-        return res
+        protobuf_project_references?.mapValues[it.downcast]
     }
 
     private def getMyProjectReferences()

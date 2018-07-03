@@ -588,12 +588,7 @@ class DotNetGenerator
       // record type aliases
       for (typeAlias : interfaceDeclaration.contains.filter(AliasDeclaration))
       {
-         var typeName = typedefTable.get(typeAlias.name)
-         if (typeName === null)
-         {
-            typeName = toText(typeAlias.type, typeAlias)
-            typedefTable.put(typeAlias.name, typeName)
-         }
+         typedefTable.computeIfAbsent(typeAlias.name, [toText(typeAlias.type, typeAlias)]) 
       }
       
       // generate all contained types

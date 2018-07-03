@@ -51,11 +51,9 @@ class InterfaceProjectGenerator extends BasicProjectGenerator
 
             // record type aliases
             val typeResolver = createTypeResolver(paramBundle)
-            for (typeAlias : interfaceDeclaration.contains.filter(AliasDeclaration).filter [
-                !typedefTable.containsKey(it.name)
-            ])
+            for (typeAlias : interfaceDeclaration.contains.filter(AliasDeclaration))
             {
-                typedefTable.put(typeAlias.name, typeResolver.resolve(typeAlias.type))
+                typedefTable.computeIfAbsent(typeAlias.name, [typeResolver.resolve(typeAlias.type)])
             }
 
             activeProjectTypes.forEach[generateProject(paramBundle, it, interfaceDeclaration)]
