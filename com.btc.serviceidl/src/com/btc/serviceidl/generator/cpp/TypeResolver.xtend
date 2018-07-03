@@ -86,8 +86,7 @@ class TypeResolver
 
     private def void addToGroup(IncludeGroup includeGroup, IPath path)
     {
-        if (!includes.containsKey(includeGroup)) includes.put(includeGroup, new HashSet<IPath>)
-        includes.get(includeGroup).add(path)
+        includes.computeIfAbsent(includeGroup, [new HashSet<IPath>]).add(path)
     }
 
     @Data
@@ -254,13 +253,8 @@ class TypeResolver
         // TODO does this really need to iterate twice through types? 
         for (wrapper : types)
         {
-            var dependencies = smart_pointer_map.get(wrapper.type)
-            if (dependencies === null)
-            {
-                dependencies = new LinkedHashSet<EObject>
-                smart_pointer_map.put(wrapper.type, dependencies)
-            }
-            dependencies.addAll(wrapper.forwardDeclarations)
+            smart_pointer_map.computeIfAbsent(wrapper.type, [new LinkedHashSet<EObject>]).addAll(
+                wrapper.forwardDeclarations)
         }
 
         return types.stream.filter[!it.forwardDeclarations.empty].flatMap[forwardDeclarations.stream].distinct.iterator.

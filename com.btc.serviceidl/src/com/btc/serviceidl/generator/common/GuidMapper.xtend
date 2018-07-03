@@ -31,12 +31,6 @@ class GuidMapper
 
     def static String get(EObject object)
     {
-        var guid = guid_map.get(object)
-        if (guid === null)
-        {
-            guid = UUID.randomUUID.toString.toUpperCase
-            put(object, guid)
-        }
-        return guid
+        guid_map.computeIfAbsent(object, [UUID.randomUUID.toString.toUpperCase])
     }
 }
