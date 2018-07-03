@@ -197,24 +197,6 @@ class GeneratorUtil
             getPbFileName(Util.getScopeDeterminant(object))
     }
 
-    /**
-     * Given a module stack, this method will calculate relative paths up to the
-     * solution root directory in form of ../../
-     * 
-     * \details If at least one relative parent path is there, the string ALWAYS
-     * ends with the path separator!
-     */
-    def static IPath getRelativePathsUpwards(Iterable<ModuleDeclaration> moduleStack)
-    {
-        var paths = Path.EMPTY
-        for (module : moduleStack)
-        {
-            if (!module.virtual) // = non-virtual
-                paths.append("..")
-        }
-        return paths
-    }
-
     static def asPath(ParameterBundle bundle, ArtifactNature nature)
     {
         new Path(getTransformedModuleName(bundle, nature, TransformType.FILE_SYSTEM))
