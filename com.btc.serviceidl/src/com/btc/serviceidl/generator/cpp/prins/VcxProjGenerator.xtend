@@ -49,10 +49,7 @@ class VcxProjGenerator
 
         if (is_protobuf)
         {
-            val protobuf_references = if (protobuf_project_references === null)
-                    null
-                else
-                    protobuf_project_references.get(project_name)
+            val protobuf_references = protobuf_project_references?.get(project_name)
             if (protobuf_references !== null)
             {
                 project_references.addAll(protobuf_references)
