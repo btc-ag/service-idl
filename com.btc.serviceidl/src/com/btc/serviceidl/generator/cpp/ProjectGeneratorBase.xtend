@@ -57,7 +57,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
 
         if (param_bundle.projectType != ProjectType.EXTERNAL_DB_IMPL) // done separately for ExternalDBImpl to include ODB files also
         {
-            generateVSProjectFiles(param_bundle.projectType, projectPath, vsSolution.getVcxprojName(param_bundle),
+            generateProjectFiles(param_bundle.projectType, projectPath, vsSolution.getVcxprojName(param_bundle),
                 projectFileSet)
         }
     }

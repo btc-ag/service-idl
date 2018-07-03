@@ -28,12 +28,12 @@ import org.eclipse.xtext.scoping.IScopeProvider
 class LegacyProjectGenerator extends ProjectGeneratorBase
 {
     new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
-        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
-        Map<String, Set<IProjectReference>> protobuf_project_references,
+        IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
+        IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
+        ITargetVersionProvider targetVersionProvider, Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ProjectType type, ModuleDeclaration module)
     {
-        super(file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
+        super(file_system_access, qualified_name_provider, scope_provider, idl, projectSetFactory, vsSolution,
             moduleStructureStrategy, targetVersionProvider, protobuf_project_references, smart_pointer_map, type,
             module, new SourceGenerationStrategy)
     }

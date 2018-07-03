@@ -29,16 +29,16 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
 import com.google.common.base.CaseFormat
+import java.util.ArrayList
 import java.util.HashSet
 import java.util.regex.Pattern
-import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
+import org.eclipse.xtext.naming.QualifiedName
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import org.eclipse.xtext.naming.QualifiedName
 
 class GeneratorUtil
 {
@@ -93,29 +93,29 @@ class GeneratorUtil
 
     static def Iterable<EObject> getFailableTypes(EObject container)
     {
-        var objects = new HashSet<EObject>
+        var objects = new ArrayList<Iterable<EObject>>
 
         // interfaces: special handling due to inheritance
         if (container instanceof InterfaceDeclaration)
         {
-            objects.addAll(container.functions.map[parameters].flatten.filter[isFailable(paramType)])
-            objects.addAll(container.functions.map[returnedType].filter[isFailable])
+            objects.add(container.functions.map[parameters].flatten.filter[isFailable(paramType)].filter(EObject))
+            objects.add(container.functions.map[returnedType].filter[isFailable].filter(EObject))
         }
 
         val contents = container.eAllContents.toList
 
         // typedefs
-        objects.addAll(
+        objects.add(
             contents.filter(AliasDeclaration).filter[isFailable(type)].map[type]
         )
 
         // structs
-        objects.addAll(
+        objects.add(
             contents.filter(StructDeclaration).map[members].flatten.filter[isFailable(type)].map[type]
         )
 
         // filter out duplicates (especially primitive types) before delivering the result!
-        return objects.map[getUltimateType].map[UniqueWrapper.from(it)].toSet.map[type].sortBy[e|Names.plain(e)]
+        return objects.flatten.toSet.map[getUltimateType].map[UniqueWrapper.from(it)].toSet.map[type].sortBy[e|Names.plain(e)]
     }
 
     static val FAILABLE_SEPARATOR = "_"

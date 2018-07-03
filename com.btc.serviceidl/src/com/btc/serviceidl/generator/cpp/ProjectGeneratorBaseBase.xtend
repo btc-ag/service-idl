@@ -11,17 +11,11 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.ITargetVersionProvider
-import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectFileGenerator
-import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
 import com.btc.serviceidl.generator.cpp.prins.OdbConstants
-import com.btc.serviceidl.generator.cpp.prins.VSProjectFileGenerator
-import com.btc.serviceidl.generator.cpp.prins.VSSolution
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
-import com.btc.serviceidl.util.Constants
 import java.util.Arrays
 import java.util.Collection
 import java.util.HashSet
@@ -35,7 +29,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
-import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
@@ -46,6 +39,7 @@ class ProjectGeneratorBaseBase
     val IQualifiedNameProvider qualified_name_provider
     val IScopeProvider scope_provider
     val IDLSpecification idl
+    val IProjectSetFactory projectSetFactory
     val extension IProjectSet vsSolution
     val IModuleStructureStrategy moduleStructureStrategy
     val ITargetVersionProvider targetVersionProvider
@@ -61,15 +55,16 @@ class ProjectGeneratorBaseBase
     val projectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP)) // TODO inject the file groups
 
     new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
-        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
-        Map<String, Set<IProjectReference>> protobuf_project_references,
+        IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
+        IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
+        ITargetVersionProvider targetVersionProvider, Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ProjectType type, ModuleDeclaration module)
     {
         this.file_system_access = file_system_access
         this.qualified_name_provider = qualified_name_provider
         this.scope_provider = scope_provider
         this.idl = idl
+        this.projectSetFactory = projectSetFactory
         this.vsSolution = vsSolution
         this.moduleStructureStrategy = moduleStructureStrategy
         this.targetVersionProvider = targetVersionProvider
@@ -101,37 +96,12 @@ class ProjectGeneratorBaseBase
         new BasicCppGenerator(createTypeResolver(param_bundle), targetVersionProvider, param_bundle)
     }
 
-    // TODO move this to com.btc.serviceidl.generator.cpp.prins resp. use a factory for the ProjectFileGenerator implementation
-    protected def void generateVSProjectFiles(ProjectType project_type, IPath project_path, String project_name,
+    protected def void generateProjectFiles(ProjectType project_type, IPath project_path, String project_name,
         ProjectFileSet projectFileSet)
     {
-        if (vsSolution instanceof VSSolution)
-        {
-            val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
-            val source_path = projectPath.append("source")
-
-            file_system_access.generateFile(source_path.append(dependency_file_name).toString, ArtifactNature.CPP.label,
-                generateDependencies)
-            projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
-
-            new VSProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
-                project_references, projectFileSet.unmodifiableView, project_type, project_path, project_name).
-                generate()
-
-        }
-        else if (vsSolution instanceof CMakeProjectSet)
-        {
-            new CMakeProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
-                project_references, projectFileSet.unmodifiableView, project_type, project_path, project_name).
-                generate()
-
-        }
-    }
-
-    // TODO move this to com.btc.serviceidl.generator.cpp.prins
-    private def generateDependencies()
-    {
-        new DependenciesGenerator(createTypeResolver, param_bundle).generate()
+        projectSetFactory.generateProjectFiles(file_system_access, param_bundle, vsSolution,
+            protobuf_project_references, project_references, projectFileSet.unmodifiableView, project_type,
+            project_path, project_name, [createTypeResolver])
     }
 
     protected def generateExportHeader()

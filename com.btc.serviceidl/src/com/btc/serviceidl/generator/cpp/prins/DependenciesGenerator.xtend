@@ -8,10 +8,11 @@
  * 
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
-package com.btc.serviceidl.generator.cpp
+package com.btc.serviceidl.generator.cpp.prins
 
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.TypeResolver
 import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors(NONE)

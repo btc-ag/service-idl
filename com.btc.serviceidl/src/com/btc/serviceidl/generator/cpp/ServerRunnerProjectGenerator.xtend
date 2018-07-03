@@ -35,12 +35,12 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
 {
     new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
-        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
-        Map<String, Set<IProjectReference>> protobuf_project_references,
+        IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
+        IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
+        ITargetVersionProvider targetVersionProvider, Map<String, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ModuleDeclaration module)
     {
-        super(file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
+        super(file_system_access, qualified_name_provider, scope_provider, idl, projectSetFactory, vsSolution,
             moduleStructureStrategy, targetVersionProvider, protobuf_project_references, smart_pointer_map,
             ProjectType.SERVER_RUNNER, module)
     }
@@ -88,7 +88,7 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
                 localProjectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, it)
             ]
 
-            generateVSProjectFiles(ProjectType.SERVER_RUNNER, projectPath, project_name, localProjectFileSet)
+            generateProjectFiles(ProjectType.SERVER_RUNNER, projectPath, project_name, localProjectFileSet)
         }
 
         // sub-folder "./etc"
