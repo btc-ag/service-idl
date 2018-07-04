@@ -18,10 +18,9 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.common.TypeWrapper
+import com.btc.serviceidl.generator.cpp.prins.PrinsHeaderResolver
 import com.btc.serviceidl.idl.AbstractType
-import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.util.Constants
 import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
@@ -37,8 +36,6 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.generator.cpp.prins.OdbConstants
-import com.btc.serviceidl.generator.cpp.prins.PrinsHeaderResolver
 
 @Accessors(NONE)
 class TypeResolver
