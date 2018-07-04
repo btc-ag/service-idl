@@ -544,13 +544,10 @@ class ProtobufGenerator
                     FILE_NAME_TYPES)
             referenced_files.add(import_path.toPortableString)
 
-            if (artifactNature != ArtifactNature.JAVA)
+            if (current_project != referenced_project)
             {
-                if (current_project != referenced_project)
-                {
-                    getProjectReferences(artifactNature).computeIfAbsent(
-                        current_project, [new HashSet<ParameterBundle>]).add(temp_bundle)
-                }
+                getProjectReferences(artifactNature).computeIfAbsent(current_project, [new HashSet<ParameterBundle>]).
+                    add(temp_bundle)
             }
 
             return result
