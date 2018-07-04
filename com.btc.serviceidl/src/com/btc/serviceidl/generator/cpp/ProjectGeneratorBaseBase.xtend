@@ -45,7 +45,7 @@ class ProjectGeneratorBaseBase
     val ITargetVersionProvider targetVersionProvider
     val Map<EObject, Collection<EObject>> smart_pointer_map
 
-    var ParameterBundle param_bundle
+    val ParameterBundle param_bundle
     val ModuleDeclaration module
 
     // per-project global variables
