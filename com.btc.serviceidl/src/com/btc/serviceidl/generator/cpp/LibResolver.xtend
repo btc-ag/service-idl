@@ -15,7 +15,6 @@
  */
 package com.btc.serviceidl.generator.cpp
 
-import java.util.HashSet
 import org.eclipse.core.runtime.IPath
 
 class LibResolver
@@ -73,19 +72,13 @@ class LibResolver
 
     static def Iterable<String> getCABLibs(IPath header_file)
     {
-        val result = new HashSet<String>
-
         // remove last 2 component (which are the "include" directory name and the *.h file name)
         var key = header_file.removeLastSegments(2)
 
         if (cab_lib_mapper.containsKey(key.toString))
         {
-            result.add(cab_lib_mapper.get(key.toString))
-
-            if (cab_additional_dependencies.containsKey(header_file))
-                result.addAll(cab_additional_dependencies.get(header_file))
-
-            return result
+            return #[#[cab_lib_mapper.get(key.toString)],
+                cab_additional_dependencies.getOrDefault(header_file, #[])].flatten
         }
 
         throw new IllegalArgumentException("Could not find CAB *.lib mapping: " + header_file)
