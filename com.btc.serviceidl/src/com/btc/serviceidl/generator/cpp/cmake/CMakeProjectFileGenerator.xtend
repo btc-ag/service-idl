@@ -15,7 +15,6 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.ExternalDependency
 import com.btc.serviceidl.generator.cpp.IProjectReference
-import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import java.util.Map
 import java.util.Set
@@ -29,7 +28,6 @@ class CMakeProjectFileGenerator
     val IFileSystemAccess fileSystemAccess
     val ParameterBundle parameterBundle
     val Iterable<ExternalDependency> externalDependencies
-    val IProjectSet projectSet
     val Map<String, Set<IProjectReference>> protobufProjectReferences
     val Iterable<IProjectReference> projectReferences
 
@@ -66,12 +64,6 @@ class CMakeProjectFileGenerator
     static def private downcast(extension Iterable<IProjectReference> set)
     {
         set.map[it as CMakeProjectSet.ProjectReference].toSet
-    }
-
-    def getCMakeProjectSet()
-    {
-        // TODO inject this such that no dynamic cast is necessary
-        projectSet as CMakeProjectSet
     }
 
     private def generateCMakeLists()

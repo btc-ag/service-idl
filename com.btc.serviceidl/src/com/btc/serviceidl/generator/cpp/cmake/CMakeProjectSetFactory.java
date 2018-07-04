@@ -37,7 +37,7 @@ public class CMakeProjectSetFactory implements IProjectSetFactory {
             Map<String, Set<IProjectReference>> protobufProjectReferences,
             Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
             IPath projectPath, String projectName) {
-        new CMakeProjectFileGenerator(fileSystemAccess, parameterBundle, externalDependencies, projectSet,
+        new CMakeProjectFileGenerator(fileSystemAccess, parameterBundle, externalDependencies,
                 protobufProjectReferences, projectReferences, projectFileSet, projectType, projectPath, projectName)
                         .generate();
 
