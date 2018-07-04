@@ -181,7 +181,7 @@ class TypeResolver
         }
         else
         {
-            var result = GeneratorUtil.getFullyQualifiedClassName(object, qualified_name, project_type,
+            val result = GeneratorUtil.getFullyQualifiedClassName(object, qualified_name, project_type,
                 ArtifactNature.CPP, TransformType.NAMESPACE)
             addToGroup(TARGET_INCLUDE_GROUP, object.getIncludeFilePath(project_type, moduleStructureStrategy))
             object.resolveProjectFilePath(project_type)
