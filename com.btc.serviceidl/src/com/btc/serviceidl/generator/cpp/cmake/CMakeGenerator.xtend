@@ -46,10 +46,6 @@ class CMakeGenerator
             # define target name
             set( TARGET «projectName» )
             
-            # TODO the section between BEGIN and END appears to be redundant
-            
-            #BEGIN
-            
             # Components include dirs
             file( GLOB INCS ../include/*.h* ../include/**/*.h* )
             
@@ -65,7 +61,6 @@ class CMakeGenerator
             # summerize files
             set( FILES ${INCS} ${SRCS} ${RESOURCE} ${RESOURCE_H} )
             source_group( "Resources" FILES ${RESOURCE} ${RESOURCE_H} )
-            #END
             
             # define list of targets which have to be linked
             set( LINK_TARGETS
