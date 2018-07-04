@@ -72,7 +72,7 @@ class LibResolver
     static def Iterable<ExternalDependency> getCABLibs(IPath header_file)
     {
         // remove last 2 component (which are the "include" directory name and the *.h file name)
-        var key = header_file.removeLastSegments(2).toPortableString
+        val key = header_file.removeLastSegments(2).toPortableString
 
         if (cab_lib_mapper.containsKey(key))
         {
