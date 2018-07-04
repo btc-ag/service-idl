@@ -98,7 +98,7 @@ class ProtobufUtil
             else if (isUUIDType) "DecodeUUID" else "Decode") + if (element.eContainer instanceof MemberElement)
                 "ToVector"
             else
-                ""                
+                ""
 
             return '''«IF use_codec_ns»«typeResolver.resolveCodecNS(paramBundle, ultimate_type, is_failable, Optional.of(container))»::«ENDIF»«decodeMethodName»«IF is_failable || !isUUIDType»< «protobuf_type», «resolve(ultimate_type)» >«ENDIF»'''
         }
@@ -151,13 +151,11 @@ class ProtobufUtil
         // explicitly include some essential dependencies
         typeResolver.addLibraryDependency(new ExternalDependency("BTC.CAB.ServiceComm.Default"))
 
-        var namespace = GeneratorUtil.getTransformedModuleName(
+        return GeneratorUtil.getTransformedModuleName(
             ParameterBundle.createBuilder(container.scopeDeterminant.moduleStack).with(ProjectType.PROTOBUF).build,
             ArtifactNature.CPP,
             TransformType.NAMESPACE
-        )
-        return namespace + Constants.SEPARATOR_NAMESPACE +
-            GeneratorUtil.asFailable(element, container, qualified_name_provider)
+        ) + Constants.SEPARATOR_NAMESPACE + GeneratorUtil.asFailable(element, container, qualified_name_provider)
     }
 
     static def asCppProtobufName(String name)
