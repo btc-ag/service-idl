@@ -51,12 +51,10 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
     {
         // paths
         val include_path = projectPath.append("include")
-        val source_path = projectPath.append("source")
 
         // file names
         var export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
-        val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES + ".cpp"
 
         // sub-folder "./include"
         file_system_access.generateFile(include_path.append(export_header_file_name).toString, ArtifactNature.CPP.label,
