@@ -44,8 +44,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
         defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases        
         val fileCount = 6
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
-        val directory = ArtifactNature.CPP.label +
-            "modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
+        val directory = ArtifactNature.CPP.label + "modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
         val contents = ImmutableMap.of(directory + "include/IKeyValueStore.h", '''
             #pragma once
             #include "modules/Commons/include/BeginPrinsModulesInclude.h"
@@ -131,8 +130,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
         defaultGenerationSettingsProvider.moduleStructureStrategy = new CABModuleStructureStrategy
         val fileCount = 7
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
-        val directory = ArtifactNature.CPP.label +
-            "Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
+        val directory = ArtifactNature.CPP.label + "Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
 
         val contents = ImmutableMap.of(ArtifactNature.CPP.label + "conanfile.py", '''
             from conan_template import *
@@ -200,8 +198,8 @@ class CppGeneratorTest extends AbstractGeneratorTest
             set( LINK_TARGETS
                   BTC.CAB.Commons.Core.lib
                   BTC.CAB.Commons.CoreExtras.lib
-                  BTC.CAB.ServiceComm.Base.lib
                   BTC.CAB.ServiceComm.API.lib
+                  BTC.CAB.ServiceComm.Base.lib
               )
             
             # define list of dependent targets
