@@ -11,7 +11,6 @@
 package com.btc.serviceidl.generator.cpp.cmake
 
 import com.btc.serviceidl.generator.common.ParameterBundle
-import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import java.util.Map
 import java.util.Set
@@ -73,14 +72,6 @@ class CMakeGenerator
               «FOR lib : externalDependencies.sort»
                 «lib»
               «ENDFOR»
-              «««TODO This should be done differently, the PROTOBUF project should have a resolved»»»
-              «««dependency on libprotobuf, and should export this dependency to its dependents»»»
-              «IF parameterBundle.projectType == ProjectType.PROTOBUF
-                  || parameterBundle.projectType == ProjectType.DISPATCHER
-                  || parameterBundle.projectType == ProjectType.PROXY
-                  || parameterBundle.projectType == ProjectType.SERVER_RUNNER»
-              libprotobuf
-              «ENDIF»
               «FOR referencedProjectName : projectReferences.map[it.projectName].sort»
               «/* TODO this doesn't seem to be the right place to filter out self-references */»
               «IF referencedProjectName != projectName»

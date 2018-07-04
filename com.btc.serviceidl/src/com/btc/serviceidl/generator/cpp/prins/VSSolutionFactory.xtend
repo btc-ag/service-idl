@@ -32,16 +32,15 @@ class VSSolutionFactory implements IProjectSetFactory
         val source_path = projectPath.append("source")
 
         fileSystemAccess.generateFile(source_path.append(dependency_file_name).toString, ArtifactNature.CPP.label,
-            generateDependencies(externalDependencies, parameterBundle))
+            generateDependencies(externalDependencies))
         projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
 
         new VSProjectFileGenerator(fileSystemAccess, parameterBundle, projectSet, protobufProjectReferences,
             projectReferences, projectFileSet, projectType, projectPath, projectName).generate()
     }
 
-    private def generateDependencies(Iterable<String> externalDependencies, ParameterBundle parameterBundle)
+    private def generateDependencies(Iterable<String> externalDependencies)
     {
-        // TODO this is wrong, instead of generating a new TypeResolver here, we just need the externalDependencies
-        new DependenciesGenerator(externalDependencies, parameterBundle).generate()
+        new DependenciesGenerator(externalDependencies).generate()
     }
 }

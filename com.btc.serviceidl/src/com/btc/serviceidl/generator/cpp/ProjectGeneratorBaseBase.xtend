@@ -99,7 +99,24 @@ class ProjectGeneratorBaseBase
     protected def void generateProjectFiles(ProjectType project_type, IPath project_path, String project_name,
         ProjectFileSet projectFileSet)
     {
-        projectSetFactory.generateProjectFiles(file_system_access, param_bundle, cab_libs, vsSolution,
+        // TODO maybe find a better place to handle these extra resolutions
+        // proxy and dispatcher include a *.impl.h file from the Protobuf project
+        // for type-conversion routines; therefore some hidden dependencies
+        // exist, which are explicitly resolved here
+        if (param_bundle.projectType == ProjectType.PROXY || param_bundle.projectType == ProjectType.DISPATCHER)
+        {
+            cab_libs.add("BTC.CAB.Commons.FutureUtil.lib")
+        }
+
+        // TODO This should be done differently, the PROTOBUF project should have a resolved
+        // dependency on libprotobuf, and should export this dependency to its dependents
+        if (param_bundle.projectType == ProjectType.PROTOBUF || param_bundle.projectType == ProjectType.DISPATCHER ||
+            param_bundle.projectType == ProjectType.PROXY || param_bundle.projectType == ProjectType.SERVER_RUNNER)
+        {
+            cab_libs.add("libprotobuf.lib")
+        }
+
+        projectSetFactory.generateProjectFiles(file_system_access, param_bundle, cab_libs.unmodifiableView, vsSolution,
             protobuf_project_references, project_references, projectFileSet.unmodifiableView, project_type,
             project_path, project_name)
     }

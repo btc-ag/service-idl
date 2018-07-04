@@ -314,7 +314,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
                   BTC.CAB.ServiceComm.ProtobufBase.lib
                   BTC.CAB.ServiceComm.ProtobufUtil.lib
                   BTC.CAB.ServiceComm.Util.lib                  
-                  libprotobuf
+                  libprotobuf.lib
                   BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf 
                   BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI
               )
