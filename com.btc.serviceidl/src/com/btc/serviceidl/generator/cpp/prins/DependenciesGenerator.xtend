@@ -32,18 +32,19 @@ class DependenciesGenerator
             effectiveDependencies.add("BTC.CAB.Commons.FutureUtil.lib")
         }
 
+        if (paramBundle.projectType == ProjectType.PROTOBUF || paramBundle.projectType == ProjectType.DISPATCHER ||
+            paramBundle.projectType == ProjectType.PROXY || paramBundle.projectType == ProjectType.SERVER_RUNNER)
+        {
+            effectiveDependencies.add("libprotobuf.lib")
+        }
+
+        // TODO why are the #pragma directives encapsulated within CAB header guards? I can't imagine any effect they could have on the directives
         '''
-            «FOR lib : effectiveDependencies.sort BEFORE '''#include "modules/Commons/include/BeginCabInclude.h"  // CAB -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndCabInclude.h"    // CAB <--''' + System.lineSeparator»
+            «FOR lib : effectiveDependencies.sort 
+             BEFORE '''#include "modules/Commons/include/BeginCabInclude.h"  // CAB -->''' + System.lineSeparator 
+             AFTER '''#include "modules/Commons/include/EndCabInclude.h"    // CAB <--''' + System.lineSeparator»
                 #pragma comment(lib, "«lib»")
             «ENDFOR»
-            
-            «IF paramBundle.projectType == ProjectType.PROTOBUF
-         || paramBundle.projectType == ProjectType.DISPATCHER
-         || paramBundle.projectType == ProjectType.PROXY
-         || paramBundle.projectType == ProjectType.SERVER_RUNNER
-         »
-                #pragma comment(lib, "libprotobuf.lib")
-            «ENDIF»
         '''
 
     }
