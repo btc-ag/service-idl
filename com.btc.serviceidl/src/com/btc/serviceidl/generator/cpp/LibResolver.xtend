@@ -73,12 +73,12 @@ class LibResolver
     static def Iterable<String> getCABLibs(IPath header_file)
     {
         // remove last 2 component (which are the "include" directory name and the *.h file name)
-        var key = header_file.removeLastSegments(2)
+        var key = header_file.removeLastSegments(2).toPortableString
 
-        if (cab_lib_mapper.containsKey(key.toString))
+        if (cab_lib_mapper.containsKey(key))
         {
-            return #[#[cab_lib_mapper.get(key.toString)],
-                cab_additional_dependencies.getOrDefault(header_file, #[])].flatten
+            return #[#[cab_lib_mapper.get(key)],
+                cab_additional_dependencies.getOrDefault(header_file.toPortableString, #[])].flatten
         }
 
         throw new IllegalArgumentException("Could not find CAB *.lib mapping: " + header_file)

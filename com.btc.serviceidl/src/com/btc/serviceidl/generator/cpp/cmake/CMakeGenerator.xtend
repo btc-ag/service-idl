@@ -70,7 +70,7 @@ class CMakeGenerator
             
             # define list of targets which have to be linked
             set( LINK_TARGETS
-              «FOR lib : externalDependencies»
+              «FOR lib : externalDependencies.sort»
                 «lib»
               «ENDFOR»
               «««TODO This should be done differently, the PROTOBUF project should have a resolved»»»
@@ -81,10 +81,10 @@ class CMakeGenerator
                   || parameterBundle.projectType == ProjectType.SERVER_RUNNER»
               libprotobuf
               «ENDIF»
-              «FOR project : projectReferences»
+              «FOR referencedProjectName : projectReferences.map[it.projectName].sort»
               «/* TODO this doesn't seem to be the right place to filter out self-references */»
-              «IF project.projectName != projectName»
-              «project.projectName»
+              «IF referencedProjectName != projectName»
+              «referencedProjectName»
               «ENDIF»
               «ENDFOR»              
             )
