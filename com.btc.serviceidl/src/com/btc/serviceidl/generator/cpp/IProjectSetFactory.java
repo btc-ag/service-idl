@@ -13,7 +13,7 @@ public interface IProjectSetFactory {
     IProjectSet create();
 
     void generateProjectFiles(IFileSystemAccess fileSystemAccess, ParameterBundle parameterBundle,
-            Iterable<String> externalDependencies, IProjectSet projectSet,
+            Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
             Map<String, Set<IProjectReference>> protobufProjectReferences,
             Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
             IPath projectPath, String projectName);

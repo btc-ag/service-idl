@@ -45,7 +45,7 @@ class TypeResolver
     @Accessors(PACKAGE_GETTER) val IModuleStructureStrategy moduleStructureStrategy
 
     val Collection<IProjectReference> project_references
-    val Collection<String> cab_libs
+    val Collection<ExternalDependency> cab_libs
     val Map<EObject, Collection<EObject>> smart_pointer_map
 
     @Accessors(NONE) val Map<IncludeGroup, Set<IPath>> includes = new HashMap<IncludeGroup, Set<IPath>>
@@ -60,13 +60,13 @@ class TypeResolver
         project_references.unmodifiableView
     }
 
-    def Iterable<String> getCab_libs()
+    def Iterable<ExternalDependency> getCab_libs()
     {
         cab_libs.unmodifiableView
     }
 
     @Deprecated
-    def void addLibraryDependency(String libFile)
+    def void addLibraryDependency(ExternalDependency libFile)
     {
         cab_libs.add(libFile)
     }
@@ -104,7 +104,7 @@ class TypeResolver
         IProjectSet projectSet,
         IModuleStructureStrategy moduleStructureStrategy,
         Collection<IProjectReference> project_references,
-        Collection<String> cab_libs,
+        Collection<ExternalDependency> cab_libs,
         Map<EObject, Collection<EObject>> smart_pointer_map
     )
     {

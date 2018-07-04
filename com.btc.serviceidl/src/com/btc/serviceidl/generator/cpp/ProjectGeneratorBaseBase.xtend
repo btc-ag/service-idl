@@ -50,7 +50,7 @@ class ProjectGeneratorBaseBase
     val ModuleDeclaration module
 
     // per-project global variables
-    val cab_libs = new HashSet<String>
+    val cab_libs = new HashSet<ExternalDependency>
     val project_references = new HashSet<IProjectReference>
     val projectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP)) // TODO inject the file groups
 
@@ -105,7 +105,7 @@ class ProjectGeneratorBaseBase
         // exist, which are explicitly resolved here
         if (param_bundle.projectType == ProjectType.PROXY || param_bundle.projectType == ProjectType.DISPATCHER)
         {
-            cab_libs.add("BTC.CAB.Commons.FutureUtil")
+            cab_libs.add(new ExternalDependency("BTC.CAB.Commons.FutureUtil"))
         }
 
         // TODO This should be done differently, the PROTOBUF project should have a resolved
@@ -113,7 +113,7 @@ class ProjectGeneratorBaseBase
         if (param_bundle.projectType == ProjectType.PROTOBUF || param_bundle.projectType == ProjectType.DISPATCHER ||
             param_bundle.projectType == ProjectType.PROXY || param_bundle.projectType == ProjectType.SERVER_RUNNER)
         {
-            cab_libs.add("libprotobuf")
+            cab_libs.add(new ExternalDependency("libprotobuf"))
         }
 
         projectSetFactory.generateProjectFiles(file_system_access, param_bundle, cab_libs.unmodifiableView, vsSolution,

@@ -18,6 +18,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess;
 
 import com.btc.serviceidl.generator.common.ParameterBundle;
 import com.btc.serviceidl.generator.common.ProjectType;
+import com.btc.serviceidl.generator.cpp.ExternalDependency;
 import com.btc.serviceidl.generator.cpp.IProjectReference;
 import com.btc.serviceidl.generator.cpp.IProjectSet;
 import com.btc.serviceidl.generator.cpp.IProjectSetFactory;
@@ -32,7 +33,7 @@ public class CMakeProjectSetFactory implements IProjectSetFactory {
 
     @Override
     public void generateProjectFiles(IFileSystemAccess fileSystemAccess, ParameterBundle parameterBundle,
-            Iterable<String> externalDependencies, IProjectSet projectSet,
+            Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
             Map<String, Set<IProjectReference>> protobufProjectReferences,
             Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
             IPath projectPath, String projectName) {

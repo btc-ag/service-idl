@@ -69,7 +69,7 @@ class LibResolver
                 "BTC.CAB.ServiceComm.SQ.ImportAPI"]
     }
 
-    static def Iterable<String> getCABLibs(IPath header_file)
+    static def Iterable<ExternalDependency> getCABLibs(IPath header_file)
     {
         // remove last 2 component (which are the "include" directory name and the *.h file name)
         var key = header_file.removeLastSegments(2).toPortableString
@@ -77,7 +77,9 @@ class LibResolver
         if (cab_lib_mapper.containsKey(key))
         {
             return #[#[cab_lib_mapper.get(key)],
-                cab_additional_dependencies.getOrDefault(header_file.toPortableString, #[])].flatten
+                cab_additional_dependencies.getOrDefault(header_file.toPortableString, #[])].flatten.map [
+                new ExternalDependency(it)
+            ]
         }
 
         throw new IllegalArgumentException("Could not find CAB library mapping: " + header_file)

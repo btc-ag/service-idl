@@ -3,6 +3,7 @@ package com.btc.serviceidl.generator.cpp.prins
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.ExternalDependency
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.IProjectSetFactory
@@ -24,7 +25,7 @@ class VSSolutionFactory implements IProjectSetFactory
     }
 
     override generateProjectFiles(IFileSystemAccess fileSystemAccess, ParameterBundle parameterBundle,
-        Iterable<String> externalDependencies, IProjectSet projectSet,
+        Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
         Map<String, Set<IProjectReference>> protobufProjectReferences, Iterable<IProjectReference> projectReferences,
         ProjectFileSet projectFileSet, ProjectType projectType, IPath projectPath, String projectName)
     {
@@ -39,7 +40,7 @@ class VSSolutionFactory implements IProjectSetFactory
             projectReferences, projectFileSet, projectType, projectPath, projectName).generate()
     }
 
-    private def generateDependencies(Iterable<String> externalDependencies)
+    private def generateDependencies(Iterable<ExternalDependency> externalDependencies)
     {
         new DependenciesGenerator(externalDependencies).generate()
     }

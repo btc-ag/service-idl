@@ -13,6 +13,7 @@ package com.btc.serviceidl.generator.cpp.cmake
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.ExternalDependency
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
@@ -27,7 +28,7 @@ class CMakeProjectFileGenerator
 {
     val IFileSystemAccess fileSystemAccess
     val ParameterBundle parameterBundle
-    val Iterable<String> externalDependencies
+    val Iterable<ExternalDependency> externalDependencies
     val IProjectSet projectSet
     val Map<String, Set<IProjectReference>> protobufProjectReferences
     val Iterable<IProjectReference> projectReferences

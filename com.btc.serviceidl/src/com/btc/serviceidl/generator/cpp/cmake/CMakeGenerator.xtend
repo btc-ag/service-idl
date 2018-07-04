@@ -12,6 +12,7 @@ package com.btc.serviceidl.generator.cpp.cmake
 
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.ExternalDependency
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import java.util.Map
 import java.util.Set
@@ -22,7 +23,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 class CMakeGenerator
 {
     val ParameterBundle parameterBundle
-    val Iterable<String> externalDependencies
+    val Iterable<ExternalDependency> externalDependencies
     val Map<String, Set<CMakeProjectSet.ProjectReference>> protobufProjectReferences
     val Set<CMakeProjectSet.ProjectReference> projectReferences
 
@@ -64,7 +65,7 @@ class CMakeGenerator
             
             # define list of targets which have to be linked
             set( LINK_TARGETS
-              «FOR lib : externalDependencies.sort»
+              «FOR lib : externalDependencies.map[libraryName].sort»
                 «lib»
               «ENDFOR»
               «FOR referencedProjectName : projectReferences.map[it.projectName].sort»

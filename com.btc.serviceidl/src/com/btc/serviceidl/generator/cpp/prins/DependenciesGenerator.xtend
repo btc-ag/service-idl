@@ -10,18 +10,19 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp.prins
 
+import com.btc.serviceidl.generator.cpp.ExternalDependency
 import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors(NONE)
 class DependenciesGenerator
 {
-    val Iterable<String> externalDependencies
+    val Iterable<ExternalDependency> externalDependencies
 
     def generate()
     {
         // TODO why are the #pragma directives encapsulated within CAB header guards? I can't imagine any effect they could have on the directives
         '''
-            «FOR lib : externalDependencies.sort
+            «FOR lib : externalDependencies.map[libraryName].sort
              BEFORE '''#include "modules/Commons/include/BeginCabInclude.h"  // CAB -->''' + System.lineSeparator 
              AFTER '''#include "modules/Commons/include/EndCabInclude.h"    // CAB <--''' + System.lineSeparator»
                 #pragma comment(lib, "«lib».lib")

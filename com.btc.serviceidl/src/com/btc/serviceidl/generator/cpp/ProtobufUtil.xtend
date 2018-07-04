@@ -159,7 +159,7 @@ class ProtobufUtil
     {
         // TODO isn't there a specific type that is used from that library? Is it really required?
         // explicitly include some essential dependencies
-        typeResolver.addLibraryDependency("BTC.CAB.ServiceComm.Default")
+        typeResolver.addLibraryDependency(new ExternalDependency("BTC.CAB.ServiceComm.Default"))
 
         var namespace = GeneratorUtil.getTransformedModuleName(
             ParameterBundle.createBuilder(container.scopeDeterminant.moduleStack).with(ProjectType.PROTOBUF).build,
