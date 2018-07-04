@@ -34,11 +34,13 @@ public class CMakeProjectSetFactory implements IProjectSetFactory {
 
     @Override
     public void generateProjectFiles(IFileSystemAccess fileSystemAccess, ParameterBundle parameterBundle,
-            IProjectSet projectSet, Map<String, Set<IProjectReference>> protobufProjectReferences,
+            Iterable<String> externalDependencies, IProjectSet projectSet,
+            Map<String, Set<IProjectReference>> protobufProjectReferences,
             Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
             IPath projectPath, String projectName, Function0<TypeResolver> createTypeResolver) {
-        new CMakeProjectFileGenerator(fileSystemAccess, parameterBundle, projectSet, protobufProjectReferences,
-                projectReferences, projectFileSet, projectType, projectPath, projectName).generate();
+        new CMakeProjectFileGenerator(fileSystemAccess, parameterBundle, externalDependencies, projectSet,
+                protobufProjectReferences, projectReferences, projectFileSet, projectType, projectPath, projectName)
+                        .generate();
 
     }
 

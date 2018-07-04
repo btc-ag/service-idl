@@ -10,24 +10,25 @@
  */
 package com.btc.serviceidl.generator.cpp.cmake
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
-import java.util.HashMap
+import com.btc.serviceidl.generator.cpp.TypeResolver
 import java.util.Map
 import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
-import com.btc.serviceidl.generator.common.ArtifactNature
 
 @Accessors(NONE)
 class CMakeProjectFileGenerator
 {
     val IFileSystemAccess file_system_access
     val ParameterBundle param_bundle
+    val Iterable<String> externalDependencies
     val IProjectSet projectSet
     val Map<String, Set<IProjectReference>> protobuf_project_references
     val Iterable<IProjectReference> project_references
@@ -77,7 +78,7 @@ class CMakeProjectFileGenerator
     {
         new CMakeGenerator(
             param_bundle,
-            getCMakeProjectSet,
+            externalDependencies,
             myProtobufProjectReferences,
             myProjectReferences,
             projectFileSet.unmodifiableView
@@ -88,7 +89,7 @@ class CMakeProjectFileGenerator
     {
         new CMakeGenerator(
             param_bundle,
-            getCMakeProjectSet,
+            externalDependencies,
             myProtobufProjectReferences,
             myProjectReferences,
             projectFileSet.unmodifiableView

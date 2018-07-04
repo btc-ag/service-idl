@@ -26,9 +26,10 @@ class VSSolutionFactory implements IProjectSetFactory
     }
 
     override generateProjectFiles(IFileSystemAccess fileSystemAccess, ParameterBundle parameterBundle,
-        IProjectSet projectSet, Map<String, Set<IProjectReference>> protobufProjectReferences,
-        Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
-        IPath projectPath, String projectName, Function0<TypeResolver> createTypeResolver)
+        Iterable<String> externalDependencies, IProjectSet projectSet,
+        Map<String, Set<IProjectReference>> protobufProjectReferences, Iterable<IProjectReference> projectReferences,
+        ProjectFileSet projectFileSet, ProjectType projectType, IPath projectPath, String projectName,
+        Function0<TypeResolver> createTypeResolver)
     {
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
         val source_path = projectPath.append("source")
@@ -43,6 +44,7 @@ class VSSolutionFactory implements IProjectSetFactory
 
     private def generateDependencies(()=>TypeResolver createTypeResolver, ParameterBundle parameterBundle)
     {
+        // TODO this is wrong, instead of generating a new TypeResolver here, we just need the externalDependencies
         new DependenciesGenerator(createTypeResolver.apply, parameterBundle).generate()
     }
 }

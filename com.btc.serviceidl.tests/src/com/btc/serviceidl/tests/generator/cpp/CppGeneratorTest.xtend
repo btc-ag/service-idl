@@ -198,24 +198,11 @@ class CppGeneratorTest extends AbstractGeneratorTest
             
             # define list of targets which have to be linked
             set( LINK_TARGETS
-              
-              ${BTC}${CAB}Commons.Core
-              ${BTC}${CAB}Commons.CoreExtras
-              ${BTC}${CAB}Commons.CoreOS
-              ${BTC}${CAB}Commons.FutureUtil
-              ${BTC}${CAB}Logging.API
-              ${BTC}${CAB}ServiceComm.API
-              ${BTC}${CAB}ServiceComm.Base
-              ${BTC}${CAB}ServiceComm.Commons
-              ${BTC}${CAB}ServiceComm.CommonsUtil
-              ${BTC}${CAB}ServiceComm.ProtobufBase
-              ${BTC}${CAB}ServiceComm.ProtobufUtil
-              ${BTC}${CAB}ServiceComm.TestBase
-              ${BTC}${CAB}ServiceComm.Util
-              libprotobuf
-              #TODO BTCCABINF-1257 this is just to make it work. Is * ok here?
-              libboost*
-            )
+                  BTC.CAB.Commons.Core.lib
+                  BTC.CAB.Commons.CoreExtras.lib
+                  BTC.CAB.ServiceComm.Base.lib
+                  BTC.CAB.ServiceComm.API.lib
+              )
             
             # define list of dependent targets
             set( DEP_TARGETS
@@ -233,6 +220,9 @@ class CppGeneratorTest extends AbstractGeneratorTest
             cab_file_guard()            
             cab_add_project(${CMAKE_CURRENT_LIST_DIR})            
         ''')
+        
+        // TODO the dependencies on BTC.CAB.ServiceComm should be removed from the ServiceAPI. 
+        // I am not sure where they come from.
 
         checkGenerators(TestData.basic, projectTypes, fileCount, contents)
     }

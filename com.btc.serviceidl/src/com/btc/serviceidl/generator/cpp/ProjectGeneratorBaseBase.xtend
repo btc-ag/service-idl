@@ -99,7 +99,7 @@ class ProjectGeneratorBaseBase
     protected def void generateProjectFiles(ProjectType project_type, IPath project_path, String project_name,
         ProjectFileSet projectFileSet)
     {
-        projectSetFactory.generateProjectFiles(file_system_access, param_bundle, vsSolution,
+        projectSetFactory.generateProjectFiles(file_system_access, param_bundle, cab_libs, vsSolution,
             protobuf_project_references, project_references, projectFileSet.unmodifiableView, project_type,
             project_path, project_name, [createTypeResolver])
     }

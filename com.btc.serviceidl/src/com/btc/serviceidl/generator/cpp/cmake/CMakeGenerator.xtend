@@ -11,17 +11,18 @@
 package com.btc.serviceidl.generator.cpp.cmake
 
 import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import java.util.Map
 import java.util.Set
-import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.core.runtime.IPath
+import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors(NONE)
 class CMakeGenerator
 {
     val ParameterBundle parameterBundle
-    val CMakeProjectSet cmakeProjectSet
+    val Iterable<String> externalDependencies
     val Map<String, Set<CMakeProjectSet.ProjectReference>> protobufProjectReferences
     val Set<CMakeProjectSet.ProjectReference> projectReferences
 
@@ -69,23 +70,17 @@ class CMakeGenerator
             
             # define list of targets which have to be linked
             set( LINK_TARGETS
-              «/* TODO use the actual external references */»
-              ${BTC}${CAB}Commons.Core
-              ${BTC}${CAB}Commons.CoreExtras
-              ${BTC}${CAB}Commons.CoreOS
-              ${BTC}${CAB}Commons.FutureUtil
-              ${BTC}${CAB}Logging.API
-              ${BTC}${CAB}ServiceComm.API
-              ${BTC}${CAB}ServiceComm.Base
-              ${BTC}${CAB}ServiceComm.Commons
-              ${BTC}${CAB}ServiceComm.CommonsUtil
-              ${BTC}${CAB}ServiceComm.ProtobufBase
-              ${BTC}${CAB}ServiceComm.ProtobufUtil
-              ${BTC}${CAB}ServiceComm.TestBase
-              ${BTC}${CAB}ServiceComm.Util
+              «FOR lib : externalDependencies»
+                «lib»
+              «ENDFOR»
+              «««TODO This should be done differently, the PROTOBUF project should have a resolved»»»
+              «««dependency on libprotobuf, and should export this dependency to its dependents»»»
+              «IF parameterBundle.projectType == ProjectType.PROTOBUF
+                  || parameterBundle.projectType == ProjectType.DISPATCHER
+                  || parameterBundle.projectType == ProjectType.PROXY
+                  || parameterBundle.projectType == ProjectType.SERVER_RUNNER»
               libprotobuf
-              #TODO BTCCABINF-1257 this is just to make it work. Is * ok here?
-              libboost*
+              «ENDIF»
               «FOR project : projectReferences»
               «/* TODO this doesn't seem to be the right place to filter out self-references */»
               «IF project.projectName != projectName»
