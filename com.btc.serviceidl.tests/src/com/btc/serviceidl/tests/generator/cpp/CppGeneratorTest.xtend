@@ -196,10 +196,10 @@ class CppGeneratorTest extends AbstractGeneratorTest
             
             # define list of targets which have to be linked
             set( LINK_TARGETS
-                  BTC.CAB.Commons.Core.lib
-                  BTC.CAB.Commons.CoreExtras.lib
-                  BTC.CAB.ServiceComm.API.lib
-                  BTC.CAB.ServiceComm.Base.lib
+                  BTC.CAB.Commons.Core
+                  BTC.CAB.Commons.CoreExtras
+                  BTC.CAB.ServiceComm.API
+                  BTC.CAB.ServiceComm.Base
               )
             
             # define list of dependent targets
@@ -303,18 +303,18 @@ class CppGeneratorTest extends AbstractGeneratorTest
             
             # define list of targets which have to be linked
             set( LINK_TARGETS
-                  BTC.CAB.Commons.Core.lib
-                  BTC.CAB.Commons.CoreExtras.lib
-                  BTC.CAB.Commons.CoreOS.lib
-                  BTC.CAB.Commons.FutureUtil.lib
-                  BTC.CAB.Logging.API.lib
-                  BTC.CAB.ServiceComm.API.lib
-                  BTC.CAB.ServiceComm.Base.lib
-                  BTC.CAB.ServiceComm.Commons.lib
-                  BTC.CAB.ServiceComm.ProtobufBase.lib
-                  BTC.CAB.ServiceComm.ProtobufUtil.lib
-                  BTC.CAB.ServiceComm.Util.lib                  
-                  libprotobuf.lib
+                  BTC.CAB.Commons.Core
+                  BTC.CAB.Commons.CoreExtras
+                  BTC.CAB.Commons.CoreOS
+                  BTC.CAB.Commons.FutureUtil
+                  BTC.CAB.Logging.API
+                  BTC.CAB.ServiceComm.API
+                  BTC.CAB.ServiceComm.Base
+                  BTC.CAB.ServiceComm.Commons
+                  BTC.CAB.ServiceComm.ProtobufBase
+                  BTC.CAB.ServiceComm.ProtobufUtil
+                  BTC.CAB.ServiceComm.Util                  
+                  libprotobuf
                   BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf 
                   BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI
               )

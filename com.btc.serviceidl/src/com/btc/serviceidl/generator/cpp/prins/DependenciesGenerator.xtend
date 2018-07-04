@@ -24,7 +24,7 @@ class DependenciesGenerator
             «FOR lib : externalDependencies.sort
              BEFORE '''#include "modules/Commons/include/BeginCabInclude.h"  // CAB -->''' + System.lineSeparator 
              AFTER '''#include "modules/Commons/include/EndCabInclude.h"    // CAB <--''' + System.lineSeparator»
-                #pragma comment(lib, "«lib»")
+                #pragma comment(lib, "«lib».lib")
             «ENDFOR»
         '''
 

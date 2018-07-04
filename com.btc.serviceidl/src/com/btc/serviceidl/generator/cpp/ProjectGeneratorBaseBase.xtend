@@ -105,7 +105,7 @@ class ProjectGeneratorBaseBase
         // exist, which are explicitly resolved here
         if (param_bundle.projectType == ProjectType.PROXY || param_bundle.projectType == ProjectType.DISPATCHER)
         {
-            cab_libs.add("BTC.CAB.Commons.FutureUtil.lib")
+            cab_libs.add("BTC.CAB.Commons.FutureUtil")
         }
 
         // TODO This should be done differently, the PROTOBUF project should have a resolved
@@ -113,7 +113,7 @@ class ProjectGeneratorBaseBase
         if (param_bundle.projectType == ProjectType.PROTOBUF || param_bundle.projectType == ProjectType.DISPATCHER ||
             param_bundle.projectType == ProjectType.PROXY || param_bundle.projectType == ProjectType.SERVER_RUNNER)
         {
-            cab_libs.add("libprotobuf.lib")
+            cab_libs.add("libprotobuf")
         }
 
         projectSetFactory.generateProjectFiles(file_system_access, param_bundle, cab_libs.unmodifiableView, vsSolution,
