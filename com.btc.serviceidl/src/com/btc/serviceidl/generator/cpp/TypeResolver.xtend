@@ -36,6 +36,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.generator.cpp.HeaderResolver.GroupedHeader
 
 @Accessors(NONE)
 class TypeResolver
@@ -119,10 +120,21 @@ class TypeResolver
 
     def String resolveSymbol(String symbolName)
     {
-        val header = headerResolver.getHeader(symbolName)
+        headerResolver.getHeader(symbolName).resolveHeader
+        return symbolName
+    }
+
+    def void resolveHeader(GroupedHeader header)
+    {
         addToGroup(header.includeGroup, header.path)
         resolveLibrary(header)
-        return symbolName
+    }
+
+    def boolean tryResolveSymbol(String symbolName)
+    {
+        val header = headerResolver.tryGetHeader(symbolName)
+        header?.resolveHeader
+        return header !== null
     }
 
     private def void resolveLibrary(HeaderResolver.GroupedHeader header)
@@ -173,10 +185,8 @@ class TypeResolver
         if (qualified_name === null)
             return new ResolvedName(Names.plain(object), TransformType.NAMESPACE)
 
-        val resolved_name = qualified_name.toString
-        if (headerResolver.isCAB(resolved_name) || headerResolver.isBoost(resolved_name))
+        if (tryResolveSymbol(GeneratorUtil.switchPackageSeperator(qualified_name.toString, TransformType.NAMESPACE)))
         {
-            resolveSymbol(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
             return new ResolvedName(qualified_name, TransformType.NAMESPACE)
         }
         else

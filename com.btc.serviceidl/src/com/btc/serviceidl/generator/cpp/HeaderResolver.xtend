@@ -104,7 +104,8 @@ class HeaderResolver
         "BTC::ServiceComm::API::EventKind" -> "ServiceComm/API/include/IEventRegistry.h",
         "BTC::ServiceComm::API::IClientEndpoint" -> "ServiceComm/API/include/IClientEndpoint.h",
         "BTC::ServiceComm::API::IEventSubscriberManager" -> "ServiceComm/API/include/IEventRegistry.h",
-        "BTC::ServiceComm::API::IEventSubscriberManager::ObserverType::OnNextParamType" -> "ServiceComm/API/include/IEventRegistry.h",
+        "BTC::ServiceComm::API::IEventSubscriberManager::ObserverType::OnNextParamType" ->
+            "ServiceComm/API/include/IEventRegistry.h",
         "BTC::ServiceComm::API::InvalidMessageReceivedException" -> "ServiceComm/API/include/ServiceHostException.h",
         "BTC::ServiceComm::API::InvalidRequestReceivedException" -> "ServiceComm/API/include/ServiceHostException.h",
         "BTC::ServiceComm::API::IServerEndpoint" -> "ServiceComm/API/include/IServerEndpoint.h",
@@ -278,6 +279,11 @@ class HeaderResolver
         IPath path
     }
 
+    def GroupedHeader tryGetHeader(String className)
+    {
+        headerMap.get(className)
+    }
+
     def GroupedHeader getHeader(String className)
     {
         val res = headerMap.get(className)
@@ -294,19 +300,5 @@ class HeaderResolver
             getHeader(className)
         else
             res
-    }
-
-    @Deprecated
-    def boolean isCAB(String class_name)
-    {
-        val key = GeneratorUtil.switchSeparator(class_name, TransformType.PACKAGE, TransformType.NAMESPACE)
-
-        cab_header_mapper.containsKey(key) || cab_impl_header_mapper.containsKey(key)
-    }
-
-    @Deprecated
-    def boolean isBoost(String class_name)
-    {
-        return class_name.startsWith("boost")
     }
 }
