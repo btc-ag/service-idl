@@ -521,29 +521,29 @@ class ProtobufGenerator
             val referencedProjectParameterBundle = ParameterBundle.createBuilder(Util.getModuleStack(object_root)).with(
                 ProjectType.PROTOBUF).build
 
-            val referenced_project = if (artifactNature != ArtifactNature.JAVA)
-                    GeneratorUtil.getTransformedModuleName(referencedProjectParameterBundle, artifactNature,
-                        TransformType.PACKAGE)
-                else
-                    MavenResolver.makePackageId(object_root, ProjectType.PROTOBUF)
-
-            val result = referenced_project + TransformType.PACKAGE.separator + plain_name
-
-            val import_path = makeProtobufPath(artifactNature, object_root,
-                if (object_root instanceof InterfaceDeclaration)
-                    Names.plain(object_root)
-                else
-                    Constants.FILE_NAME_TYPES)
-            referenced_files.add(import_path.toPortableString)
+            referenced_files.add(object_root.importPath(artifactNature).toPortableString)
 
             if (param_bundle != referencedProjectParameterBundle)
             {
-                getProjectReferences(artifactNature).computeIfAbsent(param_bundle, [new HashSet<ParameterBundle>]).
-                    add(referencedProjectParameterBundle)
+                getProjectReferences(artifactNature).computeIfAbsent(param_bundle, [new HashSet<ParameterBundle>]).add(
+                    referencedProjectParameterBundle)
             }
 
-            return result
+            return (if (artifactNature != ArtifactNature.JAVA)
+                GeneratorUtil.getTransformedModuleName(referencedProjectParameterBundle, artifactNature,
+                    TransformType.PACKAGE)
+            else
+                MavenResolver.makePackageId(object_root, ProjectType.PROTOBUF)) + TransformType.PACKAGE.separator +
+                plain_name
         }
+    }
+    
+    def importPath(EObject object, ArtifactNature artifactNature)
+    {
+        makeProtobufPath(artifactNature, object, if (object instanceof InterfaceDeclaration)
+            Names.plain(object)
+        else
+            Constants.FILE_NAME_TYPES)
     }
    
    private def String generateTypes(ArtifactNature artifactNature, EObject container, Collection<? extends EObject> contents)
