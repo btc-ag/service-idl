@@ -34,6 +34,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 class CppGenerator
 {
@@ -59,7 +60,7 @@ class CppGenerator
         this.scopeProvider = scopeProvider
 
         this.projectSet = generationSettingsProvider.projectSetFactory.create
-        this.protobufProjectReferences = protobufProjectReferences?.entrySet.toMap([projectSet.resolve(it.key)], [
+        this.protobufProjectReferences = protobufProjectReferences?.entrySet?.toMap([projectSet.resolve(it.key)], [
             value.map[projectSet.resolve(it)].toSet
         ])
         this.moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
@@ -98,7 +99,6 @@ class CppGenerator
                     projectSet,
                     moduleStructureStrategy,
                     generationSettingsProvider,
-                    protobufProjectReferences,
                     smartPointerMap,
                     module
                 ).generate()
@@ -125,7 +125,6 @@ class CppGenerator
                         projectSet,
                         moduleStructureStrategy,
                         generationSettingsProvider,
-                        protobufProjectReferences,
                         smartPointerMap,
                         projectType,
                         module
@@ -143,7 +142,6 @@ class CppGenerator
                         projectSet,
                         moduleStructureStrategy,
                         generationSettingsProvider,
-                        protobufProjectReferences,
                         smartPointerMap,
                         module
                     ).generate()
@@ -163,7 +161,8 @@ class CppGenerator
                     projectSet,
                     moduleStructureStrategy,
                     generationSettingsProvider,
-                    protobufProjectReferences,
+                    protobufProjectReferences.get(new ParameterBundle.Builder().with(module.moduleStack).
+                        with(ProjectType.PROTOBUF).build),
                     smartPointerMap,
                     module
                 ).generate()
@@ -181,7 +180,6 @@ class CppGenerator
                     projectSet,
                     moduleStructureStrategy,
                     generationSettingsProvider,
-                    protobufProjectReferences,
                     smartPointerMap,
                     module
                 ).generate()

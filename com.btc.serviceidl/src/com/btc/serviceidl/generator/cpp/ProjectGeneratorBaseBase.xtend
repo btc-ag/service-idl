@@ -16,12 +16,12 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.prins.OdbConstants
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
+import com.google.common.collect.Sets
 import java.util.Arrays
 import java.util.Collection
 import java.util.HashSet
 import java.util.Map
 import java.util.Optional
-import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -43,7 +43,6 @@ class ProjectGeneratorBaseBase
     val extension IProjectSet vsSolution
     val IModuleStructureStrategy moduleStructureStrategy
     val ITargetVersionProvider targetVersionProvider
-    val Map<IProjectReference, Set<IProjectReference>> protobuf_project_references
     val Map<EObject, Collection<EObject>> smart_pointer_map
 
     var ParameterBundle param_bundle
@@ -57,9 +56,8 @@ class ProjectGeneratorBaseBase
     new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
         IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
-        ITargetVersionProvider targetVersionProvider,
-        Map<IProjectReference, Set<IProjectReference>> protobuf_project_references,
-        Map<EObject, Collection<EObject>> smart_pointer_map, ProjectType type, ModuleDeclaration module)
+        ITargetVersionProvider targetVersionProvider, Map<EObject, Collection<EObject>> smart_pointer_map,
+        ProjectType type, ModuleDeclaration module)
     {
         this.file_system_access = file_system_access
         this.qualified_name_provider = qualified_name_provider
@@ -69,7 +67,6 @@ class ProjectGeneratorBaseBase
         this.vsSolution = vsSolution
         this.moduleStructureStrategy = moduleStructureStrategy
         this.targetVersionProvider = targetVersionProvider
-        this.protobuf_project_references = protobuf_project_references
         this.smart_pointer_map = smart_pointer_map
         this.module = module
 
@@ -97,6 +94,9 @@ class ProjectGeneratorBaseBase
         new BasicCppGenerator(createTypeResolver(param_bundle), targetVersionProvider, param_bundle)
     }
 
+    def Iterable<IProjectReference> getAdditionalProjectReferences()
+    { return #[] }
+
     protected def void generateProjectFiles(ProjectType project_type, IPath project_path, String project_name,
         ProjectFileSet projectFileSet)
     {
@@ -118,8 +118,8 @@ class ProjectGeneratorBaseBase
         }
 
         projectSetFactory.generateProjectFiles(file_system_access, param_bundle, cab_libs.unmodifiableView, vsSolution,
-            protobuf_project_references, project_references, projectFileSet.unmodifiableView, project_type,
-            project_path, project_name)
+            Sets.union(project_references, additionalProjectReferences.toSet), projectFileSet.unmodifiableView,
+            project_type, project_path, project_name)
     }
 
     protected def generateExportHeader()

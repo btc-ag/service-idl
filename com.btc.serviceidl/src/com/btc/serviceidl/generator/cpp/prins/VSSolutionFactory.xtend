@@ -9,8 +9,6 @@ import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.IProjectSetFactory
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import com.btc.serviceidl.util.Constants
-import java.util.Map
-import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtext.generator.IFileSystemAccess
 
@@ -26,7 +24,6 @@ class VSSolutionFactory implements IProjectSetFactory
 
     override generateProjectFiles(IFileSystemAccess fileSystemAccess, ParameterBundle parameterBundle,
         Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
-        Map<IProjectReference, Set<IProjectReference>> protobufProjectReferences,
         Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
         IPath projectPath, String projectName)
     {
@@ -37,8 +34,8 @@ class VSSolutionFactory implements IProjectSetFactory
             generateDependencies(externalDependencies))
         projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
 
-        new VSProjectFileGenerator(fileSystemAccess, parameterBundle, projectSet, protobufProjectReferences,
-            projectReferences, projectFileSet, projectType, projectPath, projectName).generate()
+        new VSProjectFileGenerator(fileSystemAccess, parameterBundle, projectSet, projectReferences, projectFileSet,
+            projectType, projectPath, projectName).generate()
     }
 
     private def generateDependencies(Iterable<ExternalDependency> externalDependencies)

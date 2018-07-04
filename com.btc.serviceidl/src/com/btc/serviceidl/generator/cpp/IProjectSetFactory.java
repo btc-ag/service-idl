@@ -1,8 +1,5 @@
 package com.btc.serviceidl.generator.cpp;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 
@@ -14,7 +11,6 @@ public interface IProjectSetFactory {
 
     void generateProjectFiles(IFileSystemAccess fileSystemAccess, ParameterBundle parameterBundle,
             Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
-            Map<IProjectReference, Set<IProjectReference>> protobufProjectReferences,
             Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
             IPath projectPath, String projectName);
 }

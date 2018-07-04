@@ -16,7 +16,6 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.BasicCppGenerator
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
-import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.IProjectSetFactory
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
@@ -30,7 +29,6 @@ import com.btc.serviceidl.util.Util
 import java.util.Collection
 import java.util.Map
 import java.util.Optional
-import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -47,11 +45,10 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
     new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,IProjectSet vsSolution,
         IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
-        Map<IProjectReference, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map,  ModuleDeclaration module)
     {
         super(file_system_access, qualified_name_provider, scope_provider, idl, projectSetFactory, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, protobuf_project_references, smart_pointer_map,
+            moduleStructureStrategy, targetVersionProvider, smart_pointer_map,
             ProjectType.EXTERNAL_DB_IMPL, module, new OdbSourceGenerationStrategy)
     }
     

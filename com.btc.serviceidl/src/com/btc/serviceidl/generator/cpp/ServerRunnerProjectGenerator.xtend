@@ -22,7 +22,6 @@ import com.btc.serviceidl.idl.ModuleDeclaration
 import java.util.Arrays
 import java.util.Collection
 import java.util.Map
-import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -38,11 +37,10 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
         IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
         ITargetVersionProvider targetVersionProvider,
-        Map<IProjectReference, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ModuleDeclaration module)
     {
         super(file_system_access, qualified_name_provider, scope_provider, idl, projectSetFactory, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, protobuf_project_references, smart_pointer_map,
+            moduleStructureStrategy, targetVersionProvider, smart_pointer_map,
             ProjectType.SERVER_RUNNER, module)
     }
 

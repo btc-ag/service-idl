@@ -16,8 +16,6 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.ExternalDependency
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
-import java.util.Map
-import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -28,7 +26,6 @@ class CMakeProjectFileGenerator
     val IFileSystemAccess fileSystemAccess
     val ParameterBundle parameterBundle
     val Iterable<ExternalDependency> externalDependencies
-    val Map<IProjectReference, Set<IProjectReference>> protobufProjectReferences
     val Iterable<IProjectReference> projectReferences
 
     val ProjectFileSet projectFileSet
@@ -51,11 +48,6 @@ class CMakeProjectFileGenerator
         )
     }
 
-    private def getMyProtobufProjectReferences()
-    {
-        protobufProjectReferences?.entrySet.toMap([it.key as CMakeProjectSet.ProjectReference], [it.value.downcast])
-    }
-
     private def getMyProjectReferences()
     {
         projectReferences.downcast
@@ -71,7 +63,6 @@ class CMakeProjectFileGenerator
         new CMakeGenerator(
             parameterBundle,
             externalDependencies,
-            myProtobufProjectReferences,
             myProjectReferences,
             projectFileSet.unmodifiableView
         ).generateCMakeLists(projectName, projectPath, projectType)
@@ -82,7 +73,6 @@ class CMakeProjectFileGenerator
         new CMakeGenerator(
             parameterBundle,
             externalDependencies,
-            myProtobufProjectReferences,
             myProjectReferences,
             projectFileSet.unmodifiableView
         ).generateCMakeSet(projectName, projectPath)

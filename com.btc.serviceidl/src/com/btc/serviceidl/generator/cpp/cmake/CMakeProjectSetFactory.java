@@ -10,9 +10,6 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp.cmake;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 
@@ -34,12 +31,10 @@ public class CMakeProjectSetFactory implements IProjectSetFactory {
     @Override
     public void generateProjectFiles(IFileSystemAccess fileSystemAccess, ParameterBundle parameterBundle,
             Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
-            Map<IProjectReference, Set<IProjectReference>> protobufProjectReferences,
             Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
             IPath projectPath, String projectName) {
-        new CMakeProjectFileGenerator(fileSystemAccess, parameterBundle, externalDependencies,
-                protobufProjectReferences, projectReferences, projectFileSet, projectType, projectPath, projectName)
-                        .generate();
+        new CMakeProjectFileGenerator(fileSystemAccess, parameterBundle, externalDependencies, projectReferences,
+                projectFileSet, projectType, projectPath, projectName).generate();
 
     }
 

@@ -22,7 +22,6 @@ import com.btc.serviceidl.util.Constants
 import java.util.Collection
 import java.util.Map
 import java.util.Optional
-import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -35,16 +34,18 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors(PROTECTED_GETTER)
 class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
 {
+    val Iterable<IProjectReference> protobufProjectReferences
+
     new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
         IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
-        ITargetVersionProvider targetVersionProvider,
-        Map<IProjectReference, Set<IProjectReference>> protobuf_project_references,
+        ITargetVersionProvider targetVersionProvider, Iterable<IProjectReference> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ModuleDeclaration module)
     {
         super(file_system_access, qualified_name_provider, scope_provider, idl, projectSetFactory, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, protobuf_project_references, smart_pointer_map,
-            ProjectType.PROTOBUF, module)
+            moduleStructureStrategy, targetVersionProvider, smart_pointer_map, ProjectType.PROTOBUF, module)
+
+        this.protobufProjectReferences = protobuf_project_references
     }
 
     def generate()
@@ -99,4 +100,6 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
         generateHeader(basicCppGenerator, moduleStructureStrategy, file_content.toString, Optional.empty)
     }
 
+    override Iterable<IProjectReference> getAdditionalProjectReferences()
+    { return protobufProjectReferences ?: #[] }
 }

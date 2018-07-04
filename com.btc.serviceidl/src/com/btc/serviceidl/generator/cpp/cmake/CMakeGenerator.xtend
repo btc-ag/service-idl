@@ -14,7 +14,6 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.ExternalDependency
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
-import java.util.Map
 import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -24,7 +23,6 @@ class CMakeGenerator
 {
     val ParameterBundle parameterBundle
     val Iterable<ExternalDependency> externalDependencies
-    val Map<CMakeProjectSet.ProjectReference, Set<CMakeProjectSet.ProjectReference>> protobufProjectReferences
     val Set<CMakeProjectSet.ProjectReference> projectReferences
 
     val ProjectFileSet projectFileSet
