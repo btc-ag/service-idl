@@ -101,7 +101,7 @@ class ProjectGeneratorBaseBase
     {
         projectSetFactory.generateProjectFiles(file_system_access, param_bundle, cab_libs, vsSolution,
             protobuf_project_references, project_references, projectFileSet.unmodifiableView, project_type,
-            project_path, project_name, [createTypeResolver])
+            project_path, project_name)
     }
 
     protected def generateExportHeader()

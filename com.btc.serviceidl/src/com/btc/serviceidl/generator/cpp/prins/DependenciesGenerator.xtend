@@ -12,28 +12,28 @@ package com.btc.serviceidl.generator.cpp.prins
 
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.cpp.TypeResolver
 import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors(NONE)
 class DependenciesGenerator
 {
-    val extension TypeResolver typeResolver
+    val Iterable<String> externalDependencies
     val ParameterBundle paramBundle
 
     def generate()
     {
+        val effectiveDependencies = externalDependencies.toSet
+
         // proxy and dispatcher include a *.impl.h file from the Protobuf project
         // for type-conversion routines; therefore some hidden dependencies
         // exist, which are explicitly resolved here
         if (paramBundle.projectType == ProjectType.PROXY || paramBundle.projectType == ProjectType.DISPATCHER)
         {
-            // TODO some other function should be used here, this is not used to add an include dependency, but only a link dependency
-            resolveSymbol("BTC::Commons::FutureUtil::InsertableTraits")
+            effectiveDependencies.add("BTC.CAB.Commons.FutureUtil.lib")
         }
 
         '''
-            «FOR lib : cab_libs.sort BEFORE '''#include "modules/Commons/include/BeginCabInclude.h"  // CAB -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndCabInclude.h"    // CAB <--''' + System.lineSeparator»
+            «FOR lib : effectiveDependencies.sort BEFORE '''#include "modules/Commons/include/BeginCabInclude.h"  // CAB -->''' + System.lineSeparator AFTER '''#include "modules/Commons/include/EndCabInclude.h"    // CAB <--''' + System.lineSeparator»
                 #pragma comment(lib, "«lib»")
             «ENDFOR»
             
