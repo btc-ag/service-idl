@@ -82,7 +82,7 @@ class CMakeProjectFileGenerator
             myProtobufProjectReferences,
             myProjectReferences,
             projectFileSet.unmodifiableView
-        ).generateCMakeLists(project_name, project_path)
+        ).generateCMakeLists(project_name, project_path, project_type)
     }
 
     private def generateCMakeSet()

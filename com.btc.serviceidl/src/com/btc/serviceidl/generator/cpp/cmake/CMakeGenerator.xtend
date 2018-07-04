@@ -11,6 +11,7 @@
 package com.btc.serviceidl.generator.cpp.cmake
 
 import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import java.util.Map
 import java.util.Set
@@ -36,10 +37,9 @@ class CMakeGenerator
         '''
     }
 
-    def CharSequence generateCMakeLists(String projectName, IPath projectPath)
+    def CharSequence generateCMakeLists(String projectName, IPath projectPath, ProjectType projectType)
     {
-        // TODO this must be changed, pass the ProjectType to this function, and decide based on that
-        val cmakeTargetType = if (projectName.contains(".Protobuf")) "STATIC_LIB" else "SHARED_LIB"
+        val cmakeTargetType = if (projectType == ProjectType.PROTOBUF) "STATIC_LIB" else "SHARED_LIB"
         
         // TODO instead of globbing, this could list files from the projectFileSet explicitly
         '''
