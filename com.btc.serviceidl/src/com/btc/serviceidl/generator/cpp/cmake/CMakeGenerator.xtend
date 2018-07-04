@@ -20,14 +20,14 @@ import org.eclipse.core.runtime.IPath
 @Accessors(NONE)
 class CMakeGenerator
 {
-    val ParameterBundle param_bundle
+    val ParameterBundle parameterBundle
     val CMakeProjectSet cmakeProjectSet
-    val Map<String, Set<CMakeProjectSet.ProjectReference>> protobuf_project_references
-    val Set<CMakeProjectSet.ProjectReference> project_references
+    val Map<String, Set<CMakeProjectSet.ProjectReference>> protobufProjectReferences
+    val Set<CMakeProjectSet.ProjectReference> projectReferences
 
     val ProjectFileSet projectFileSet
 
-    def CharSequence generateCMakeSet(String project_name, IPath project_path)
+    def CharSequence generateCMakeSet(String projectName, IPath projectPath)
     {
         // TODO generate OPTIONAL includes for external projects?
         '''
@@ -36,15 +36,15 @@ class CMakeGenerator
         '''
     }
 
-    def CharSequence generateCMakeLists(String project_name, IPath project_path)
+    def CharSequence generateCMakeLists(String projectName, IPath projectPath)
     {
         // TODO this must be changed, pass the ProjectType to this function, and decide based on that
-        val cmakeTargetType = if (project_name.contains(".Protobuf")) "STATIC_LIB" else "SHARED_LIB"
+        val cmakeTargetType = if (projectName.contains(".Protobuf")) "STATIC_LIB" else "SHARED_LIB"
         
         // TODO instead of globbing, this could list files from the projectFileSet explicitly
         '''
             # define target name
-            set( TARGET «project_name» )
+            set( TARGET «projectName» )
             
             # TODO the section between BEGIN and END appears to be redundant
             
@@ -86,9 +86,9 @@ class CMakeGenerator
               libprotobuf
               #TODO BTCCABINF-1257 this is just to make it work. Is * ok here?
               libboost*
-              «FOR project : project_references»
+              «FOR project : projectReferences»
               «/* TODO this doesn't seem to be the right place to filter out self-references */»
-              «IF project.projectName != project_name»
+              «IF project.projectName != projectName»
               «project.projectName»
               «ENDIF»
               «ENDFOR»              
