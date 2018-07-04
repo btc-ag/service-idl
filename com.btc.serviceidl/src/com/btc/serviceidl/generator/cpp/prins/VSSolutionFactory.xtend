@@ -26,8 +26,9 @@ class VSSolutionFactory implements IProjectSetFactory
 
     override generateProjectFiles(IFileSystemAccess fileSystemAccess, ParameterBundle parameterBundle,
         Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
-        Map<String, Set<IProjectReference>> protobufProjectReferences, Iterable<IProjectReference> projectReferences,
-        ProjectFileSet projectFileSet, ProjectType projectType, IPath projectPath, String projectName)
+        Map<IProjectReference, Set<IProjectReference>> protobufProjectReferences,
+        Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
+        IPath projectPath, String projectName)
     {
         val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
         val source_path = projectPath.append("source")

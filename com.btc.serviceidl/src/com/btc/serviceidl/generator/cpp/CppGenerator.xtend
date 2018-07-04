@@ -43,7 +43,7 @@ class CppGenerator
     val IScopeProvider scopeProvider
     val IDLSpecification idl
     val IGenerationSettingsProvider generationSettingsProvider
-    val Map<String, Set<IProjectReference>> protobufProjectReferences
+    val Map<IProjectReference, Set<IProjectReference>> protobufProjectReferences
 
     val IProjectSet projectSet
     val IModuleStructureStrategy moduleStructureStrategy
@@ -51,7 +51,7 @@ class CppGenerator
 
     new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IScopeProvider scopeProvider, IGenerationSettingsProvider generationSettingsProvider,
-        Map<String, Set<ParameterBundle>> protobufProjectReferences)
+        Map<ParameterBundle, Set<ParameterBundle>> protobufProjectReferences)
     {
         this.idl = idl
         this.fileSystemAccess = fileSystemAccess
@@ -59,7 +59,9 @@ class CppGenerator
         this.scopeProvider = scopeProvider
 
         this.projectSet = generationSettingsProvider.projectSetFactory.create
-        this.protobufProjectReferences = protobufProjectReferences?.mapValues[map[projectSet.resolve(it)].toSet]
+        this.protobufProjectReferences = protobufProjectReferences?.entrySet.toMap([projectSet.resolve(it.key)], [
+            value.map[projectSet.resolve(it)].toSet
+        ])
         this.moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
         this.generationSettingsProvider = generationSettingsProvider
     }

@@ -24,7 +24,7 @@ class CMakeGenerator
 {
     val ParameterBundle parameterBundle
     val Iterable<ExternalDependency> externalDependencies
-    val Map<String, Set<CMakeProjectSet.ProjectReference>> protobufProjectReferences
+    val Map<CMakeProjectSet.ProjectReference, Set<CMakeProjectSet.ProjectReference>> protobufProjectReferences
     val Set<CMakeProjectSet.ProjectReference> projectReferences
 
     val ProjectFileSet projectFileSet

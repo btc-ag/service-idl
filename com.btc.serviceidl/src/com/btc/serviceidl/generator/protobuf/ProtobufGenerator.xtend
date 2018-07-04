@@ -76,11 +76,11 @@ class ProtobufGenerator
    val referenced_files = new HashSet<String>
    val generated_artifacts = new HashMap<EObject, String>
    val typedef_table = new HashMap<String, String>
-   val allProjectReferences = new HashMap<ArtifactNature, Map<String, Set<ParameterBundle>>>
+   val allProjectReferences = new HashMap<ArtifactNature, Map<ParameterBundle, Set<ParameterBundle>>>
    
-   def Map<String, Set<ParameterBundle>> getProjectReferences(ArtifactNature artifactNature)
+   def Map<ParameterBundle, Set<ParameterBundle>> getProjectReferences(ArtifactNature artifactNature)
     {
-        allProjectReferences.computeIfAbsent(artifactNature, [new HashMap<String, Set<ParameterBundle>>])
+        allProjectReferences.computeIfAbsent(artifactNature, [new HashMap<ParameterBundle, Set<ParameterBundle>>])
     }
    
    def Map<EObject, String> getGeneratedArtifacts()
@@ -518,36 +518,28 @@ class ProtobufGenerator
             return plain_name
         else
         {
-            val temp_bundle = ParameterBundle.createBuilder(Util.getModuleStack(object_root)).with(
+            val referencedProjectParameterBundle = ParameterBundle.createBuilder(Util.getModuleStack(object_root)).with(
                 ProjectType.PROTOBUF).build
 
-            var String referenced_project
-            var String current_project
-
-            if (artifactNature != ArtifactNature.JAVA)
-            {
-                referenced_project = GeneratorUtil.getTransformedModuleName(temp_bundle, artifactNature,
-                    TransformType.PACKAGE)
-                current_project = GeneratorUtil.getTransformedModuleName(param_bundle, artifactNature,
-                    TransformType.PACKAGE)
-            }
-            else
-            {
-                referenced_project = MavenResolver.resolvePackage(object_root, Optional.of(ProjectType.PROTOBUF))
-                current_project = MavenResolver.resolvePackage(context_root, Optional.of(ProjectType.PROTOBUF))
-            }
+            val referenced_project = if (artifactNature != ArtifactNature.JAVA)
+                    GeneratorUtil.getTransformedModuleName(referencedProjectParameterBundle, artifactNature,
+                        TransformType.PACKAGE)
+                else
+                    MavenResolver.resolvePackage(object_root, Optional.of(ProjectType.PROTOBUF))
 
             val result = referenced_project + TransformType.PACKAGE.separator + plain_name
 
             val import_path = makeProtobufPath(artifactNature, object_root,
-                if (object_root instanceof InterfaceDeclaration) Names.plain(object_root) else Constants.
-                    FILE_NAME_TYPES)
+                if (object_root instanceof InterfaceDeclaration)
+                    Names.plain(object_root)
+                else
+                    Constants.FILE_NAME_TYPES)
             referenced_files.add(import_path.toPortableString)
 
-            if (current_project != referenced_project)
+            if (param_bundle != referencedProjectParameterBundle)
             {
-                getProjectReferences(artifactNature).computeIfAbsent(current_project, [new HashSet<ParameterBundle>]).
-                    add(temp_bundle)
+                getProjectReferences(artifactNature).computeIfAbsent(param_bundle, [new HashSet<ParameterBundle>]).
+                    add(referencedProjectParameterBundle)
             }
 
             return result

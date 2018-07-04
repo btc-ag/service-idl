@@ -30,7 +30,7 @@ class VcxProjGenerator
 {
     val ParameterBundle param_bundle
     val VSSolution vsSolution
-    val Map<String, Set<VSSolution.ProjectReference>> protobuf_project_references
+    val Map<VSSolution.ProjectReference, Set<VSSolution.ProjectReference>> protobuf_project_references
     val Set<VSSolution.ProjectReference> project_references
 
     val ProjectFileSet projectFileSet

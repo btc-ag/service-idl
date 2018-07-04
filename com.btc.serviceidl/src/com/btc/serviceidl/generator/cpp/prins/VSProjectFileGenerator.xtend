@@ -17,7 +17,6 @@ import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import com.btc.serviceidl.util.Constants
-import java.util.HashMap
 import java.util.Map
 import java.util.Set
 import org.eclipse.core.runtime.IPath
@@ -32,7 +31,7 @@ class VSProjectFileGenerator
     val IFileSystemAccess file_system_access
     val ParameterBundle param_bundle
     val IProjectSet projectSet
-    val Map<String, Set<IProjectReference>> protobuf_project_references
+    val Map<IProjectReference, Set<IProjectReference>> protobuf_project_references
     val Iterable<IProjectReference> project_references
 
     val ProjectFileSet projectFileSet
@@ -78,7 +77,7 @@ class VSProjectFileGenerator
 
     def getMyProtobufProjectReferences()
     {
-        protobuf_project_references?.mapValues[it.downcast]
+        protobuf_project_references?.entrySet.toMap([it.key as VSSolution.ProjectReference], [it.value.downcast])
     }
 
     def getMyProjectReferences()

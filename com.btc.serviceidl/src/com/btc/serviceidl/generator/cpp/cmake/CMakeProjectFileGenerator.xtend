@@ -28,7 +28,7 @@ class CMakeProjectFileGenerator
     val IFileSystemAccess fileSystemAccess
     val ParameterBundle parameterBundle
     val Iterable<ExternalDependency> externalDependencies
-    val Map<String, Set<IProjectReference>> protobufProjectReferences
+    val Map<IProjectReference, Set<IProjectReference>> protobufProjectReferences
     val Iterable<IProjectReference> projectReferences
 
     val ProjectFileSet projectFileSet
@@ -53,7 +53,7 @@ class CMakeProjectFileGenerator
 
     private def getMyProtobufProjectReferences()
     {
-        protobufProjectReferences?.mapValues[it.downcast]
+        protobufProjectReferences?.entrySet.toMap([it.key as CMakeProjectSet.ProjectReference], [it.value.downcast])
     }
 
     private def getMyProjectReferences()

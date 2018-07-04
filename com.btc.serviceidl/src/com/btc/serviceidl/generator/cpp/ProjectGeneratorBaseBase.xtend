@@ -43,7 +43,7 @@ class ProjectGeneratorBaseBase
     val extension IProjectSet vsSolution
     val IModuleStructureStrategy moduleStructureStrategy
     val ITargetVersionProvider targetVersionProvider
-    val Map<String, Set<IProjectReference>> protobuf_project_references
+    val Map<IProjectReference, Set<IProjectReference>> protobuf_project_references
     val Map<EObject, Collection<EObject>> smart_pointer_map
 
     var ParameterBundle param_bundle
@@ -57,7 +57,8 @@ class ProjectGeneratorBaseBase
     new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
         IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
-        ITargetVersionProvider targetVersionProvider, Map<String, Set<IProjectReference>> protobuf_project_references,
+        ITargetVersionProvider targetVersionProvider,
+        Map<IProjectReference, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ProjectType type, ModuleDeclaration module)
     {
         this.file_system_access = file_system_access

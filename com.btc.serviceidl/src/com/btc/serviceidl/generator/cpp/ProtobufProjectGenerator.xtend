@@ -38,7 +38,8 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
     new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
         IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
-        ITargetVersionProvider targetVersionProvider, Map<String, Set<IProjectReference>> protobuf_project_references,
+        ITargetVersionProvider targetVersionProvider,
+        Map<IProjectReference, Set<IProjectReference>> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ModuleDeclaration module)
     {
         super(file_system_access, qualified_name_provider, scope_provider, idl, projectSetFactory, vsSolution,
@@ -89,8 +90,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
             projectFileSet.addToGroup(ProjectFileSet.PROTOBUF_FILE_GROUP, file_name)
         }
 
-        generateProjectFiles(ProjectType.PROTOBUF, projectPath, vsSolution.getVcxprojName(param_bundle),
-            projectFileSet)
+        generateProjectFiles(ProjectType.PROTOBUF, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)
     }
 
     private def String generateHCodec(EObject owner)

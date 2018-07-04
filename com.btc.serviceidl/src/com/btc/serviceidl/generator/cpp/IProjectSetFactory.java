@@ -14,7 +14,7 @@ public interface IProjectSetFactory {
 
     void generateProjectFiles(IFileSystemAccess fileSystemAccess, ParameterBundle parameterBundle,
             Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
-            Map<String, Set<IProjectReference>> protobufProjectReferences,
+            Map<IProjectReference, Set<IProjectReference>> protobufProjectReferences,
             Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
             IPath projectPath, String projectName);
 }
