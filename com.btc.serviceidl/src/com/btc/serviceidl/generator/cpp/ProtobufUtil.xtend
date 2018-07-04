@@ -93,21 +93,12 @@ class ProtobufUtil
                 protobuf_type = "google::protobuf::int32"
 
             val isUUIDType = ultimate_type.isUUIDType
-            var decodeMethodName = if (is_failable)
-                {
-                    if (element.eContainer instanceof MemberElement) "DecodeFailableToVector" else "DecodeFailable"
-                }
-                else
-                {
-                    if (element.eContainer instanceof MemberElement)
-                    {
-                        if (isUUIDType) "DecodeUUIDToVector" else "DecodeToVector"
-                    }
-                    else
-                    {
-                        if (isUUIDType) "DecodeUUID" else "Decode"
-                    }
-                }
+            val decodeMethodName = (if (is_failable)
+                "DecodeFailable"
+            else if (isUUIDType) "DecodeUUID" else "Decode") + if (element.eContainer instanceof MemberElement)
+                "ToVector"
+            else
+                ""                
 
             return '''«IF use_codec_ns»«typeResolver.resolveCodecNS(paramBundle, ultimate_type, is_failable, Optional.of(container))»::«ENDIF»«decodeMethodName»«IF is_failable || !isUUIDType»< «protobuf_type», «resolve(ultimate_type)» >«ENDIF»'''
         }
