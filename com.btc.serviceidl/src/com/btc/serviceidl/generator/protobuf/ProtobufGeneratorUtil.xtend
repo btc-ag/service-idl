@@ -28,6 +28,8 @@ import static com.btc.serviceidl.generator.common.GeneratorUtil.*
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.idl.ParameterElement
+import com.btc.serviceidl.idl.FunctionDeclaration
 
 class ProtobufGeneratorUtil
 {
@@ -40,10 +42,20 @@ class ProtobufGeneratorUtil
             MavenResolver.makePackageId(object_root, ProjectType.PROTOBUF)
     }
 
-    // TODO change to accept model elements instead, at least do not call this directly
+    // TODO remove remaining calls to this method by calls based on model elements rather than String
     static def asProtoFileAttributeName(String name)
     {
         asProtobufName(name, CaseFormat.LOWER_UNDERSCORE)
+    }
+
+    static def protoFileAttributeName(FunctionDeclaration element)
+    {
+        asProtoFileAttributeName(element.name)
+    }
+
+    static def protoFileAttributeName(ParameterElement element)
+    {
+        asProtoFileAttributeName(element.paramName)
     }
 
     static def protoFileAttributeName(MemberElementWrapper element)

@@ -211,7 +211,7 @@ class ProtobufFileGeneratorBase
             «IF sequence.present»
                 «toText(sequence.get, element, container, id)»
             «ELSE»
-                required «toText(element.paramType, element, container, new AtomicInteger)» «element.paramName.asProtoFileAttributeName» = «id.incrementAndGet»;
+                required «toText(element.paramType, element, container, new AtomicInteger)» «element.protoFileAttributeName» = «id.incrementAndGet»;
             «ENDIF»
         '''
     }

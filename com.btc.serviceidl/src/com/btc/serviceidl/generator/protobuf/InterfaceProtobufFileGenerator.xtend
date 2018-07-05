@@ -43,9 +43,9 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
                       «var field_id = new AtomicInteger»
                       «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
                           «IF Util.isSequenceType(param.paramType)»
-                              «makeSequence(Util.getUltimateType(param.paramType), Util.isFailable(param.paramType), param, interface_declaration, param.paramName.asProtoFileAttributeName, field_id)»
+                              «makeSequence(Util.getUltimateType(param.paramType), Util.isFailable(param.paramType), param, interface_declaration, param.protoFileAttributeName, field_id)»
                           «ELSE»
-                              required «resolve(param.paramType, interface_declaration, interface_declaration)» «param.paramName.asProtoFileAttributeName» = «field_id.incrementAndGet»;
+                              required «resolve(param.paramType, interface_declaration, interface_declaration)» «param.protoFileAttributeName» = «field_id.incrementAndGet»;
                           «ENDIF»
                       «ENDFOR»
                    }
@@ -68,7 +68,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
                               «val sequence = Util.tryGetSequence(param.paramType).get»
                               «toText(sequence, param, interface_declaration, field_id)»
                           «ELSE»
-                              required «resolve(param.paramType, interface_declaration, interface_declaration)» «param.paramName.asProtoFileAttributeName» = «field_id.incrementAndGet»;
+                              required «resolve(param.paramType, interface_declaration, interface_declaration)» «param.protoFileAttributeName» = «field_id.incrementAndGet»;
                           «ENDIF»
                       «ENDFOR»
                       «generateReturnType(function, interface_declaration, interface_declaration, field_id)»
@@ -102,7 +102,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
                     «IF Util.isSequenceType(element)»
                         «toText(element, function, container, id)»
                     «ELSE»
-                        required «resolve(element, context, container)» «function.name.asProtoFileAttributeName» = «id.incrementAndGet»;
+                        required «resolve(element, context, container)» «function.protoFileAttributeName» = «id.incrementAndGet»;
                     «ENDIF»
                 «ENDIF»
             «ENDIF»
