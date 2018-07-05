@@ -27,18 +27,18 @@ import java.util.Map
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
-import org.eclipse.xtext.scoping.IScopeProvider
 
 import static com.btc.serviceidl.generator.protobuf.ProtobufGeneratorUtil.*
 
+@Accessors(NONE)
 class ProtobufGenerator
 {
    val Resource resource
    val IFileSystemAccess file_system_access
    val IQualifiedNameProvider qualified_name_provider
-   val IScopeProvider scope_provider
    val IModuleStructureStrategy moduleStructureStrategy
       
    val generated_artifacts = new HashMap<EObject, String>
@@ -55,16 +55,6 @@ class ProtobufGenerator
       return generated_artifacts
    }
    
-   new(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp,
-        IModuleStructureStrategy moduleStructureStrategy)
-   {
-      resource = res
-      file_system_access = fsa
-      qualified_name_provider = qnp
-      scope_provider = sp
-      this.moduleStructureStrategy = moduleStructureStrategy
-    }
-
     def void doGenerate(Iterable<ArtifactNature> languages) 
     {  
       // handle all interfaces
