@@ -45,7 +45,6 @@ import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
-import java.util.Optional
 import java.util.Set
 import java.util.concurrent.atomic.AtomicInteger
 import org.eclipse.core.runtime.IPath
@@ -152,12 +151,7 @@ class ProtobufGenerator
         file_system_access.generateFile(makeProtobufPath(an, container, artifact_name).toPortableString, an.label,
             file_content)
     }
-   
-   private def IPath getJavaProtoLocation(EObject container)
-   {
-      Path.fromPortableString(MavenResolver.makePackageId(container, ProjectType.PROTOBUF)).append("src").append("main").append("proto")
-   }
-   
+      
    private def String generateInterface(ArtifactNature an, InterfaceDeclaration interface_declaration)
    {
       var request_part_id = 1
@@ -256,11 +250,7 @@ class ProtobufGenerator
    {
       '''
       syntax = "proto2";
-      «IF artifact_nature == ArtifactNature.JAVA»
-         package «MavenResolver.makePackageId(container, ProjectType.PROTOBUF)»;         
-      «ELSE»
-         package «GeneratorUtil.getTransformedModuleName(param_bundle, artifact_nature, TransformType.PACKAGE)»;
-      «ENDIF»
+      package «container.getModuleName(artifact_nature)»;
       '''
    }
    
@@ -428,7 +418,7 @@ class ProtobufGenerator
    {
       if (requiresNewMessageType(element.type))
       {
-         return Names.plain(element).toFirstUpper + "Wrapper"
+         Names.plain(element).toFirstUpper + "Wrapper"
       }
       else
       {
@@ -444,7 +434,7 @@ class ProtobufGenerator
             typedef_table.put(element.name, type_name)
          }
   
-         return type_name
+         type_name
       }
    }
    
@@ -509,37 +499,46 @@ class ProtobufGenerator
             if (actual_type.isPrimitive)
                 toText(actual_type, artifactNature, context, container, new AtomicInteger)
             else
-            {
-                var plain_name = Names.plain(actual_type)
-
-                // first, check if we are within the same namespace
-                var object_root = actual_type.scopeDeterminant
-
-                if (object_root == context.scopeDeterminant)
-                    plain_name
-                else
-                {
-                    val referencedProjectParameterBundle = ParameterBundle.createBuilder(
-                        Util.getModuleStack(object_root)).with(ProjectType.PROTOBUF).build
-
-                    referenced_files.add(object_root.importPath(artifactNature).toPortableString)
-
-                    if (param_bundle != referencedProjectParameterBundle)
-                    {
-                        getProjectReferences(artifactNature).
-                            computeIfAbsent(param_bundle, [new HashSet<ParameterBundle>]).add(
-                                referencedProjectParameterBundle)
-                    }
-
-                    (if (artifactNature != ArtifactNature.JAVA)
-                        GeneratorUtil.getTransformedModuleName(referencedProjectParameterBundle, artifactNature,
-                            TransformType.PACKAGE)
-                    else
-                        MavenResolver.makePackageId(object_root, ProjectType.PROTOBUF)) +
-                        TransformType.PACKAGE.separator + plain_name
-                }
-            }
+                resolveNonPrimitiveType(actual_type, artifactNature, context)
         }
+    }
+    
+    private def resolveNonPrimitiveType(EObject actual_type, ArtifactNature artifactNature, EObject context)
+    {
+        var plain_name = Names.plain(actual_type)
+
+        // first, check if we are within the same namespace
+        var object_root = actual_type.scopeDeterminant
+
+        if (object_root == context.scopeDeterminant)
+            plain_name
+        else
+            resolveNonPrimitiveImportedType(object_root, plain_name, artifactNature)
+    }
+    
+    private def resolveNonPrimitiveImportedType(EObject object_root, String plain_name, ArtifactNature artifactNature)
+    {
+        referenced_files.add(object_root.importPath(artifactNature).toPortableString)
+
+        val referencedModuleStack = object_root.moduleStack
+        if (param_bundle.moduleStack != referencedModuleStack)
+        {
+            getProjectReferences(artifactNature).computeIfAbsent(param_bundle, [new HashSet<ParameterBundle>]).add(
+                ParameterBundle.createBuilder(referencedModuleStack).with(
+            ProjectType.PROTOBUF).build)
+        }
+
+        object_root.getModuleName(artifactNature) +
+            TransformType.PACKAGE.separator + plain_name
+    }
+    
+    private static def getModuleName(EObject object_root, ArtifactNature artifactNature)
+    {
+        if (artifactNature != ArtifactNature.JAVA)
+            GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(object_root.moduleStack).with(
+                ProjectType.PROTOBUF).build, artifactNature, TransformType.PACKAGE)
+        else
+            MavenResolver.makePackageId(object_root, ProjectType.PROTOBUF)
     }
     
     def importPath(EObject object, ArtifactNature artifactNature)
@@ -573,19 +572,27 @@ class ProtobufGenerator
    
    private def IPath makeProtobufPath(ArtifactNature artifact_nature, EObject container, String file_name)
     {
+        makeProtobufModulePath(artifact_nature, container).append(file_name.proto)
+    }
+    
+    private def IPath makeProtobufModulePath(ArtifactNature artifactNature, EObject container)
+    {
         // TODO unify this across target technologies
-        (if (artifact_nature == ArtifactNature.JAVA)
+        if (artifactNature == ArtifactNature.JAVA)
         {
-            getJavaProtoLocation(container)
+            Path.fromPortableString(MavenResolver.makePackageId(container, ProjectType.PROTOBUF)).append("src").append(
+                "main").append("proto")
         }
         else
         {
-            val temp_bundle = ParameterBundle.createBuilder(container.moduleStack).with(ProjectType.PROTOBUF).build()
+            val containerParameterBundle = ParameterBundle.createBuilder(container.moduleStack).with(
+                ProjectType.PROTOBUF).build()
 
-            (if (artifact_nature == ArtifactNature.CPP)
-                moduleStructureStrategy.getProjectDir(temp_bundle)
+            (if (artifactNature == ArtifactNature.CPP)
+                moduleStructureStrategy.getProjectDir(containerParameterBundle)
             else
-                GeneratorUtil.asPath(temp_bundle, artifact_nature)).append(Constants.PROTOBUF_GENERATION_DIRECTORY_NAME)
-        }).append(file_name.proto)
+                GeneratorUtil.asPath(containerParameterBundle, artifactNature)).append(
+                Constants.PROTOBUF_GENERATION_DIRECTORY_NAME)
+        }
     }
 }
