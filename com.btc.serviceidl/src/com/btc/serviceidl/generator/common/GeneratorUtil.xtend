@@ -30,7 +30,7 @@ import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
 import com.google.common.base.CaseFormat
 import java.util.ArrayList
-import java.util.HashSet
+import java.util.TreeSet
 import java.util.regex.Pattern
 import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
@@ -136,11 +136,11 @@ class GeneratorUtil
 
     static def Iterable<EObject> getEncodableTypes(EObject owner)
     {
-        val nestedTypes = new HashSet<EObject>
+        val nestedTypes = new TreeSet<EObject>[e1, e2|Names.plain(e1).compareTo(Names.plain(e2))]
         nestedTypes.addAll(owner.eContents.filter(StructDeclaration))
         nestedTypes.addAll(owner.eContents.filter(ExceptionDeclaration))
         nestedTypes.addAll(owner.eContents.filter(EnumDeclaration))
-        return nestedTypes.sortBy[e|Names.plain(e)]
+        return nestedTypes.unmodifiableView        
     }
 
     static def String getClassName(ArtifactNature artifactNature, ProjectType projectType, String basicName)
