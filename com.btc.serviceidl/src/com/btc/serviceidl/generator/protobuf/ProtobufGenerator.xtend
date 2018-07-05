@@ -451,13 +451,13 @@ class ProtobufGenerator
    private def dispatch String toText(AbstractType element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
    {
       if (element.primitiveType !== null)
-         return toText(element.primitiveType, artifactNature, context, container, id)
+         toText(element.primitiveType, artifactNature, context, container, id)
       else if (element.referenceType !== null)
-         return toText(element.referenceType, artifactNature, context, container, id)
+         toText(element.referenceType, artifactNature, context, container, id)
       else if (element.collectionType !== null)
-         return toText(element.collectionType, artifactNature, context, container, id)
-      
-      throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
+         toText(element.collectionType, artifactNature, context, container, id)
+      else
+         throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
    }
    
    private def dispatch String toText(PrimitiveType element, ArtifactNature artifactNature, EObject context, EObject container, AtomicInteger id)
@@ -470,71 +470,75 @@ class ProtobufGenerator
          switch element.integerType
          {
          case "int16":
-            return "int32"
+            "int32"
          case "byte":
-            return "int32"
+            "int32"
          default:
-            return element.integerType
+            element.integerType
          }
       }
       else if (element.stringType !== null)
-         return "string"
+         "string"
       else if (element.floatingPointType !== null)
-         return element.floatingPointType
+         element.floatingPointType
       else if (element.uuidType !== null)
-         return "bytes"
+         "bytes"
       else if (element.booleanType !== null)
-         return "bool"
+         "bool"
       else if (element.charType !== null)
-         return "int32"
-
-      throw new IllegalArgumentException("Unknown PrimitiveType: " + element.class.toString)
+         "int32"
+      else
+         throw new IllegalArgumentException("Unknown PrimitiveType: " + element.class.toString)
    }
    
    private def boolean requiresNewMessageType(EObject element)
-   {
-      return (element instanceof TupleDeclaration 
-         || (element instanceof AbstractType && (element as AbstractType).collectionType !== null && requiresNewMessageType((element as AbstractType).collectionType))
-         || (element instanceof SequenceDeclaration && (element as SequenceDeclaration).type.collectionType !== null)
-      )
-   }
+    {
+        element instanceof TupleDeclaration ||
+            (element instanceof AbstractType && (element as AbstractType).collectionType !== null &&
+                requiresNewMessageType((element as AbstractType).collectionType)) ||
+            (element instanceof SequenceDeclaration && (element as SequenceDeclaration).type.collectionType !== null)
+    }
    
    private def String resolve(ArtifactNature artifactNature, EObject object, EObject context, EObject container)
     {
-        if (Util.isSequenceType(object))
-            return toText(object, artifactNature, context, container, new AtomicInteger)
-
-        val actual_type = Util.getUltimateType(object)
-        if (Util.isPrimitive(actual_type))
-            return toText(actual_type, artifactNature, context, container, new AtomicInteger)
-
-        var plain_name = Names.plain(actual_type)
-
-        // first, check if we are within the same namespace
-        var object_root = Util.getScopeDeterminant(actual_type)
-        var context_root = Util.getScopeDeterminant(context)
-
-        if (object_root == context_root)
-            return plain_name
+        if (object.isSequenceType)
+            toText(object, artifactNature, context, container, new AtomicInteger)
         else
         {
-            val referencedProjectParameterBundle = ParameterBundle.createBuilder(Util.getModuleStack(object_root)).with(
-                ProjectType.PROTOBUF).build
-
-            referenced_files.add(object_root.importPath(artifactNature).toPortableString)
-
-            if (param_bundle != referencedProjectParameterBundle)
-            {
-                getProjectReferences(artifactNature).computeIfAbsent(param_bundle, [new HashSet<ParameterBundle>]).add(
-                    referencedProjectParameterBundle)
-            }
-
-            return (if (artifactNature != ArtifactNature.JAVA)
-                GeneratorUtil.getTransformedModuleName(referencedProjectParameterBundle, artifactNature,
-                    TransformType.PACKAGE)
+            val actual_type = object.ultimateType
+            if (actual_type.isPrimitive)
+                toText(actual_type, artifactNature, context, container, new AtomicInteger)
             else
-                MavenResolver.makePackageId(object_root, ProjectType.PROTOBUF)) + TransformType.PACKAGE.separator +
-                plain_name
+            {
+                var plain_name = Names.plain(actual_type)
+
+                // first, check if we are within the same namespace
+                var object_root = actual_type.scopeDeterminant
+
+                if (object_root == context.scopeDeterminant)
+                    plain_name
+                else
+                {
+                    val referencedProjectParameterBundle = ParameterBundle.createBuilder(
+                        Util.getModuleStack(object_root)).with(ProjectType.PROTOBUF).build
+
+                    referenced_files.add(object_root.importPath(artifactNature).toPortableString)
+
+                    if (param_bundle != referencedProjectParameterBundle)
+                    {
+                        getProjectReferences(artifactNature).
+                            computeIfAbsent(param_bundle, [new HashSet<ParameterBundle>]).add(
+                                referencedProjectParameterBundle)
+                    }
+
+                    (if (artifactNature != ArtifactNature.JAVA)
+                        GeneratorUtil.getTransformedModuleName(referencedProjectParameterBundle, artifactNature,
+                            TransformType.PACKAGE)
+                    else
+                        MavenResolver.makePackageId(object_root, ProjectType.PROTOBUF)) +
+                        TransformType.PACKAGE.separator + plain_name
+                }
+            }
         }
     }
     
