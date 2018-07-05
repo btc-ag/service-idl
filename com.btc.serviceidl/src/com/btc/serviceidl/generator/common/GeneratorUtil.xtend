@@ -148,38 +148,42 @@ class GeneratorUtil
         projectType.getClassName(artifactNature, basicName)
     }
 
-    static def boolean useCodec(EObject element, ArtifactNature artifactNature)
+    static def dispatch boolean useCodec(EObject element, ArtifactNature artifactNature)
     {
-        if (element instanceof PrimitiveType)
-        {
-            return element.isByte || element.isInt16 || element.isChar || element.isUUID
-        // all other primitive types map directly to built-in types!
-        }
-        else if (element instanceof ParameterElement)
-        {
-            return useCodec(element.paramType, artifactNature)
-        }
-        else if (element instanceof AliasDeclaration)
-        {
-            return useCodec(element.type, artifactNature)
-        }
-        else if (element instanceof SequenceDeclaration)
-        {
-            if (artifactNature == ArtifactNature.DOTNET || artifactNature == ArtifactNature.JAVA)
-                return useCodec(element.type, artifactNature) // check type of containing elements
-            else
-                return true
-        }
-        else if (element instanceof AbstractType)
-        {
-            if (element.primitiveType !== null)
-                return useCodec(element.primitiveType, artifactNature)
-            else if (element.collectionType !== null)
-                return useCodec(element.collectionType, artifactNature)
-            else if (element.referenceType !== null)
-                return useCodec(element.referenceType, artifactNature)
-        }
-        return true;
+        true
+    }
+
+    static def dispatch boolean useCodec(PrimitiveType element, ArtifactNature artifactNature)
+    {
+        return element.isByte || element.isInt16 || element.isChar || element.isUUID
+    // all other primitive types map directly to built-in types!
+    }
+
+    static def dispatch boolean useCodec(ParameterElement element, ArtifactNature artifactNature)
+    {
+        useCodec(element.paramType, artifactNature)
+    }
+
+    static def dispatch boolean useCodec(AliasDeclaration element, ArtifactNature artifactNature)
+    {
+        useCodec(element.type, artifactNature)
+    }
+
+    static def dispatch boolean useCodec(SequenceDeclaration element, ArtifactNature artifactNature)
+    {
+        artifactNature == ArtifactNature.CPP || useCodec(element.type, artifactNature) // check type of containing elements
+    }
+
+    static def dispatch boolean useCodec(AbstractType element, ArtifactNature artifactNature)
+    {
+        if (element.primitiveType !== null)
+            useCodec(element.primitiveType, artifactNature)
+        else if (element.collectionType !== null)
+            useCodec(element.collectionType, artifactNature)
+        else if (element.referenceType !== null)
+            useCodec(element.referenceType, artifactNature)
+        else
+            true
     }
 
     static def String getCodecName(EObject object)
