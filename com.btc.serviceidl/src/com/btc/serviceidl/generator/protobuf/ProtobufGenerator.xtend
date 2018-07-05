@@ -149,7 +149,7 @@ class ProtobufGenerator
    private def void generateProtobufFile(ArtifactNature an, EObject container, String artifact_name,
         String file_content)
     {
-        file_system_access.generateFile(makeProtobufPath(an, container, artifact_name).toOSString, an.label,
+        file_system_access.generateFile(makeProtobufPath(an, container, artifact_name).toPortableString, an.label,
             file_content)
     }
    
