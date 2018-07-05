@@ -136,7 +136,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
                «resolveSymbol("BTC::Commons::Core::Context")» &m_context;
             «IF is_proxy»
                «FOR event : interface_declaration.events»
-                  «var event_params_name = event.eventParamsName»
+                  «val event_params_name = event.eventParamsName»
                   struct «event_params_name»
                   {
                      typedef «resolve(event.data)» EventDataType;

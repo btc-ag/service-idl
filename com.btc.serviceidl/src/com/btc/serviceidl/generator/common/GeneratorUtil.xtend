@@ -29,12 +29,13 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
 import com.google.common.base.CaseFormat
-import java.util.HashSet
+import java.util.ArrayList
+import java.util.TreeSet
 import java.util.regex.Pattern
-import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
+import org.eclipse.xtext.naming.QualifiedName
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
@@ -92,29 +93,29 @@ class GeneratorUtil
 
     static def Iterable<EObject> getFailableTypes(EObject container)
     {
-        var objects = new HashSet<EObject>
+        var objects = new ArrayList<Iterable<EObject>>
 
         // interfaces: special handling due to inheritance
         if (container instanceof InterfaceDeclaration)
         {
-            objects.addAll(container.functions.map[parameters].flatten.filter[isFailable(paramType)])
-            objects.addAll(container.functions.map[returnedType].filter[isFailable])
+            objects.add(container.functions.map[parameters].flatten.filter[isFailable(paramType)].filter(EObject))
+            objects.add(container.functions.map[returnedType].filter[isFailable].filter(EObject))
         }
 
         val contents = container.eAllContents.toList
 
         // typedefs
-        objects.addAll(
+        objects.add(
             contents.filter(AliasDeclaration).filter[isFailable(type)].map[type]
         )
 
         // structs
-        objects.addAll(
+        objects.add(
             contents.filter(StructDeclaration).map[members].flatten.filter[isFailable(type)].map[type]
         )
 
         // filter out duplicates (especially primitive types) before delivering the result!
-        return objects.map[getUltimateType].map[UniqueWrapper.from(it)].toSet.map[type].sortBy[e|Names.plain(e)]
+        return objects.flatten.toSet.map[getUltimateType].map[UniqueWrapper.from(it)].toSet.map[type].sortBy[e|Names.plain(e)]
     }
 
     static val FAILABLE_SEPARATOR = "_"
@@ -135,11 +136,11 @@ class GeneratorUtil
 
     static def Iterable<EObject> getEncodableTypes(EObject owner)
     {
-        val nestedTypes = new HashSet<EObject>
+        val nestedTypes = new TreeSet<EObject>[e1, e2|Names.plain(e1).compareTo(Names.plain(e2))]
         nestedTypes.addAll(owner.eContents.filter(StructDeclaration))
         nestedTypes.addAll(owner.eContents.filter(ExceptionDeclaration))
         nestedTypes.addAll(owner.eContents.filter(EnumDeclaration))
-        return nestedTypes.sortBy[e|Names.plain(e)]
+        return nestedTypes.unmodifiableView        
     }
 
     static def String getClassName(ArtifactNature artifactNature, ProjectType projectType, String basicName)
@@ -147,38 +148,42 @@ class GeneratorUtil
         projectType.getClassName(artifactNature, basicName)
     }
 
-    static def boolean useCodec(EObject element, ArtifactNature artifactNature)
+    static def dispatch boolean useCodec(EObject element, ArtifactNature artifactNature)
     {
-        if (element instanceof PrimitiveType)
-        {
-            return element.isByte || element.isInt16 || element.isChar || element.isUUID
-        // all other primitive types map directly to built-in types!
-        }
-        else if (element instanceof ParameterElement)
-        {
-            return useCodec(element.paramType, artifactNature)
-        }
-        else if (element instanceof AliasDeclaration)
-        {
-            return useCodec(element.type, artifactNature)
-        }
-        else if (element instanceof SequenceDeclaration)
-        {
-            if (artifactNature == ArtifactNature.DOTNET || artifactNature == ArtifactNature.JAVA)
-                return useCodec(element.type, artifactNature) // check type of containing elements
-            else
-                return true
-        }
-        else if (element instanceof AbstractType)
-        {
-            if (element.primitiveType !== null)
-                return useCodec(element.primitiveType, artifactNature)
-            else if (element.collectionType !== null)
-                return useCodec(element.collectionType, artifactNature)
-            else if (element.referenceType !== null)
-                return useCodec(element.referenceType, artifactNature)
-        }
-        return true;
+        true
+    }
+
+    static def dispatch boolean useCodec(PrimitiveType element, ArtifactNature artifactNature)
+    {
+        return element.isByte || element.isInt16 || element.isChar || element.isUUID
+    // all other primitive types map directly to built-in types!
+    }
+
+    static def dispatch boolean useCodec(ParameterElement element, ArtifactNature artifactNature)
+    {
+        useCodec(element.paramType, artifactNature)
+    }
+
+    static def dispatch boolean useCodec(AliasDeclaration element, ArtifactNature artifactNature)
+    {
+        useCodec(element.type, artifactNature)
+    }
+
+    static def dispatch boolean useCodec(SequenceDeclaration element, ArtifactNature artifactNature)
+    {
+        artifactNature == ArtifactNature.CPP || useCodec(element.type, artifactNature) // check type of containing elements
+    }
+
+    static def dispatch boolean useCodec(AbstractType element, ArtifactNature artifactNature)
+    {
+        if (element.primitiveType !== null)
+            useCodec(element.primitiveType, artifactNature)
+        else if (element.collectionType !== null)
+            useCodec(element.collectionType, artifactNature)
+        else if (element.referenceType !== null)
+            useCodec(element.referenceType, artifactNature)
+        else
+            true
     }
 
     static def String getCodecName(EObject object)
@@ -194,24 +199,6 @@ class GeneratorUtil
             Names.plain(object)
         else
             getPbFileName(Util.getScopeDeterminant(object))
-    }
-
-    /**
-     * Given a module stack, this method will calculate relative paths up to the
-     * solution root directory in form of ../../
-     * 
-     * \details If at least one relative parent path is there, the string ALWAYS
-     * ends with the path separator!
-     */
-    def static IPath getRelativePathsUpwards(Iterable<ModuleDeclaration> moduleStack)
-    {
-        var paths = Path.EMPTY
-        for (module : moduleStack)
-        {
-            if (!module.virtual) // = non-virtual
-                paths.append("..")
-        }
-        return paths
     }
 
     static def asPath(ParameterBundle bundle, ArtifactNature nature)
@@ -264,5 +251,16 @@ class GeneratorUtil
         if (currentAbbrev !== null) res.append(currentAbbrev)
 
         res.toString
+    }
+
+    static def getFullyQualifiedClassName(EObject object, QualifiedName qualifiedName, ProjectType projectType,
+        ArtifactNature artifactNature, TransformType transformType)
+    {
+        String.join(transformType.separator, #[getTransformedModuleName(ParameterBundle.createBuilder(
+            object.scopeDeterminant.moduleStack
+        ).with(projectType).build, artifactNature, transformType), if (object instanceof InterfaceDeclaration)
+            projectType.getClassName(artifactNature, qualifiedName.lastSegment)
+        else
+            qualifiedName.lastSegment])
     }
 }

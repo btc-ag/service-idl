@@ -35,6 +35,7 @@ import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.idl.MemberElement
 
 class CppExtensions
 {
@@ -181,17 +182,7 @@ class CppExtensions
      */
     static def dispatch Iterable<EObject> predecessors(StructDeclaration element)
     {
-        val result = new HashSet<EObject>(element.members.size)
-        for (member : element.members)
-        {
-            result.addAll(resolvePredecessor(member.type))
-        }
-        // base type must be handled also
-        if (element.supertype !== null)
-        {
-            result.addAll(resolvePredecessor(element.supertype))
-        }
-        return result
+        predecessors(element.supertype, element.members)
     }
 
     static def dispatch Iterable<EObject> predecessors(AliasDeclaration element)
@@ -201,17 +192,12 @@ class CppExtensions
 
     static def dispatch Iterable<EObject> predecessors(ExceptionDeclaration element)
     {
-        val result = new HashSet<EObject>(element.members.size)
-        for (member : element.members)
-        {
-            result.addAll(resolvePredecessor(member.type))
-        }
-        // base type must be handled also
-        if (element.supertype !== null)
-        {
-            result.addAll(resolvePredecessor(element.supertype))
-        }
-        return result
+        predecessors(element.supertype, element.members)
+    }
+    
+    static def Iterable<EObject> predecessors(EObject supertype, Iterable<MemberElement> members)
+    {
+        #[members.map[type], #[supertype].reject[it === null]].flatten.flatMap[resolvePredecessor]        
     }
 
     private static def Iterable<EObject> resolvePredecessor(EObject element)
@@ -232,7 +218,7 @@ class CppExtensions
     {
         !(type instanceof PrimitiveType) && type.scopeDeterminant == element.scopeDeterminant
     }
-    
+
     private static def dispatch void getUnderlyingTypes(StructDeclaration struct, HashSet<EObject> all_types)
     {
         val contained_types = struct.members.map[type.ultimateType].filter(StructDeclaration)

@@ -22,7 +22,6 @@ import com.btc.serviceidl.util.Constants
 import java.util.Collection
 import java.util.Map
 import java.util.Optional
-import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -35,27 +34,28 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors(PROTECTED_GETTER)
 class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
 {
+    val Iterable<IProjectReference> protobufProjectReferences
+
     new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
-        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
-        Map<String, Set<IProjectReference>> protobuf_project_references,
+        IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
+        IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
+        ITargetVersionProvider targetVersionProvider, Iterable<IProjectReference> protobuf_project_references,
         Map<EObject, Collection<EObject>> smart_pointer_map, ModuleDeclaration module)
     {
-        super(file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, protobuf_project_references, smart_pointer_map,
-            ProjectType.PROTOBUF, module)
+        super(file_system_access, qualified_name_provider, scope_provider, idl, projectSetFactory, vsSolution,
+            moduleStructureStrategy, targetVersionProvider, smart_pointer_map, ProjectType.PROTOBUF, module)
+
+        this.protobufProjectReferences = protobuf_project_references
     }
 
     def generate()
     {
         // paths
         val include_path = projectPath.append("include")
-        val source_path = projectPath.append("source")
 
         // file names
-        var export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
+        val export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
-        val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES + ".cpp"
 
         // sub-folder "./include"
         file_system_access.generateFile(include_path.append(export_header_file_name).toString, ArtifactNature.CPP.label,
@@ -89,8 +89,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
             projectFileSet.addToGroup(ProjectFileSet.PROTOBUF_FILE_GROUP, file_name)
         }
 
-        generateVSProjectFiles(ProjectType.PROTOBUF, projectPath, vsSolution.getVcxprojName(param_bundle),
-            projectFileSet)
+        generateProjectFiles(ProjectType.PROTOBUF, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)
     }
 
     private def String generateHCodec(EObject owner)
@@ -101,4 +100,6 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
         generateHeader(basicCppGenerator, moduleStructureStrategy, file_content.toString, Optional.empty)
     }
 
+    override Iterable<IProjectReference> getAdditionalProjectReferences()
+    { return protobufProjectReferences ?: #[] }
 }

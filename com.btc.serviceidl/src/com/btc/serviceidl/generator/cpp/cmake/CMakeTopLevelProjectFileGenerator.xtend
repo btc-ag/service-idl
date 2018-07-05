@@ -110,8 +110,8 @@ class CMakeTopLevelProjectFileGenerator
             set(CAB_INT_SOURCE_DIR ${CMAKE_SOURCE_DIR})
             set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
             
-            «FOR project : projectSet.projects»
-                include(${CMAKE_CURRENT_LIST_DIR}/«relativePath(project)»/build/make.cmakeset)
+            «FOR projectPath : projectSet.projects.map[relativePath.toPortableString].sort»
+                include(${CMAKE_CURRENT_LIST_DIR}/«projectPath»/build/make.cmakeset)
             «ENDFOR»
         '''
     }

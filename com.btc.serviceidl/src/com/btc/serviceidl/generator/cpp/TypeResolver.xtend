@@ -18,10 +18,9 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.common.TypeWrapper
+import com.btc.serviceidl.generator.cpp.prins.PrinsHeaderResolver
 import com.btc.serviceidl.idl.AbstractType
-import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.util.Constants
 import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
@@ -37,8 +36,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.generator.cpp.prins.OdbConstants
-import com.btc.serviceidl.generator.cpp.prins.PrinsHeaderResolver
+import com.btc.serviceidl.generator.cpp.HeaderResolver.GroupedHeader
 
 @Accessors(NONE)
 class TypeResolver
@@ -48,7 +46,7 @@ class TypeResolver
     @Accessors(PACKAGE_GETTER) val IModuleStructureStrategy moduleStructureStrategy
 
     val Collection<IProjectReference> project_references
-    val Collection<String> cab_libs
+    val Collection<ExternalDependency> cab_libs
     val Map<EObject, Collection<EObject>> smart_pointer_map
 
     @Accessors(NONE) val Map<IncludeGroup, Set<IPath>> includes = new HashMap<IncludeGroup, Set<IPath>>
@@ -63,13 +61,13 @@ class TypeResolver
         project_references.unmodifiableView
     }
 
-    def Iterable<String> getCab_libs()
+    def Iterable<ExternalDependency> getCab_libs()
     {
         cab_libs.unmodifiableView
     }
 
     @Deprecated
-    def void addLibraryDependency(String libFile)
+    def void addLibraryDependency(ExternalDependency libFile)
     {
         cab_libs.add(libFile)
     }
@@ -86,8 +84,7 @@ class TypeResolver
 
     private def void addToGroup(IncludeGroup includeGroup, IPath path)
     {
-        if (!includes.containsKey(includeGroup)) includes.put(includeGroup, new HashSet<IPath>)
-        includes.get(includeGroup).add(path)
+        includes.computeIfAbsent(includeGroup, [new HashSet<IPath>]).add(path)
     }
 
     @Data
@@ -108,7 +105,7 @@ class TypeResolver
         IProjectSet projectSet,
         IModuleStructureStrategy moduleStructureStrategy,
         Collection<IProjectReference> project_references,
-        Collection<String> cab_libs,
+        Collection<ExternalDependency> cab_libs,
         Map<EObject, Collection<EObject>> smart_pointer_map
     )
     {
@@ -123,10 +120,21 @@ class TypeResolver
 
     def String resolveSymbol(String symbolName)
     {
-        val header = headerResolver.getHeader(symbolName)
+        headerResolver.getHeader(symbolName).resolveHeader
+        return symbolName
+    }
+
+    def void resolveHeader(GroupedHeader header)
+    {
         addToGroup(header.includeGroup, header.path)
         resolveLibrary(header)
-        return symbolName
+    }
+
+    def boolean tryResolveSymbol(String symbolName)
+    {
+        val header = headerResolver.tryGetHeader(symbolName)
+        header?.resolveHeader
+        return header !== null
     }
 
     private def void resolveLibrary(HeaderResolver.GroupedHeader header)
@@ -137,12 +145,14 @@ class TypeResolver
             case CAB_INCLUDE_GROUP:
                 cab_libs.addAll(LibResolver.getCABLibs(header.path))
             case STL_INCLUDE_GROUP:
-                // do nothing
-                {}
+            // do nothing
+            {
+            }
             case PrinsHeaderResolver.ODB_INCLUDE_GROUP:
-                // TODO remove this here, make a subclass in prins.* or so
-                // do nothing
-                {}
+            // TODO remove this here, make a subclass in prins.* or so
+            // do nothing
+            {
+            }
             default:
                 throw new IllegalArgumentException("Cannot resolve a library for this header: " + header.toString)
         }
@@ -175,21 +185,14 @@ class TypeResolver
         if (qualified_name === null)
             return new ResolvedName(Names.plain(object), TransformType.NAMESPACE)
 
-        val resolved_name = qualified_name.toString
-        if (headerResolver.isCAB(resolved_name) || headerResolver.isBoost(resolved_name))
+        if (tryResolveSymbol(GeneratorUtil.switchPackageSeperator(qualified_name.toString, TransformType.NAMESPACE)))
         {
-            resolveSymbol(GeneratorUtil.switchPackageSeperator(resolved_name, TransformType.NAMESPACE))
             return new ResolvedName(qualified_name, TransformType.NAMESPACE)
         }
         else
         {
-            var result = GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(
-                object.scopeDeterminant.moduleStack
-            ).with(project_type).build, ArtifactNature.CPP, TransformType.NAMESPACE)
-            result += Constants.SEPARATOR_NAMESPACE + if (object instanceof InterfaceDeclaration)
-                project_type.getClassName(ArtifactNature.CPP, qualified_name.lastSegment)
-            else
-                qualified_name.lastSegment
+            val result = GeneratorUtil.getFullyQualifiedClassName(object, qualified_name, project_type,
+                ArtifactNature.CPP, TransformType.NAMESPACE)
             addToGroup(TARGET_INCLUDE_GROUP, object.getIncludeFilePath(project_type, moduleStructureStrategy))
             object.resolveProjectFilePath(project_type)
             return new ResolvedName(result, TransformType.NAMESPACE)
@@ -254,13 +257,8 @@ class TypeResolver
         // TODO does this really need to iterate twice through types? 
         for (wrapper : types)
         {
-            var dependencies = smart_pointer_map.get(wrapper.type)
-            if (dependencies === null)
-            {
-                dependencies = new LinkedHashSet<EObject>
-                smart_pointer_map.put(wrapper.type, dependencies)
-            }
-            dependencies.addAll(wrapper.forwardDeclarations)
+            smart_pointer_map.computeIfAbsent(wrapper.type, [new LinkedHashSet<EObject>]).addAll(
+                wrapper.forwardDeclarations)
         }
 
         return types.stream.filter[!it.forwardDeclarations.empty].flatMap[forwardDeclarations.stream].distinct.iterator.

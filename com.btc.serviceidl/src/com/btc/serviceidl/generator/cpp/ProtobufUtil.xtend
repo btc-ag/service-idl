@@ -50,15 +50,14 @@ class ProtobufUtil
         val paramBundle = ParameterBundle.createBuilder(scope_determinant.moduleStack).with(ProjectType.PROTOBUF).build
 
         // TODO this is cloned by java.ProtobufUtil(.getLocalName?) 
-        var result = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.NAMESPACE)
-        result += Constants.SEPARATOR_NAMESPACE
-        if (object instanceof InterfaceDeclaration)
-            result += Names.plain(object) + protobuf_type.getName
-        else if (object instanceof FunctionDeclaration)
-            result += Names.plain(scope_determinant) + "_" + protobuf_type.getName + "_" + Names.plain(object) +
-                protobuf_type.getName
-        else
-            result += Names.plain(object)
+        val result = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.NAMESPACE) +
+            Constants.SEPARATOR_NAMESPACE + if (object instanceof InterfaceDeclaration)
+                Names.plain(object) + protobuf_type.getName
+            else if (object instanceof FunctionDeclaration)
+                Names.plain(scope_determinant) + "_" + protobuf_type.getName + "_" + Names.plain(object) +
+                    protobuf_type.getName
+            else
+                Names.plain(object)
 
         addTargetInclude(typeResolver.moduleStructureStrategy.getIncludeFilePath(
             scope_determinant.moduleStack,
@@ -94,21 +93,12 @@ class ProtobufUtil
                 protobuf_type = "google::protobuf::int32"
 
             val isUUIDType = ultimate_type.isUUIDType
-            var decodeMethodName = if (is_failable)
-                {
-                    if (element.eContainer instanceof MemberElement) "DecodeFailableToVector" else "DecodeFailable"
-                }
-                else
-                {
-                    if (element.eContainer instanceof MemberElement)
-                    {
-                        if (isUUIDType) "DecodeUUIDToVector" else "DecodeToVector"
-                    }
-                    else
-                    {
-                        if (isUUIDType) "DecodeUUID" else "Decode"
-                    }
-                }
+            val decodeMethodName = (if (is_failable)
+                "DecodeFailable"
+            else if (isUUIDType) "DecodeUUID" else "Decode") + if (element.eContainer instanceof MemberElement)
+                "ToVector"
+            else
+                ""
 
             return '''«IF use_codec_ns»«typeResolver.resolveCodecNS(paramBundle, ultimate_type, is_failable, Optional.of(container))»::«ENDIF»«decodeMethodName»«IF is_failable || !isUUIDType»< «protobuf_type», «resolve(ultimate_type)» >«ENDIF»'''
         }
@@ -159,15 +149,13 @@ class ProtobufUtil
     {
         // TODO isn't there a specific type that is used from that library? Is it really required?
         // explicitly include some essential dependencies
-        typeResolver.addLibraryDependency("BTC.CAB.ServiceComm.Default.lib")
+        typeResolver.addLibraryDependency(new ExternalDependency("BTC.CAB.ServiceComm.Default"))
 
-        var namespace = GeneratorUtil.getTransformedModuleName(
+        return GeneratorUtil.getTransformedModuleName(
             ParameterBundle.createBuilder(container.scopeDeterminant.moduleStack).with(ProjectType.PROTOBUF).build,
             ArtifactNature.CPP,
             TransformType.NAMESPACE
-        )
-        return namespace + Constants.SEPARATOR_NAMESPACE +
-            GeneratorUtil.asFailable(element, container, qualified_name_provider)
+        ) + Constants.SEPARATOR_NAMESPACE + GeneratorUtil.asFailable(element, container, qualified_name_provider)
     }
 
     static def asCppProtobufName(String name)

@@ -11,23 +11,23 @@
 package com.btc.serviceidl.generator.cpp.cmake
 
 import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.ExternalDependency
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
-import java.util.Map
 import java.util.Set
-import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.core.runtime.IPath
+import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors(NONE)
 class CMakeGenerator
 {
-    val ParameterBundle param_bundle
-    val CMakeProjectSet cmakeProjectSet
-    val Map<String, Set<CMakeProjectSet.ProjectReference>> protobuf_project_references
-    val Set<CMakeProjectSet.ProjectReference> project_references
+    val ParameterBundle parameterBundle
+    val Iterable<ExternalDependency> externalDependencies
+    val Set<CMakeProjectSet.ProjectReference> projectReferences
 
     val ProjectFileSet projectFileSet
 
-    def CharSequence generateCMakeSet(String project_name, IPath project_path)
+    def CharSequence generateCMakeSet(String projectName, IPath projectPath)
     {
         // TODO generate OPTIONAL includes for external projects?
         '''
@@ -36,19 +36,14 @@ class CMakeGenerator
         '''
     }
 
-    def CharSequence generateCMakeLists(String project_name, IPath project_path)
+    def CharSequence generateCMakeLists(String projectName, IPath projectPath, ProjectType projectType)
     {
-        // TODO this must be changed, pass the ProjectType to this function, and decide based on that
-        val cmakeTargetType = if (project_name.contains(".Protobuf")) "STATIC_LIB" else "SHARED_LIB"
+        val cmakeTargetType = if (projectType == ProjectType.PROTOBUF) "STATIC_LIB" else "SHARED_LIB"
         
         // TODO instead of globbing, this could list files from the projectFileSet explicitly
         '''
             # define target name
-            set( TARGET «project_name» )
-            
-            # TODO the section between BEGIN and END appears to be redundant
-            
-            #BEGIN
+            set( TARGET «projectName» )
             
             # Components include dirs
             file( GLOB INCS ../include/*.h* ../include/**/*.h* )
@@ -65,31 +60,16 @@ class CMakeGenerator
             # summerize files
             set( FILES ${INCS} ${SRCS} ${RESOURCE} ${RESOURCE_H} )
             source_group( "Resources" FILES ${RESOURCE} ${RESOURCE_H} )
-            #END
             
             # define list of targets which have to be linked
             set( LINK_TARGETS
-              «/* TODO use the actual external references */»
-              ${BTC}${CAB}Commons.Core
-              ${BTC}${CAB}Commons.CoreExtras
-              ${BTC}${CAB}Commons.CoreOS
-              ${BTC}${CAB}Commons.FutureUtil
-              ${BTC}${CAB}Logging.API
-              ${BTC}${CAB}ServiceComm.API
-              ${BTC}${CAB}ServiceComm.Base
-              ${BTC}${CAB}ServiceComm.Commons
-              ${BTC}${CAB}ServiceComm.CommonsUtil
-              ${BTC}${CAB}ServiceComm.ProtobufBase
-              ${BTC}${CAB}ServiceComm.ProtobufUtil
-              ${BTC}${CAB}ServiceComm.TestBase
-              ${BTC}${CAB}ServiceComm.Util
-              libprotobuf
-              #TODO BTCCABINF-1257 this is just to make it work. Is * ok here?
-              libboost*
-              «FOR project : project_references»
+              «FOR lib : externalDependencies.map[libraryName].sort»
+                «lib»
+              «ENDFOR»
+              «FOR referencedProjectName : projectReferences.map[it.projectName].sort»
               «/* TODO this doesn't seem to be the right place to filter out self-references */»
-              «IF project.projectName != project_name»
-              «project.projectName»
+              «IF referencedProjectName != projectName»
+              «referencedProjectName»
               «ENDIF»
               «ENDFOR»              
             )

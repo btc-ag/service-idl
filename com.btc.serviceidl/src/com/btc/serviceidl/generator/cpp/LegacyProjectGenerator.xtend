@@ -19,7 +19,6 @@ import com.btc.serviceidl.idl.ModuleDeclaration
 import java.util.Collection
 import java.util.Map
 import java.util.Optional
-import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -28,13 +27,13 @@ import org.eclipse.xtext.scoping.IScopeProvider
 class LegacyProjectGenerator extends ProjectGeneratorBase
 {
     new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
-        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
-        Map<String, Set<IProjectReference>> protobuf_project_references,
+        IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
+        IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
+        ITargetVersionProvider targetVersionProvider,
         Map<EObject, Collection<EObject>> smart_pointer_map, ProjectType type, ModuleDeclaration module)
     {
-        super(file_system_access, qualified_name_provider, scope_provider, idl, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, protobuf_project_references, smart_pointer_map, type,
+        super(file_system_access, qualified_name_provider, scope_provider, idl, projectSetFactory, vsSolution,
+            moduleStructureStrategy, targetVersionProvider, smart_pointer_map, type,
             module, new SourceGenerationStrategy)
     }
 

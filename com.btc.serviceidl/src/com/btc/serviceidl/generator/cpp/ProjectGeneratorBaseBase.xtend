@@ -11,23 +11,17 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.ITargetVersionProvider
-import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectFileGenerator
-import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
 import com.btc.serviceidl.generator.cpp.prins.OdbConstants
-import com.btc.serviceidl.generator.cpp.prins.VSProjectFileGenerator
-import com.btc.serviceidl.generator.cpp.prins.VSSolution
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
-import com.btc.serviceidl.util.Constants
+import com.google.common.collect.Sets
 import java.util.Arrays
 import java.util.Collection
 import java.util.HashSet
 import java.util.Map
 import java.util.Optional
-import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -35,7 +29,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
-import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
@@ -46,34 +39,34 @@ class ProjectGeneratorBaseBase
     val IQualifiedNameProvider qualified_name_provider
     val IScopeProvider scope_provider
     val IDLSpecification idl
+    val IProjectSetFactory projectSetFactory
     val extension IProjectSet vsSolution
     val IModuleStructureStrategy moduleStructureStrategy
     val ITargetVersionProvider targetVersionProvider
-    val Map<String, Set<IProjectReference>> protobuf_project_references
     val Map<EObject, Collection<EObject>> smart_pointer_map
 
-    var ParameterBundle param_bundle
+    val ParameterBundle param_bundle
     val ModuleDeclaration module
 
     // per-project global variables
-    val cab_libs = new HashSet<String>
+    val cab_libs = new HashSet<ExternalDependency>
     val project_references = new HashSet<IProjectReference>
     val projectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP)) // TODO inject the file groups
 
     new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, IProjectSet vsSolution,
-        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
-        Map<String, Set<IProjectReference>> protobuf_project_references,
-        Map<EObject, Collection<EObject>> smart_pointer_map, ProjectType type, ModuleDeclaration module)
+        IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
+        IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
+        ITargetVersionProvider targetVersionProvider, Map<EObject, Collection<EObject>> smart_pointer_map,
+        ProjectType type, ModuleDeclaration module)
     {
         this.file_system_access = file_system_access
         this.qualified_name_provider = qualified_name_provider
         this.scope_provider = scope_provider
         this.idl = idl
+        this.projectSetFactory = projectSetFactory
         this.vsSolution = vsSolution
         this.moduleStructureStrategy = moduleStructureStrategy
         this.targetVersionProvider = targetVersionProvider
-        this.protobuf_project_references = protobuf_project_references
         this.smart_pointer_map = smart_pointer_map
         this.module = module
 
@@ -85,7 +78,7 @@ class ProjectGeneratorBaseBase
         createTypeResolver(this.param_bundle)
     }
 
-    protected def createTypeResolver(ParameterBundle param_bundle)
+    private def createTypeResolver(ParameterBundle param_bundle)
     {
         new TypeResolver(qualified_name_provider, vsSolution, moduleStructureStrategy, project_references, cab_libs,
             smart_pointer_map)
@@ -101,37 +94,32 @@ class ProjectGeneratorBaseBase
         new BasicCppGenerator(createTypeResolver(param_bundle), targetVersionProvider, param_bundle)
     }
 
-    // TODO move this to com.btc.serviceidl.generator.cpp.prins resp. use a factory for the ProjectFileGenerator implementation
-    protected def void generateVSProjectFiles(ProjectType project_type, IPath project_path, String project_name,
+    def Iterable<IProjectReference> getAdditionalProjectReferences()
+    { return #[] }
+
+    protected def void generateProjectFiles(ProjectType project_type, IPath project_path, String project_name,
         ProjectFileSet projectFileSet)
     {
-        if (vsSolution instanceof VSSolution)
+        // TODO maybe find a better place to handle these extra resolutions
+        // proxy and dispatcher include a *.impl.h file from the Protobuf project
+        // for type-conversion routines; therefore some hidden dependencies
+        // exist, which are explicitly resolved here
+        if (param_bundle.projectType == ProjectType.PROXY || param_bundle.projectType == ProjectType.DISPATCHER)
         {
-            val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
-            val source_path = projectPath.append("source")
-
-            file_system_access.generateFile(source_path.append(dependency_file_name).toString, ArtifactNature.CPP.label,
-                generateDependencies)
-            projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
-
-            new VSProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
-                project_references, projectFileSet.unmodifiableView, project_type, project_path, project_name).
-                generate()
-
+            cab_libs.add(new ExternalDependency("BTC.CAB.Commons.FutureUtil"))
         }
-        else if (vsSolution instanceof CMakeProjectSet)
+
+        // TODO This should be done differently, the PROTOBUF project should have a resolved
+        // dependency on libprotobuf, and should export this dependency to its dependents
+        if (param_bundle.projectType == ProjectType.PROTOBUF || param_bundle.projectType == ProjectType.DISPATCHER ||
+            param_bundle.projectType == ProjectType.PROXY || param_bundle.projectType == ProjectType.SERVER_RUNNER)
         {
-            new CMakeProjectFileGenerator(file_system_access, param_bundle, vsSolution, protobuf_project_references,
-                project_references, projectFileSet.unmodifiableView, project_type, project_path, project_name).
-                generate()
-
+            cab_libs.add(new ExternalDependency("libprotobuf"))
         }
-    }
 
-    // TODO move this to com.btc.serviceidl.generator.cpp.prins
-    private def generateDependencies()
-    {
-        new DependenciesGenerator(createTypeResolver, param_bundle).generate()
+        projectSetFactory.generateProjectFiles(file_system_access, param_bundle, cab_libs.unmodifiableView, vsSolution,
+            Sets.union(project_references, additionalProjectReferences.toSet), projectFileSet.unmodifiableView,
+            project_type, project_path, project_name)
     }
 
     protected def generateExportHeader()

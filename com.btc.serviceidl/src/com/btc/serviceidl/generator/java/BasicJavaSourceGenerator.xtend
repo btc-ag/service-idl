@@ -116,13 +116,8 @@ class BasicJavaSourceGenerator
 
     def dispatch String toText(AliasDeclaration element)
     {
-        var type_name = typedef_table.get(element.name)
         val ultimate_type = element.type.ultimateType
-        if (type_name === null)
-        {
-            type_name = typeResolver.resolve(ultimate_type)
-            typedef_table.put(element.name, type_name)
-        }
+        val type_name = typedef_table.computeIfAbsent(element.name, [typeResolver.resolve(ultimate_type)]) 
 
         if (!Util.isPrimitive(ultimate_type))
             typeResolver.resolve(type_name.fullyQualifiedName)

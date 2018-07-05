@@ -17,7 +17,6 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import com.btc.serviceidl.util.Constants
-import java.util.Map
 import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -30,7 +29,6 @@ class VcxProjGenerator
 {
     val ParameterBundle param_bundle
     val VSSolution vsSolution
-    val Map<String, Set<VSSolution.ProjectReference>> protobuf_project_references
     val Set<VSSolution.ProjectReference> project_references
 
     val ProjectFileSet projectFileSet
@@ -46,15 +44,6 @@ class VcxProjGenerator
         val is_dispatcher = (param_bundle.projectType == ProjectType.DISPATCHER)
         val is_external_db_impl = (param_bundle.projectType == ProjectType.EXTERNAL_DB_IMPL)
         val project_guid = vsSolution.getVcxprojGUID(vsSolution.resolve(project_name, project_path))
-
-        if (is_protobuf)
-        {
-            val protobuf_references = protobuf_project_references?.get(project_name)
-            if (protobuf_references !== null)
-            {
-                project_references.addAll(protobuf_references)
-            }
-        }
 
         var prebuild_step = if (is_server_runner)
             {

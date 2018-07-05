@@ -31,11 +31,10 @@ class VSSolution
     {
         val projectName = GeneratorUtil.getTransformedModuleName(parameterBundle, ArtifactNature.DOTNET,
             TransformType.PACKAGE)
-        if (!vs_projects.containsKey(projectName))
-        {
-            vs_projects.put(projectName, new Entry(UUID.nameUUIDFromBytes(projectName.bytes),
-                GeneratorUtil.asPath(parameterBundle, ArtifactNature.DOTNET)))
-        }
+        vs_projects.computeIfAbsent(projectName, [
+            new Entry(UUID.nameUUIDFromBytes(projectName.bytes),
+                GeneratorUtil.asPath(parameterBundle, ArtifactNature.DOTNET))
+        ])
         return projectName
     }
 

@@ -74,15 +74,15 @@ class TypeResolver
 
     def ResolvedName resolve(EObject element, ProjectType project_type)
     {
-        var name = qualifiedNameProvider.getFullyQualifiedName(element)
         val fully_qualified = true
 
         // use the underlying type for typedefs
         if (element instanceof AliasDeclaration)
         {
-            return resolve(com.btc.serviceidl.util.Util.getUltimateType(element))
+            return resolve(element.ultimateType)
         }
 
+        val name = qualifiedNameProvider.getFullyQualifiedName(element)
         if (name === null)
         {
             if (element instanceof AbstractType)
@@ -114,13 +114,8 @@ class TypeResolver
             return new ResolvedName(Names.plain(element), TransformType.PACKAGE, fully_qualified)
         }
 
-        var result = GeneratorUtil.getTransformedModuleName(
-            ParameterBundle.createBuilder(element.scopeDeterminant.moduleStack).with(project_type).build,
-            ArtifactNature.DOTNET, TransformType.PACKAGE)
-        result += Constants.SEPARATOR_PACKAGE + if (element instanceof InterfaceDeclaration)
-            project_type.getClassName(ArtifactNature.DOTNET, name.lastSegment)
-        else
-            name.lastSegment
+        var result = GeneratorUtil.getFullyQualifiedClassName(element, name, project_type, ArtifactNature.DOTNET,
+            TransformType.PACKAGE)
 
         val package_name = QualifiedName.create(result.split(Pattern.quote(Constants.SEPARATOR_PACKAGE))).skipLast(1)
         if (!isSameProject(package_name))

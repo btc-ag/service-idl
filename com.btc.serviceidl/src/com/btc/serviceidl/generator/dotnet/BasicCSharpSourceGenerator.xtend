@@ -51,12 +51,7 @@ class BasicCSharpSourceGenerator {
     
    def dispatch String toText(AliasDeclaration element, EObject context)
    {
-      var type_name = typedef_table.get(element.name)
-      if (type_name === null)
-      {
-         type_name = toText(element.type, element)
-         typedef_table.put(element.name, type_name)
-      }
+      val type_name = typedef_table.computeIfAbsent(element.name, [toText(element.type, element)])
 
       if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
          return "" // in this context, we only denote the substitute type without any output

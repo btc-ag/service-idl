@@ -33,6 +33,55 @@ class CodecGenerator extends BasicCppGenerator
 {
     private def generateHCodecInline(EObject owner, Iterable<EObject> nested_types)
     {
+        val failable_types = GeneratorUtil.getFailableTypes(owner)
+
+        '''
+            «generateGenericCodec»
+            
+            «generateEnsureFailableHandlers(owner)»
+            
+            // TODO for exceptions, this must probably be done differently. It appears that custom exception 
+            // attributes are not properly implemented right now
+            «FOR type : nested_types.filter[!(it instanceof ExceptionDeclaration)]»
+                «generateCodec(type, owner)»
+            «ENDFOR»
+            
+            «FOR type : failable_types»
+                «generateFailableCodec(type, owner)»
+            «ENDFOR»
+        '''
+    }
+    
+    def generateEnsureFailableHandlers(EObject owner)
+    {
+        val cab_string = resolveSymbol("BTC::Commons::Core::String")
+        val cab_create_unique = resolveSymbol("BTC::Commons::Core::CreateUnique")
+
+        '''
+            inline void EnsureFailableHandlers()
+            {
+               «resolveSymbol("std::call_once")»(register_fault_handlers, [&]()
+               {
+                  «FOR exception : owner.failableExceptions»
+                      «val exception_type = resolve(exception)»
+                      «val exception_name = exception.getCommonExceptionName(qualified_name_provider)»
+                      fault_handlers["«exception_name»"] = [](«cab_string» const& msg) { return «cab_create_unique»<«exception_type»>(msg); };
+                  «ENDFOR»
+                  
+                  // most commonly used exception types
+                  «val default_exceptions = typeResolver.defaultExceptionRegistration»
+                  «FOR exception : default_exceptions.keySet.sort»
+                      fault_handlers["«exception»"] = [](«cab_string» const& msg) { return «cab_create_unique»<«default_exceptions.get(exception)»>(msg); };
+                  «ENDFOR»
+               });
+            }
+            
+        '''
+    }
+    
+    // TODO all the functions generated here do not depend on the contents on the IDL and could be moved to some library
+    def generateGenericCodec()
+    {
         val cab_uuid = resolveSymbol("BTC::Commons::CoreExtras::UUID")
         val forward_const_iterator = resolveSymbol("BTC::Commons::Core::ForwardConstIterator")
         val std_vector = resolveSymbol("std::vector")
@@ -47,9 +96,6 @@ class CodecGenerator extends BasicCppGenerator
         val cab_create_unique = resolveSymbol("BTC::Commons::Core::CreateUnique")
         val std_find_if = resolveSymbol("std::find_if")
 
-        val failable_types = GeneratorUtil.getFailableTypes(owner)
-
-        // TODO all the template functions here do not depend on the contents on the IDL and could be moved to some library
         '''
             template<typename PROTOBUF_TYPE, typename API_TYPE>
             inline «forward_const_iterator»< API_TYPE > Decode(google::protobuf::RepeatedPtrField< PROTOBUF_TYPE > const& protobuf_input)
@@ -98,25 +144,7 @@ class CodecGenerator extends BasicCppGenerator
                {  entries.push_back( Decode(protobuf_entry) ); } );
                return entries;
             }
-            
-            inline void EnsureFailableHandlers()
-            {
-               «resolveSymbol("std::call_once")»(register_fault_handlers, [&]()
-               {
-                  «FOR exception : owner.failableExceptions»
-                      «val exception_type = resolve(exception)»
-                      «val exception_name = exception.getCommonExceptionName(qualified_name_provider)»
-                      fault_handlers["«exception_name»"] = [](«cab_string» const& msg) { return «cab_create_unique»<«exception_type»>(msg); };
-                  «ENDFOR»
-                  
-                  // most commonly used exception types
-                  «val default_exceptions = typeResolver.defaultExceptionRegistration»
-                  «FOR exception : default_exceptions.keySet.sort»
-                      fault_handlers["«exception»"] = [](«cab_string» const& msg) { return «cab_create_unique»<«default_exceptions.get(exception)»>(msg); };
-                  «ENDFOR»
-               });
-            }
-            
+                        
             template<typename PROTOBUF_TYPE>
             inline «resolveSymbol("BTC::Commons::Core::AutoPtr")»<«cab_exception»> MakeException
             (
@@ -449,50 +477,56 @@ class CodecGenerator extends BasicCppGenerator
             
                return «cab_uuid»::MakeFromComponents(param1, param2, param3, param4.data());
             }
+        '''
+
+    }
+    
+    def generateCodec(EObject type, EObject owner)
+    {
+        val api_type_name = resolve(type)
+        /* TODO change such that ProtobufType does not need to be passed, it is irrelevant here */
+        val proto_type_name = typeResolver.resolveProtobuf(type, ProtobufType.REQUEST)
+
+        '''
+            inline «api_type_name» Decode(«proto_type_name» const& protobuf_input)
+            {
+               «makeDecode(type, owner)»
+            }
             
-            // TODO for exceptions, this must probably be done differently. It appears that custom exception 
-            // attributes are not properly implemented right now
-            «FOR type : nested_types.filter[!(it instanceof ExceptionDeclaration)]»
-                «val api_type_name = resolve(type)»
-                «/* TODO change such that ProtobufType does not need to be passed, it is irrelevant here */»
-                «val proto_type_name = typeResolver.resolveProtobuf(type, ProtobufType.REQUEST)»
-                inline «api_type_name» Decode(«proto_type_name» const& protobuf_input)
-                {
-                   «makeDecode(type, owner)»
-                }
-                
-                «IF type instanceof EnumDeclaration»
-                    inline «proto_type_name» Encode(«api_type_name» const& api_input)
-                «ELSE»
-                    inline void Encode(«api_type_name» const& api_input, «proto_type_name» * const protobuf_output)
-                «ENDIF»
-                {
-                   «makeEncode(type)»
-                }
-            «ENDFOR»
+            «IF type instanceof EnumDeclaration»
+                inline «proto_type_name» Encode(«api_type_name» const& api_input)
+            «ELSE»
+                inline void Encode(«api_type_name» const& api_input, «proto_type_name» * const protobuf_output)
+            «ENDIF»
+            {
+               «makeEncode(type)»
+            }
+        '''
+    }
+    
+    def generateFailableCodec(EObject type, EObject owner)
+    {
+        val api_type_name = resolve(type)
+        val proto_failable_type_name = typeResolver.resolveFailableProtobufType(type, owner)
+        /* TODO change such that ProtobufType does not need to be passed, it is irrelevant here */
+        val proto_type_name = typeResolver.resolveProtobuf(type, ProtobufType.REQUEST)
+        
+        '''
+            inline «api_type_name» DecodeFailable(«proto_failable_type_name» const& protobuf_entry)
+            {
+               return «typeResolver.resolveDecode(paramBundle, type, owner)»(protobuf_entry.value());
+            }
             
-            «FOR type : failable_types»
-                «val api_type_name = resolve(type)»
-                «val proto_failable_type_name = typeResolver.resolveFailableProtobufType(type, owner)»
-                «/* TODO change such that ProtobufType does not need to be passed, it is irrelevant here */»
-                «val proto_type_name = typeResolver.resolveProtobuf(type, ProtobufType.REQUEST)»
-                inline «api_type_name» DecodeFailable(«proto_failable_type_name» const& protobuf_entry)
-                {
-                   return «typeResolver.resolveDecode(paramBundle, type, owner)»(protobuf_entry.value());
-                }
-                
-                inline void EncodeFailable(«api_type_name» const& api_input, «proto_failable_type_name» * const protobuf_output)
-                {
-                   «val is_mutable = isMutableField(type)»
-                   «IF is_mutable»
-                       «resolveEncode(type)»(api_input, protobuf_output->mutable_value());
-                   «ELSE»
-                       «proto_type_name» value;
-                       «resolveEncode(type)»(api_input, &value);
-                       protobuf_output->set_value(value);
-                   «ENDIF»
-                }
-            «ENDFOR»
+            inline void EncodeFailable(«api_type_name» const& api_input, «proto_failable_type_name» * const protobuf_output)
+            {
+               «IF isMutableField(type)»
+                   «resolveEncode(type)»(api_input, protobuf_output->mutable_value());
+               «ELSE»
+                   «proto_type_name» value;
+                   «resolveEncode(type)»(api_input, &value);
+                   protobuf_output->set_value(value);
+               «ENDIF»
+            }
         '''
     }
     

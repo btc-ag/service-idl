@@ -17,9 +17,6 @@ import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import com.btc.serviceidl.util.Constants
-import java.util.HashMap
-import java.util.Map
-import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -32,7 +29,6 @@ class VSProjectFileGenerator
     val IFileSystemAccess file_system_access
     val ParameterBundle param_bundle
     val IProjectSet projectSet
-    val Map<String, Set<IProjectReference>> protobuf_project_references
     val Iterable<IProjectReference> project_references
 
     val ProjectFileSet projectFileSet
@@ -70,23 +66,9 @@ class VSProjectFileGenerator
         new VcxProjGenerator(
             param_bundle,
             vsSolution,
-            myProtobufProjectReferences,
             myProjectReferences,
             projectFileSet.unmodifiableView
         ).generateVcxprojUser(project_type)
-    }
-
-    def getMyProtobufProjectReferences()
-    {
-        if (protobuf_project_references === null) return null
-
-        // TODO this should be possible to be simplified
-        val res = new HashMap<String, Set<VSSolution.ProjectReference>>
-        for (entry : protobuf_project_references.entrySet)
-        {
-            res.put(entry.key, entry.value.downcast)
-        }
-        return res
     }
 
     def getMyProjectReferences()
@@ -110,7 +92,6 @@ class VSProjectFileGenerator
         new VcxProjGenerator(
             param_bundle,
             vsSolution,
-            myProtobufProjectReferences,
             myProjectReferences,
             projectFileSet.unmodifiableView
         ).generateVcxprojFilters()
@@ -121,7 +102,6 @@ class VSProjectFileGenerator
         new VcxProjGenerator(
             param_bundle,
             vsSolution,
-            myProtobufProjectReferences,
             myProjectReferences,
             projectFileSet.unmodifiableView
         ).generate(project_name, project_path).toString

@@ -34,6 +34,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 class CppGenerator
 {
@@ -43,7 +44,7 @@ class CppGenerator
     val IScopeProvider scopeProvider
     val IDLSpecification idl
     val IGenerationSettingsProvider generationSettingsProvider
-    val Map<String, Set<IProjectReference>> protobufProjectReferences
+    val Map<IProjectReference, Set<IProjectReference>> protobufProjectReferences
 
     val IProjectSet projectSet
     val IModuleStructureStrategy moduleStructureStrategy
@@ -51,7 +52,7 @@ class CppGenerator
 
     new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IScopeProvider scopeProvider, IGenerationSettingsProvider generationSettingsProvider,
-        Map<String, Set<ParameterBundle>> protobufProjectReferences)
+        Map<ParameterBundle, Set<ParameterBundle>> protobufProjectReferences)
     {
         this.idl = idl
         this.fileSystemAccess = fileSystemAccess
@@ -59,7 +60,9 @@ class CppGenerator
         this.scopeProvider = scopeProvider
 
         this.projectSet = generationSettingsProvider.projectSetFactory.create
-        this.protobufProjectReferences = protobufProjectReferences?.mapValues[map[projectSet.resolve(it)].toSet]
+        this.protobufProjectReferences = protobufProjectReferences?.entrySet?.toMap([projectSet.resolve(it.key)], [
+            value.map[projectSet.resolve(it)].toSet
+        ])
         this.moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
         this.generationSettingsProvider = generationSettingsProvider
     }
@@ -92,10 +95,10 @@ class CppGenerator
                     qualifiedNameProvider,
                     scopeProvider,
                     idl,
+                    generationSettingsProvider.projectSetFactory,
                     projectSet,
                     moduleStructureStrategy,
                     generationSettingsProvider,
-                    protobufProjectReferences,
                     smartPointerMap,
                     module
                 ).generate()
@@ -118,10 +121,10 @@ class CppGenerator
                         qualifiedNameProvider,
                         scopeProvider,
                         idl,
+                        generationSettingsProvider.projectSetFactory,
                         projectSet,
                         moduleStructureStrategy,
                         generationSettingsProvider,
-                        protobufProjectReferences,
                         smartPointerMap,
                         projectType,
                         module
@@ -135,10 +138,10 @@ class CppGenerator
                         qualifiedNameProvider,
                         scopeProvider,
                         idl,
+                        generationSettingsProvider.projectSetFactory,
                         projectSet,
                         moduleStructureStrategy,
                         generationSettingsProvider,
-                        protobufProjectReferences,
                         smartPointerMap,
                         module
                     ).generate()
@@ -154,10 +157,12 @@ class CppGenerator
                     qualifiedNameProvider,
                     scopeProvider,
                     idl,
+                    generationSettingsProvider.projectSetFactory,
                     projectSet,
                     moduleStructureStrategy,
                     generationSettingsProvider,
-                    protobufProjectReferences,
+                    protobufProjectReferences.get(new ParameterBundle.Builder().with(module.moduleStack).
+                        with(ProjectType.PROTOBUF).build),
                     smartPointerMap,
                     module
                 ).generate()
@@ -171,10 +176,10 @@ class CppGenerator
                     qualifiedNameProvider,
                     scopeProvider,
                     idl,
+                    generationSettingsProvider.projectSetFactory,
                     projectSet,
                     moduleStructureStrategy,
                     generationSettingsProvider,
-                    protobufProjectReferences,
                     smartPointerMap,
                     module
                 ).generate()

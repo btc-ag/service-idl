@@ -21,9 +21,9 @@ import java.util.regex.Pattern
 
 class ResolvedName
 {
-    var QualifiedName qualified_name
-    var TransformType transform_type
-    var fully_qualified = true
+    val QualifiedName qualified_name
+    val TransformType transform_type
+    val boolean fully_qualified
 
     new(String name, TransformType tp)
     {

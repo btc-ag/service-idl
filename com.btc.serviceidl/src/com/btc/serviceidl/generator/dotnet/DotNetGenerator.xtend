@@ -72,14 +72,14 @@ class DotNetGenerator
    val vsSolution = new VSSolution
    val csFiles = new HashSet<String>
    val protobufFiles = new HashSet<String>
-   val Map<String, Set<ParameterBundle>> protobufProjectReferences
+   val Map<ParameterBundle, Set<ParameterBundle>> protobufProjectReferences
    var extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
     
    val paketDependencies = new HashSet<Pair<String, String>>
    
    new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes,
-        Map<String, Set<ParameterBundle>> protobufProjectReferences)
+        Map<ParameterBundle, Set<ParameterBundle>> protobufProjectReferences)
     {
         this.idl = idl
         this.fileSystemAccess = fileSystemAccess
@@ -588,12 +588,7 @@ class DotNetGenerator
       // record type aliases
       for (typeAlias : interfaceDeclaration.contains.filter(AliasDeclaration))
       {
-         var typeName = typedefTable.get(typeAlias.name)
-         if (typeName === null)
-         {
-            typeName = toText(typeAlias.type, typeAlias)
-            typedefTable.put(typeAlias.name, typeName)
-         }
+         typedefTable.computeIfAbsent(typeAlias.name, [toText(typeAlias.type, typeAlias)]) 
       }
       
       // generate all contained types
