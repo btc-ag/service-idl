@@ -20,6 +20,13 @@ import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.tests.testdata.TestData
 import com.google.common.collect.ImmutableSet
 import com.google.inject.Inject
+import java.io.InputStream
+import java.util.Map
+import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.resource.impl.ExtensibleURIConverterImpl
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
+import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtext.generator.InMemoryFileSystemAccess
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.eclipse.xtext.testing.util.ParseHelper
@@ -27,6 +34,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import static org.junit.Assert.*
+import org.eclipse.core.runtime.Path
+import org.eclipse.xtext.util.StringInputStream
+import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider.OptionalGenerationSettings
+import com.btc.serviceidl.generator.Main
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -81,5 +92,76 @@ class DefaultGenerationSettingsProviderTest
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
         defaultGenerationSettingsProvider.configureGenerationSettings("foo", null as String, null, null)
         defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource)
+    }
+
+    @Test
+    def void testFindConfigurationFileGeneric()
+    {
+        val fileSystemAccess = new InMemoryFileSystemAccess
+        fileSystemAccess.generateFile("/foo.idl", "")
+        fileSystemAccess.generateFile("/.generator", "")
+        val rs = new ResourceSetImpl()
+        val resource = rs.createResource(fileSystemAccess.getURI("/foo.idl"))
+        assertEquals(#[fileSystemAccess.getURI("/.generator")].toList,
+            DefaultGenerationSettingsProvider.findConfigurationFileURIs(resource,
+                new InMemoryURIConverter(fileSystemAccess)).toList)
+    }
+
+    @Test
+    def void testFindConfigurationFileSpecific()
+    {
+        val fileSystemAccess = new InMemoryFileSystemAccess
+        fileSystemAccess.generateFile("/foo.idl", "")
+        fileSystemAccess.generateFile("/foo.idl.generator", "")
+        val rs = new ResourceSetImpl()
+        val resource = rs.createResource(fileSystemAccess.getURI("/foo.idl"))
+
+        assertEquals(#[fileSystemAccess.getURI("/foo.idl.generator")].toList,
+            DefaultGenerationSettingsProvider.findConfigurationFileURIs(resource,
+                new InMemoryURIConverter(fileSystemAccess)).toList)
+    }
+
+    @Test
+    def void testReadConfigurationFile()
+    {
+        val generationSettings = DefaultGenerationSettingsProvider.readConfigurationFile(new StringInputStream('''languages = java,cpp
+            projectSystem = cmake
+            projectSet = full
+            versions = cpp.servicecomm=0.10
+            '''))
+        val expected = new OptionalGenerationSettings
+        expected.languages = #{ArtifactNature.JAVA, ArtifactNature.CPP}
+        expected.projectSystem = Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE
+        expected.projectTypes = DefaultGenerationSettingsProvider.FULL_PROJECT_SET
+        expected.versions = #{"cpp.servicecomm" -> "0.10"}.entrySet
+            
+        assertEquals(expected, generationSettings)
+    }
+
+}
+
+@Accessors(NONE)
+class InMemoryURIConverter extends ExtensibleURIConverterImpl
+{
+    val InMemoryFileSystemAccess fileSystemAccess
+
+    override boolean exists(URI uri, Map<?, ?> options)
+    {
+        fileSystemAccess.isFile(uri.convert)
+    }
+
+    override InputStream createInputStream(URI uri, Map<?, ?> options)
+    {
+        fileSystemAccess.readBinaryFile(uri.convert)
+
+    }
+
+    def String convert(URI uri)
+    {
+        val path = Path.fromPortableString(uri.path)
+        if (uri.scheme == "memory" && path.segment(0) == "DEFAULT_OUTPUT")
+            "/" + path.removeFirstSegments(1).toPortableString
+        else
+            throw new IllegalArgumentException("Bad URI for InMemoryURIConverter: " + uri)
     }
 }

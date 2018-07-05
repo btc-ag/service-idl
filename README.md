@@ -43,6 +43,26 @@ java -jar com.btc.serviceidl.plainjava-1.0.0-SNAPSHOT.jar input.idl -outputPath 
 
 Currently generated .NET code is targeting .NET Framework version 4.6 or any compatible version.
 
+Configuration when using the Eclipse plug-ins
+=============================================
+
+Configuration of the above-mentioned settings is also possible when using the Eclipse plug-ins, although no UI is provided for that.
+
+Properties files can be placed in parallel to the IDL file, either at directory scope (.generator) or at file scope (foo.idl.generator). If both are present, first 
+the settings from the directory scope properties are applied, and then the settings from the file scope properties, which may override the above.
+
+The output directories cannot be configured via the properties files at the moment.
+
+The command line runner also interprets these files. Command line options override both the directory and file scope properties in that case.
+
+An example file would look like this:
+```
+languages = java,cpp
+projectSystem = cmake
+projectSet = full
+versions = cpp.servicecomm=0.10
+```
+
 Contributing
 ============
 

@@ -20,14 +20,23 @@ import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory
 import com.btc.serviceidl.generator.dotnet.DotNetConstants
 import com.btc.serviceidl.generator.java.JavaConstants
+import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Sets
+import java.io.InputStream
 import java.util.AbstractMap
 import java.util.Map
 import java.util.Map.Entry
+import java.util.Properties
 import java.util.Set
+import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.emf.ecore.resource.URIConverter
+import org.eclipse.emf.ecore.resource.impl.ExtensibleURIConverterImpl
 import org.eclipse.xtend.lib.annotations.Accessors
+import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider.OptionalGenerationSettings
+import com.google.common.base.Objects
+import com.google.common.base.MoreObjects
 
 class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 {
@@ -41,6 +50,31 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         var Set<ProjectType> projectTypes = null
         var String projectSystem = null
         var Iterable<Map.Entry<String, String>> versions = null
+        
+        override equals(Object other)
+        {
+            if (other !== null)
+                if (other instanceof OptionalGenerationSettings)
+                {
+                    return Objects.equal(languages.toSet, other.languages.toSet) &&
+                        Objects.equal(projectTypes.toSet, other.projectTypes.toSet) &&
+                        Objects.equal(projectSystem, other.projectSystem) &&
+                        Objects.equal(versions.toSet, other.versions.toSet)
+                }
+
+            false
+        }
+        
+        override hashCode()
+        {
+            java.util.Objects.hash(languages, projectTypes, projectSystem, versions)
+        }
+        
+        override toString()
+        {
+            MoreObjects.toStringHelper(this).add("languages", languages).add("projectTypes", projectTypes).add(
+                "projectSystem", projectSystem).add("versions", versions).toString
+        }
 
         static def getDefaults()
         {
@@ -57,6 +91,26 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 
             return result
         }
+        
+        static def create(String projectSystem, Iterable<Entry<String, String>> versions, Iterable<ArtifactNature> languages,
+            Iterable<ProjectType> projectTypes)
+        {
+            val settings = new OptionalGenerationSettings()
+
+            if (languages !== null) settings.setLanguages(ImmutableSet.copyOf(languages))
+            if (projectTypes !== null) settings.setProjectTypes(ImmutableSet.copyOf(projectTypes))
+            if (projectSystem !== null) settings.projectSystem = projectSystem
+            if (versions !== null) settings.versions = versions
+        
+            settings
+        }
+        
+        static def create(String projectSystem, String versions, Iterable<ArtifactNature> languages,
+        String projectSet)
+        {
+            create(projectSystem, versions.splitVersions, languages, PROJECT_SET_MAPPING.get(projectSet))
+        }
+        
     }
 
     def configureOverrides(OptionalGenerationSettings generationSettings)
@@ -66,8 +120,48 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 
     override getSettings(Resource resource)
     {
-        // TODO read base from configuration file
-        OptionalGenerationSettings.defaults.merge(overrides ?: new OptionalGenerationSettings).buildGenerationSettings
+        val settingsFromFile = resource.findConfigurationFiles.map[readConfigurationFile]
+        #[if (settingsFromFile.size > 0) settingsFromFile else #[OptionalGenerationSettings.defaults],
+            if (overrides !== null) #[overrides] else #[]].flatten.reduce[a, b|merge(a, b)].buildGenerationSettings
+    }
+
+    static def OptionalGenerationSettings readConfigurationFile(InputStream configurationFile)
+    {
+        //val reader = new BufferedReader(new InputStreamReader(configurationFile, StandardCharsets.UTF_8))
+        val properties = new Properties
+        properties.load(configurationFile)
+        
+        OptionalGenerationSettings.create(
+            properties.get("projectSystem") as String,            
+            properties.get("versions") as String,
+            ((properties.get("languages") as String).split(",").map[str|ArtifactNature.values.filter[it.label == str].single].toSet),
+            properties.get("projectSet") as String)
+    }
+    
+    private static def <T> single(Iterable<T> iterable)
+    {
+        if (iterable.size == 1)
+            iterable.head
+        else
+            throw new IllegalArgumentException("iterable is not of length 1")
+    }
+    
+    public static val CONFIG_FILE_NAME_EXT = "generator"
+
+    static def Iterable<URI> findConfigurationFileURIs(Resource resource, URIConverter handler)
+    {
+        val folder = resource.URI.trimSegments(1)
+        val candidates = #[folder.appendSegment("." + CONFIG_FILE_NAME_EXT),
+            resource.URI.appendFileExtension(CONFIG_FILE_NAME_EXT)]
+        val files = candidates.filter[handler.exists(it, null)]
+        System.out.println("[INFO] Found configuration files: " + if (files.empty) "<none>" else files.join(", "))
+        files
+    }
+
+    static def Iterable<InputStream> findConfigurationFiles(Resource resource)
+    {
+        val handler = new ExtensibleURIConverterImpl
+        return resource.findConfigurationFileURIs(handler).map[handler.createInputStream(it, null)]
     }
 
     static def merge(OptionalGenerationSettings base, OptionalGenerationSettings overrides)
@@ -119,25 +213,20 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
     }
 
     def void configureGenerationSettings(String projectSystem, String versions, Iterable<ArtifactNature> languages,
-        Iterable<ProjectType> projectSet)
+        String projectSet)
     {
-        configureGenerationSettings(projectSystem, versions.splitVersions, languages, projectSet)
+        overrides = OptionalGenerationSettings.create(projectSystem, versions, languages, projectSet)
     }
 
     def void configureGenerationSettings(String projectSystem, Iterable<Map.Entry<String, String>> versions,
-        Iterable<ArtifactNature> languages, Iterable<ProjectType> projectSet)
+        Iterable<ArtifactNature> languages, Iterable<ProjectType> projectTypes)
     {
-        overrides = new OptionalGenerationSettings();
-
-        if (languages !== null) overrides.setLanguages(ImmutableSet.copyOf(languages));
-        if (projectSet !== null) overrides.setProjectTypes(ImmutableSet.copyOf(projectSet));
-        if (projectSystem !== null) overrides.projectSystem = projectSystem
-        if (versions !== null) overrides.versions = versions
+        overrides = OptionalGenerationSettings.create(projectSystem, versions, languages, projectTypes)
     }
 
     private static def Iterable<Map.Entry<String, String>> splitVersions(String optionValue)
     {
-        optionValue.split(",").map [ versionEntry |
+        optionValue?.split(",")?.map [ versionEntry |
             val versionEntryParts = versionEntry.split("=")
             if (versionEntryParts.length != 2)
             {
@@ -148,6 +237,25 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             new AbstractMap.SimpleImmutableEntry<String, String>(versionEntryParts.get(0), versionEntryParts.get(1))
         ]
     }
+    
+    public static val OPTION_VALUE_PROJECT_SET_API                  = "api"
+    public static val OPTION_VALUE_PROJECT_SET_CLIENT               = "client"
+    public static val OPTION_VALUE_PROJECT_SET_SERVER               = "server"
+    public static val OPTION_VALUE_PROJECT_SET_FULL                 = "full"
+    public static val OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON   = "full-with-skeleton"
+
+    public static val Set<ProjectType> API_PROJECT_SET    = ImmutableSet.of(ProjectType.SERVICE_API,
+            ProjectType.COMMON)
+    public static val Set<ProjectType> CLIENT_PROJECT_SET = Sets.union(API_PROJECT_SET,
+            ImmutableSet.of(ProjectType.PROTOBUF, ProjectType.PROXY, ProjectType.CLIENT_CONSOLE))
+    public static val Set<ProjectType> SERVER_PROJECT_SET = Sets.union(API_PROJECT_SET,
+            ImmutableSet.of(ProjectType.PROTOBUF, ProjectType.DISPATCHER, ProjectType.SERVER_RUNNER))
+    public static val Set<ProjectType> FULL_PROJECT_SET   = Sets.union(CLIENT_PROJECT_SET, SERVER_PROJECT_SET)
+
+    public static val Map<String, Set<ProjectType>> PROJECT_SET_MAPPING = ImmutableMap.of(
+            OPTION_VALUE_PROJECT_SET_API, API_PROJECT_SET, OPTION_VALUE_PROJECT_SET_CLIENT, CLIENT_PROJECT_SET,
+            OPTION_VALUE_PROJECT_SET_SERVER, SERVER_PROJECT_SET, OPTION_VALUE_PROJECT_SET_FULL, FULL_PROJECT_SET,
+            OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON, ImmutableSet.copyOf(ProjectType.values()))    
 
     def reset()
     {
