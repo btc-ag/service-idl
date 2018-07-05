@@ -63,15 +63,12 @@ import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufGenerator
 {
-   // global variables
-   var Resource resource
-   var IFileSystemAccess file_system_access
-   var IQualifiedNameProvider qualified_name_provider
-   var IScopeProvider scope_provider
-   var IModuleStructureStrategy moduleStructureStrategy
-   
-   var ParameterBundle param_bundle
-   
+   val Resource resource
+   val IFileSystemAccess file_system_access
+   val IQualifiedNameProvider qualified_name_provider
+   val IScopeProvider scope_provider
+   val IModuleStructureStrategy moduleStructureStrategy
+      
    val referenced_files = new HashSet<String>
    val generated_artifacts = new HashMap<EObject, String>
    val typedef_table = new HashMap<String, String>
@@ -87,19 +84,21 @@ class ProtobufGenerator
       return generated_artifacts
    }
    
-   def void doGenerate(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp,
-        IModuleStructureStrategy moduleStructureStrategy, Iterable<ArtifactNature> languages)
+   new(Resource res, IFileSystemAccess fsa, IQualifiedNameProvider qnp, IScopeProvider sp,
+        IModuleStructureStrategy moduleStructureStrategy)
    {
       resource = res
       file_system_access = fsa
       qualified_name_provider = qnp
       scope_provider = sp
       this.moduleStructureStrategy = moduleStructureStrategy
-      
+    }
+
+    def void doGenerate(Iterable<ArtifactNature> languages) 
+    {  
       // handle all interfaces
       for (interface_declaration : resource.allContents.filter(InterfaceDeclaration).toIterable)
       {
-         param_bundle = ParameterBundle.createBuilder(Util.getModuleStack(interface_declaration)).with(ProjectType.PROTOBUF).build
          val artifact_name = interface_declaration.name
 
          // TODO why is the proto file generated for each language?
@@ -115,7 +114,6 @@ class ProtobufGenerator
          val module_contents = module.eContents.filter( [e | !(e instanceof ModuleDeclaration || e instanceof InterfaceDeclaration)])
          if ( !module_contents.empty )
          {
-            param_bundle = ParameterBundle.createBuilder(Util.getModuleStack(module)).with(ProjectType.PROTOBUF).build
             val artifact_name = Constants.FILE_NAME_TYPES
             
             for (language : languages) 
@@ -513,25 +511,29 @@ class ProtobufGenerator
         if (object_root == context.scopeDeterminant)
             plain_name
         else
-            resolveNonPrimitiveImportedType(object_root, plain_name, artifactNature)
+            resolveNonPrimitiveImportedType(object_root, plain_name,
+                new ParameterBundle.Builder().with(context.moduleStack).with(ProjectType.PROTOBUF).build,
+                artifactNature)
     }
     
-    private def resolveNonPrimitiveImportedType(EObject object_root, String plain_name, ArtifactNature artifactNature)
+    private def resolveNonPrimitiveImportedType(EObject referencedObjectContainer,
+        String referencedObjectContainerPlainName, ParameterBundle referencingModuleParameterBundle,
+        ArtifactNature artifactNature)
     {
-        referenced_files.add(object_root.importPath(artifactNature).toPortableString)
+        referenced_files.add(referencedObjectContainer.importPath(artifactNature).toPortableString)
 
-        val referencedModuleStack = object_root.moduleStack
-        if (param_bundle.moduleStack != referencedModuleStack)
+        val referencedModuleStack = referencedObjectContainer.moduleStack
+        if (referencingModuleParameterBundle.moduleStack != referencedModuleStack)
         {
-            getProjectReferences(artifactNature).computeIfAbsent(param_bundle, [new HashSet<ParameterBundle>]).add(
-                ParameterBundle.createBuilder(referencedModuleStack).with(
-            ProjectType.PROTOBUF).build)
+            getProjectReferences(artifactNature).computeIfAbsent(referencingModuleParameterBundle, [
+                new HashSet<ParameterBundle>
+            ]).add(ParameterBundle.createBuilder(referencedModuleStack).with(ProjectType.PROTOBUF).build)
         }
 
-        object_root.getModuleName(artifactNature) +
-            TransformType.PACKAGE.separator + plain_name
+        referencedObjectContainer.getModuleName(artifactNature) + TransformType.PACKAGE.separator +
+            referencedObjectContainerPlainName
     }
-    
+
     private static def getModuleName(EObject object_root, ArtifactNature artifactNature)
     {
         if (artifactNature != ArtifactNature.JAVA)
@@ -540,7 +542,7 @@ class ProtobufGenerator
         else
             MavenResolver.makePackageId(object_root, ProjectType.PROTOBUF)
     }
-    
+
     def importPath(EObject object, ArtifactNature artifactNature)
     {
         makeProtobufPath(artifactNature, object, if (object instanceof InterfaceDeclaration)
