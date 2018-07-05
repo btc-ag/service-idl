@@ -636,7 +636,7 @@ public class TypesCodec {
     def void checkGenerators(CharSequence input, Set<ProjectType> projectTypes, int fileCount,
         Map<String, String> contents)
     {
-        checkGenerators(input, new HashSet<ArtifactNature>(Arrays.asList(ArtifactNature.JAVA)), projectTypes, fileCount,
-            contents)
+        checkGenerators(input, new HashSet<ArtifactNature>(Arrays.asList(ArtifactNature.JAVA)), projectTypes, null,
+            fileCount, contents)
     }
 }

@@ -13,112 +13,145 @@ package com.btc.serviceidl.generator
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.CppConstants
-import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
-import com.btc.serviceidl.generator.cpp.IProjectSetFactory
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
+import com.btc.serviceidl.generator.cpp.cab.CABModuleStructureStrategy
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSetFactory
 import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory
 import com.btc.serviceidl.generator.dotnet.DotNetConstants
 import com.btc.serviceidl.generator.java.JavaConstants
-import java.util.Arrays
-import java.util.HashMap
-import java.util.HashSet
+import com.google.common.collect.ImmutableSet
+import com.google.common.collect.Sets
+import java.util.AbstractMap
 import java.util.Map
+import java.util.Map.Entry
 import java.util.Set
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.xtend.lib.annotations.Accessors
 
 class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 {
-    public Set<ArtifactNature> languages
-    public Set<ProjectType> projectTypes
-    public IProjectSetFactory projectSetFactory
-    public IModuleStructureStrategy moduleStructureStrategy
-    static val Map<String, Set<String>> supportedVersionMap = createSupportedVersionMap
-    val Map<String, String> versionMap
 
-    new()
+    var OptionalGenerationSettings overrides = null
+
+    @Accessors(PUBLIC_SETTER)
+    static class OptionalGenerationSettings
     {
-        versionMap = createBareVersionMap
-        reset
+        var Set<ArtifactNature> languages = null
+        var Set<ProjectType> projectTypes = null
+        var String projectSystem = null
+        var Iterable<Map.Entry<String, String>> versions = null
+
+        static def getDefaults()
+        {
+            val result = new OptionalGenerationSettings
+            result.languages = ArtifactNature.values.toSet
+
+            result.projectTypes = ProjectType.values.toSet
+            result.projectSystem = Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ
+            result.versions = #{CppConstants.SERVICECOMM_VERSION_KIND -> ServiceCommVersion.V0_12.label,
+                JavaConstants.SERVICECOMM_VERSION_KIND ->
+                    com.btc.serviceidl.generator.java.ServiceCommVersion.V0_5.label,
+                DotNetConstants.SERVICECOMM_VERSION_KIND ->
+                    com.btc.serviceidl.generator.dotnet.ServiceCommVersion.V0_6.label}.entrySet
+
+            return result
+        }
     }
 
-    private static def createSupportedVersionMap()
+    def configureOverrides(OptionalGenerationSettings generationSettings)
     {
-        val res = new HashMap<String, Set<String>>
-        // TODO these should be registered by the respective generator plugins instead
-        res.put(CppConstants.SERVICECOMM_VERSION_KIND, CppConstants.SERVICECOMM_VERSIONS)
-        res.put(DotNetConstants.SERVICECOMM_VERSION_KIND, DotNetConstants.SERVICECOMM_VERSIONS)
-        res.put(JavaConstants.SERVICECOMM_VERSION_KIND, JavaConstants.SERVICECOMM_VERSIONS)
-        return res.immutableCopy
+        this.overrides = generationSettings
     }
 
-    private def createBareVersionMap()
+    override getSettings(Resource resource)
     {
-        supportedVersionMap.keySet.toMap([it], [null as String])
+        // TODO read base from configuration file
+        OptionalGenerationSettings.defaults.merge(overrides ?: new OptionalGenerationSettings).buildGenerationSettings
     }
 
-    override getLanguages()
+    static def merge(OptionalGenerationSettings base, OptionalGenerationSettings overrides)
     {
-        languages
+        val result = new OptionalGenerationSettings
+        result.languages = overrides.languages ?: base.languages
+        result.projectTypes = overrides.projectTypes ?: base.projectTypes
+        result.projectSystem = overrides.projectSystem ?: base.projectSystem
+        result.versions = overrides.versions ?: base.versions
+        result
     }
 
-    override getProjectTypes()
+    static def IGenerationSettings buildGenerationSettings(OptionalGenerationSettings settings)
     {
-        projectTypes
+        val result = new DefaultGenerationSettings()
+        result.languages = settings.languages
+        result.projectTypes = settings.projectTypes
+
+        switch (settings.projectSystem)
+        {
+            case Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
+            {
+                result.projectSetFactory = new CMakeProjectSetFactory();
+
+                // TODO instead of printing on System.out, use some event mechanism here
+                System.out.println("Disabling ODB generation, this is unsupported with CMake project system");
+                result.projectTypes = Sets.difference(result.projectTypes,
+                    ImmutableSet.of(ProjectType.EXTERNAL_DB_IMPL));
+                result.moduleStructureStrategy = new CABModuleStructureStrategy();
+
+            }
+            case Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ:
+            {
+                result.projectSetFactory = new VSSolutionFactory();
+                result.moduleStructureStrategy = new PrinsModuleStructureStrategy();
+            }
+            default:
+            {
+                throw new IllegalArgumentException("Unknown project system: " + settings.projectSystem)
+            }
+        }
+
+        for (Entry<String, String> version : settings.versions)
+        {
+            result.setVersion(version.getKey(), version.getValue());
+        }
+
+        return result
+    }
+
+    def void configureGenerationSettings(String projectSystem, String versions, Iterable<ArtifactNature> languages,
+        Iterable<ProjectType> projectSet)
+    {
+        configureGenerationSettings(projectSystem, versions.splitVersions, languages, projectSet)
+    }
+
+    def void configureGenerationSettings(String projectSystem, Iterable<Map.Entry<String, String>> versions,
+        Iterable<ArtifactNature> languages, Iterable<ProjectType> projectSet)
+    {
+        overrides = new OptionalGenerationSettings();
+
+        if (languages !== null) overrides.setLanguages(ImmutableSet.copyOf(languages));
+        if (projectSet !== null) overrides.setProjectTypes(ImmutableSet.copyOf(projectSet));
+        if (projectSystem !== null) overrides.projectSystem = projectSystem
+        if (versions !== null) overrides.versions = versions
+    }
+
+    private static def Iterable<Map.Entry<String, String>> splitVersions(String optionValue)
+    {
+        optionValue.split(",").map [ versionEntry |
+            val versionEntryParts = versionEntry.split("=")
+            if (versionEntryParts.length != 2)
+            {
+                throw new IllegalArgumentException(
+                    "Invalid version specification '" + versionEntry + "', use kind=version")
+            }
+
+            new AbstractMap.SimpleImmutableEntry<String, String>(versionEntryParts.get(0), versionEntryParts.get(1))
+        ]
     }
 
     def reset()
     {
-        languages = new HashSet<ArtifactNature>(
-            Arrays.asList(ArtifactNature.CPP, ArtifactNature.JAVA, ArtifactNature.DOTNET));
-        projectTypes = new HashSet<ProjectType>(
-            Arrays.asList(ProjectType.SERVICE_API, ProjectType.PROXY, ProjectType.DISPATCHER, ProjectType.IMPL,
-                ProjectType.PROTOBUF, ProjectType.COMMON, ProjectType.TEST, ProjectType.SERVER_RUNNER,
-                ProjectType.CLIENT_CONSOLE, ProjectType.EXTERNAL_DB_IMPL));
-        projectSetFactory = new VSSolutionFactory
-        moduleStructureStrategy = new PrinsModuleStructureStrategy
-        setVersion(CppConstants.SERVICECOMM_VERSION_KIND, ServiceCommVersion.V0_12.label)
-        setVersion(JavaConstants.SERVICECOMM_VERSION_KIND,
-            com.btc.serviceidl.generator.java.ServiceCommVersion.V0_5.label)
-        setVersion(DotNetConstants.SERVICECOMM_VERSION_KIND,
-            com.btc.serviceidl.generator.dotnet.ServiceCommVersion.V0_6.label)
-    }
-
-    def getVersionKinds()
-    {
-        versionMap.keySet.immutableCopy
-    }
-
-    def setVersion(String kind, String version)
-    {
-        val supportedVersions = supportedVersionMap.get(kind)
-        if (supportedVersions === null)
-        {
-            throw new IllegalArgumentException("Version kind '" + kind + "' is unknown, known values are " +
-                supportedVersionMap.keySet.join(", "))
-        }
-        if (!supportedVersions.contains(version))
-        {
-            throw new IllegalArgumentException(
-                "Version '" + version + "' is not supported for '" + kind + "', supported versions are " +
-                    supportedVersions.join(", ")
-            )
-        }
-        versionMap.replace(kind, version)
-    }
-
-    override getProjectSetFactory()
-    {
-        projectSetFactory
-    }
-
-    override getModuleStructureStrategy()
-    {
-        moduleStructureStrategy
-    }
-
-    override getTargetVersion(String versionKind)
-    {
-        versionMap.get(versionKind)
+        this.overrides = null
     }
 
 }

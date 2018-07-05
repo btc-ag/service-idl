@@ -10,7 +10,7 @@
 **********************************************************************/
 package com.btc.serviceidl.generator.java
 
-import com.btc.serviceidl.generator.IGenerationSettingsProvider
+import com.btc.serviceidl.generator.IGenerationSettings
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
@@ -50,7 +50,7 @@ abstract class BasicProjectGenerator
     // parameters
     val IFileSystemAccess fileSystemAccess
     val IQualifiedNameProvider qualifiedNameProvider
-    val IGenerationSettingsProvider generationSettingsProvider
+    val IGenerationSettings generationSettings
     val Map<EObject, String> protobufArtifacts
     val IDLSpecification idl
     val MavenResolver mavenResolver
@@ -67,8 +67,8 @@ abstract class BasicProjectGenerator
     {
         val pom_path = makeProjectRootPath(container, projectType).append("pom".xml)
         fileSystemAccess.generateFile(pom_path.toPortableString, ArtifactNature.JAVA.label,
-            new POMGenerator(generationSettingsProvider, mavenResolver).generatePOMContents(container, projectType,
-            dependencies, if (projectType == ProjectType.PROTOBUF) protobufArtifacts?.get(container) else null))
+            new POMGenerator(generationSettings, mavenResolver).generatePOMContents(container, projectType,
+                dependencies, if (projectType == ProjectType.PROTOBUF) protobufArtifacts?.get(container) else null))
     }
 
     private def IPath makeProjectRootPath(EObject container, ProjectType projectType)
@@ -126,7 +126,7 @@ abstract class BasicProjectGenerator
    
    protected def getProjectTypes()
    {
-       generationSettingsProvider.projectTypes
+       generationSettings.projectTypes
    }
 
    protected def <T extends EObject> void generateJavaFile(IPath fileName, ParameterBundle paramBundle, T declarator, (BasicJavaSourceGenerator)=>CharSequence generateBody)
@@ -158,7 +158,7 @@ abstract class BasicProjectGenerator
    // TODO make private
    protected def createBasicJavaSourceGenerator(ParameterBundle paramBundle)
    {
-      new BasicJavaSourceGenerator(qualifiedNameProvider, generationSettingsProvider,
+      new BasicJavaSourceGenerator(qualifiedNameProvider, generationSettings,
             createTypeResolver(paramBundle), idl, typedefTable, mavenResolver)
    }
 }

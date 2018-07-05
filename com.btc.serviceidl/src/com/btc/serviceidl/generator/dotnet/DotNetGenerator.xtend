@@ -16,7 +16,7 @@
 
 package com.btc.serviceidl.generator.dotnet
 
-import com.btc.serviceidl.generator.IGenerationSettingsProvider
+import com.btc.serviceidl.generator.IGenerationSettings
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
@@ -60,7 +60,7 @@ class DotNetGenerator
    // global variables
    val IFileSystemAccess fileSystemAccess
    val IQualifiedNameProvider qualifiedNameProvider
-   val IGenerationSettingsProvider generationSettingsProvider
+   val IGenerationSettings generationSettings
    val IDLSpecification idl
    
    var ParameterBundle paramBundle
@@ -78,13 +78,13 @@ class DotNetGenerator
    val paketDependencies = new HashSet<Pair<String, String>>
    
    new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
-        IGenerationSettingsProvider generationSettingsProvider, Set<ProjectType> projectTypes,
+        IGenerationSettings generationSettings, Set<ProjectType> projectTypes,
         Map<ParameterBundle, Set<ParameterBundle>> protobufProjectReferences)
     {
         this.idl = idl
         this.fileSystemAccess = fileSystemAccess
         this.qualifiedNameProvider = qualifiedNameProvider
-        this.generationSettingsProvider = generationSettingsProvider
+        this.generationSettings = generationSettings
         this.protobufProjectReferences = protobufProjectReferences
     }
 
@@ -94,7 +94,7 @@ class DotNetGenerator
         // iterate module by module and generate included content
         for (module : idl.modules)
         {
-            processModule(module, generationSettingsProvider.projectTypes)
+            processModule(module, generationSettings.projectTypes)
         }
 
         new VSSolutionGenerator(fileSystemAccess, vsSolution, idl.eResource.URI.lastSegment.replace(".idl", "")).
@@ -304,7 +304,7 @@ class DotNetGenerator
             vsSolution,
             paramBundle
         )
-      basicCSharpSourceGenerator = new BasicCSharpSourceGenerator(typeResolver, generationSettingsProvider, typedefTable, idl)      
+      basicCSharpSourceGenerator = new BasicCSharpSourceGenerator(typeResolver, generationSettings, typedefTable, idl)      
    }
    
    private def void generateImpl(IPath projectRootPath, InterfaceDeclaration interfaceDeclaration)

@@ -10,12 +10,10 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator.cpp
 
-import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
 import com.btc.serviceidl.generator.IGenerationSettingsProvider
+import com.btc.serviceidl.generator.Main
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.cpp.cab.CABModuleStructureStrategy
-import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSetFactory
 import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.tests.generator.AbstractGeneratorTest
 import com.btc.serviceidl.tests.testdata.TestData
@@ -25,7 +23,6 @@ import java.util.HashSet
 import java.util.Map
 import java.util.Set
 import javax.inject.Inject
-import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.junit.Test
@@ -40,8 +37,6 @@ class CppGeneratorTest extends AbstractGeneratorTest
     @Test
     def void testBasicServiceApi()
     {
-        val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases        
         val fileCount = 6
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
         val directory = ArtifactNature.CPP.label + "modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
@@ -118,16 +113,13 @@ class CppGeneratorTest extends AbstractGeneratorTest
             }}}}}}}
         ''')
 
-        checkGenerators(TestData.basic, projectTypes, fileCount, contents)
+        checkGenerators(TestData.basic, projectTypes, Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ, fileCount,
+            contents)
     }
 
     @Test
     def void testBasicServiceApiCmake()
     {
-        val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases
-        defaultGenerationSettingsProvider.projectSetFactory = new CMakeProjectSetFactory
-        defaultGenerationSettingsProvider.moduleStructureStrategy = new CABModuleStructureStrategy
         val fileCount = 7
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
         val directory = ArtifactNature.CPP.label + "Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
@@ -216,16 +208,12 @@ class CppGeneratorTest extends AbstractGeneratorTest
 
         // TODO the dependencies on BTC.CAB.ServiceComm should be removed from the ServiceAPI. 
         // I am not sure where they come from.
-        checkGenerators(TestData.basic, projectTypes, fileCount, contents)
+        checkGenerators(TestData.basic, projectTypes, Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE, fileCount, contents)
     }
 
     @Test
     def void testBasicDispatcherCmake()
     {
-        val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases
-        defaultGenerationSettingsProvider.projectSetFactory = new CMakeProjectSetFactory
-        defaultGenerationSettingsProvider.moduleStructureStrategy = new CABModuleStructureStrategy
         val fileCount = 17
         val projectTypes = new HashSet<ProjectType>(
             #[ProjectType.SERVICE_API, ProjectType.PROTOBUF, ProjectType.DISPATCHER])
@@ -328,13 +316,13 @@ class CppGeneratorTest extends AbstractGeneratorTest
 
         // TODO the dependencies on BTC.CAB.ServiceComm should be removed from the ServiceAPI. 
         // I am not sure where they come from.
-        checkGenerators(TestData.basic, projectTypes, fileCount, contents)
+        checkGenerators(TestData.basic, projectTypes, Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE, fileCount, contents)
     }
 
-    def void checkGenerators(CharSequence input, Set<ProjectType> projectTypes, int fileCount,
+    def void checkGenerators(CharSequence input, Set<ProjectType> projectTypes, String projectSystem, int fileCount,
         Map<String, String> contents)
     {
-        checkGenerators(input, new HashSet<ArtifactNature>(Arrays.asList(ArtifactNature.CPP)), projectTypes, fileCount,
-            contents)
+        checkGenerators(input, new HashSet<ArtifactNature>(Arrays.asList(ArtifactNature.CPP)), projectTypes,
+            projectSystem, fileCount, contents)
     }
 }

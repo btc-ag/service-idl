@@ -15,7 +15,7 @@
  */
 package com.btc.serviceidl.generator.cpp
 
-import com.btc.serviceidl.generator.IGenerationSettingsProvider
+import com.btc.serviceidl.generator.IGenerationSettings
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
@@ -43,7 +43,7 @@ class CppGenerator
     val IQualifiedNameProvider qualifiedNameProvider
     val IScopeProvider scopeProvider
     val IDLSpecification idl
-    val IGenerationSettingsProvider generationSettingsProvider
+    val IGenerationSettings generationSettings
     val Map<IProjectReference, Set<IProjectReference>> protobufProjectReferences
 
     val IProjectSet projectSet
@@ -51,33 +51,33 @@ class CppGenerator
     val smartPointerMap = new HashMap<EObject, Collection<EObject>>
 
     new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
-        IScopeProvider scopeProvider, IGenerationSettingsProvider generationSettingsProvider,
+        IScopeProvider scopeProvider, IGenerationSettings generationSettings,
         Map<ParameterBundle, Set<ParameterBundle>> protobufProjectReferences)
     {
         this.idl = idl
         this.fileSystemAccess = fileSystemAccess
-        this.qualifiedNameProvider = qualifiedNameProvider
-        this.scopeProvider = scopeProvider
+    this.qualifiedNameProvider = qualifiedNameProvider
+    this.scopeProvider = scopeProvider
 
-        this.projectSet = generationSettingsProvider.projectSetFactory.create
-        this.protobufProjectReferences = protobufProjectReferences?.entrySet?.toMap([projectSet.resolve(it.key)], [
-            value.map[projectSet.resolve(it)].toSet
-        ])
-        this.moduleStructureStrategy = generationSettingsProvider.moduleStructureStrategy
-        this.generationSettingsProvider = generationSettingsProvider
-    }
+    this.projectSet = generationSettings.projectSetFactory.create
+    this.protobufProjectReferences = protobufProjectReferences?.entrySet?.toMap([projectSet.resolve(it.key)], [
+        value.map[projectSet.resolve(it)].toSet
+    ])
+    this.moduleStructureStrategy = generationSettings.moduleStructureStrategy
+    this.generationSettings = generationSettings
+}
 
     def void doGenerate()
     {
         // iterate module by module and generate included content
         for (module : this.idl.modules)
         {
-            processModule(module, generationSettingsProvider.projectTypes)
+            processModule(module, generationSettings.projectTypes)
 
             // only for the top-level modules, produce a parent project file
             if (projectSet instanceof CMakeProjectSet)
             {
-                new CMakeTopLevelProjectFileGenerator(fileSystemAccess, generationSettingsProvider,
+                new CMakeTopLevelProjectFileGenerator(fileSystemAccess, generationSettings,
                     projectSet, module).generate()
             }
         }
@@ -95,10 +95,10 @@ class CppGenerator
                     qualifiedNameProvider,
                     scopeProvider,
                     idl,
-                    generationSettingsProvider.projectSetFactory,
+                    generationSettings.projectSetFactory,
                     projectSet,
                     moduleStructureStrategy,
-                    generationSettingsProvider,
+                    generationSettings,
                     smartPointerMap,
                     module
                 ).generate()
@@ -121,10 +121,10 @@ class CppGenerator
                         qualifiedNameProvider,
                         scopeProvider,
                         idl,
-                        generationSettingsProvider.projectSetFactory,
+                        generationSettings.projectSetFactory,
                         projectSet,
                         moduleStructureStrategy,
-                        generationSettingsProvider,
+                        generationSettings,
                         smartPointerMap,
                         projectType,
                         module
@@ -138,10 +138,10 @@ class CppGenerator
                         qualifiedNameProvider,
                         scopeProvider,
                         idl,
-                        generationSettingsProvider.projectSetFactory,
+                        generationSettings.projectSetFactory,
                         projectSet,
                         moduleStructureStrategy,
-                        generationSettingsProvider,
+                        generationSettings,
                         smartPointerMap,
                         module
                     ).generate()
@@ -157,10 +157,10 @@ class CppGenerator
                     qualifiedNameProvider,
                     scopeProvider,
                     idl,
-                    generationSettingsProvider.projectSetFactory,
+                    generationSettings.projectSetFactory,
                     projectSet,
                     moduleStructureStrategy,
-                    generationSettingsProvider,
+                    generationSettings,
                     protobufProjectReferences.get(new ParameterBundle.Builder().with(module.moduleStack).
                         with(ProjectType.PROTOBUF).build),
                     smartPointerMap,
@@ -176,10 +176,10 @@ class CppGenerator
                     qualifiedNameProvider,
                     scopeProvider,
                     idl,
-                    generationSettingsProvider.projectSetFactory,
+                    generationSettings.projectSetFactory,
                     projectSet,
                     moduleStructureStrategy,
-                    generationSettingsProvider,
+                    generationSettings,
                     smartPointerMap,
                     module
                 ).generate()

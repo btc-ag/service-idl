@@ -34,13 +34,18 @@ class AbstractGeneratorTest
     @Inject IGenerationSettingsProvider generationSettingsProvider
 
     def void checkGenerators(CharSequence input, Set<ArtifactNature> artifactNatures, Set<ProjectType> projectTypes,
-        int fileCount, Map<String, String> contents)
+        String projectSystem, int fileCount, Map<String, String> contents)
     {
         val spec = input.parse
         val fsa = new InMemoryFileSystemAccess
+
         val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.projectTypes = new HashSet<ProjectType>(projectTypes)
-        defaultGenerationSettingsProvider.languages = new HashSet<ArtifactNature>(artifactNatures)
+        val overrides = new DefaultGenerationSettingsProvider.OptionalGenerationSettings
+        overrides.projectTypes = new HashSet<ProjectType>(projectTypes)
+        overrides.languages = new HashSet<ArtifactNature>(artifactNatures)
+        overrides.projectSystem = projectSystem
+        defaultGenerationSettingsProvider.configureOverrides(overrides)
+
         underTest.doGenerate(spec.eResource, fsa, new GeneratorContext)
         println(fsa.textFiles.keySet.join("\n"))
         assertEquals(fileCount, fsa.textFiles.size)

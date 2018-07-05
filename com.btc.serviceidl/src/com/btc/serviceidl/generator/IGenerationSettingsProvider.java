@@ -10,19 +10,8 @@
 **********************************************************************/
 package com.btc.serviceidl.generator;
 
-import java.util.Set;
+import org.eclipse.emf.ecore.resource.Resource;
 
-import com.btc.serviceidl.generator.common.ArtifactNature;
-import com.btc.serviceidl.generator.common.ProjectType;
-import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy;
-import com.btc.serviceidl.generator.cpp.IProjectSetFactory;
-
-public interface IGenerationSettingsProvider extends ITargetVersionProvider {
-    Set<ArtifactNature> getLanguages();
-
-    Set<ProjectType> getProjectTypes();
-
-    IProjectSetFactory getProjectSetFactory();
-
-    IModuleStructureStrategy getModuleStructureStrategy();
+public interface IGenerationSettingsProvider {
+    IGenerationSettings getSettings(Resource resource);
 }
