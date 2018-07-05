@@ -23,6 +23,7 @@ import static extension com.btc.serviceidl.generator.cpp.Util.*
 
 class PrinsModuleStructureStrategy implements IModuleStructureStrategy
 {
+    public static val MODULES_HEADER_PATH_PREFIX = "modules"
 
     // TODO it is not correct here to distinguish based on the ProjectType, the Codec is also in the PROTOBUF project!
     override getIncludeFilePath(Iterable<ModuleDeclaration> module_stack, ProjectType project_type, String baseName,
@@ -45,7 +46,7 @@ class PrinsModuleStructureStrategy implements IModuleStructureStrategy
 
     override getProjectDir(ParameterBundle paramBundle)
     {
-        new Path(ReferenceResolver.MODULES_HEADER_PATH_PREFIX).append(
+        new Path(MODULES_HEADER_PATH_PREFIX).append(
             GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP))
     }
 

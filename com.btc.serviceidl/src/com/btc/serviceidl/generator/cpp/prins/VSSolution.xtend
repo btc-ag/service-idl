@@ -72,7 +72,8 @@ class VSSolution implements IProjectSet
     {
         // TODO this depends on the implementation of ProjectGeneratorBaseBase.getProjectPath
         // TODO check if the else branch is valid
-        var effectiveProjectPath = if (projectPath.segment(0) == ReferenceResolver.MODULES_HEADER_PATH_PREFIX)
+        var effectiveProjectPath = if (projectPath.segment(0) ==
+                PrinsModuleStructureStrategy.MODULES_HEADER_PATH_PREFIX)
                 projectPath.removeFirstSegments(1)
             else
                 projectPath
