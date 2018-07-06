@@ -13,7 +13,6 @@ package com.btc.serviceidl.generator.java
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.util.Constants
-import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.java.BasicJavaSourceGenerator.*
@@ -74,7 +73,7 @@ class ClientConsoleGenerator
         
               logger.info("Client started...");
               try {
-                 proxy = «typeResolver.resolve(basicJavaSourceGenerator.mavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.PROXY)) + '''.«interface_declaration.name»ProxyFactory''')».createDirectProtobufProxy(client);
+                 proxy = «typeResolver.resolve(basicJavaSourceGenerator.typeResolver.resolvePackage(interface_declaration, ProjectType.PROXY) + '''.«interface_declaration.name»ProxyFactory''')».createDirectProtobufProxy(client);
               } catch (Exception e) {
                  logger.error("Could not create proxy! Error: " + e.toString());
               }

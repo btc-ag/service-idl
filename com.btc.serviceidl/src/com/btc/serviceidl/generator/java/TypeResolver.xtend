@@ -21,7 +21,6 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
 import java.util.HashSet
-import java.util.Optional
 import java.util.Set
 import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EObject
@@ -46,7 +45,7 @@ class TypeResolver
     val IQualifiedNameProvider qualified_name_provider
     val Set<MavenDependency> dependencies
 
-    @Accessors(PUBLIC_GETTER) val MavenResolver mavenResolver
+    val MavenResolver mavenResolver
 
     val fully_qualified = false // we want the toString method show short names by default!
 
@@ -59,7 +58,7 @@ class TypeResolver
     {
         val fully_qualified_name = QualifiedName.create(name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
         referenced_types.add(name)
-        val dependency = MavenResolver.resolveDependency(name)
+        val dependency = MavenResolver.resolveExternalDependency(name)
         if (dependency.present) dependencies.add(dependency.get)
         return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, false)
     }
@@ -144,15 +143,14 @@ class TypeResolver
             return new ResolvedName(Names.plain(element), TransformType.PACKAGE, fully_qualified)
         }
 
-        val effective_name = mavenResolver.resolvePackage(element, Optional.of(project_type)) +
-            TransformType.PACKAGE.separator + if (element instanceof InterfaceDeclaration)
+        val effective_name = resolvePackage(element, project_type) + TransformType.PACKAGE.separator +
+            if (element instanceof InterfaceDeclaration)
                 project_type.getClassName(ArtifactNature.JAVA, name.lastSegment)
             else if (element instanceof EventDeclaration) getObservableName(element) else name.lastSegment
         val fully_qualified_name = QualifiedName.create(
             effective_name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
 
         referenced_types.add(fully_qualified_name.toString)
-        dependencies.add(mavenResolver.resolveDependency(element))
 
         return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, fully_qualified)
     }
@@ -177,6 +175,13 @@ class TypeResolver
             throw new IllegalArgumentException("No named observable for anonymous events!")
 
         event.name.toFirstUpper + "Observable"
+    }
+
+    def resolvePackage(EObject container, ProjectType projectType)
+    {
+        val dependency = mavenResolver.resolveDependency(container, projectType)
+        addDependency(dependency)
+        dependency.artifactId
     }
 
 }

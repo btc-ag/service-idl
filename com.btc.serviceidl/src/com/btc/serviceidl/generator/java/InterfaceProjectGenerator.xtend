@@ -18,7 +18,6 @@ import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.google.common.collect.Sets
-import java.util.Optional
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -56,16 +55,18 @@ class InterfaceProjectGenerator extends BasicProjectGenerator
                 typedefTable.computeIfAbsent(typeAlias.name, [typeResolver.resolve(typeAlias.type)])
             }
 
-            activeProjectTypes.forEach[generateProject(paramBundle, it, interfaceDeclaration)]
-            generatePOM(interfaceDeclaration)
+            for (projectType : activeProjectTypes)
+            {
+                generateProject(paramBundle, projectType, interfaceDeclaration)
+                generatePOM(interfaceDeclaration, projectType)
+            }
         }
     }
 
     private def void generateProject(ParameterBundle containerParamBundle, ProjectType projectType,
         InterfaceDeclaration interfaceDeclaration)
     {
-        val mavenType = if (projectType == ProjectType.TEST || projectType == ProjectType.SERVER_RUNNER ||
-                projectType == ProjectType.CLIENT_CONSOLE)
+        val mavenType = if (projectType == ProjectType.TEST)
                 MavenArtifactType.TEST_JAVA
             else
                 MavenArtifactType.MAIN_JAVA
@@ -162,7 +163,7 @@ class InterfaceProjectGenerator extends BasicProjectGenerator
       )
       
       fileSystemAccess.generateFile(
-         makeProjectSourcePath(interfaceDeclaration, ProjectType.CLIENT_CONSOLE, MavenArtifactType.TEST_RESOURCES, PathType.ROOT).append(log4jName).toPortableString,
+         makeProjectSourcePath(interfaceDeclaration, ProjectType.TEST, MavenArtifactType.TEST_RESOURCES, PathType.ROOT).append(log4jName).toPortableString,
          ArtifactNature.JAVA.label,
          ConfigFilesGenerator.generateLog4jProperties()
       )
@@ -206,7 +207,7 @@ class InterfaceProjectGenerator extends BasicProjectGenerator
          interfaceDeclaration, [basicJavaSourceGenerator|new ServerRunnerGenerator(basicJavaSourceGenerator).generateServerRunnerImplementation(serverRunnerName, interfaceDeclaration)]
       )
       
-      val packageName = mavenResolver.resolvePackage(interfaceDeclaration, Optional.of(ProjectType.SERVER_RUNNER))
+      val packageName = mavenResolver.registerPackage(interfaceDeclaration, ProjectType.SERVER_RUNNER)
       val testResourcesPath = makeProjectSourcePath(interfaceDeclaration, ProjectType.SERVER_RUNNER, MavenArtifactType.TEST_RESOURCES, PathType.ROOT)
       fileSystemAccess.generateFile(
          testResourcesPath.append(beansName).toPortableString,
