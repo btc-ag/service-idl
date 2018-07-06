@@ -314,8 +314,6 @@ class CppGeneratorTest extends AbstractGeneratorTest
             cab_add_project(${CMAKE_CURRENT_LIST_DIR})            
         ''')
 
-        // TODO the dependencies on BTC.CAB.ServiceComm should be removed from the ServiceAPI. 
-        // I am not sure where they come from.
         checkGenerators(TestData.basic, projectTypes, Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE, fileCount, contents)
     }
 
