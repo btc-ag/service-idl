@@ -67,8 +67,8 @@ class JavaGenerator
         }
 
         // process nested modules
-        for (nested_module : module.nestedModules)
-            processModule(nested_module)
+        for (nestedModule : module.nestedModules)
+            processModule(nestedModule)
     }
 
     private def void generateModuleContents(ModuleDeclaration module)
