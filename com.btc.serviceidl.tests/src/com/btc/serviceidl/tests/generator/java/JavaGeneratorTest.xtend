@@ -412,32 +412,6 @@ public class TypesCodec {
                   <protobuf.version>3.1.0</protobuf.version>
                </properties>
                
-               <repositories>
-                  <repository>
-                     <id>cab-maven-resolver</id>
-                     <url>https://artifactory.bop-dev.de/artifactory/cab-maven-resolver/</url>
-                     <releases>
-                        <enabled>true</enabled>
-                     </releases>
-                     <snapshots>
-                         <enabled>false</enabled>
-                     </snapshots>
-                  </repository>
-               </repositories>
-               
-               <pluginRepositories>
-                  <pluginRepository>
-                     <id>cab-maven-plugin-resolver</id>
-                     <url>https://artifactory.bop-dev.de/artifactory/cab-maven-resolver/</url>
-                     <releases>
-                        <enabled>true</enabled>
-                     </releases>
-                     <snapshots>
-                         <enabled>false</enabled>
-                     </snapshots>
-                  </pluginRepository>
-               </pluginRepositories>
-            
                <distributionManagement>
                <repository>
                   <id>cab-maven</id>

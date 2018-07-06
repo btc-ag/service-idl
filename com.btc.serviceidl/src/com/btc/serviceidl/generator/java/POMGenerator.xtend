@@ -32,7 +32,6 @@ class POMGenerator
 
         // TODO depending on the target version, different protoc versions must be used
         // TODO use the https://github.com/xolstice/protobuf-maven-plugin instead
-        // TODO the maven resolver should not be specified here, but in the local maven settings. a plugin maven resolver should be specified in the same way
         // TODO when making ServiceComm OSS, the internal repository should be removed here entirely
         '''
             <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -65,33 +64,7 @@ class POMGenerator
                <os-maven-plugin.version>1.4.1.Final</os-maven-plugin.version>
                <protobuf.version>3.1.0</protobuf.version>
                </properties>
-               
-               <repositories>
-               <repository>
-                  <id>cab-maven-resolver</id>
-                  <url>https://artifactory.bop-dev.de/artifactory/cab-maven-resolver/</url>
-                  <releases>
-                     <enabled>true</enabled>
-                  </releases>
-                  <snapshots>
-                      <enabled>false</enabled>
-                  </snapshots>
-               </repository>
-               </repositories>
-               
-               <pluginRepositories>
-                  <pluginRepository>
-                     <id>cab-maven-plugin-resolver</id>
-                     <url>https://artifactory.bop-dev.de/artifactory/cab-maven-resolver/</url>
-                     <releases>
-                        <enabled>true</enabled>
-                     </releases>
-                     <snapshots>
-                         <enabled>false</enabled>
-                     </snapshots>
-                  </pluginRepository>
-               </pluginRepositories>
-            
+                           
                <distributionManagement>
                <repository>
                   <id>cab-maven</id>
