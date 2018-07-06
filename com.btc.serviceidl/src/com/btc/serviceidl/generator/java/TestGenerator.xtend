@@ -179,7 +179,7 @@ class TestGenerator
                     connectionFactory).create(connectionString);
         
                  logger.debug("Client started...");
-                 testSubject = «typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.PROXY)) + '''.«interface_declaration.name»ProxyFactory''')»
+                 testSubject = «typeResolver.resolve(basicJavaSourceGenerator.mavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.PROXY)) + '''.«interface_declaration.name»ProxyFactory''')»
                        .createDirectProtobufProxy(_clientEndpoint);
         
                  logger.debug("«interface_declaration.name» instantiated...");

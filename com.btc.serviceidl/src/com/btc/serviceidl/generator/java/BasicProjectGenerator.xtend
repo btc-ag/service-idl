@@ -54,26 +54,27 @@ abstract class BasicProjectGenerator
     val IGenerationSettingsProvider generationSettingsProvider
     val Map<EObject, String> protobufArtifacts
     val IDLSpecification idl
+    val MavenResolver mavenResolver
 
     val dependencies = new HashSet<MavenDependency>
     val typedefTable = new HashMap<String, ResolvedName>
 
     protected def createTypeResolver(ParameterBundle paramBundle)
     {
-        new TypeResolver(qualifiedNameProvider, paramBundle, dependencies)
+        new TypeResolver(qualifiedNameProvider, dependencies, mavenResolver)
     }
 
     protected def void generatePOM(EObject container)
     {
         val pom_path = makeProjectRootPath(container).append("pom".xml)
         fileSystemAccess.generateFile(pom_path.toPortableString, ArtifactNature.JAVA.label,
-            new POMGenerator(generationSettingsProvider).generatePOMContents(container, dependencies,
+            new POMGenerator(generationSettingsProvider, mavenResolver).generatePOMContents(container, dependencies,
                 protobufArtifacts?.get(container)))
     }
 
     private def IPath makeProjectRootPath(EObject container)
     {
-        Path.fromPortableString(MavenResolver.getArtifactId(container))
+        Path.fromPortableString(mavenResolver.getArtifactId(container))
     }
 
    protected def IPath makeProjectSourcePath(EObject container, ProjectType projectType, MavenArtifactType mavenType, PathType pathType)
@@ -146,7 +147,7 @@ abstract class BasicProjectGenerator
    private def generateSourceFile(EObject container, ProjectType projectType, TypeResolver typeResolver, CharSequence mainContents)
    {
       '''
-      package «MavenResolver.resolvePackage(container, Optional.of(projectType))»;
+      package «mavenResolver.resolvePackage(container, Optional.of(projectType))»;
       
       «FOR reference : typeResolver.referenced_types.sort AFTER System.lineSeparator»
          import «reference»;
@@ -159,7 +160,7 @@ abstract class BasicProjectGenerator
    protected def createBasicJavaSourceGenerator(ParameterBundle paramBundle)
    {
       new BasicJavaSourceGenerator(qualifiedNameProvider, generationSettingsProvider,
-            createTypeResolver(paramBundle), idl, typedefTable)
+            createTypeResolver(paramBundle), idl, typedefTable, mavenResolver)
    }
 }
 

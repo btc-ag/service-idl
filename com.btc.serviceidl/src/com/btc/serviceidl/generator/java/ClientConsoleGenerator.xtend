@@ -74,7 +74,7 @@ class ClientConsoleGenerator
         
               logger.info("Client started...");
               try {
-                 proxy = «typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.PROXY)) + '''.«interface_declaration.name»ProxyFactory''')».createDirectProtobufProxy(client);
+                 proxy = «typeResolver.resolve(basicJavaSourceGenerator.mavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.PROXY)) + '''.«interface_declaration.name»ProxyFactory''')».createDirectProtobufProxy(client);
               } catch (Exception e) {
                  logger.error("Could not create proxy! Error: " + e.toString());
               }

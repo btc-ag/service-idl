@@ -206,7 +206,7 @@ class InterfaceProjectGenerator extends BasicProjectGenerator
          interfaceDeclaration, [basicJavaSourceGenerator|new ServerRunnerGenerator(basicJavaSourceGenerator).generateServerRunnerImplementation(serverRunnerName, interfaceDeclaration)]
       )
       
-      val packageName = MavenResolver.resolvePackage(interfaceDeclaration, Optional.of(ProjectType.SERVER_RUNNER))
+      val packageName = mavenResolver.resolvePackage(interfaceDeclaration, Optional.of(ProjectType.SERVER_RUNNER))
       val testResourcesPath = makeProjectSourcePath(interfaceDeclaration, ProjectType.SERVER_RUNNER, MavenArtifactType.TEST_RESOURCES, PathType.ROOT)
       fileSystemAccess.generateFile(
          testResourcesPath.append(beansName).toPortableString,

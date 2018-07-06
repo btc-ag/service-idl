@@ -26,13 +26,19 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.util.Constants
 
 import static extension com.btc.serviceidl.util.Util.*
+import java.util.HashSet
+import org.eclipse.xtend.lib.annotations.Accessors
 
+@Accessors(PUBLIC_GETTER)
 class MavenResolver
 {
+    val String groupId
+    val registeredPackages = new HashSet<String>
+
     // constants
     public static val DEFAULT_VERSION = "0.0.1"
 
-    static def MavenDependency resolveDependency(EObject element)
+    def MavenDependency resolveDependency(EObject element)
     {
         val name = resolvePackage(element, Optional.empty)
         val version = resolveVersion(element.scopeDeterminant)
@@ -109,8 +115,9 @@ class MavenResolver
      * For a given element, which is expected to be either module or interface,
      * returns the appropriate version string (default is 0.0.1)
      */
-    static def String resolveVersion(EObject element)
+    def String resolveVersion(EObject element)
     {
+        // TODO the version must be parametrizable
         if (element instanceof InterfaceDeclaration)
         {
             return element.version ?: DEFAULT_VERSION
@@ -119,18 +126,26 @@ class MavenResolver
         return DEFAULT_VERSION
     }
 
-    static def String resolvePackage(EObject element, Optional<ProjectType> project_type)
+    def String resolvePackage(EObject element, Optional<ProjectType> project_type)
+    {
+        val packageId = makePackageId(element, project_type)
+        this.registeredPackages.add(packageId)
+        packageId
+    }
+
+    def getArtifactId(EObject container)
+    {
+        resolvePackage(container, Optional.empty)
+    }
+
+    // TODO consider making this private, I am not sure if the external uses are correct
+    static def makePackageId(EObject element, Optional<ProjectType> project_type)
     {
         val scopeDeterminant = element.scopeDeterminant
-        return String.join(Constants.SEPARATOR_PACKAGE, #[
+        String.join(Constants.SEPARATOR_PACKAGE, #[
             GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(scopeDeterminant.moduleStack).build,
                 ArtifactNature.JAVA, TransformType.PACKAGE)
         ] + (if (scopeDeterminant instanceof InterfaceDeclaration) #[scopeDeterminant.name.toLowerCase] else #[]) +
             if (project_type.present) #[project_type.get.getName.toLowerCase] else #[])
     }
-    
-    static def getArtifactId(EObject container) {
-        resolvePackage(container, Optional.empty)
-    }
-    
 }

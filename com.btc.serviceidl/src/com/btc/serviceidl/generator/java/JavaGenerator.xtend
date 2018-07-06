@@ -34,6 +34,7 @@ class JavaGenerator
     val Map<EObject, String> protobufArtifacts
     val IGenerationSettingsProvider generationSettingsProvider
     val IDLSpecification idl
+    val MavenResolver mavenResolver
 
     new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IGenerationSettingsProvider generationSettingsProvider, Map<EObject, String> protobufArtifacts)
@@ -43,6 +44,8 @@ class JavaGenerator
         this.qualifiedNameProvider = qualifiedNameProvider
         this.protobufArtifacts = protobufArtifacts
         this.generationSettingsProvider = generationSettingsProvider
+
+        mavenResolver = new MavenResolver(this.idl.eResource.URI.lastSegment) // TODO this must be customizable
     }
 
     def void doGenerate()
@@ -52,6 +55,13 @@ class JavaGenerator
         {
             processModule(module)
         }
+
+        generateParentPOM
+    }
+
+    private def void generateParentPOM()
+    {
+        new ParentPOMGenerator(fileSystemAccess, mavenResolver).generate
     }
 
     private def void processModule(ModuleDeclaration module)
@@ -74,7 +84,7 @@ class JavaGenerator
     private def void generateModuleContents(ModuleDeclaration module)
     {
         new ModuleProjectGenerator(fileSystemAccess, qualifiedNameProvider, generationSettingsProvider,
-            protobufArtifacts, idl, module).generate
+            protobufArtifacts, idl, mavenResolver, module).generate
     }
 
     private def void generateInterfaceProjects(ModuleDeclaration module)
@@ -82,7 +92,7 @@ class JavaGenerator
         for (interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
             new InterfaceProjectGenerator(fileSystemAccess, qualifiedNameProvider, generationSettingsProvider,
-                protobufArtifacts, idl, interfaceDeclaration).generate
+                protobufArtifacts, idl, mavenResolver, interfaceDeclaration).generate
         }
     }
 

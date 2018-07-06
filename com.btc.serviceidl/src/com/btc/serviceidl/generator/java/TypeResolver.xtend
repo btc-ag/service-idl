@@ -12,7 +12,6 @@ package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.Names
-import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
@@ -34,6 +33,7 @@ import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
+@Accessors(NONE)
 class TypeResolver
 {
     // TODO the idea of collecting types to import them is problematic, while it might improve 
@@ -41,23 +41,15 @@ class TypeResolver
     // code is not intended to be read, at least user-defined types could never be imported, 
     // which avoids problems with conflicts. Apart from that, this seems like a recurring 
     // problem when generating Java code using Xtext. Perhaps there is some reusable solution? 
-    @Accessors(PUBLIC_GETTER)
-    val referenced_types = new HashSet<String>
+    @Accessors(PUBLIC_GETTER) val referenced_types = new HashSet<String>
 
     val IQualifiedNameProvider qualified_name_provider
-    val ParameterBundle param_bundle
     val Set<MavenDependency> dependencies
+
+    @Accessors(PUBLIC_GETTER) val MavenResolver mavenResolver
 
     val fully_qualified = false // we want the toString method show short names by default!
 
-    new(IQualifiedNameProvider qualified_name_provider, ParameterBundle param_bundle,
-        Set<MavenDependency> dependencies)
-    {
-        this.qualified_name_provider = qualified_name_provider
-        this.param_bundle = param_bundle
-        this.dependencies = dependencies
-    }
-    
     def addDependency(MavenDependency dependency)
     {
         dependencies.add(dependency)
@@ -131,9 +123,10 @@ class TypeResolver
                 }
                 else if (element.referenceType !== null)
                 {
-                    return resolve(element.referenceType.ultimateType,
-                        if (project_type != ProjectType.PROTOBUF) element.referenceType.
-                            mainProjectType else project_type)
+                    return resolve(element.referenceType.ultimateType, if (project_type != ProjectType.PROTOBUF)
+                        element.referenceType.mainProjectType
+                    else
+                        project_type)
                 }
             }
             else if (element instanceof PrimitiveType)
@@ -151,7 +144,7 @@ class TypeResolver
             return new ResolvedName(Names.plain(element), TransformType.PACKAGE, fully_qualified)
         }
 
-        val effective_name = MavenResolver.resolvePackage(element, Optional.of(project_type)) +
+        val effective_name = mavenResolver.resolvePackage(element, Optional.of(project_type)) +
             TransformType.PACKAGE.separator + if (element instanceof InterfaceDeclaration)
                 project_type.getClassName(ArtifactNature.JAVA, name.lastSegment)
             else if (element instanceof EventDeclaration) getObservableName(element) else name.lastSegment
@@ -159,7 +152,7 @@ class TypeResolver
             effective_name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
 
         referenced_types.add(fully_qualified_name.toString)
-        dependencies.add(MavenResolver.resolveDependency(element))
+        dependencies.add(mavenResolver.resolveDependency(element))
 
         return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, fully_qualified)
     }

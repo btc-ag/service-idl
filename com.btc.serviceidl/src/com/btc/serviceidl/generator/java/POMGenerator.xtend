@@ -18,6 +18,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 class POMGenerator
 {
     val ITargetVersionProvider targetVersionProvider
+    val MavenResolver mavenResolver
 
     private def getTargetVersion()
     {
@@ -26,9 +27,9 @@ class POMGenerator
 
     def String generatePOMContents(EObject container, Iterable<MavenDependency> dependencies, String protobuf_file)
     {
-        val artifactId = MavenResolver.getArtifactId(container)
-        val groupId = artifactId // TODO this must be changed when generating a parent POM
-        val version = MavenResolver.resolveVersion(container)
+        val artifactId = mavenResolver.getArtifactId(container)
+        val groupId = mavenResolver.groupId
+        val version = mavenResolver.resolveVersion(container)
 
         // TODO depending on the target version, different protoc versions must be used
         // TODO use the https://github.com/xolstice/protobuf-maven-plugin instead

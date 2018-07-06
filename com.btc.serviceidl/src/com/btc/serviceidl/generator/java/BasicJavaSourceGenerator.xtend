@@ -48,6 +48,7 @@ class BasicJavaSourceGenerator
     val TypeResolver typeResolver
     val IDLSpecification idl
     val Map<String, ResolvedName> typedef_table
+    val MavenResolver mavenResolver
 
     def getTargetVersion()
     {

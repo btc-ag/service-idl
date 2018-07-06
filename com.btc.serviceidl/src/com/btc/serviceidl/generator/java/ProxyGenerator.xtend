@@ -81,7 +81,7 @@ class ProxyGenerator
                   // ServiceFaultHandler
                   _serviceReference
                .getServiceFaultHandlerManager()
-               .registerHandler(«typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.SERVICE_API)) + '''.«interface_declaration.asServiceFaultHandlerFactory»''')».createServiceFaultHandler());
+               .registerHandler(«typeResolver.resolve(basicJavaSourceGenerator.mavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.SERVICE_API)) + '''.«interface_declaration.asServiceFaultHandlerFactory»''')».createServiceFaultHandler());
                }
                
                «IF deserializerType !== null»
@@ -154,11 +154,11 @@ class ProxyGenerator
                   «request_message».newBuilder()
                   «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
                       «val use_codec = GeneratorUtil.useCodec(param.paramType, ArtifactNature.JAVA)»
-                      «var codec = resolveCodec(param.paramType)»
+                      «var codec = resolveCodec(param.paramType, basicJavaSourceGenerator.mavenResolver)»
                       «val is_sequence = param.paramType.isSequenceType»
                       «val is_failable = is_sequence && param.paramType.isFailable»
                       «val method_name = '''«IF is_sequence»addAll«ELSE»set«ENDIF»«param.paramName.asJavaProtobufName»'''»
-                  .«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(typeResolver, param.paramType, Optional.empty)») «ENDIF»«codec».encode«IF is_failable»Failable«ENDIF»(«ENDIF»«param.paramName»«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, param.paramType, interface_declaration)».class«ENDIF»«IF use_codec»)«ENDIF»)
+                  .«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(typeResolver, param.paramType, Optional.empty)») «ENDIF»«codec».encode«IF is_failable»Failable«ENDIF»(«ENDIF»«param.paramName»«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.mavenResolver, basicJavaSourceGenerator.qualified_name_provider, param.paramType, interface_declaration)».class«ENDIF»«IF use_codec»)«ENDIF»)
                «ENDFOR»
                .build();
                
@@ -178,7 +178,7 @@ class ProxyGenerator
                          
                          // handle [out] parameters
                          «FOR out_param : out_params»
-                             «val codec = resolveCodec(out_param.paramType)»
+                             «val codec = resolveCodec(out_param.paramType, basicJavaSourceGenerator.mavenResolver)»
                              «val temp_param_name = '''_«out_param.paramName.toFirstLower»'''»
                              «val param_name = out_param.paramName.asParameter»
                              «IF !out_param.paramType.isSequenceType»
@@ -193,7 +193,7 @@ class ProxyGenerator
                              
                          «ENDFOR»
                      «ENDIF»
-                     «val codec = resolveCodec(function.returnedType)»
+                     «val codec = resolveCodec(function.returnedType, basicJavaSourceGenerator.mavenResolver)»
                      «val is_byte = function.returnedType.isByte»
                      «val is_short = function.returnedType.isInt16»
                      «val is_char = function.returnedType.isChar»

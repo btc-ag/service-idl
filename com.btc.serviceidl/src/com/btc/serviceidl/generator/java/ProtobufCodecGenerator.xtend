@@ -1,13 +1,13 @@
 /*********************************************************************
-* \author see AUTHORS file
-* \copyright 2015-2018 BTC Business Technology Consulting AG and others
-*
-* This program and the accompanying materials are made
-* available under the terms of the Eclipse Public License 2.0
-* which is available at https://www.eclipse.org/legal/epl-2.0/
-*
-* SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+ * \author see AUTHORS file
+ * \copyright 2015-2018 BTC Business Technology Consulting AG and others
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
+ **********************************************************************/
 package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.common.ArtifactNature
@@ -51,8 +51,8 @@ class ProtobufCodecGenerator
         val byte_buffer = typeResolver.resolve("java.nio.ByteBuffer")
         val i_error = typeResolver.resolve(JavaClassNames.ERROR)
         val service_fault_handler_factory = typeResolver.resolve(
-            MavenResolver.resolvePackage(container, Optional.of(container.mainProjectType)) + "." +
-                container.asServiceFaultHandlerFactory)
+            basicJavaSourceGenerator.mavenResolver.resolvePackage(container, Optional.of(container.mainProjectType)) +
+                "." + container.asServiceFaultHandlerFactory)
         val completable_future = typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)
         val method = typeResolver.resolve("java.lang.reflect.Method")
         val collection = typeResolver.resolve(JavaClassNames.COLLECTION)
@@ -334,7 +334,7 @@ class ProtobufCodecGenerator
         '''
             «protobuf_type_name» typedData = («protobuf_type_name») encodedData;
             «FOR member : members»
-                «val codec = resolveCodec(member.type)»
+                «val codec = resolveCodec(member.type, basicJavaSourceGenerator.mavenResolver)»
                 «val is_sequence = member.type.isSequenceType»
                 «val is_failable = is_sequence && member.type.isFailable»
                 «val is_byte = member.type.isByte»
@@ -407,16 +407,16 @@ class ProtobufCodecGenerator
                 «IF member.optional»
                     if (typedData.get«typeResolver.resolve(JavaClassNames.OPTIONAL).alias(commonName)»().isPresent())
                     {
-                        builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«protobufName»().get()«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF use_codec»)«ENDIF»);
+                    builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«protobufName»().get()«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.mavenResolver, basicJavaSourceGenerator.qualified_name_provider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF use_codec»)«ENDIF»);
                     }
                 «ELSE»
-                builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«commonName»()«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF use_codec»)«ENDIF»);
+                builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«commonName»()«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.mavenResolver, basicJavaSourceGenerator.qualified_name_provider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF use_codec»)«ENDIF»);
                «ENDIF»
             «ENDFOR»
             return builder.build();
         '''
     }
-    
+
     // TODO change this to accept an IDL element rather than a bare string
     private static def getCommonName(MemberElementWrapper member)
     {

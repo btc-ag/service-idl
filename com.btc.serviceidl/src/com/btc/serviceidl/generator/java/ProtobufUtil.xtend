@@ -51,10 +51,10 @@ class ProtobufUtil
         }
         else
         {
-            typeResolver.addDependency(MavenResolver.resolveDependency(object))
+            typeResolver.addDependency(typeResolver.mavenResolver.resolveDependency(object))
             new ResolvedName(
-                MavenResolver.resolvePackage(object, Optional.of(ProjectType.PROTOBUF)) + Constants.SEPARATOR_PACKAGE +
-                    getLocalName(object, optProtobufType), TransformType.PACKAGE)
+                typeResolver.mavenResolver.resolvePackage(object, Optional.of(ProjectType.PROTOBUF)) +
+                    Constants.SEPARATOR_PACKAGE + getLocalName(object, optProtobufType), TransformType.PACKAGE)
         }
     }
 
@@ -101,19 +101,19 @@ class ProtobufUtil
     }
 
     // TODO reconsider placement of this method
-    def static String resolveCodec(EObject object)
+    def static String resolveCodec(EObject object, MavenResolver mavenResolver)
     {
         val ultimateType = object.ultimateType
 
         String.join(Constants.SEPARATOR_PACKAGE,
-            #[MavenResolver.resolvePackage(ultimateType, Optional.of(ProjectType.PROTOBUF)), ultimateType.codecName])
+            #[mavenResolver.resolvePackage(ultimateType, Optional.of(ProjectType.PROTOBUF)), ultimateType.codecName])
     }
 
-    def static String resolveFailableProtobufType(IQualifiedNameProvider qualifiedNameProvider, EObject element,
-        EObject container)
+    def static String resolveFailableProtobufType(MavenResolver mavenResolver,
+        IQualifiedNameProvider qualifiedNameProvider, EObject element, EObject container)
     {
         return String.join(Constants.SEPARATOR_PACKAGE,
-            #[MavenResolver.resolvePackage(container, Optional.of(ProjectType.PROTOBUF))] + container.containerName +
+            #[mavenResolver.resolvePackage(container, Optional.of(ProjectType.PROTOBUF))] + container.containerName +
                 #[GeneratorUtil.asFailable(element, container, qualifiedNameProvider)])
     }
 
