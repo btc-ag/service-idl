@@ -43,7 +43,7 @@ AbstractContainerDeclaration:
 
 /* regular module */
 ModuleDeclaration:
-   (virtual ?= 'virtual')? (main ?= 'main')? 'module' name = ID '{' (moduleComponents += AbstractModuleComponent)* (nestedModules += ModuleDeclaration)* '}'
+   (virtual ?= 'virtual')? (main ?= 'main')? 'module' name = ID '{' (moduleComponents += AbstractModuleComponent | nestedModules += ModuleDeclaration)* '}'
 ;
 
 /* nested components which may occur within a regular module */
