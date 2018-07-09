@@ -1,0 +1,10 @@
+module foo {
+
+interface IntfA[guid=384E277A-C343-4F37-B910-C2CE6B37FC8E] {
+    DoSomethingA() returns void; 
+};
+
+interface IntfB[guid=f1721f8c-9201-4ad4-84a2-9b3696f60954] : IntfA {
+    DoSomethingB() returns void; 
+};
+}

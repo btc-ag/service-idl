@@ -1,0 +1,11 @@
+module Test {
+
+struct A {
+    string key;
+};
+    
+struct B : A {
+    optional string value;
+};
+
+}
