@@ -33,6 +33,7 @@ import java.util.ArrayList
 import java.util.Collection
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 
 class Extensions
 {
@@ -91,7 +92,7 @@ class Extensions
 
     static def boolean containsTypes(ModuleDeclaration module)
     {
-        module.moduleComponents.exists[o|!(o instanceof ModuleDeclaration) && !(o instanceof InterfaceDeclaration)]
+        module.moduleComponents.exists[o|!(o instanceof AbstractContainerDeclaration)]
     }
 
     static def boolean containsInterfaces(ModuleDeclaration module)
