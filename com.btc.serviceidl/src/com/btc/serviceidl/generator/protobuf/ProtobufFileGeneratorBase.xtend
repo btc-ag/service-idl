@@ -17,6 +17,7 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
@@ -119,8 +120,7 @@ class ProtobufFileGeneratorBase
 
     protected def dispatch String toText(StructDeclaration element, EObject context, EObject container, Counter id)
     {
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractStructuralDeclaration)
             '''
                 message «element.name»
                 {
