@@ -34,15 +34,15 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import static com.btc.serviceidl.generator.protobuf.ProtobufGeneratorUtil.*
 
 @Accessors(NONE)
-class ProtobufGenerator
+final class ProtobufGenerator
 {
    val Resource resource
-   val IFileSystemAccess file_system_access
-   val IQualifiedNameProvider qualified_name_provider
+   val IFileSystemAccess fileSystemAccess
+   val IQualifiedNameProvider qualifiedNameProvider
    val IModuleStructureStrategy moduleStructureStrategy
       
-   val generated_artifacts = new HashMap<EObject, String>
-   val typedef_table = new HashMap<String, String>
+   val generatedArtifacts = new HashMap<EObject, String>
+   val typedefTable = new HashMap<String, String>
    val allProjectReferences = new HashMap<ArtifactNature, Map<ParameterBundle, Set<ParameterBundle>>>
    
    def Map<ParameterBundle, Set<ParameterBundle>> getProjectReferences(ArtifactNature artifactNature)
@@ -52,50 +52,50 @@ class ProtobufGenerator
    
    def Map<EObject, String> getGeneratedArtifacts()
    {
-      return generated_artifacts
+      return generatedArtifacts
    }
    
     def void doGenerate(Iterable<ArtifactNature> languages) 
     {  
       // handle all interfaces
-      for (interface_declaration : resource.allContents.filter(InterfaceDeclaration).toIterable)
+      for (interfaceDeclaration : resource.allContents.filter(InterfaceDeclaration).toIterable)
       {
-         val artifact_name = interface_declaration.name
+         val artifactName = interfaceDeclaration.name
 
          // TODO why is the proto file generated for each language?
          for (language : languages)
-             generateProtobufFile(language, interface_declaration, artifact_name,
-                 new InterfaceProtobufFileGenerator(qualified_name_provider, moduleStructureStrategy,
-                     getProjectReferences(language), typedef_table, language).generateInterface(
-                     interface_declaration))
+             generateProtobufFile(language, interfaceDeclaration, artifactName,
+                 new InterfaceProtobufFileGenerator(qualifiedNameProvider, moduleStructureStrategy,
+                     getProjectReferences(language), typedefTable, language).generateInterface(
+                     interfaceDeclaration))
          
-         generated_artifacts.put(interface_declaration, artifact_name)
+         generatedArtifacts.put(interfaceDeclaration, artifactName)
       }
       
       // handle all module contents (excluding interfaces)
       for (module : resource.allContents.filter(ModuleDeclaration).filter[!isVirtual].toIterable)
       {
-         val module_contents = module.eContents.filter( [e | !(e instanceof ModuleDeclaration || e instanceof InterfaceDeclaration)])
-         if ( !module_contents.empty )
+         val moduleContents = module.eContents.filter( [e | !(e instanceof ModuleDeclaration || e instanceof InterfaceDeclaration)])
+         if ( !moduleContents.empty )
          {
-            val artifact_name = Constants.FILE_NAME_TYPES
+            val artifactName = Constants.FILE_NAME_TYPES
             
             for (language : languages)
-                    generateProtobufFile(language, module, artifact_name,
-                        new ModuleProtobufFileGenerator(qualified_name_provider, moduleStructureStrategy,
-                            getProjectReferences(language), typedef_table, language).generateModuleContent(module,
-                            module_contents))
+                    generateProtobufFile(language, module, artifactName,
+                        new ModuleProtobufFileGenerator(qualifiedNameProvider, moduleStructureStrategy,
+                            getProjectReferences(language), typedefTable, language).generateModuleContent(module,
+                            moduleContents))
             
-            generated_artifacts.put(module, artifact_name)
+            generatedArtifacts.put(module, artifactName)
          }
       }
    }
    
-   private def void generateProtobufFile(ArtifactNature an, EObject container, String artifact_name,
-        String file_content)
+   private def void generateProtobufFile(ArtifactNature artifactNature, EObject container, String artifactName,
+        String fileContent)
     {
-        file_system_access.generateFile(
-            makeProtobufPath(container, artifact_name, an, moduleStructureStrategy).toPortableString, an.label,
-            file_content)
+        fileSystemAccess.generateFile(
+            makeProtobufPath(container, artifactName, artifactNature, moduleStructureStrategy).toPortableString,
+            artifactNature.label, fileContent)
     }
 }
