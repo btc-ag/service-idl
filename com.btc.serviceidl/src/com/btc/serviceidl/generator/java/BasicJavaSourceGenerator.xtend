@@ -13,6 +13,7 @@ package com.btc.serviceidl.generator.java
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.generator.common.ResolvedName
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
@@ -39,7 +40,6 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.AbstractContainerDeclaration
 
 @Accessors(PACKAGE_GETTER)
 class BasicJavaSourceGenerator
@@ -351,10 +351,14 @@ class BasicJavaSourceGenerator
         name.toFirstLower
     }
 
+    static def getPrefix(AbstractContainerDeclaration container)
+    {
+        if (container instanceof InterfaceDeclaration) container.name else ""
+    }
+
     def static String asServiceFaultHandlerFactory(AbstractContainerDeclaration container)
     {
-        val name = if (container instanceof InterfaceDeclaration) container.name else ""
-        '''«name»ServiceFaultHandlerFactory'''
+        '''«container.prefix»ServiceFaultHandlerFactory'''
     }
 
     def static String makeDefaultMethodStub()
