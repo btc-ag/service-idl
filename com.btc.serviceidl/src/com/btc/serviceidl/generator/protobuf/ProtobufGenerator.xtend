@@ -19,6 +19,7 @@ package com.btc.serviceidl.generator.protobuf
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
@@ -69,7 +70,7 @@ final class ProtobufGenerator
       // handle all module contents (excluding interfaces)
       for (module : resource.allContents.filter(ModuleDeclaration).filter[!isVirtual].toIterable)
       {
-         val moduleContents = module.eContents.filter[!(it instanceof ModuleDeclaration || it instanceof InterfaceDeclaration)]
+         val moduleContents = module.eContents.reject[it instanceof AbstractContainerDeclaration]
          if ( !moduleContents.empty )
          {
              generateProtobufFileForEachLanguage(languages, module, Constants.FILE_NAME_TYPES, 
