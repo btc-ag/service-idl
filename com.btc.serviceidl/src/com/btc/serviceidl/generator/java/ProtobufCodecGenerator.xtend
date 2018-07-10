@@ -13,6 +13,7 @@ package com.btc.serviceidl.generator.java
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProtobufType
+import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
@@ -51,7 +52,7 @@ class ProtobufCodecGenerator
         val byte_buffer = typeResolver.resolve("java.nio.ByteBuffer")
         val i_error = typeResolver.resolve(JavaClassNames.ERROR)
         val service_fault_handler_factory = typeResolver.resolve(
-            typeResolver.resolvePackage(container, container.mainProjectType) + "." +
+            typeResolver.resolvePackage(container, container.mainProjectType) + TransformType.PACKAGE.separator +
                 container.asServiceFaultHandlerFactory)
         val completable_future = typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)
         val method = typeResolver.resolve("java.lang.reflect.Method")
@@ -407,8 +408,8 @@ class ProtobufCodecGenerator
                 «IF member.optional»
                     if (typedData.get«typeResolver.resolve(JavaClassNames.OPTIONAL).alias(commonName)»().isPresent())
                     {
-                builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«protobufName»().get()«IF is_failable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualified_name_provider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF use_codec»)«ENDIF»);
-                }
+                        builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«protobufName»().get()«IF is_failable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualified_name_provider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF use_codec»)«ENDIF»);
+                    }
                 «ELSE»
                 builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«commonName»()«IF is_failable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualified_name_provider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF use_codec»)«ENDIF»);
                «ENDIF»
