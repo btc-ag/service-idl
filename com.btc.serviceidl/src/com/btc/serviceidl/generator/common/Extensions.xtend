@@ -13,22 +13,24 @@ package com.btc.serviceidl.generator.common
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
-import com.btc.serviceidl.util.Util
 import org.eclipse.core.runtime.IPath
 import org.eclipse.emf.ecore.EObject
+
+import static extension com.btc.serviceidl.util.Util.*
 
 class Extensions
 {
     static def ProjectType getMainProjectType(EObject item)
     {
-        val scope_determinant = Util.getScopeDeterminant(item)
-        if (scope_determinant instanceof InterfaceDeclaration)
-            return ProjectType.SERVICE_API
-
-        if (scope_determinant instanceof ModuleDeclaration)
-            return ProjectType.COMMON
-
-        throw new IllegalArgumentException("Cannot determine main project type for " + item.toString)
+        switch (item.scopeDeterminant)
+        {
+            InterfaceDeclaration:
+                ProjectType.SERVICE_API
+            ModuleDeclaration:
+                ProjectType.COMMON
+            default:
+                throw new IllegalArgumentException("Cannot determine main project type for " + item.toString)
+        }
     }
 
     /**
