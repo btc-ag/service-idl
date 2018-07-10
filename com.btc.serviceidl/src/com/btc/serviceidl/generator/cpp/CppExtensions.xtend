@@ -42,10 +42,7 @@ class CppExtensions
     static def IPath getIncludeFilePath(EObject referenced_object, ProjectType project_type,
         IModuleStructureStrategy moduleStructureStrategy)
     {
-        val scope_determinant = if (referenced_object instanceof InterfaceDeclaration)
-                referenced_object
-            else
-                referenced_object.scopeDeterminant
+        val scope_determinant = referenced_object.scopeDeterminant
 
         val baseName = if (scope_determinant instanceof InterfaceDeclaration)
                 project_type.getClassName(ArtifactNature.CPP, Names.plain(scope_determinant))
