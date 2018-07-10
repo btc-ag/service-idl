@@ -68,10 +68,11 @@ class ProtobufUtil
             if (object instanceof FunctionDeclaration && Util.ensurePresentOrThrow(optProtobufType))
                 Names.plain(scopeDeterminant) + "_" + optProtobufType.get.getName + "_" + Names.plain(object) +
                     optProtobufType.get.getName
-            else if (scopeDeterminant instanceof ModuleDeclaration)
-                Constants.FILE_NAME_TYPES + Constants.SEPARATOR_PACKAGE + Names.plain(object)
             else
-                getOuterClassName(scopeDeterminant) + Constants.SEPARATOR_PACKAGE + Names.plain(object)
+                (if (scopeDeterminant instanceof ModuleDeclaration)
+                    Constants.FILE_NAME_TYPES
+                else
+                    getOuterClassName(scopeDeterminant)) + Constants.SEPARATOR_PACKAGE + Names.plain(object)
         }
     }
 
