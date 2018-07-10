@@ -50,6 +50,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 
 @Accessors(NONE)
 class BasicCppGenerator
@@ -157,8 +158,7 @@ class BasicCppGenerator
     def dispatch String toText(StructDeclaration item, EObject context)
     {
 
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractStructuralDeclaration)
         {
             val related_event = item.relatedEvent
             val makeCompareOperator = item.needsCompareOperator
@@ -205,8 +205,7 @@ class BasicCppGenerator
 
     def dispatch String toText(ExceptionDeclaration item, EObject context)
     {
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractStructuralDeclaration)
         {
             if (item.members.empty)
                 '''
