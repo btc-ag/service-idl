@@ -27,7 +27,6 @@ import com.btc.serviceidl.util.Util
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
-import java.util.Optional
 import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
 import org.eclipse.emf.ecore.EObject
@@ -54,31 +53,32 @@ abstract class BasicProjectGenerator
     val IGenerationSettingsProvider generationSettingsProvider
     val Map<EObject, String> protobufArtifacts
     val IDLSpecification idl
+    val MavenResolver mavenResolver
 
     val dependencies = new HashSet<MavenDependency>
     val typedefTable = new HashMap<String, ResolvedName>
 
     protected def createTypeResolver(ParameterBundle paramBundle)
     {
-        new TypeResolver(qualifiedNameProvider, paramBundle, dependencies)
+        new TypeResolver(qualifiedNameProvider, dependencies, mavenResolver)
     }
 
-    protected def void generatePOM(EObject container)
+    protected def void generatePOM(EObject container, ProjectType projectType)
     {
-        val pom_path = makeProjectRootPath(container).append("pom".xml)
+        val pom_path = makeProjectRootPath(container, projectType).append("pom".xml)
         fileSystemAccess.generateFile(pom_path.toPortableString, ArtifactNature.JAVA.label,
-            new POMGenerator(generationSettingsProvider).generatePOMContents(container, dependencies,
-                protobufArtifacts?.get(container)))
+            new POMGenerator(generationSettingsProvider, mavenResolver).generatePOMContents(container, projectType,
+            dependencies, if (projectType == ProjectType.PROTOBUF) protobufArtifacts?.get(container) else null))
     }
 
-    private def IPath makeProjectRootPath(EObject container)
+    private def IPath makeProjectRootPath(EObject container, ProjectType projectType)
     {
-        Path.fromPortableString(MavenResolver.getArtifactId(container))
+        Path.fromPortableString(MavenResolver.makePackageId(container, projectType))
     }
 
    protected def IPath makeProjectSourcePath(EObject container, ProjectType projectType, MavenArtifactType mavenType, PathType pathType)
    {      
-      var result = makeProjectRootPath(container).append(mavenType.directoryLayout)
+      var result = makeProjectRootPath(container, projectType).append(mavenType.directoryLayout)
       
       if (pathType == PathType.FULL)
       {
@@ -146,7 +146,7 @@ abstract class BasicProjectGenerator
    private def generateSourceFile(EObject container, ProjectType projectType, TypeResolver typeResolver, CharSequence mainContents)
    {
       '''
-      package «MavenResolver.resolvePackage(container, Optional.of(projectType))»;
+      package «mavenResolver.registerPackage(container, projectType)»;
       
       «FOR reference : typeResolver.referenced_types.sort AFTER System.lineSeparator»
          import «reference»;
@@ -159,7 +159,7 @@ abstract class BasicProjectGenerator
    protected def createBasicJavaSourceGenerator(ParameterBundle paramBundle)
    {
       new BasicJavaSourceGenerator(qualifiedNameProvider, generationSettingsProvider,
-            createTypeResolver(paramBundle), idl, typedefTable)
+            createTypeResolver(paramBundle), idl, typedefTable, mavenResolver)
    }
 }
 

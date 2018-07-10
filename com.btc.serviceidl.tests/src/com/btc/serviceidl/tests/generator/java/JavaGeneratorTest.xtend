@@ -35,8 +35,8 @@ class JavaGeneratorTest extends AbstractGeneratorTest
     @Test
     def void testAttributeWithUnderscore()
     {
-        val fileCount = 3
-        val baseDirectory = ArtifactNature.JAVA.label + "com.foo/"
+        val fileCount = 4
+        val baseDirectory = ArtifactNature.JAVA.label + "com.foo.protobuf/"
         val directory = baseDirectory + "src/main/java/com/foo/protobuf/"
         val contents = ImmutableMap.of(directory + "TypesCodec.java", '''
 package com.foo.protobuf;
@@ -296,8 +296,8 @@ public class TypesCodec {
     @Test
     def void testBasicServiceApi()
     {
-        val fileCount = 3 // TODO this includes the KeyValueStoreServiceFaultHandlerFactory, which should be generated to a different project, and not with these settings
-        val baseDirectory = ArtifactNature.JAVA.label + "com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore/"
+        val fileCount = 4 // TODO this includes the KeyValueStoreServiceFaultHandlerFactory, which should be generated to a different project, and not with these settings
+        val baseDirectory = ArtifactNature.JAVA.label + "com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.serviceapi/"
         val directory = baseDirectory +
             "src/main/java/com/btc/prins/infrastructure/servicehost/demo/api/keyvaluestore/serviceapi/"
         val contents = ImmutableMap.of(directory + "IKeyValueStore.java", '''
@@ -388,8 +388,87 @@ public class TypesCodec {
             
                <modelVersion>4.0.0</modelVersion>
             
-               <groupId>com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore</groupId>
-               <artifactId>com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore</artifactId>
+               <groupId>__synthetic0.idl</groupId>
+               <artifactId>com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.serviceapi</artifactId>
+               <version>1.0.0</version>
+            
+               <properties>
+                  <!-- ServiceComm properties -->
+                  <servicecomm.version>0.5.0</servicecomm.version>
+                  
+                  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                  <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+                  
+                  <maven.compiler.source>1.8</maven.compiler.source>
+                  <maven.compiler.target>1.8</maven.compiler.target>
+               </properties>
+               
+               <distributionManagement>
+               <repository>
+                  <id>cab-maven</id>
+                  <name>CAB Main Maven Repository</name>
+                  <url>https://artifactory.bop-dev.de/artifactory/cab-maven/</url>
+               </repository>
+               </distributionManagement>
+               
+               <dependencies>
+                  <dependency>
+                     <groupId>com.btc.cab.servicecomm</groupId>
+                     <artifactId>api</artifactId>
+                     <version>${servicecomm.version}</version>
+                  </dependency>
+                  <dependency>
+                     <groupId>com.btc.cab.servicecomm</groupId>
+                     <artifactId>faulthandling</artifactId>
+                     <version>${servicecomm.version}</version>
+                  </dependency>
+                  <dependency>
+                     <groupId>org.apache.commons</groupId>
+                     <artifactId>commons-collections4</artifactId>
+                     <version>4.0</version>
+                  </dependency>
+                  <dependency>
+                     <groupId>org.apache.commons</groupId>
+                     <artifactId>commons-lang3</artifactId>
+                     <version>3.0</version>
+                  </dependency>
+               </dependencies>
+            
+               <build>
+                  <plugins>
+                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.3</version>
+                        <configuration>
+                           <source>1.8</source>
+                           <target>1.8</target>
+                        </configuration>
+                     </plugin>
+                  </plugins>
+               </build>
+            
+            </project>
+        ''')
+
+        checkGenerators(TestData.basic, setOf(ProjectType.SERVICE_API), fileCount, contents)
+    }
+
+    @Test
+    def void testBasicProtobuf()
+    {
+        val fileCount = 4 // TODO this includes the KeyValueStoreServiceFaultHandlerFactory, which should be generated to a different project, and not with these settings
+        val baseDirectory = ArtifactNature.JAVA.label + "com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.protobuf/"
+        val contents = ImmutableMap.of(baseDirectory + "pom.xml", '''
+            <project xmlns="http://maven.apache.org/POM/4.0.0"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                                         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+            
+               <modelVersion>4.0.0</modelVersion>
+            
+               <groupId>__synthetic0.idl</groupId>
+               <artifactId>com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.protobuf</artifactId>
                <version>1.0.0</version>
             
                <properties>
@@ -412,32 +491,6 @@ public class TypesCodec {
                   <protobuf.version>3.1.0</protobuf.version>
                </properties>
                
-               <repositories>
-                  <repository>
-                     <id>cab-maven-resolver</id>
-                     <url>https://artifactory.bop-dev.de/artifactory/cab-maven-resolver/</url>
-                     <releases>
-                        <enabled>true</enabled>
-                     </releases>
-                     <snapshots>
-                         <enabled>false</enabled>
-                     </snapshots>
-                  </repository>
-               </repositories>
-               
-               <pluginRepositories>
-                  <pluginRepository>
-                     <id>cab-maven-plugin-resolver</id>
-                     <url>https://artifactory.bop-dev.de/artifactory/cab-maven-resolver/</url>
-                     <releases>
-                        <enabled>true</enabled>
-                     </releases>
-                     <snapshots>
-                         <enabled>false</enabled>
-                     </snapshots>
-                  </pluginRepository>
-               </pluginRepositories>
-            
                <distributionManagement>
                <repository>
                   <id>cab-maven</id>
@@ -448,19 +501,19 @@ public class TypesCodec {
                
                <dependencies>
                   <dependency>
+                     <groupId>__synthetic0.idl</groupId>
+                     <artifactId>com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.serviceapi</artifactId>
+                     <version>1.0.0</version>
+                  </dependency>
+                  <dependency>
                      <groupId>com.btc.cab.servicecomm</groupId>
                      <artifactId>api</artifactId>
                      <version>${servicecomm.version}</version>
                   </dependency>
                   <dependency>
-                     <groupId>org.apache.commons</groupId>
-                     <artifactId>commons-collections4</artifactId>
-                     <version>4.0</version>
-                  </dependency>
-                  <dependency>
-                     <groupId>com.btc.cab.servicecomm</groupId>
-                     <artifactId>faulthandling</artifactId>
-                     <version>${servicecomm.version}</version>
+                     <groupId>com.google.protobuf</groupId>
+                     <artifactId>protobuf-java</artifactId>
+                     <version>3.3.0</version>
                   </dependency>
                   <dependency>
                      <groupId>org.apache.commons</groupId>
@@ -552,6 +605,7 @@ public class TypesCodec {
                                        <arg value="--java_out=${protobuf.outputDirectory}" />
                                        <arg value="-I=${basedir}\.." />
                                        <arg value="--proto_path=${protobuf.sourceDirectory}" />
+                                       <arg value="${protobuf.sourceDirectory}/KeyValueStore.proto" />
                                     </exec> 
                                  </target>
                               </configuration>
@@ -576,7 +630,7 @@ public class TypesCodec {
             </project>
         ''')
 
-        checkGenerators(TestData.basic, setOf(ProjectType.SERVICE_API), fileCount, contents)
+        checkGenerators(TestData.basic, setOf(ProjectType.PROTOBUF), fileCount, contents)
     }
 
     def void checkGenerators(CharSequence input, Set<ProjectType> projectTypes, int fileCount,

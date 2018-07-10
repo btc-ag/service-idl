@@ -13,7 +13,6 @@ package com.btc.serviceidl.generator.java
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.util.Constants
-import java.util.Optional
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -179,7 +178,7 @@ class TestGenerator
                     connectionFactory).create(connectionString);
         
                  logger.debug("Client started...");
-                 testSubject = «typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.PROXY)) + '''.«interface_declaration.name»ProxyFactory''')»
+                 testSubject = «typeResolver.resolve(basicJavaSourceGenerator.typeResolver.resolvePackage(interface_declaration, ProjectType.PROXY) + '''.«interface_declaration.name»ProxyFactory''')»
                        .createDirectProtobufProxy(_clientEndpoint);
         
                  logger.debug("«interface_declaration.name» instantiated...");

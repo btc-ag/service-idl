@@ -37,14 +37,16 @@ class DispatcherGenerator
     def generateDispatcherBody(String dispatcher_class_name, InterfaceDeclaration interface_declaration)
     {
         val api_class_name = typeResolver.resolve(interface_declaration)
-        val protobuf_request = resolveProtobuf(typeResolver, interface_declaration,
-            Optional.of(ProtobufType.REQUEST))
-        val protobuf_response = resolveProtobuf(typeResolver, interface_declaration,
-            Optional.of(ProtobufType.RESPONSE))
-            
+        val protobuf_request = resolveProtobuf(typeResolver,
+            interface_declaration, Optional.of(ProtobufType.REQUEST))
+        val protobuf_response = resolveProtobuf(typeResolver,
+            interface_declaration, Optional.of(ProtobufType.RESPONSE))
+
         val serializerType = typeResolver.resolve("com.btc.cab.servicecomm.serialization.ISerializer")
-        val messageType = if (basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3) typeResolver.resolve(
-                "com.btc.cab.servicecomm.common.IMessageBuffer").toString else "byte[]" 
+        val messageType = if (basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3)
+                typeResolver.resolve("com.btc.cab.servicecomm.common.IMessageBuffer").toString
+            else
+                "byte[]"
 
         '''
             public class «dispatcher_class_name» implements «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceDispatcher")» {
@@ -52,32 +54,32 @@ class DispatcherGenerator
                private final «api_class_name» _dispatchee;
             
                «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
-               private final «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")» _protoBufHelper;
+                   private final «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")» _protoBufHelper;
                «ELSE»
-               private final «serializerType» _serializer;
+                   private final «serializerType» _serializer;
                «ENDIF»
             
                private final «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceFaultHandlerManager")» _faultHandlerManager;
                
                public «dispatcher_class_name»(«api_class_name» dispatchee, 
                «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
-               ProtoBufServerHelper protoBufHelper
+                   ProtoBufServerHelper protoBufHelper
                «ELSE»
-               «serializerType» serializer
+                   «serializerType» serializer
                «ENDIF»
                ) {
                _dispatchee = dispatchee;
                «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
-               _protoBufHelper = protoBufHelper;
+                   _protoBufHelper = protoBufHelper;
                «ELSE»
-               _serializer = serializer;
+                   _serializer = serializer;
                «ENDIF»
             
                   // ServiceFaultHandlerManager
                   _faultHandlerManager = new «typeResolver.resolve("com.btc.cab.servicecomm.faulthandling.ServiceFaultHandlerManager")»();
             
                   // ServiceFaultHandler
-                  _faultHandlerManager.registerHandler(«typeResolver.resolve(MavenResolver.resolvePackage(interface_declaration, Optional.of(ProjectType.SERVICE_API)) + '''.«interface_declaration.asServiceFaultHandlerFactory»''')».createServiceFaultHandler());
+                  _faultHandlerManager.registerHandler(«typeResolver.resolve(basicJavaSourceGenerator.typeResolver.resolvePackage(interface_declaration, ProjectType.SERVICE_API) + '''.«interface_declaration.asServiceFaultHandlerFactory»''')».createServiceFaultHandler());
                }
                
                /**
@@ -89,9 +91,9 @@ class DispatcherGenerator
                   
                   byte[] requestByte = 
                   «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
-                  _protoBufHelper.deserializeRequest(requestBuffer)
+                      _protoBufHelper.deserializeRequest(requestBuffer)
                   «ELSE»
-                  requestBuffer
+                      requestBuffer
                   «ENDIF»;
                   «protobuf_request» request
                      = «protobuf_request».parseFrom(requestByte);
@@ -103,7 +105,7 @@ class DispatcherGenerator
                       «val result_is_sequence = function.returnedType.isSequenceType»
                       «val result_is_failable = result_is_sequence && function.returnedType.isFailable»
                       «val result_use_codec = GeneratorUtil.useCodec(function.returnedType, ArtifactNature.JAVA) || result_is_failable»
-                      «var result_codec = resolveCodec(function.returnedType)»
+                      «var result_codec = resolveCodec(function.returnedType, typeResolver)»
                       «val request_method_name = function.name.asJavaProtobufName + "Request"»
                       «val response_method_name = '''«protobuf_response».«function.name.asResponse»'''»
                       if (request.has«request_method_name»()) {
@@ -127,7 +129,7 @@ class DispatcherGenerator
                 «val is_char = param.paramType.isChar»
                 «val is_input = (param.direction == ParameterDirection.PARAM_IN)»
                 «val use_codec = GeneratorUtil.useCodec(param.paramType, ArtifactNature.JAVA)»
-                «var codec = resolveCodec(param.paramType)»
+                «var codec = resolveCodec(param.paramType, typeResolver)»
                 «val is_sequence = param.paramType.isSequenceType»
                «IF is_input»«IF use_codec»«IF !is_sequence»(«plain_type») «ENDIF»«codec».decode(«ENDIF»«IF is_byte || is_short || is_char»(«IF is_byte»byte«ELSEIF is_char»char«ELSE»short«ENDIF») «ENDIF»request.get«request_method_name»().get«param.paramName.asJavaProtobufName»«IF is_sequence»List«ENDIF»()«IF use_codec»)«ENDIF»«ELSE»«param.paramName.asParameter»«ENDIF»
                «ENDFOR»
@@ -136,13 +138,13 @@ class DispatcherGenerator
                   // deliver response
                   «response_method_name» methodResponse
                = «response_method_name».newBuilder()
-               «IF !is_void».«IF result_is_sequence»addAll«function.name.asJavaProtobufName»«ELSE»set«function.name.asJavaProtobufName»«ENDIF»(«IF result_use_codec»«IF !result_is_sequence»(«resolveProtobuf(typeResolver, function.returnedType, Optional.empty)»)«ENDIF»«result_codec».encode«IF result_is_failable»Failable«ENDIF»(«ENDIF»result«IF result_is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, function.returnedType, interface_declaration)».class«ENDIF»«IF result_use_codec»)«ENDIF»)«ENDIF»
+               «IF !is_void».«IF result_is_sequence»addAll«function.name.asJavaProtobufName»«ELSE»set«function.name.asJavaProtobufName»«ENDIF»(«IF result_use_codec»«IF !result_is_sequence»(«resolveProtobuf(typeResolver, function.returnedType, Optional.empty)»)«ENDIF»«result_codec».encode«IF result_is_failable»Failable«ENDIF»(«ENDIF»result«IF result_is_failable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualified_name_provider, function.returnedType, interface_declaration)».class«ENDIF»«IF result_use_codec»)«ENDIF»)«ENDIF»
                «FOR out_param : function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
                 «val is_sequence = out_param.paramType.isSequenceType»
                 «val is_failable = is_sequence && out_param.paramType.isFailable»
                 «val use_codec = GeneratorUtil.useCodec(out_param.paramType, ArtifactNature.JAVA) || is_failable»
-                «val codec = resolveCodec(out_param.paramType)»
-                .«IF is_sequence»addAll«out_param.paramName.asJavaProtobufName»«ELSE»set«out_param.paramName.asJavaProtobufName»«ENDIF»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(typeResolver, out_param.paramType, Optional.empty)») «ENDIF»«codec».encode«IF is_failable»Failable«ENDIF»(«ENDIF»«out_param.paramName.asParameter»«IF is_failable», «resolveFailableProtobufType(basicJavaSourceGenerator.qualified_name_provider, out_param.paramType, interface_declaration)».class«ENDIF»«IF use_codec»)«ENDIF»)
+                «val codec = resolveCodec(out_param.paramType, typeResolver)»
+                .«IF is_sequence»addAll«out_param.paramName.asJavaProtobufName»«ELSE»set«out_param.paramName.asJavaProtobufName»«ENDIF»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(typeResolver, out_param.paramType, Optional.empty)») «ENDIF»«codec».encode«IF is_failable»Failable«ENDIF»(«ENDIF»«out_param.paramName.asParameter»«IF is_failable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualified_name_provider, out_param.paramType, interface_declaration)».class«ENDIF»«IF use_codec»)«ENDIF»)
                «ENDFOR»
                .build();
                
@@ -152,9 +154,9 @@ class DispatcherGenerator
                .build();
                
                «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
-               return _protoBufHelper.serializeResponse(response);
+                return _protoBufHelper.serializeResponse(response);
                «ELSE»
-               return _serializer.serialize(response);
+                return _serializer.serialize(response);
                «ENDIF»
                }
                «ENDFOR»

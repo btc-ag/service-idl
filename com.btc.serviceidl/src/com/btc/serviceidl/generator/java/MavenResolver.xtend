@@ -15,34 +15,41 @@
  */
 package com.btc.serviceidl.generator.java
 
+import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.util.Constants
+import java.util.HashSet
 import java.util.Optional
 import org.eclipse.emf.ecore.EObject
-import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.generator.common.ParameterBundle
-import com.btc.serviceidl.generator.common.ArtifactNature
-import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.generator.common.GeneratorUtil
-import com.btc.serviceidl.util.Constants
+import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.util.Util.*
 
+@Accessors(PUBLIC_GETTER)
 class MavenResolver
 {
+    val String groupId
+    val registeredPackages = new HashSet<String>
+
     // constants
     public static val DEFAULT_VERSION = "0.0.1"
 
-    static def MavenDependency resolveDependency(EObject element)
+    def MavenDependency resolveDependency(EObject element, ProjectType projectType)
     {
-        val name = resolvePackage(element, Optional.empty)
+        val name = registerPackage(element, projectType)
         val version = resolveVersion(element.scopeDeterminant)
 
-        return new MavenDependency.Builder().groupId(name).artifactId(name).version(version).build
+        // TODO if the dependency is from another IDL, a different groupId must be used 
+        return new MavenDependency.Builder().groupId(groupId).artifactId(name).version(version).build
     }
 
-    static def Optional<MavenDependency> resolveDependency(String class_name)
+    static def Optional<MavenDependency> resolveExternalDependency(String className)
     {
-        switch name : class_name.toLowerCase
+        switch name : className.toLowerCase
         {
             case name.startsWith("com.google.protobuf."):
                 return Optional.of(
@@ -92,6 +99,10 @@ class MavenResolver
                 return Optional.of(
                     new MavenDependency.Builder().groupId("com.btc.cab.servicecomm").artifactId("protobuf").version(
                         "${servicecomm.version}").build)
+            case name.startsWith("com.btc.cab.servicecomm.util"):
+                return Optional.of(
+                    new MavenDependency.Builder().groupId("com.btc.cab.servicecomm").artifactId("util").version(
+                        "${servicecomm.version}").build)
             case name.startsWith("org.springframework.context.support."):
                 return Optional.of(
                     new MavenDependency.Builder().groupId("org.springframework").artifactId("spring-context-support").
@@ -101,6 +112,7 @@ class MavenResolver
                     new MavenDependency.Builder().groupId("org.springframework").artifactId("spring-context").version(
                         DependencyVersions.SPRING).build)
             default:
+                // TODO check this more thoroughly
                 return Optional.empty // no external dependency, e.g. it's Java API
         }
     }
@@ -109,8 +121,9 @@ class MavenResolver
      * For a given element, which is expected to be either module or interface,
      * returns the appropriate version string (default is 0.0.1)
      */
-    static def String resolveVersion(EObject element)
+    def String resolveVersion(EObject element)
     {
+        // TODO the version must be parametrizable
         if (element instanceof InterfaceDeclaration)
         {
             return element.version ?: DEFAULT_VERSION
@@ -119,18 +132,21 @@ class MavenResolver
         return DEFAULT_VERSION
     }
 
-    static def String resolvePackage(EObject element, Optional<ProjectType> project_type)
+    // TODO consider making this private, I am not sure if the external uses are correct
+    static def makePackageId(EObject element, ProjectType projectType)
     {
         val scopeDeterminant = element.scopeDeterminant
-        return String.join(Constants.SEPARATOR_PACKAGE, #[
+        String.join(Constants.SEPARATOR_PACKAGE, #[
             GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(scopeDeterminant.moduleStack).build,
                 ArtifactNature.JAVA, TransformType.PACKAGE)
         ] + (if (scopeDeterminant instanceof InterfaceDeclaration) #[scopeDeterminant.name.toLowerCase] else #[]) +
-            if (project_type.present) #[project_type.get.getName.toLowerCase] else #[])
+            #[projectType.getName.toLowerCase])
     }
     
-    static def getArtifactId(EObject container) {
-        resolvePackage(container, Optional.empty)
+    def registerPackage(EObject element, ProjectType projectType) {
+        val packageId = makePackageId(element, projectType)
+        this.registeredPackages.add(packageId)
+        packageId
     }
     
 }

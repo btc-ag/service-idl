@@ -10,15 +10,15 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator.java
 
-import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.java.MavenDependency
+import com.btc.serviceidl.generator.java.MavenResolver
 import com.btc.serviceidl.generator.java.ProtobufUtil
 import com.btc.serviceidl.generator.java.TypeResolver
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.tests.IdlInjectorProvider
-import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
 import java.util.HashSet
 import java.util.Optional
@@ -31,7 +31,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import static org.junit.Assert.assertEquals
-import com.btc.serviceidl.generator.common.ProtobufType
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -56,8 +55,7 @@ class ProtobufUtilTest
         idl = parseHelper.parse("module Foo { struct Bar { string x }; interface Bar { struct Bar { string y }; } }");
 
         dependencies = new HashSet<MavenDependency>()
-        val paramBundle = new ParameterBundle.Builder().with(ImmutableList.of(fooModule)).build()
-        typeResolver = new TypeResolver(qualifiedNameProvider, paramBundle, dependencies)
+        typeResolver = new TypeResolver(qualifiedNameProvider, dependencies, new MavenResolver("foo"))
     }
 
     @Test
@@ -84,8 +82,7 @@ class ProtobufUtilTest
         idl = parseHelper.parse("module Foo { interface Bar { struct Bar { string x }; }");
 
         dependencies = new HashSet<MavenDependency>()
-        val paramBundle = new ParameterBundle.Builder().with(ImmutableList.of(fooModule)).build()
-        typeResolver = new TypeResolver(qualifiedNameProvider, paramBundle, dependencies)
+        typeResolver = new TypeResolver(qualifiedNameProvider, dependencies, new MavenResolver("foo"))
 
         val result = ProtobufUtil.resolveProtobuf(typeResolver, fooModule.getModuleComponents().filter(
             InterfaceDeclaration).findFirst[it.name == "Bar"].contains.filter(StructDeclaration).findFirst [
@@ -100,8 +97,7 @@ class ProtobufUtilTest
         idl = parseHelper.parse("module Foo { interface Bar { struct Bar { string x }; void MyRequest(int i); }");
 
         dependencies = new HashSet<MavenDependency>()
-        val paramBundle = new ParameterBundle.Builder().with(ImmutableList.of(fooModule)).build()
-        typeResolver = new TypeResolver(qualifiedNameProvider, paramBundle, dependencies)
+        typeResolver = new TypeResolver(qualifiedNameProvider, dependencies, new MavenResolver("foo"))
 
         val result = ProtobufUtil.resolveProtobuf(typeResolver, fooModule.getModuleComponents().filter(
             InterfaceDeclaration).findFirst [
@@ -109,7 +105,7 @@ class ProtobufUtilTest
         ], Optional.of(ProtobufType.REQUEST));
         assertEquals("com.foo.bar.protobuf.BarOuterClass.BarRequest", result.getFullyQualifiedName());
     }
-    
+
     @Test
     def void testAsProtobufNameFromUpperCamel()
     {
@@ -145,7 +141,7 @@ class ProtobufUtilTest
     {
         assertEquals("MixedSnake", ProtobufUtil.asJavaProtobufName("mixed_Snake"))
     }
-    
+
     @Test
     def void testAsProtobufNameFromMixedSnakeAbbrev()
     {

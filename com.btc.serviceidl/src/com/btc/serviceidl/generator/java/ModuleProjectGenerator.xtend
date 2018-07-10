@@ -22,13 +22,19 @@ class ModuleProjectGenerator extends BasicProjectGenerator
     def generate()
     {
         if (projectTypes.contains(ProjectType.COMMON))
+        {
             generateCommon(
                 makeProjectSourcePath(module, ProjectType.COMMON, MavenArtifactType.MAIN_JAVA, PathType.FULL), module)
 
+            generatePOM(module, ProjectType.COMMON)
+        }
+
         if (projectTypes.contains(ProjectType.PROTOBUF))
+        {
             generateProtobuf(
                 makeProjectSourcePath(module, ProjectType.PROTOBUF, MavenArtifactType.MAIN_JAVA, PathType.FULL), module)
 
-        generatePOM(module)
+            generatePOM(module, ProjectType.PROTOBUF)
+        }
     }
 }

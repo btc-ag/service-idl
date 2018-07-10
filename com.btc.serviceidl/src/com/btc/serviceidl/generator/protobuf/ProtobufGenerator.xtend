@@ -155,7 +155,7 @@ class ProtobufGenerator
    
    private def IPath getJavaProtoLocation(EObject container)
    {
-      Path.fromPortableString(MavenResolver.getArtifactId(container)).append("src").append("main").append("proto")
+      Path.fromPortableString(MavenResolver.makePackageId(container, ProjectType.PROTOBUF)).append("src").append("main").append("proto")
    }
    
    private def String generateInterface(ArtifactNature an, InterfaceDeclaration interface_declaration)
@@ -257,7 +257,7 @@ class ProtobufGenerator
       '''
       syntax = "proto2";
       «IF artifact_nature == ArtifactNature.JAVA»
-         package «MavenResolver.resolvePackage(container, Optional.of(ProjectType.PROTOBUF))»;         
+         package «MavenResolver.makePackageId(container, ProjectType.PROTOBUF)»;         
       «ELSE»
          package «GeneratorUtil.getTransformedModuleName(param_bundle, artifact_nature, TransformType.PACKAGE)»;
       «ENDIF»
@@ -525,7 +525,7 @@ class ProtobufGenerator
                     GeneratorUtil.getTransformedModuleName(referencedProjectParameterBundle, artifactNature,
                         TransformType.PACKAGE)
                 else
-                    MavenResolver.resolvePackage(object_root, Optional.of(ProjectType.PROTOBUF))
+                    MavenResolver.makePackageId(object_root, ProjectType.PROTOBUF)
 
             val result = referenced_project + TransformType.PACKAGE.separator + plain_name
 
