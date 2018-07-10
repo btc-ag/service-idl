@@ -15,7 +15,6 @@ import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.util.Util
-import java.util.concurrent.atomic.AtomicInteger
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -40,7 +39,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
                «FOR function : interfaceDeclaration.functions SEPARATOR System.lineSeparator»
                    message «function.name.asRequest»
                    {
-                      «var fieldId = new AtomicInteger»
+                      «val fieldId = new Counter»
                       «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
                           «IF Util.isSequenceType(param.paramType)»
                               «makeSequence(Util.getUltimateType(param.paramType), Util.isFailable(param.paramType), param, interfaceDeclaration, param.protoFileAttributeName, fieldId)»
@@ -62,7 +61,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
                «FOR function : interfaceDeclaration.functions SEPARATOR System.lineSeparator»
                    message «function.name.asResponse»
                    {
-                      «var fieldId = new AtomicInteger»
+                      «val fieldId = new Counter»
                       «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
                           «IF Util.isSequenceType(param.paramType)»
                               «val sequence = Util.tryGetSequence(param.paramType).get»
@@ -91,7 +90,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
     }
 
     private def String generateReturnType(FunctionDeclaration function, EObject context, EObject container,
-        AtomicInteger id)
+        Counter id)
     {
         val element = function.returnedType
         '''

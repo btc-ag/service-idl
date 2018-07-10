@@ -34,7 +34,6 @@ import java.util.Collection
 import java.util.HashSet
 import java.util.Map
 import java.util.Set
-import java.util.concurrent.atomic.AtomicInteger
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -83,19 +82,19 @@ class ProtobufFileGeneratorBase
     {
         '''
             «FOR typedef : contents.filter(AliasDeclaration).filter[requiresNewMessageType(type)] SEPARATOR System.lineSeparator»
-                «toText(typedef.type, typedef, container, new AtomicInteger)»
+                «toText(typedef.type, typedef, container, new Counter)»
             «ENDFOR»
             
             «FOR enumDeclaration : contents.filter(typeof(EnumDeclaration)) SEPARATOR System.lineSeparator»
-                «toText(enumDeclaration, container, container, new AtomicInteger)»
+                «toText(enumDeclaration, container, container, new Counter)»
             «ENDFOR»
             
             «FOR struct : contents.filter(StructDeclaration) SEPARATOR System.lineSeparator»
-                «toText(struct, container, container, new AtomicInteger)»
+                «toText(struct, container, container, new Counter)»
             «ENDFOR»
             
             «FOR exceptionDeclaration : contents.filter(ExceptionDeclaration) SEPARATOR System.lineSeparator»
-                «toText(exceptionDeclaration, container, container, new AtomicInteger)»
+                «toText(exceptionDeclaration, container, container, new Counter)»
             «ENDFOR»
         '''
     }
@@ -118,14 +117,14 @@ class ProtobufFileGeneratorBase
     }
 
     protected def dispatch String toText(StructDeclaration element, EObject context, EObject container,
-        AtomicInteger id)
+        Counter id)
     {
         if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
             context instanceof StructDeclaration)
             '''
                 message «element.name»
                 {
-                   «var fieldId = new AtomicInteger»
+                   «val fieldId = new Counter»
                    «FOR typeDeclaration : element.typeDecls SEPARATOR System.lineSeparator»
                        «toText(typeDeclaration, element, container, fieldId)»
                    «ENDFOR»
@@ -143,14 +142,14 @@ class ProtobufFileGeneratorBase
     }
 
     protected def dispatch String toText(ExceptionDeclaration element, EObject context, EObject container,
-        AtomicInteger id)
+        Counter id)
     {
         if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
             context instanceof StructDeclaration)
             '''
                 message «element.name»
                 {
-                   «var fieldId = new AtomicInteger»
+                   «val fieldId = new Counter»
                    «FOR member : element.allMembers SEPARATOR System.lineSeparator»
                        «toText(member, container, element, fieldId)»
                    «ENDFOR»
@@ -161,28 +160,28 @@ class ProtobufFileGeneratorBase
     }
 
     protected def dispatch String toText(MemberElementWrapper element, EObject context, EObject container,
-        AtomicInteger id)
+        Counter id)
     {
         '''
             «IF element.isOptional && !element.type.isSequenceType»
-                optional «toText(element.type, element.type, container, new AtomicInteger)» «element.protoFileAttributeName» = «id.incrementAndGet»;
+                optional «toText(element.type, element.type, container, new Counter)» «element.protoFileAttributeName» = «id.incrementAndGet»;
             «ELSEIF element.type.isSequenceType»
                 «makeSequence(element.type.ultimateType, element.type.isFailable, element.type, container, element.protoFileAttributeName, id)»
             «ELSEIF requiresNewMessageType(element.type)»
                 «toText(element.type, element.type, container, id)»
             «ELSE»
-                required «toText(element.type, element.type, container, new AtomicInteger)» «element.protoFileAttributeName» = «id.incrementAndGet»;
+                required «toText(element.type, element.type, container, new Counter)» «element.protoFileAttributeName» = «id.incrementAndGet»;
             «ENDIF»
         '''
     }
 
     protected def dispatch String toText(SequenceDeclaration element, EObject context, EObject container,
-        AtomicInteger id)
+        Counter id)
     {
         '''«makeSequence(element.type.ultimateType, element.failable, context, container, Names.plain(context).asProtoFileAttributeName, id)»'''
     }
 
-    protected def dispatch String toText(TupleDeclaration element, EObject context, EObject container, AtomicInteger id)
+    protected def dispatch String toText(TupleDeclaration element, EObject context, EObject container, Counter id)
     {
         val tupleName = ( if (context instanceof TupleDeclaration ||
             context instanceof SequenceDeclaration) "Tuple" else Names.plain(context).toFirstUpper ) + "Wrapper"
@@ -190,10 +189,10 @@ class ProtobufFileGeneratorBase
         '''
             message «tupleName»
             {
-               «var elementId = new AtomicInteger»
+               «val elementId = new Counter»
                «FOR tupleElement : element.types»
                    «IF requiresNewMessageType(tupleElement)»
-                       «toText(tupleElement, element, container, new AtomicInteger)»
+                       «toText(tupleElement, element, container, new Counter)»
                    «ELSE»
                        required «toText(tupleElement, element, container, elementId)» element«elementId» = «elementId»;
                    «ENDIF»
@@ -203,24 +202,24 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def dispatch String toText(ParameterElement element, EObject context, EObject container, AtomicInteger id)
+    protected def dispatch String toText(ParameterElement element, EObject context, EObject container, Counter id)
     {
         val sequence = element.tryGetSequence
         '''
             «IF sequence.present»
                 «toText(sequence.get, element, container, id)»
             «ELSE»
-                required «toText(element.paramType, element, container, new AtomicInteger)» «element.protoFileAttributeName» = «id.incrementAndGet»;
+                required «toText(element.paramType, element, container, new Counter)» «element.protoFileAttributeName» = «id.incrementAndGet»;
             «ENDIF»
         '''
     }
 
-    protected def dispatch String toText(EnumDeclaration element, EObject context, EObject container, AtomicInteger id)
+    protected def dispatch String toText(EnumDeclaration element, EObject context, EObject container, Counter id)
     {
         if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
             context instanceof StructDeclaration)
         {
-            var fieldId = new AtomicInteger
+            var fieldId = new Counter
             '''
                 enum «element.name»
                 {
@@ -234,7 +233,7 @@ class ProtobufFileGeneratorBase
             '''«resolve(element, context, container)»'''
     }
 
-    protected def dispatch String toText(AliasDeclaration element, EObject context, EObject container, AtomicInteger id)
+    protected def dispatch String toText(AliasDeclaration element, EObject context, EObject container, Counter id)
     {
         if (requiresNewMessageType(element.type))
         {
@@ -248,9 +247,9 @@ class ProtobufFileGeneratorBase
             if (typeName === null)
             {
                 if (element.type.isSequenceType)
-                    typeName = "repeated " + toText(element.type.ultimateType, element, container, new AtomicInteger(0))
+                    typeName = "repeated " + toText(element.type.ultimateType, element, container, new Counter)
                 else
-                    typeName = toText(element.type, element, container, new AtomicInteger(0))
+                    typeName = toText(element.type, element, container, new Counter)
                 typedefTable.put(element.name, typeName)
             }
 
@@ -258,7 +257,7 @@ class ProtobufFileGeneratorBase
         }
     }
 
-    protected def dispatch String toText(AbstractType element, EObject context, EObject container, AtomicInteger id)
+    protected def dispatch String toText(AbstractType element, EObject context, EObject container, Counter id)
     {
         if (element.primitiveType !== null)
             toText(element.primitiveType, context, container, id)
@@ -270,7 +269,7 @@ class ProtobufFileGeneratorBase
             throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
     }
 
-    protected def dispatch String toText(PrimitiveType element, EObject context, EObject container, AtomicInteger id)
+    protected def dispatch String toText(PrimitiveType element, EObject context, EObject container, Counter id)
     {
         id.incrementAndGet
 
@@ -310,14 +309,14 @@ class ProtobufFileGeneratorBase
     }
 
     protected def String makeSequence(EObject nestedType, boolean isFailable, EObject context, EObject container,
-        String protobufName, AtomicInteger id)
+        String protobufName, Counter id)
     {
         '''
             «IF isFailable»
                 «val failable_type = resolve(nestedType, context, container).alias(GeneratorUtil.asFailable(nestedType, container, qualifiedNameProvider))»
                 «IF !(context instanceof InterfaceDeclaration || context instanceof AliasDeclaration)»repeated «failable_type» «protobufName» = «id.incrementAndGet»;«ENDIF»
             «ELSE»
-                repeated «toText(nestedType, context, container, new AtomicInteger)» «protobufName» = «id.incrementAndGet»;
+                repeated «toText(nestedType, context, container, new Counter)» «protobufName» = «id.incrementAndGet»;
             «ENDIF»
         '''
     }
@@ -325,12 +324,12 @@ class ProtobufFileGeneratorBase
     protected def String resolve(EObject object, EObject context, EObject container)
     {
         if (object.isSequenceType)
-            toText(object, context, container, new AtomicInteger)
+            toText(object, context, container, new Counter)
         else
         {
             val actualType = object.ultimateType
             if (actualType.isPrimitive)
-                toText(actualType, context, container, new AtomicInteger)
+                toText(actualType, context, container, new Counter)
             else
                 resolveNonPrimitiveType(actualType, context)
         }
@@ -377,4 +376,14 @@ class ProtobufFileGeneratorBase
             Constants.FILE_NAME_TYPES, artifactNature, moduleStructureStrategy)
     }
 
+}
+
+class Counter {
+    var value = 0
+    
+    def int incrementAndGet()
+    {
+        value++
+        value
+    }
 }
