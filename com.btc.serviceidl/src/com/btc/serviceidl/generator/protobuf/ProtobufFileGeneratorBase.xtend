@@ -47,25 +47,25 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(NONE)
 class ProtobufFileGeneratorBase
 {
-    val IQualifiedNameProvider qualified_name_provider
+    val IQualifiedNameProvider qualifiedNameProvider
     val IModuleStructureStrategy moduleStructureStrategy
     val Map<ParameterBundle, Set<ParameterBundle>> projectReferences
-    val Map<String, String> typedef_table // TODO is it correct to share this across files?
+    val Map<String, String> typedefTable // TODO is it correct to share this across files?
     val ArtifactNature artifactNature
-    val referenced_files = new HashSet<String>
+    val referencedFiles = new HashSet<String>
 
     protected def String generateFailable(EObject container)
     {
-        val failable_types = GeneratorUtil.getFailableTypes(container)
-        if (!failable_types.empty)
+        val failableTypes = GeneratorUtil.getFailableTypes(container)
+        if (!failableTypes.empty)
         {
             '''
                 
                 // local failable type wrappers
-                «FOR failable_type : failable_types»
-                    «val failable_type_name = GeneratorUtil.asFailable(failable_type, container, qualified_name_provider)»
-                    «val basic_type_name = resolve(failable_type, container, container)»
-                    message «failable_type_name»
+                «FOR failableType : failableTypes»
+                    «val failableTypeName = GeneratorUtil.asFailable(failableType, container, qualifiedNameProvider)»
+                    «val basicTypeName = resolve(failableType, container, container)»
+                    message «failableTypeName»
                     {
                        // NOK: exception is set
                        optional string exception  = 1;
@@ -73,7 +73,7 @@ class ProtobufFileGeneratorBase
                        optional string stacktrace = 3;
                        
                        // OK: value is set
-                       optional «basic_type_name» value = 4;
+                       optional «basicTypeName» value = 4;
                     }
                 «ENDFOR»
             '''
@@ -87,16 +87,16 @@ class ProtobufFileGeneratorBase
                 «toText(typedef.type, typedef, container, new AtomicInteger)»
             «ENDFOR»
             
-            «FOR enum_declaration : contents.filter(typeof(EnumDeclaration)) SEPARATOR System.lineSeparator»
-                «toText(enum_declaration, container, container, new AtomicInteger)»
+            «FOR enumDeclaration : contents.filter(typeof(EnumDeclaration)) SEPARATOR System.lineSeparator»
+                «toText(enumDeclaration, container, container, new AtomicInteger)»
             «ENDFOR»
             
             «FOR struct : contents.filter(StructDeclaration) SEPARATOR System.lineSeparator»
                 «toText(struct, container, container, new AtomicInteger)»
             «ENDFOR»
             
-            «FOR exception_declaration : contents.filter(ExceptionDeclaration) SEPARATOR System.lineSeparator»
-                «toText(exception_declaration, container, container, new AtomicInteger)»
+            «FOR exceptionDeclaration : contents.filter(ExceptionDeclaration) SEPARATOR System.lineSeparator»
+                «toText(exceptionDeclaration, container, container, new AtomicInteger)»
             «ENDFOR»
         '''
     }
@@ -112,8 +112,8 @@ class ProtobufFileGeneratorBase
     protected def String generateImports(EObject container)
     {
         '''
-            «FOR import_file : referenced_files»
-                import "«import_file»";
+            «FOR importFile : referencedFiles»
+                import "«importFile»";
             «ENDFOR»
         '''
     }
@@ -126,13 +126,13 @@ class ProtobufFileGeneratorBase
             '''
                 message «element.name»
                 {
-                   «var field_id = new AtomicInteger»
-                   «FOR type_declaration : element.typeDecls SEPARATOR System.lineSeparator»
-                       «toText(type_declaration, element, container, field_id)»
+                   «var fieldId = new AtomicInteger»
+                   «FOR typeDeclaration : element.typeDecls SEPARATOR System.lineSeparator»
+                       «toText(typeDeclaration, element, container, fieldId)»
                    «ENDFOR»
                    
                    «FOR member : element.allMembers SEPARATOR System.lineSeparator»
-                       «toText(member, element, container, field_id)»
+                       «toText(member, element, container, fieldId)»
                    «ENDFOR»
                 }
             '''
@@ -151,9 +151,9 @@ class ProtobufFileGeneratorBase
             '''
                 message «element.name»
                 {
-                   «var field_id = new AtomicInteger»
+                   «var fieldId = new AtomicInteger»
                    «FOR member : element.allMembers SEPARATOR System.lineSeparator»
-                       «toText(member, container, element, field_id)»
+                       «toText(member, container, element, fieldId)»
                    «ENDFOR»
                 }
             '''
@@ -185,22 +185,22 @@ class ProtobufFileGeneratorBase
 
     protected def dispatch String toText(TupleDeclaration element, EObject context, EObject container, AtomicInteger id)
     {
-        val tuple_name = ( if (context instanceof TupleDeclaration ||
+        val tupleName = ( if (context instanceof TupleDeclaration ||
             context instanceof SequenceDeclaration) "Tuple" else Names.plain(context).toFirstUpper ) + "Wrapper"
 
         '''
-            message «tuple_name»
+            message «tupleName»
             {
-               «var element_id = new AtomicInteger»
-               «FOR tuple_element : element.types»
-                   «IF requiresNewMessageType(tuple_element)»
-                       «toText(tuple_element, element, container, new AtomicInteger)»
+               «var elementId = new AtomicInteger»
+               «FOR tupleElement : element.types»
+                   «IF requiresNewMessageType(tupleElement)»
+                       «toText(tupleElement, element, container, new AtomicInteger)»
                    «ELSE»
-                       required «toText(tuple_element, element, container, element_id)» element«element_id» = «element_id»;
+                       required «toText(tupleElement, element, container, elementId)» element«elementId» = «elementId»;
                    «ENDIF»
                «ENDFOR»
             }
-            «IF !(context instanceof SequenceDeclaration)»required «tuple_name» «Names.plain(context).asProtoFileAttributeName» = «id.incrementAndGet»;«ENDIF»
+            «IF !(context instanceof SequenceDeclaration)»required «tupleName» «Names.plain(context).asProtoFileAttributeName» = «id.incrementAndGet»;«ENDIF»
         '''
     }
 
@@ -221,12 +221,12 @@ class ProtobufFileGeneratorBase
         if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
             context instanceof StructDeclaration)
         {
-            var field_id = new AtomicInteger
+            var fieldId = new AtomicInteger
             '''
                 enum «element.name»
                 {
                    «FOR identifier : element.containedIdentifiers»
-                       «identifier» = «field_id.incrementAndGet»;
+                       «identifier» = «fieldId.incrementAndGet»;
                    «ENDFOR»
                 }
             '''
@@ -243,20 +243,20 @@ class ProtobufFileGeneratorBase
         }
         else
         {
-            var type_name = typedef_table.get(element.name)
+            var typeName = typedefTable.get(element.name)
 
             // alias not yet resolve - do it now!
-            if (type_name === null)
+            if (typeName === null)
             {
                 if (Util.isSequenceType(element.type))
-                    type_name = "repeated " + toText(Util.getUltimateType(element.type), element, container,
+                    typeName = "repeated " + toText(Util.getUltimateType(element.type), element, container,
                         new AtomicInteger(0))
                 else
-                    type_name = toText(element.type, element, container, new AtomicInteger(0))
-                typedef_table.put(element.name, type_name)
+                    typeName = toText(element.type, element, container, new AtomicInteger(0))
+                typedefTable.put(element.name, typeName)
             }
 
-            type_name
+            typeName
         }
     }
 
@@ -311,15 +311,15 @@ class ProtobufFileGeneratorBase
             (element instanceof SequenceDeclaration && (element as SequenceDeclaration).type.collectionType !== null)
     }
 
-    protected def String makeSequence(EObject nested_type, boolean is_failable, EObject context, EObject container,
+    protected def String makeSequence(EObject nestedType, boolean isFailable, EObject context, EObject container,
         String protobufName, AtomicInteger id)
     {
         '''
-            «IF is_failable»
-                «val failable_type = resolve(nested_type, context, container).alias(GeneratorUtil.asFailable(nested_type, container, qualified_name_provider))»
+            «IF isFailable»
+                «val failable_type = resolve(nestedType, context, container).alias(GeneratorUtil.asFailable(nestedType, container, qualifiedNameProvider))»
                 «IF !(context instanceof InterfaceDeclaration || context instanceof AliasDeclaration)»repeated «failable_type» «protobufName» = «id.incrementAndGet»;«ENDIF»
             «ELSE»
-                repeated «toText(nested_type, context, container, new AtomicInteger)» «protobufName» = «id.incrementAndGet»;
+                repeated «toText(nestedType, context, container, new AtomicInteger)» «protobufName» = «id.incrementAndGet»;
             «ENDIF»
         '''
     }
@@ -330,25 +330,25 @@ class ProtobufFileGeneratorBase
             toText(object, context, container, new AtomicInteger)
         else
         {
-            val actual_type = object.ultimateType
-            if (actual_type.isPrimitive)
-                toText(actual_type, context, container, new AtomicInteger)
+            val actualType = object.ultimateType
+            if (actualType.isPrimitive)
+                toText(actualType, context, container, new AtomicInteger)
             else
-                resolveNonPrimitiveType(actual_type, context)
+                resolveNonPrimitiveType(actualType, context)
         }
     }
 
-    private def resolveNonPrimitiveType(EObject actual_type, EObject context)
+    private def resolveNonPrimitiveType(EObject actualType, EObject context)
     {
-        var plain_name = Names.plain(actual_type)
+        var plainName = Names.plain(actualType)
 
         // first, check if we are within the same namespace
-        var object_root = actual_type.scopeDeterminant
+        var objectRoot = actualType.scopeDeterminant
 
-        if (object_root == context.scopeDeterminant)
-            plain_name
+        if (objectRoot == context.scopeDeterminant)
+            plainName
         else
-            resolveNonPrimitiveImportedType(object_root, plain_name,
+            resolveNonPrimitiveImportedType(objectRoot, plainName,
                 new ParameterBundle.Builder().with(context.moduleStack).with(ProjectType.PROTOBUF).build,
                 artifactNature)
     }
@@ -357,7 +357,7 @@ class ProtobufFileGeneratorBase
         String referencedObjectContainerPlainName, ParameterBundle referencingModuleParameterBundle,
         ArtifactNature artifactNature)
     {
-        referenced_files.add(referencedObjectContainer.importPath.toPortableString)
+        referencedFiles.add(referencedObjectContainer.importPath.toPortableString)
 
         val referencedModuleStack = referencedObjectContainer.moduleStack
         if (referencingModuleParameterBundle.moduleStack != referencedModuleStack)
