@@ -26,68 +26,68 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(NONE)
 final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
 {
-    def String generateInterface(InterfaceDeclaration interface_declaration)
+    def String generateInterface(InterfaceDeclaration interfaceDeclaration)
     {
-        var request_part_id = 1
-        var response_part_id = 1
+        var requestPartId = 1
+        var responsePartId = 1
 
-        var file_body = '''
-            «generateFailable(interface_declaration)»
-            «generateTypes(interface_declaration, interface_declaration.contains.toList)»
+        var fileBody = '''
+            «generateFailable(interfaceDeclaration)»
+            «generateTypes(interfaceDeclaration, interfaceDeclaration.contains.toList)»
             
-            message «interface_declaration.name.asRequest»
+            message «interfaceDeclaration.name.asRequest»
             {
-               «FOR function : interface_declaration.functions SEPARATOR System.lineSeparator»
+               «FOR function : interfaceDeclaration.functions SEPARATOR System.lineSeparator»
                    message «function.name.asRequest»
                    {
-                      «var field_id = new AtomicInteger»
+                      «var fieldId = new AtomicInteger»
                       «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
                           «IF Util.isSequenceType(param.paramType)»
-                              «makeSequence(Util.getUltimateType(param.paramType), Util.isFailable(param.paramType), param, interface_declaration, param.protoFileAttributeName, field_id)»
+                              «makeSequence(Util.getUltimateType(param.paramType), Util.isFailable(param.paramType), param, interfaceDeclaration, param.protoFileAttributeName, fieldId)»
                           «ELSE»
-                              required «resolve(param.paramType, interface_declaration, interface_declaration)» «param.protoFileAttributeName» = «field_id.incrementAndGet»;
+                              required «resolve(param.paramType, interfaceDeclaration, interfaceDeclaration)» «param.protoFileAttributeName» = «fieldId.incrementAndGet»;
                           «ENDIF»
                       «ENDFOR»
                    }
                «ENDFOR»
             
-               «FOR function : interface_declaration.functions»
-                   «val message_part = function.name.asRequest»
-                   optional «message_part» «message_part.asProtoFileAttributeName» = «request_part_id++»;
+               «FOR function : interfaceDeclaration.functions»
+                   «val messagePart = function.name.asRequest»
+                   optional «messagePart» «messagePart.asProtoFileAttributeName» = «requestPartId++»;
                «ENDFOR»
             }
             
-            message «interface_declaration.name.asResponse»
+            message «interfaceDeclaration.name.asResponse»
             {
-               «FOR function : interface_declaration.functions SEPARATOR System.lineSeparator»
+               «FOR function : interfaceDeclaration.functions SEPARATOR System.lineSeparator»
                    message «function.name.asResponse»
                    {
-                      «var field_id = new AtomicInteger»
+                      «var fieldId = new AtomicInteger»
                       «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
                           «IF Util.isSequenceType(param.paramType)»
                               «val sequence = Util.tryGetSequence(param.paramType).get»
-                              «toText(sequence, param, interface_declaration, field_id)»
+                              «toText(sequence, param, interfaceDeclaration, fieldId)»
                           «ELSE»
-                              required «resolve(param.paramType, interface_declaration, interface_declaration)» «param.protoFileAttributeName» = «field_id.incrementAndGet»;
+                              required «resolve(param.paramType, interfaceDeclaration, interfaceDeclaration)» «param.protoFileAttributeName» = «fieldId.incrementAndGet»;
                           «ENDIF»
                       «ENDFOR»
-                      «generateReturnType(function, interface_declaration, interface_declaration, field_id)»
+                      «generateReturnType(function, interfaceDeclaration, interfaceDeclaration, fieldId)»
                    }
                «ENDFOR»
             
-               «FOR function : interface_declaration.functions»
-                   «val message_part = function.name.asResponse»
-                   optional «message_part» «message_part.asProtoFileAttributeName» = «response_part_id++»;
+               «FOR function : interfaceDeclaration.functions»
+                   «val messagePart = function.name.asResponse»
+                   optional «messagePart» «messagePart.asProtoFileAttributeName» = «responsePartId++»;
                «ENDFOR»
             }
         '''
 
         var file_header = '''
-            «generatePackageName(interface_declaration)»
-            «generateImports(interface_declaration)»
+            «generatePackageName(interfaceDeclaration)»
+            «generateImports(interfaceDeclaration)»
         '''
 
-        return file_header + file_body
+        return file_header + fileBody
     }
 
     private def String generateReturnType(FunctionDeclaration function, EObject context, EObject container,
