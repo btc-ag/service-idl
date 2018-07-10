@@ -360,14 +360,8 @@ class DotNetGenerator
        
       val codecName = GeneratorUtil.getCodecName(owner)
       generateProjectSourceFile(projectRootPath, codecName, generateProtobufCodec(owner, codecName))
-      if (owner instanceof ModuleDeclaration)
-      {
-         protobufFiles.add(Constants.FILE_NAME_TYPES)
-      }
-      else if (owner instanceof InterfaceDeclaration)
-      {
-         protobufFiles.add(owner.name)
-      }
+      
+      protobufFiles.add(if (owner instanceof ModuleDeclaration) Constants.FILE_NAME_TYPES else owner.name)
       
       // resolve dependencies across interfaces
       for (element : owner.eAllContents.toIterable)
