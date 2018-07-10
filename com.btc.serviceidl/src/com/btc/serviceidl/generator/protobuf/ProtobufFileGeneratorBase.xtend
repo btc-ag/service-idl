@@ -121,7 +121,7 @@ class ProtobufFileGeneratorBase
 
     protected def dispatch String toText(StructDeclaration element, EObject context, EObject container, Counter id)
     {
-        if (context instanceof AbstractStructuralDeclaration)
+        if (context instanceof AbstractContainerDeclaration)
             '''
                 message «element.name»
                 {
@@ -144,8 +144,7 @@ class ProtobufFileGeneratorBase
 
     protected def dispatch String toText(ExceptionDeclaration element, EObject context, EObject container, Counter id)
     {
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractContainerDeclaration)
             '''
                 message «element.name»
                 {
@@ -218,8 +217,7 @@ class ProtobufFileGeneratorBase
 
     protected def dispatch String toText(EnumDeclaration element, EObject context, EObject container, Counter id)
     {
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractStructuralDeclaration)
         {
             val fieldId = new Counter
             '''
@@ -334,7 +332,7 @@ class ProtobufFileGeneratorBase
                 artifactNature)
     }
 
-    private def resolveNonPrimitiveImportedType(EObject referencedObjectContainer,
+    private def resolveNonPrimitiveImportedType(AbstractContainerDeclaration referencedObjectContainer,
         String referencedObjectContainerPlainName, ParameterBundle referencingModuleParameterBundle,
         ArtifactNature artifactNature)
     {
@@ -352,7 +350,7 @@ class ProtobufFileGeneratorBase
             referencedObjectContainerPlainName
     }
 
-    def importPath(EObject object)
+    def importPath(AbstractContainerDeclaration object)
     {
         makeProtobufPath(object, if (object instanceof InterfaceDeclaration)
             Names.plain(object)
