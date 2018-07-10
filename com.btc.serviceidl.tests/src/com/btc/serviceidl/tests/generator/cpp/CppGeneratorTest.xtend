@@ -317,10 +317,10 @@ class CppGeneratorTest extends AbstractGeneratorTest
         checkGenerators(TestData.basic, projectTypes, Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE, fileCount, contents)
     }
 
-    def void checkGenerators(CharSequence input, Set<ProjectType> projectTypes, String projectSystem, int fileCount,
+    def void checkGenerators(CharSequence input, Set<ProjectType> projectTypes, String cppProjectSystem, int fileCount,
         Map<String, String> contents)
     {
         checkGenerators(input, new HashSet<ArtifactNature>(Arrays.asList(ArtifactNature.CPP)), projectTypes,
-            projectSystem, fileCount, contents)
+            cppProjectSystem, fileCount, contents)
     }
 }

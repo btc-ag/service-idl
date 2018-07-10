@@ -156,7 +156,7 @@ public class Main {
     @Inject
     private IGenerationSettingsProvider generationSettingsProvider;
 
-    private boolean tryRunGenerator(String[] inputFiles, Map<ArtifactNature, IPath> outputPaths, String projectSystem,
+    private boolean tryRunGenerator(String[] inputFiles, Map<ArtifactNature, IPath> outputPaths, String cppProjectSystem,
             String versions, String projectSet) {
         // Load the resource
         ResourceSet set = resourceSetProvider.get();
@@ -191,7 +191,7 @@ public class Main {
         }
 
         try {
-            configureGenerationSettings(projectSystem, versions, outputPaths.keySet(), projectSet);
+            configureGenerationSettings(cppProjectSystem, versions, outputPaths.keySet(), projectSet);
         } catch (Exception ex) {
             System.err.println("Error when configuring generation settings: " + ex);
             return false;
@@ -209,11 +209,11 @@ public class Main {
         return true;
     }
 
-    private void configureGenerationSettings(String projectSystem, String versions, Iterable<ArtifactNature> languages,
+    private void configureGenerationSettings(String cppProjectSystem, String versions, Iterable<ArtifactNature> languages,
             String projectSet) {
         DefaultGenerationSettingsProvider defaultGenerationSettingsProvider = (DefaultGenerationSettingsProvider) generationSettingsProvider;
 
-        defaultGenerationSettingsProvider.configureGenerationSettings(projectSystem, versions, languages, projectSet);
+        defaultGenerationSettingsProvider.configureGenerationSettings(cppProjectSystem, versions, languages, projectSet);
     }
 
 }

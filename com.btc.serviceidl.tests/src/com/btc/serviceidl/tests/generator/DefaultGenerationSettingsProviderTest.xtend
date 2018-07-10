@@ -125,13 +125,13 @@ class DefaultGenerationSettingsProviderTest
     def void testReadConfigurationFile()
     {
         val generationSettings = DefaultGenerationSettingsProvider.readConfigurationFile(new StringInputStream('''languages = java,cpp
-            projectSystem = cmake
+            cppProjectSystem = cmake
             projectSet = full
             versions = cpp.servicecomm=0.10
             '''))
         val expected = new OptionalGenerationSettings
         expected.languages = #{ArtifactNature.JAVA, ArtifactNature.CPP}
-        expected.projectSystem = Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE
+        expected.cppProjectSystem = Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE
         expected.projectTypes = DefaultGenerationSettingsProvider.FULL_PROJECT_SET
         expected.versions = #{"cpp.servicecomm" -> "0.10"}.entrySet
             

@@ -48,7 +48,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
     {
         var Set<ArtifactNature> languages = null
         var Set<ProjectType> projectTypes = null
-        var String projectSystem = null
+        var String cppProjectSystem = null // TODO change into a enum here
         var Iterable<Map.Entry<String, String>> versions = null
         
         override equals(Object other)
@@ -58,7 +58,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
                 {
                     return Objects.equal(languages.toSet, other.languages.toSet) &&
                         Objects.equal(projectTypes.toSet, other.projectTypes.toSet) &&
-                        Objects.equal(projectSystem, other.projectSystem) &&
+                        Objects.equal(cppProjectSystem, other.cppProjectSystem) &&
                         Objects.equal(versions.toSet, other.versions.toSet)
                 }
 
@@ -67,13 +67,13 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         
         override hashCode()
         {
-            java.util.Objects.hash(languages, projectTypes, projectSystem, versions)
+            java.util.Objects.hash(languages, projectTypes, cppProjectSystem, versions)
         }
         
         override toString()
         {
             MoreObjects.toStringHelper(this).add("languages", languages).add("projectTypes", projectTypes).add(
-                "projectSystem", projectSystem).add("versions", versions).toString
+                "cppProjectSystem", cppProjectSystem).add("versions", versions).toString
         }
 
         static def getDefaults()
@@ -82,7 +82,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             result.languages = ArtifactNature.values.toSet
 
             result.projectTypes = ProjectType.values.toSet
-            result.projectSystem = Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ
+            result.cppProjectSystem = Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ
             result.versions = #{CppConstants.SERVICECOMM_VERSION_KIND -> ServiceCommVersion.V0_12.label,
                 JavaConstants.SERVICECOMM_VERSION_KIND ->
                     com.btc.serviceidl.generator.java.ServiceCommVersion.V0_5.label,
@@ -92,23 +92,23 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             return result
         }
         
-        static def create(String projectSystem, Iterable<Entry<String, String>> versions, Iterable<ArtifactNature> languages,
+        static def create(String cppProjectSystem, Iterable<Entry<String, String>> versions, Iterable<ArtifactNature> languages,
             Iterable<ProjectType> projectTypes)
         {
             val settings = new OptionalGenerationSettings()
 
             if (languages !== null) settings.setLanguages(ImmutableSet.copyOf(languages))
             if (projectTypes !== null) settings.setProjectTypes(ImmutableSet.copyOf(projectTypes))
-            if (projectSystem !== null) settings.projectSystem = projectSystem
+            if (cppProjectSystem !== null) settings.cppProjectSystem = cppProjectSystem
             if (versions !== null) settings.versions = versions
         
             settings
         }
         
-        static def create(String projectSystem, String versions, Iterable<ArtifactNature> languages,
+        static def create(String cppProjectSystem, String versions, Iterable<ArtifactNature> languages,
         String projectSet)
         {
-            create(projectSystem, versions.splitVersions, languages, PROJECT_SET_MAPPING.get(projectSet))
+            create(cppProjectSystem, versions.splitVersions, languages, PROJECT_SET_MAPPING.get(projectSet))
         }
         
     }
@@ -132,7 +132,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         properties.load(configurationFile)
         
         OptionalGenerationSettings.create(
-            properties.get("projectSystem") as String,            
+            properties.get("cppProjectSystem") as String,            
             properties.get("versions") as String,
             ((properties.get("languages") as String).split(",").map[str|ArtifactNature.values.filter[it.label == str].single].toSet),
             properties.get("projectSet") as String)
@@ -169,7 +169,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         val result = new OptionalGenerationSettings
         result.languages = overrides.languages ?: base.languages
         result.projectTypes = overrides.projectTypes ?: base.projectTypes
-        result.projectSystem = overrides.projectSystem ?: base.projectSystem
+        result.cppProjectSystem = overrides.cppProjectSystem ?: base.cppProjectSystem
         result.versions = overrides.versions ?: base.versions
         result
     }
@@ -180,7 +180,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         result.languages = settings.languages
         result.projectTypes = settings.projectTypes
 
-        switch (settings.projectSystem)
+        switch (settings.cppProjectSystem)
         {
             case Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
             {
@@ -200,7 +200,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             }
             default:
             {
-                throw new IllegalArgumentException("Unknown project system: " + settings.projectSystem)
+                throw new IllegalArgumentException("Unknown project system: " + settings.cppProjectSystem)
             }
         }
 
@@ -212,16 +212,16 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         return result
     }
 
-    def void configureGenerationSettings(String projectSystem, String versions, Iterable<ArtifactNature> languages,
+    def void configureGenerationSettings(String cppProjectSystem, String versions, Iterable<ArtifactNature> languages,
         String projectSet)
     {
-        overrides = OptionalGenerationSettings.create(projectSystem, versions, languages, projectSet)
+        overrides = OptionalGenerationSettings.create(cppProjectSystem, versions, languages, projectSet)
     }
 
-    def void configureGenerationSettings(String projectSystem, Iterable<Map.Entry<String, String>> versions,
+    def void configureGenerationSettings(String cppProjectSystem, Iterable<Map.Entry<String, String>> versions,
         Iterable<ArtifactNature> languages, Iterable<ProjectType> projectTypes)
     {
-        overrides = OptionalGenerationSettings.create(projectSystem, versions, languages, projectTypes)
+        overrides = OptionalGenerationSettings.create(cppProjectSystem, versions, languages, projectTypes)
     }
 
     private static def Iterable<Map.Entry<String, String>> splitVersions(String optionValue)

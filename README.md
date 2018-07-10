@@ -58,7 +58,7 @@ The command line runner also interprets these files. Command line options overri
 An example file would look like this:
 ```
 languages = java,cpp
-projectSystem = cmake
+cppProjectSystem = cmake
 projectSet = full
 versions = cpp.servicecomm=0.10
 ```
