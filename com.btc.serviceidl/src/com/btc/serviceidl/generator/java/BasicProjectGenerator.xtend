@@ -17,6 +17,7 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
@@ -63,7 +64,7 @@ abstract class BasicProjectGenerator
         new TypeResolver(qualifiedNameProvider, dependencies, mavenResolver)
     }
 
-    protected def void generatePOM(EObject container, ProjectType projectType)
+    protected def void generatePOM(AbstractStructuralDeclaration container, ProjectType projectType)
     {
         val pom_path = makeProjectRootPath(container, projectType).append("pom".xml)
         fileSystemAccess.generateFile(pom_path.toPortableString, ArtifactNature.JAVA.label,
