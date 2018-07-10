@@ -19,19 +19,19 @@ import org.eclipse.xtend.lib.annotations.Accessors
 @Accessors(NONE)
 final class ModuleProtobufFileGenerator extends ProtobufFileGeneratorBase
 {
-    def String generateModuleContent(ModuleDeclaration module, Iterable<EObject> module_contents)
+    def String generateModuleContent(ModuleDeclaration module, Iterable<EObject> moduleContents)
     {
-        val file_body = '''
+        val fileBody = '''
             «generateFailable(module)»
             «generateTypes(module, module.moduleComponents.filter[ e | !(e instanceof InterfaceDeclaration)].toList)»
         '''
 
-        val file_header = '''
+        val fileHeader = '''
             «generatePackageName(module)»
             «generateImports(module)»
         '''
 
-        return file_header + file_body
+        return fileHeader + fileBody
     }
 
 }
