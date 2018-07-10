@@ -14,6 +14,7 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration 
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
@@ -31,7 +32,7 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors
 class CodecGenerator extends BasicCppGenerator
 {
-    private def generateHCodecInline(EObject owner, Iterable<EObject> nested_types)
+    private def generateHCodecInline(AbstractContainerDeclaration owner, Iterable<EObject> nested_types)
     {
         val failable_types = GeneratorUtil.getFailableTypes(owner)
 
@@ -504,7 +505,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
     
-    def generateFailableCodec(EObject type, EObject owner)
+    def generateFailableCodec(EObject type, AbstractContainerDeclaration owner)
     {
         val api_type_name = resolve(type)
         val proto_failable_type_name = typeResolver.resolveFailableProtobufType(type, owner)
@@ -554,7 +555,7 @@ class CodecGenerator extends BasicCppGenerator
             name
     }
 
-    private def dispatch String makeDecode(StructDeclaration element, EObject container)
+    private def dispatch String makeDecode(StructDeclaration element, AbstractContainerDeclaration container)
     {
         '''
             «resolve(element)» api_output;
@@ -591,7 +592,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    private def String makeDecodeMember(MemberElementWrapper element, EObject container)
+    private def String makeDecodeMember(MemberElementWrapper element, AbstractContainerDeclaration container)
     {
         val use_codec = GeneratorUtil.useCodec(element.type, ArtifactNature.CPP)
         val is_pointer = useSmartPointer(element.container, element.type)
@@ -683,7 +684,7 @@ class CodecGenerator extends BasicCppGenerator
             !(ultimate_type.isByte || ultimate_type.isInt16 || ultimate_type.isChar || ultimate_type.isEnumType)
     }
 
-    def generateHeaderFileBody(EObject owner)
+    def generateHeaderFileBody(AbstractContainerDeclaration owner)
     {
         // collect all contained distinct types which need conversion
         val nested_types = GeneratorUtil.getEncodableTypes(owner)

@@ -23,6 +23,7 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
@@ -348,7 +349,7 @@ class DotNetGenerator
       generateVSProjectFiles(projectRootPath)
    }
    
-   private def void generateProtobufProjectContent(EObject owner, IPath projectRootPath)
+   private def void generateProtobufProjectContent(AbstractContainerDeclaration owner, IPath projectRootPath)
    {
       val faultHandlerFileName = Util.resolveServiceFaultHandling(typeResolver, owner).shortName
       generateProjectSourceFile(
@@ -418,7 +419,7 @@ class DotNetGenerator
          resolveProtobufDependencies(element.referenceType, owner)
    }
    
-   private def generateProtobufCodec(EObject owner, String className)
+   private def generateProtobufCodec(AbstractContainerDeclaration owner, String className)
    {
       reinitializeFile
       

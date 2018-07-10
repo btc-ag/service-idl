@@ -17,7 +17,7 @@ package com.btc.serviceidl.util
 
 import com.btc.serviceidl.idl.AbstractCrossReference
 import com.btc.serviceidl.idl.AbstractException
-import com.btc.serviceidl.idl.AbstractStructuralDeclaration
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.DocCommentElement
@@ -103,13 +103,13 @@ class Util
 
     // TODO actually, the return value can only be InterfaceDeclaration or ModuleDeclaration, 
     // not a StructDeclaration; introduce another base class?
-    def static AbstractStructuralDeclaration getScopeDeterminant(EObject element)
+    def static AbstractContainerDeclaration getScopeDeterminant(EObject element)
     {
         var container = element
         while (container !== null)
         {
             if (container instanceof InterfaceDeclaration || container instanceof ModuleDeclaration)
-                return container as AbstractStructuralDeclaration
+                return container as AbstractContainerDeclaration
             else
                 container = container.eContainer
         }

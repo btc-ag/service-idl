@@ -39,6 +39,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 
 @Accessors(PACKAGE_GETTER)
 class BasicJavaSourceGenerator
@@ -357,7 +358,7 @@ class BasicJavaSourceGenerator
         name.toFirstLower
     }
 
-    def static String asServiceFaultHandlerFactory(EObject container)
+    def static String asServiceFaultHandlerFactory(AbstractContainerDeclaration container)
     {
         val name = if (container instanceof InterfaceDeclaration) container.name else ""
         '''«name»ServiceFaultHandlerFactory'''

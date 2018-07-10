@@ -17,7 +17,7 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
-import com.btc.serviceidl.idl.AbstractStructuralDeclaration
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
@@ -64,7 +64,7 @@ abstract class BasicProjectGenerator
         new TypeResolver(qualifiedNameProvider, dependencies, mavenResolver)
     }
 
-    protected def void generatePOM(AbstractStructuralDeclaration container, ProjectType projectType)
+    protected def void generatePOM(AbstractContainerDeclaration container, ProjectType projectType)
     {
         val pom_path = makeProjectRootPath(container, projectType).append("pom".xml)
         fileSystemAccess.generateFile(pom_path.toPortableString, ArtifactNature.JAVA.label,
@@ -77,7 +77,8 @@ abstract class BasicProjectGenerator
         Path.fromPortableString(MavenResolver.makePackageId(container, projectType))
     }
 
-   protected def IPath makeProjectSourcePath(EObject container, ProjectType projectType, MavenArtifactType mavenType, PathType pathType)
+   protected def IPath makeProjectSourcePath(AbstractContainerDeclaration container, ProjectType projectType,
+        MavenArtifactType mavenType, PathType pathType)
    {      
       var result = makeProjectRootPath(container, projectType).append(mavenType.directoryLayout)
       
@@ -113,7 +114,7 @@ abstract class BasicProjectGenerator
       )
    }
    
-   protected def void generateProtobuf(IPath projectSourceRootPath, EObject container)
+   protected def void generateProtobuf(IPath projectSourceRootPath, AbstractContainerDeclaration container)
    {
       val paramBundle = ParameterBundle.createBuilder(container.moduleStack).with(ProjectType.PROTOBUF).build
        

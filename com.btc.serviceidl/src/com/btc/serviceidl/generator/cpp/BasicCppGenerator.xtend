@@ -132,8 +132,7 @@ class BasicCppGenerator
 
     def dispatch String toText(AliasDeclaration item, EObject context)
     {
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractStructuralDeclaration)
             '''typedef «toText(item.type, context)» «item.name»;'''
         else
             '''«resolve(item)»'''
@@ -141,8 +140,7 @@ class BasicCppGenerator
 
     def dispatch String toText(EnumDeclaration item, EObject context)
     {
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractStructuralDeclaration)
             '''
                 enum class «item.name»
                 {

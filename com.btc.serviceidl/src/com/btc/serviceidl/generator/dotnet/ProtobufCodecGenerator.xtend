@@ -13,6 +13,7 @@ package com.btc.serviceidl.generator.dotnet
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
@@ -32,7 +33,7 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(NONE)
 class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
 {
-    def generate(EObject owner, String class_name)
+    def generate(AbstractContainerDeclaration owner, String class_name)
     {
         val enumerable = resolve("System.Collections.Generic.IEnumerable")
         resolve("System.Linq.Enumerable")

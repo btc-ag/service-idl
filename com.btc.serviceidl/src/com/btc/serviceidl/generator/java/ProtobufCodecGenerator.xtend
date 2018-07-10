@@ -14,6 +14,7 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
@@ -42,7 +43,7 @@ class ProtobufCodecGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def generateProtobufCodecBody(EObject container, String codec_name)
+    def generateProtobufCodecBody(AbstractContainerDeclaration container, String codec_name)
     {
         // collect all used data types to avoid duplicates
         val data_types = GeneratorUtil.getEncodableTypes(container)

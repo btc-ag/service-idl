@@ -15,6 +15,7 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -92,7 +93,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
         generateProjectFiles(ProjectType.PROTOBUF, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)
     }
 
-    private def String generateHCodec(EObject owner)
+    private def String generateHCodec(AbstractContainerDeclaration owner)
     {
         val basicCppGenerator = createBasicCppGenerator
         val file_content = new CodecGenerator(basicCppGenerator.typeResolver, targetVersionProvider, param_bundle).

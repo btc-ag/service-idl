@@ -39,6 +39,7 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 
 class GeneratorUtil
 {
@@ -91,7 +92,7 @@ class GeneratorUtil
         name.replaceAll(Pattern.quote(sourceTransformType.separator), targetTransformType.separator)
     }
 
-    static def Iterable<EObject> getFailableTypes(EObject container)
+    static def Iterable<EObject> getFailableTypes(AbstractContainerDeclaration container)
     {
         var objects = new ArrayList<Iterable<EObject>>
 
@@ -120,7 +121,8 @@ class GeneratorUtil
 
     static val FAILABLE_SEPARATOR = "_"
 
-    static def String asFailable(EObject element, EObject container, IQualifiedNameProvider qualifiedNameProvider)
+    static def String asFailable(EObject element, AbstractContainerDeclaration container,
+        IQualifiedNameProvider qualifiedNameProvider)
     {
         #[#["Failable"], qualifiedNameProvider.getFullyQualifiedName(container).segments, getTypeName(
             Util.getUltimateType(element), qualifiedNameProvider).map[toFirstUpper]].flatten.join(FAILABLE_SEPARATOR)

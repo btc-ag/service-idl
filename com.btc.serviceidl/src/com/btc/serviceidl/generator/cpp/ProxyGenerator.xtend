@@ -16,6 +16,7 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
@@ -164,7 +165,7 @@ class ProxyGenerator extends BasicCppGenerator {
         '''
     }
 
-   private def String makeDecodeResponse(EObject type, EObject container, String protobuf_name)
+   private def String makeDecodeResponse(EObject type, AbstractContainerDeclaration container, String protobuf_name)
    {
       val use_codec = GeneratorUtil.useCodec(type, ArtifactNature.CPP)
       '''«IF use_codec»«typeResolver.resolveDecode(paramBundle, type, container)»( «ENDIF»concreteResponse.«protobuf_name»()«IF use_codec» )«ENDIF»;'''

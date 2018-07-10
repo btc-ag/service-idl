@@ -20,7 +20,7 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.idl.AbstractStructuralDeclaration
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.util.Constants
 import java.util.HashSet
@@ -122,7 +122,7 @@ class MavenResolver
      * For a given element, which is expected to be either module or interface,
      * returns the appropriate version string (default is 0.0.1)
      */
-    def String resolveVersion(AbstractStructuralDeclaration element)
+    def String resolveVersion(AbstractContainerDeclaration element)
     {
         // TODO the version must be parametrizable
         if (element instanceof InterfaceDeclaration)

@@ -16,6 +16,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
@@ -110,14 +111,14 @@ class ProtobufUtil
     }
 
     def static String resolveFailableProtobufType(TypeResolver typeResolver,
-        IQualifiedNameProvider qualifiedNameProvider, EObject element, EObject container)
+        IQualifiedNameProvider qualifiedNameProvider, EObject element, AbstractContainerDeclaration container)
     {
         return String.join(Constants.SEPARATOR_PACKAGE,
             #[typeResolver.resolvePackage(container, ProjectType.PROTOBUF)] + container.containerName +
                 #[GeneratorUtil.asFailable(element, container, qualifiedNameProvider)])
     }
 
-    private static def Iterable<String> getContainerName(EObject container)
+    private static def Iterable<String> getContainerName(AbstractContainerDeclaration container)
     {
         if (container instanceof ModuleDeclaration)
             #[Constants.FILE_NAME_TYPES]

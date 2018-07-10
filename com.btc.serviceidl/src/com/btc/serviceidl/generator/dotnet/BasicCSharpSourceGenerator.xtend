@@ -12,6 +12,7 @@ package com.btc.serviceidl.generator.dotnet
 
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.GuidMapper
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.DocCommentElement
@@ -53,7 +54,7 @@ class BasicCSharpSourceGenerator {
    {
       val type_name = typedef_table.computeIfAbsent(element.name, [toText(element.type, element)])
 
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
+      if (context instanceof AbstractStructuralDeclaration)
          return "" // in this context, we only denote the substitute type without any output
       else
          return type_name
@@ -91,7 +92,7 @@ class BasicCSharpSourceGenerator {
    
    def dispatch String toText(EnumDeclaration element, EObject context)
    {
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
+      if (context instanceof AbstractStructuralDeclaration)
       '''
       public enum «element.name»
       {
@@ -111,7 +112,7 @@ class BasicCSharpSourceGenerator {
    
    def dispatch String toText(StructDeclaration element, EObject context)
    {
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
+      if (context instanceof AbstractStructuralDeclaration)
       {
          val class_members = new ArrayList<Triple<String, String, String>>
          for (member : element.effectiveMembers) class_members.add(Tuples.create(member.name.asProperty, toText(member, element), maybeOptional(member)))
@@ -164,7 +165,7 @@ class BasicCSharpSourceGenerator {
    
    def dispatch String toText(ExceptionDeclaration element, EObject context)
    {
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
+      if (context instanceof AbstractStructuralDeclaration)
       {
          val class_members = new ArrayList<Pair<MemberElementWrapper, String>>
          for (member : element.effectiveMembers) class_members.add(Tuples.create(member, toText(member, element)))

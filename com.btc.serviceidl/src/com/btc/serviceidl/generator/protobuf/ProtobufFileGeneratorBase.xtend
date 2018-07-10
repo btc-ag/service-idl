@@ -17,6 +17,7 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
@@ -56,7 +57,7 @@ class ProtobufFileGeneratorBase
 
     static val WRAPPER_SUFFIX = "Wrapper"
 
-    protected def String generateFailable(EObject container)
+    protected def String generateFailable(AbstractContainerDeclaration container)
     {
         val failableTypes = GeneratorUtil.getFailableTypes(container)
         if (!failableTypes.empty)
@@ -158,7 +159,8 @@ class ProtobufFileGeneratorBase
             resolve(element, context, container)
     }
 
-    protected def dispatch String toText(MemberElementWrapper element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(MemberElementWrapper element, EObject context,
+        AbstractContainerDeclaration container, Counter id)
     {
         '''
             «IF element.isOptional && !element.type.isSequenceType»
@@ -173,13 +175,15 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def dispatch String toText(SequenceDeclaration element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(SequenceDeclaration element, EObject context,
+        AbstractContainerDeclaration container, Counter id)
     {
         makeSequence(element.type.ultimateType, element.failable, context, container,
             Names.plain(context).asProtoFileAttributeName, id)
     }
 
-    protected def dispatch String toText(TupleDeclaration element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(TupleDeclaration element, EObject context,
+        AbstractContainerDeclaration container, Counter id)
     {
         val tupleName = ( if (context instanceof TupleDeclaration ||
             context instanceof SequenceDeclaration) "Tuple" else Names.plain(context).toFirstUpper ) + WRAPPER_SUFFIX
@@ -295,8 +299,8 @@ class ProtobufFileGeneratorBase
             (element instanceof SequenceDeclaration && (element as SequenceDeclaration).type.collectionType !== null)
     }
 
-    protected def String makeSequence(EObject nestedType, boolean isFailable, EObject context, EObject container,
-        String protobufName, Counter id)
+    protected def String makeSequence(EObject nestedType, boolean isFailable, EObject context,
+        AbstractContainerDeclaration container, String protobufName, Counter id)
     {
         '''
             «IF isFailable»

@@ -16,6 +16,8 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
+import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import java.util.Optional
@@ -27,7 +29,6 @@ import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.FunctionDeclaration
 
 @Accessors
 class DispatcherGenerator extends BasicCppGenerator
@@ -244,7 +245,7 @@ class DispatcherGenerator extends BasicCppGenerator
             messagePart
     }
 
-    private def String makeEncodeResponse(EObject type, EObject container, String protobuf_name,
+    private def String makeEncodeResponse(EObject type, AbstractContainerDeclaration container, String protobuf_name,
         Optional<String> output_param)
     {
         val api_input = if (output_param.present) output_param.get else "result"

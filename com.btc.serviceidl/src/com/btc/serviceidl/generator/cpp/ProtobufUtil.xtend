@@ -18,6 +18,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
@@ -71,13 +72,13 @@ class ProtobufUtil
     }
 
     static def String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject element,
-        EObject container)
+        AbstractContainerDeclaration container)
     {
         resolveDecode(typeResolver, paramBundle, element, container, true)
     }
 
     static def String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject element,
-        EObject container, boolean use_codec_ns)
+        AbstractContainerDeclaration container, boolean use_codec_ns)
     {
         // handle sequence first, because it may include UUIDs and other types from below
         if (element.isSequenceType)
@@ -145,7 +146,7 @@ class ProtobufUtil
     }
 
     static def String resolveFailableProtobufType(extension TypeResolver typeResolver, EObject element,
-        EObject container)
+        AbstractContainerDeclaration container)
     {
         // TODO isn't there a specific type that is used from that library? Is it really required?
         // explicitly include some essential dependencies
