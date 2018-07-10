@@ -108,8 +108,8 @@ class Util
         var container = element
         while (container !== null)
         {
-            if (container instanceof InterfaceDeclaration || container instanceof ModuleDeclaration)
-                return container as AbstractContainerDeclaration
+            if (container instanceof AbstractContainerDeclaration)
+                return container
             else
                 container = container.eContainer
         }
