@@ -116,8 +116,7 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def dispatch String toText(StructDeclaration element, EObject context, EObject container,
-        Counter id)
+    protected def dispatch String toText(StructDeclaration element, EObject context, EObject container, Counter id)
     {
         if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
             context instanceof StructDeclaration)
@@ -141,8 +140,7 @@ class ProtobufFileGeneratorBase
         }
     }
 
-    protected def dispatch String toText(ExceptionDeclaration element, EObject context, EObject container,
-        Counter id)
+    protected def dispatch String toText(ExceptionDeclaration element, EObject context, EObject container, Counter id)
     {
         if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
             context instanceof StructDeclaration)
@@ -159,8 +157,7 @@ class ProtobufFileGeneratorBase
             '''«resolve(element, context, container)»'''
     }
 
-    protected def dispatch String toText(MemberElementWrapper element, EObject context, EObject container,
-        Counter id)
+    protected def dispatch String toText(MemberElementWrapper element, EObject context, EObject container, Counter id)
     {
         '''
             «IF element.isOptional && !element.type.isSequenceType»
@@ -175,8 +172,7 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def dispatch String toText(SequenceDeclaration element, EObject context, EObject container,
-        Counter id)
+    protected def dispatch String toText(SequenceDeclaration element, EObject context, EObject container, Counter id)
     {
         '''«makeSequence(element.type.ultimateType, element.failable, context, container, Names.plain(context).asProtoFileAttributeName, id)»'''
     }
@@ -236,25 +232,14 @@ class ProtobufFileGeneratorBase
     protected def dispatch String toText(AliasDeclaration element, EObject context, EObject container, Counter id)
     {
         if (requiresNewMessageType(element.type))
-        {
             Names.plain(element).toFirstUpper + "Wrapper"
-        }
         else
-        {
-            var typeName = typedefTable.get(element.name)
-
-            // alias not yet resolve - do it now!
-            if (typeName === null)
-            {
+            typedefTable.computeIfAbsent(element.name, [
                 if (element.type.isSequenceType)
-                    typeName = "repeated " + toText(element.type.ultimateType, element, container, new Counter)
+                    "repeated " + toText(element.type.ultimateType, element, container, new Counter)
                 else
-                    typeName = toText(element.type, element, container, new Counter)
-                typedefTable.put(element.name, typeName)
-            }
-
-            typeName
-        }
+                    toText(element.type, element, container, new Counter)
+            ])
     }
 
     protected def dispatch String toText(AbstractType element, EObject context, EObject container, Counter id)
@@ -378,9 +363,10 @@ class ProtobufFileGeneratorBase
 
 }
 
-class Counter {
+class Counter
+{
     var value = 0
-    
+
     def int incrementAndGet()
     {
         value++
