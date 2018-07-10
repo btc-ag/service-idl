@@ -17,6 +17,7 @@ package com.btc.serviceidl.util
 
 import com.btc.serviceidl.idl.AbstractCrossReference
 import com.btc.serviceidl.idl.AbstractException
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.DocCommentElement
@@ -41,7 +42,6 @@ import java.util.regex.Pattern
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
@@ -101,18 +101,18 @@ class Util
         if (t.isAssignableFrom(element.class)) element as T else getParent(element.eContainer, t)
     }
 
-    def static EObject getScopeDeterminant(EObject element)
+    // TODO actually, the return value can only be InterfaceDeclaration or ModuleDeclaration, 
+    // not a StructDeclaration; introduce another base class?
+    def static AbstractStructuralDeclaration getScopeDeterminant(EObject element)
     {
         var container = element
         while (container !== null)
         {
             if (container instanceof InterfaceDeclaration || container instanceof ModuleDeclaration)
-                return container
+                return container as AbstractStructuralDeclaration
             else
                 container = container.eContainer
         }
-
-        return EcoreUtil.getRootContainer(element)
     }
 
     def static EventDeclaration getRelatedEvent(StructDeclaration object)
