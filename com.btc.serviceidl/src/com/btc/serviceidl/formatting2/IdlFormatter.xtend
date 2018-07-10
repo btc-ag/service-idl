@@ -61,7 +61,7 @@ class IdlFormatter extends AbstractFormatter2
       
       element.regionFor.feature(IdlPackage::Literals::MODULE_DECLARATION__VIRTUAL).prepend[noSpace].append[oneSpace]
       element.regionFor.feature(IdlPackage::Literals::MODULE_DECLARATION__MAIN).surround[oneSpace]
-      element.regionFor.feature(IdlPackage::Literals::MODULE_DECLARATION__NAME).surround[oneSpace]
+      element.regionFor.feature(IdlPackage::Literals::ABSTRACT_STRUCTURAL_DECLARATION__NAME).surround[oneSpace]
       
       element.nestedModules.forEach[format]
       
@@ -74,7 +74,7 @@ class IdlFormatter extends AbstractFormatter2
       indentBlock(element, document)
       
       element.regionFor.feature(IdlPackage::Literals::INTERFACE_DECLARATION__ABSTRACT).prepend[noSpace].append[oneSpace]
-      element.regionFor.feature(IdlPackage::Literals::INTERFACE_DECLARATION__NAME).surround[oneSpace]
+      element.regionFor.feature(IdlPackage::Literals::ABSTRACT_STRUCTURAL_DECLARATION__NAME).surround[oneSpace]
       element.regionFor.keyword("guid").surround[oneSpace]
       element.regionFor.keyword("version").surround[oneSpace]
       element.regionFor.keywords("=").forEach[surround[oneSpace]]
@@ -91,7 +91,7 @@ class IdlFormatter extends AbstractFormatter2
    {
       indentBlock(element, document)
       
-      element.regionFor.feature(IdlPackage::Literals::STRUCT_DECLARATION__NAME).surround[oneSpace]
+      element.regionFor.feature(IdlPackage::Literals::ABSTRACT_STRUCTURAL_DECLARATION__NAME).surround[oneSpace]
       element.regionFor.feature(IdlPackage::Literals::STRUCT_DECLARATION__DECLARATOR).prepend[oneSpace].append[noSpace]
       element.regionFor.keyword(":").surround[oneSpace]
       element.members.forEach[prepend[newLine]]

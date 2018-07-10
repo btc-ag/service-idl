@@ -29,6 +29,14 @@ ImportDeclaration:
    'import' importedNamespace = QualifiedNameWithWildcard
 ;
 
+AbstractStructuralDeclaration:
+    AbstractContainerDeclaration | StructDeclaration
+;
+
+AbstractContainerDeclaration:
+    ModuleDeclaration | InterfaceDeclaration 
+;
+
 /* regular module */
 ModuleDeclaration:
    (virtual ?= 'virtual')? (main ?= 'main')? 'module' name = ID '{' (moduleComponents += AbstractModuleComponent)* (nestedModules += ModuleDeclaration)* '}'

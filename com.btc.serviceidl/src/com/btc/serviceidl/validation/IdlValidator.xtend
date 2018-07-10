@@ -47,9 +47,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 class IdlValidator extends AbstractIdlValidator
 {
     // TODO add a warning for interfaces without any operation
-    
     // TODO add an error if interface or event GUIDs are not unique
-    
 //	public static val INVALID_NAME = 'invalidName'
 //
 //	@Check
@@ -122,7 +120,7 @@ class IdlValidator extends AbstractIdlValidator
                 error(
                     "Virtual modules cannot be nested within non-virtual modules",
                     module,
-                    IdlPackage.Literals.MODULE_DECLARATION__NAME
+                    IdlPackage.Literals.ABSTRACT_STRUCTURAL_DECLARATION__NAME
                 )
             }
         }
@@ -164,7 +162,7 @@ class IdlValidator extends AbstractIdlValidator
         for (module : idl_specification.eAllContents.filter(ModuleDeclaration).toIterable)
         {
             if (name_map.containsKey(module.name))
-                error(Messages.NAME_COLLISION, module, IdlPackage.Literals.MODULE_DECLARATION__NAME)
+                error(Messages.NAME_COLLISION, module, IdlPackage.Literals.ABSTRACT_STRUCTURAL_DECLARATION__NAME)
             else
                 name_map.put(module.name, Boolean.TRUE)
         }
@@ -172,7 +170,8 @@ class IdlValidator extends AbstractIdlValidator
         for (interface_declaration : idl_specification.eAllContents.filter(InterfaceDeclaration).toIterable)
         {
             if (name_map.containsKey(interface_declaration.name))
-                error(Messages.NAME_COLLISION, interface_declaration, IdlPackage.Literals.INTERFACE_DECLARATION__NAME)
+                error(Messages.NAME_COLLISION, interface_declaration,
+                    IdlPackage.Literals.ABSTRACT_STRUCTURAL_DECLARATION__NAME)
             else
                 name_map.put(interface_declaration.name, Boolean.TRUE)
         }
@@ -257,7 +256,8 @@ class IdlValidator extends AbstractIdlValidator
     {
         if (KeywordValidator.isKeyword(element.name, Pattern.LITERAL))
         {
-            error(Messages.IDENTIFIER_NAME_IS_KEYWORD, element, IdlPackage.Literals.STRUCT_DECLARATION__NAME)
+            error(Messages.IDENTIFIER_NAME_IS_KEYWORD, element,
+                IdlPackage.Literals.ABSTRACT_STRUCTURAL_DECLARATION__NAME)
         }
 
         if (element.declarator !== null && KeywordValidator.isKeyword(element.declarator, Pattern.CASE_INSENSITIVE))
@@ -271,7 +271,8 @@ class IdlValidator extends AbstractIdlValidator
     {
         if (KeywordValidator.isKeyword(element.name, Pattern.CASE_INSENSITIVE))
         {
-            error(Messages.IDENTIFIER_NAME_IS_KEYWORD, element, IdlPackage.Literals.MODULE_DECLARATION__NAME)
+            error(Messages.IDENTIFIER_NAME_IS_KEYWORD, element,
+                IdlPackage.Literals.ABSTRACT_STRUCTURAL_DECLARATION__NAME)
         }
     }
 
@@ -380,7 +381,7 @@ class IdlValidator extends AbstractIdlValidator
 
         if (!isConstructible(element, questionable_types))
         {
-            error(Messages.TYPE_NOT_CONSTRUCTIBLE, element, IdlPackage.Literals.STRUCT_DECLARATION__NAME)
+            error(Messages.TYPE_NOT_CONSTRUCTIBLE, element, IdlPackage.Literals.ABSTRACT_STRUCTURAL_DECLARATION__NAME)
         }
     }
 
