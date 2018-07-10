@@ -40,7 +40,7 @@ class MavenResolver
 
     def MavenDependency resolveDependency(EObject element, ProjectType projectType)
     {
-        val name = resolvePackage(element, projectType)
+        val name = registerPackage(element, projectType)
         val version = resolveVersion(element.scopeDeterminant)
 
         // TODO if the dependency is from another IDL, a different groupId must be used 
@@ -132,14 +132,6 @@ class MavenResolver
         return DEFAULT_VERSION
     }
 
-    private def String resolvePackage(EObject element, ProjectType projectType)
-    {
-        val packageId = makePackageId(element, projectType)
-        // TODO check that package is registered instead
-        this.registeredPackages.add(packageId)
-        packageId
-    }
-
     // TODO consider making this private, I am not sure if the external uses are correct
     static def makePackageId(EObject element, ProjectType projectType)
     {
@@ -150,12 +142,11 @@ class MavenResolver
         ] + (if (scopeDeterminant instanceof InterfaceDeclaration) #[scopeDeterminant.name.toLowerCase] else #[]) +
             #[projectType.getName.toLowerCase])
     }
-
-    def registerPackage(EObject element, ProjectType projectType)
-    {
+    
+    def registerPackage(EObject element, ProjectType projectType) {
         val packageId = makePackageId(element, projectType)
         this.registeredPackages.add(packageId)
         packageId
     }
-
+    
 }
