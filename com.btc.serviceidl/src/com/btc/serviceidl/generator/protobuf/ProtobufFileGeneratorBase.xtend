@@ -30,7 +30,6 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.idl.TupleDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
-import com.btc.serviceidl.util.Util
 import java.util.Collection
 import java.util.HashSet
 import java.util.Map
@@ -165,10 +164,10 @@ class ProtobufFileGeneratorBase
         AtomicInteger id)
     {
         '''
-            «IF element.isOptional && !Util.isSequenceType(element.type)»
+            «IF element.isOptional && !element.type.isSequenceType»
                 optional «toText(element.type, element.type, container, new AtomicInteger)» «element.protoFileAttributeName» = «id.incrementAndGet»;
-            «ELSEIF Util.isSequenceType(element.type)»
-                «makeSequence(Util.getUltimateType(element.type), Util.isFailable(element.type), element.type, container, element.protoFileAttributeName, id)»
+            «ELSEIF element.type.isSequenceType»
+                «makeSequence(element.type.ultimateType, element.type.isFailable, element.type, container, element.protoFileAttributeName, id)»
             «ELSEIF requiresNewMessageType(element.type)»
                 «toText(element.type, element.type, container, id)»
             «ELSE»
@@ -180,7 +179,7 @@ class ProtobufFileGeneratorBase
     protected def dispatch String toText(SequenceDeclaration element, EObject context, EObject container,
         AtomicInteger id)
     {
-        '''«makeSequence(Util.getUltimateType(element.type), element.failable, context, container, Names.plain(context).asProtoFileAttributeName, id)»'''
+        '''«makeSequence(element.type.ultimateType, element.failable, context, container, Names.plain(context).asProtoFileAttributeName, id)»'''
     }
 
     protected def dispatch String toText(TupleDeclaration element, EObject context, EObject container, AtomicInteger id)
@@ -206,7 +205,7 @@ class ProtobufFileGeneratorBase
 
     protected def dispatch String toText(ParameterElement element, EObject context, EObject container, AtomicInteger id)
     {
-        val sequence = Util.tryGetSequence(element)
+        val sequence = element.tryGetSequence
         '''
             «IF sequence.present»
                 «toText(sequence.get, element, container, id)»
@@ -248,9 +247,8 @@ class ProtobufFileGeneratorBase
             // alias not yet resolve - do it now!
             if (typeName === null)
             {
-                if (Util.isSequenceType(element.type))
-                    typeName = "repeated " + toText(Util.getUltimateType(element.type), element, container,
-                        new AtomicInteger(0))
+                if (element.type.isSequenceType)
+                    typeName = "repeated " + toText(element.type.ultimateType, element, container, new AtomicInteger(0))
                 else
                     typeName = toText(element.type, element, container, new AtomicInteger(0))
                 typedefTable.put(element.name, typeName)
