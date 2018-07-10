@@ -60,39 +60,38 @@ final class ProtobufGenerator
       // handle all interfaces
       for (interfaceDeclaration : resource.allContents.filter(InterfaceDeclaration).toIterable)
       {
-         val artifactName = interfaceDeclaration.name
-
-         // TODO why is the proto file generated for each language?
-         for (language : languages)
-             generateProtobufFile(language, interfaceDeclaration, artifactName,
-                 new InterfaceProtobufFileGenerator(qualifiedNameProvider, moduleStructureStrategy,
+          generateProtobufFileForEachLanguage(languages, interfaceDeclaration, interfaceDeclaration.name,
+                 [language|new InterfaceProtobufFileGenerator(qualifiedNameProvider, moduleStructureStrategy,
                      getProjectReferences(language), typedefTable, language).generateInterface(
-                     interfaceDeclaration))
-         
-         generatedArtifacts.put(interfaceDeclaration, artifactName)
+                     interfaceDeclaration)])
       }
       
       // handle all module contents (excluding interfaces)
       for (module : resource.allContents.filter(ModuleDeclaration).filter[!isVirtual].toIterable)
       {
-         val moduleContents = module.eContents.filter( [e | !(e instanceof ModuleDeclaration || e instanceof InterfaceDeclaration)])
+         val moduleContents = module.eContents.filter[!(it instanceof ModuleDeclaration || it instanceof InterfaceDeclaration)]
          if ( !moduleContents.empty )
          {
-            val artifactName = Constants.FILE_NAME_TYPES
-            
-            for (language : languages)
-                    generateProtobufFile(language, module, artifactName,
-                        new ModuleProtobufFileGenerator(qualifiedNameProvider, moduleStructureStrategy,
+             generateProtobufFileForEachLanguage(languages, module, Constants.FILE_NAME_TYPES, 
+                 [language|new ModuleProtobufFileGenerator(qualifiedNameProvider, moduleStructureStrategy,
                             getProjectReferences(language), typedefTable, language).generateModuleContent(module,
-                            moduleContents))
-            
-            generatedArtifacts.put(module, artifactName)
+                            moduleContents)])
          }
       }
    }
    
+   private def void generateProtobufFileForEachLanguage(Iterable<ArtifactNature> languages, EObject object,
+        String artifactName, (ArtifactNature)=>CharSequence generateContent)
+    {
+         // TODO why is the proto file generated for each language?
+        for (language : languages)
+            generateProtobufFile(language, object, artifactName, generateContent.apply(language))
+
+        generatedArtifacts.put(object, artifactName)
+    }
+   
    private def void generateProtobufFile(ArtifactNature artifactNature, EObject container, String artifactName,
-        String fileContent)
+        CharSequence fileContent)
     {
         fileSystemAccess.generateFile(
             makeProtobufPath(container, artifactName, artifactNature, moduleStructureStrategy).toPortableString,
