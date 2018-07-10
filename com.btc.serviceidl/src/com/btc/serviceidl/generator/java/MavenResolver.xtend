@@ -47,9 +47,9 @@ class MavenResolver
         return new MavenDependency.Builder().groupId(groupId).artifactId(name).version(version).build
     }
 
-    static def Optional<MavenDependency> resolveExternalDependency(String class_name)
+    static def Optional<MavenDependency> resolveExternalDependency(String className)
     {
-        switch name : class_name.toLowerCase
+        switch name : className.toLowerCase
         {
             case name.startsWith("com.google.protobuf."):
                 return Optional.of(
@@ -132,29 +132,30 @@ class MavenResolver
         return DEFAULT_VERSION
     }
 
-    private def String resolvePackage(EObject element, ProjectType project_type)
+    private def String resolvePackage(EObject element, ProjectType projectType)
     {
-        val packageId = makePackageId(element, project_type)
+        val packageId = makePackageId(element, projectType)
         // TODO check that package is registered instead
         this.registeredPackages.add(packageId)
         packageId
     }
 
     // TODO consider making this private, I am not sure if the external uses are correct
-    static def makePackageId(EObject element, ProjectType project_type)
+    static def makePackageId(EObject element, ProjectType projectType)
     {
         val scopeDeterminant = element.scopeDeterminant
         String.join(Constants.SEPARATOR_PACKAGE, #[
             GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(scopeDeterminant.moduleStack).build,
                 ArtifactNature.JAVA, TransformType.PACKAGE)
         ] + (if (scopeDeterminant instanceof InterfaceDeclaration) #[scopeDeterminant.name.toLowerCase] else #[]) +
-            #[project_type.getName.toLowerCase])
+            #[projectType.getName.toLowerCase])
     }
-    
-    def registerPackage(EObject element, ProjectType projectType) {
+
+    def registerPackage(EObject element, ProjectType projectType)
+    {
         val packageId = makePackageId(element, projectType)
         this.registeredPackages.add(packageId)
         packageId
     }
-    
+
 }
