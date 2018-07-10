@@ -34,6 +34,7 @@ import java.util.Collection
 import java.util.HashSet
 import java.util.Map
 import java.util.Set
+import org.eclipse.core.runtime.IPath
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -50,7 +51,7 @@ class ProtobufFileGeneratorBase
     val Map<ParameterBundle, Set<ParameterBundle>> projectReferences
     val Map<String, String> typedefTable // TODO is it correct to share this across files?
     val ArtifactNature artifactNature
-    val referencedFiles = new HashSet<String>
+    val referencedFiles = new HashSet<IPath>
 
     protected def String generateFailable(EObject container)
     {
@@ -111,7 +112,7 @@ class ProtobufFileGeneratorBase
     {
         '''
             «FOR importFile : referencedFiles»
-                import "«importFile»";
+                import "«importFile.toPortableString»";
             «ENDFOR»
         '''
     }
@@ -339,7 +340,7 @@ class ProtobufFileGeneratorBase
         String referencedObjectContainerPlainName, ParameterBundle referencingModuleParameterBundle,
         ArtifactNature artifactNature)
     {
-        referencedFiles.add(referencedObjectContainer.importPath.toPortableString)
+        referencedFiles.add(referencedObjectContainer.importPath)
 
         val referencedModuleStack = referencedObjectContainer.moduleStack
         if (referencingModuleParameterBundle.moduleStack != referencedModuleStack)
