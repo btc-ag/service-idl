@@ -23,7 +23,7 @@ final class ModuleProtobufFileGenerator extends ProtobufFileGeneratorBase
     {
         val fileBody = '''
             «generateFailable(module)»
-            «generateTypes(module, module.moduleComponents.filter[ e | !(e instanceof InterfaceDeclaration)].toList)»
+            «generateTypes(module, module.moduleComponents.reject[it instanceof InterfaceDeclaration].toList)»
         '''
 
         val fileHeader = '''
