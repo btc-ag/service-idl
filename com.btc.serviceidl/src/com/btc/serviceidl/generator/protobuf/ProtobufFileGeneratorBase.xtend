@@ -250,14 +250,7 @@ class ProtobufFileGeneratorBase
 
     protected def dispatch String toText(AbstractType element, EObject context, EObject container, Counter id)
     {
-        if (element.primitiveType !== null)
-            toText(element.primitiveType, context, container, id)
-        else if (element.referenceType !== null)
-            toText(element.referenceType, context, container, id)
-        else if (element.collectionType !== null)
-            toText(element.collectionType, context, container, id)
-        else
-            throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
+        toText(element.actualType, context, container, id)
     }
 
     protected def dispatch String toText(PrimitiveType element, EObject context, EObject container, Counter id)

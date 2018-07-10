@@ -178,14 +178,7 @@ class GeneratorUtil
 
     static def dispatch boolean useCodec(AbstractType element, ArtifactNature artifactNature)
     {
-        if (element.primitiveType !== null)
-            useCodec(element.primitiveType, artifactNature)
-        else if (element.collectionType !== null)
-            useCodec(element.collectionType, artifactNature)
-        else if (element.referenceType !== null)
-            useCodec(element.referenceType, artifactNature)
-        else
-            true
+        useCodec(element.actualType, artifactNature)
     }
 
     static def String getCodecName(EObject object)

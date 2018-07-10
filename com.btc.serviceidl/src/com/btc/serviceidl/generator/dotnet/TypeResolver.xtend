@@ -72,6 +72,7 @@ class TypeResolver
         return resolve(element, element.mainProjectType)
     }
 
+    // TODO looks somewhat similar to java.TypeResolver.resolve
     def ResolvedName resolve(EObject element, ProjectType project_type)
     {
         val fully_qualified = true
@@ -98,6 +99,7 @@ class TypeResolver
                     else
                         project_type)
                 }
+                // TODO really fall through in case of collectionType?
             }
             else if (element instanceof PrimitiveType)
             {

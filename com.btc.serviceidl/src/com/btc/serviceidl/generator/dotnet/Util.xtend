@@ -71,12 +71,7 @@ class Util
         }
         else if (element instanceof AbstractType)
         {
-            if (element.referenceType !== null)
-                return isValueType(element.referenceType)
-            else if (element.primitiveType !== null)
-                return isValueType(element.primitiveType)
-            else if (element.collectionType !== null)
-                return isValueType(element.collectionType)
+            return isValueType(element.actualType)
         }
 
         return false
@@ -207,12 +202,7 @@ class Util
         }
         else if (element instanceof AbstractType)
         {
-            if (element.referenceType !== null)
-                return makeDefaultValue(basicCSharpSourceGenerator, element.referenceType)
-            else if (element.primitiveType !== null)
-                return makeDefaultValue(basicCSharpSourceGenerator, element.primitiveType)
-            else if (element.collectionType !== null)
-                return makeDefaultValue(basicCSharpSourceGenerator, element.collectionType)
+            return makeDefaultValue(basicCSharpSourceGenerator, element.actualType)
         }
         else if (element instanceof SequenceDeclaration)
         {

@@ -101,14 +101,7 @@ class BasicJavaSourceGenerator
 
     def dispatch String toText(AbstractType element)
     {
-        if (element.primitiveType !== null)
-            return toText(element.primitiveType)
-        else if (element.referenceType !== null)
-            return toText(element.referenceType)
-        else if (element.collectionType !== null)
-            return toText(element.collectionType)
-
-        throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
+        toText(element.actualType)
     }
 
     def dispatch String toText(PrimitiveType element)
@@ -287,7 +280,7 @@ class BasicJavaSourceGenerator
 
     def dispatch String makeDefaultValue(AbstractType element)
     {
-        makeDefaultValue(element.referenceType ?: element.primitiveType ?: element.collectionType)
+        makeDefaultValue(element.actualType)
     }
 
     def dispatch String makeDefaultValue(SequenceDeclaration element)

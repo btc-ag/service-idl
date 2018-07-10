@@ -436,12 +436,15 @@ class Util
     {
         if (element instanceof SequenceDeclaration)
             return getUltimateType(element.type, decompose_typedef)
-        else if (element instanceof AbstractType && ((element as AbstractType).collectionType !== null))
-            return getUltimateType((element as AbstractType).collectionType, decompose_typedef)
-        else if (element instanceof AbstractType && ((element as AbstractType).referenceType !== null))
-            return getUltimateType((element as AbstractType).referenceType, decompose_typedef)
-        else if (element instanceof AbstractType && ((element as AbstractType).primitiveType !== null))
-            return (element as AbstractType).primitiveType
+        else if (element instanceof AbstractType)
+        {
+            val actualType = element.actualType
+            switch (actualType)
+            {
+                PrimitiveType: actualType
+                default: actualType.getUltimateType(decompose_typedef) 
+            }
+        }
         else if (element instanceof ParameterElement)
             return getUltimateType(element.paramType, decompose_typedef)
         else if (element instanceof AliasDeclaration)

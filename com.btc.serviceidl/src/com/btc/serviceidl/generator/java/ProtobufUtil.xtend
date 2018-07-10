@@ -49,6 +49,7 @@ class ProtobufUtil
                 resolveProtobuf(typeResolver, object.primitiveType, optProtobufType)
             else if (object.referenceType !== null)
                 resolveProtobuf(typeResolver, object.referenceType, optProtobufType)
+            // TODO really do nothing in case of collectionType?
         }
         else
         {

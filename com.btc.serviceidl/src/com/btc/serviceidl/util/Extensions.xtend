@@ -16,6 +16,7 @@
 package com.btc.serviceidl.util
 
 import com.btc.serviceidl.idl.AbstractException
+import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
@@ -370,5 +371,11 @@ class Extensions
         // TODO the events function also includes inherited events, check whether these 
         // should be included here as well. Adjust naming of the methods. 
         interfaceDeclaration.contains.filter(EventDeclaration).filter[name !== null]
+    }
+    
+    static def getActualType(AbstractType abstractType)
+    {
+        JavaUtil.checkConsistency(abstractType);
+        abstractType.primitiveType ?: abstractType.referenceType ?: abstractType.collectionType        
     }
 }

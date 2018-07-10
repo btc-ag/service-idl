@@ -120,14 +120,7 @@ class BasicCppGenerator
 
     def dispatch String toText(AbstractType item, EObject context)
     {
-        if (item.primitiveType !== null)
-            return toText(item.primitiveType, item)
-        else if (item.referenceType !== null)
-            return toText(item.referenceType, item)
-        else if (item.collectionType !== null)
-            return toText(item.collectionType, item)
-
-        throw new IllegalArgumentException("Unknown AbstractType: " + item.class.toString)
+        return toText(item.actualType, item)
     }
 
     def dispatch String toText(AliasDeclaration item, EObject context)

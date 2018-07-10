@@ -61,16 +61,9 @@ class BasicCSharpSourceGenerator {
    }
    
    def dispatch String toText(AbstractType element, EObject context)
-   {
-      if (element.primitiveType !== null)
-         return toText(element.primitiveType, element)
-      else if (element.referenceType !== null)
-         return toText(element.referenceType, element)
-      else if (element.collectionType !== null)
-         return toText(element.collectionType, element)
-      
-      throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
-   }
+    {
+        toText(element.actualType, element)
+    }
    
    def dispatch String toText(ParameterElement element, EObject context)
    {

@@ -127,6 +127,7 @@ class TypeResolver
                     else
                         project_type)
                 }
+                // TODO really fall through in case of collectionType?
             }
             else if (element instanceof PrimitiveType)
             {
