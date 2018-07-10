@@ -52,6 +52,8 @@ class ProtobufFileGeneratorBase
     val Map<String, String> typedefTable // TODO is it correct to share this across files?
     val ArtifactNature artifactNature
     val referencedFiles = new HashSet<IPath>
+    
+    static val WRAPPER_SUFFIX = "Wrapper"
 
     protected def String generateFailable(EObject container)
     {
@@ -181,7 +183,7 @@ class ProtobufFileGeneratorBase
     protected def dispatch String toText(TupleDeclaration element, EObject context, EObject container, Counter id)
     {
         val tupleName = ( if (context instanceof TupleDeclaration ||
-            context instanceof SequenceDeclaration) "Tuple" else Names.plain(context).toFirstUpper ) + "Wrapper"
+            context instanceof SequenceDeclaration) "Tuple" else Names.plain(context).toFirstUpper ) + WRAPPER_SUFFIX
 
         '''
             message «tupleName»
@@ -233,7 +235,7 @@ class ProtobufFileGeneratorBase
     protected def dispatch String toText(AliasDeclaration element, EObject context, EObject container, Counter id)
     {
         if (requiresNewMessageType(element.type))
-            Names.plain(element).toFirstUpper + "Wrapper"
+            Names.plain(element).toFirstUpper + WRAPPER_SUFFIX
         else
             typedefTable.computeIfAbsent(element.name, [
                 if (element.type.isSequenceType)
