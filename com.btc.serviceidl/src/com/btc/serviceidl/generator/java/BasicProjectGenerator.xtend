@@ -98,7 +98,7 @@ abstract class BasicProjectGenerator
    {
       val paramBundle = ParameterBundle.createBuilder(module.moduleStack).with(ProjectType.COMMON).build
       
-      for ( element : module.moduleComponents.filter(AbstractTypeDeclaration).filter[e | !(e instanceof AliasDeclaration)] )
+      for ( element : module.moduleComponents.filter(AbstractTypeDeclaration).reject[it instanceof AliasDeclaration] )
       {
          generateJavaFile(projectSourceRootPath.append(Names.plain(element).java), paramBundle, module, 
              [basicJavaSourceGenerator|basicJavaSourceGenerator.toDeclaration(element)]
