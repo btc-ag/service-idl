@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IPath;
 
 public interface Constants {
 
+    // TODO replace these by TransformType.*.separator
     // diverse separators, e.g. for paths, packages, namespaces
     public static final String SEPARATOR_FILE       = String.valueOf(IPath.SEPARATOR);
     public static final String SEPARATOR_PACKAGE    = ".";
