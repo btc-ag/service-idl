@@ -52,7 +52,7 @@ class ProtobufFileGeneratorBase
     val Map<String, String> typedefTable // TODO is it correct to share this across files?
     val ArtifactNature artifactNature
     val referencedFiles = new HashSet<IPath>
-    
+
     static val WRAPPER_SUFFIX = "Wrapper"
 
     protected def String generateFailable(EObject container)
@@ -139,7 +139,7 @@ class ProtobufFileGeneratorBase
         else
         {
             id.incrementAndGet
-            '''«resolve(element, context, container)»'''
+            resolve(element, context, container)
         }
     }
 
@@ -157,7 +157,7 @@ class ProtobufFileGeneratorBase
                 }
             '''
         else
-            '''«resolve(element, context, container)»'''
+            resolve(element, context, container)
     }
 
     protected def dispatch String toText(MemberElementWrapper element, EObject context, EObject container, Counter id)
@@ -177,7 +177,8 @@ class ProtobufFileGeneratorBase
 
     protected def dispatch String toText(SequenceDeclaration element, EObject context, EObject container, Counter id)
     {
-        '''«makeSequence(element.type.ultimateType, element.failable, context, container, Names.plain(context).asProtoFileAttributeName, id)»'''
+        makeSequence(element.type.ultimateType, element.failable, context, container,
+            Names.plain(context).asProtoFileAttributeName, id)
     }
 
     protected def dispatch String toText(TupleDeclaration element, EObject context, EObject container, Counter id)
@@ -229,7 +230,7 @@ class ProtobufFileGeneratorBase
             '''
         }
         else
-            '''«resolve(element, context, container)»'''
+            resolve(element, context, container)
     }
 
     protected def dispatch String toText(AliasDeclaration element, EObject context, EObject container, Counter id)
