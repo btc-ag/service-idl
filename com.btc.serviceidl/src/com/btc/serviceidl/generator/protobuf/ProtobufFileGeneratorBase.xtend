@@ -64,9 +64,7 @@ class ProtobufFileGeneratorBase
                 
                 // local failable type wrappers
                 «FOR failableType : failableTypes»
-                    «val failableTypeName = GeneratorUtil.asFailable(failableType, container, qualifiedNameProvider)»
-                    «val basicTypeName = resolve(failableType, container, container)»
-                    message «failableTypeName»
+                    message «GeneratorUtil.asFailable(failableType, container, qualifiedNameProvider)»
                     {
                        // NOK: exception is set
                        optional string exception  = 1;
@@ -74,7 +72,7 @@ class ProtobufFileGeneratorBase
                        optional string stacktrace = 3;
                        
                        // OK: value is set
-                       optional «basicTypeName» value = 4;
+                       optional «resolve(failableType, container, container)» value = 4;
                     }
                 «ENDFOR»
             '''
