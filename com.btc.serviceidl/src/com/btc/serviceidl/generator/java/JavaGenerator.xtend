@@ -15,7 +15,7 @@
  */
 package com.btc.serviceidl.generator.java
 
-import com.btc.serviceidl.generator.IGenerationSettingsProvider
+import com.btc.serviceidl.generator.IGenerationSettings
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -32,19 +32,19 @@ class JavaGenerator
     val IFileSystemAccess fileSystemAccess
     val IQualifiedNameProvider qualifiedNameProvider
     val Map<EObject, String> protobufArtifacts
-    val IGenerationSettingsProvider generationSettingsProvider
+    val IGenerationSettings generationSettings
     val IDLSpecification idl
     val String groupId
     val MavenResolver mavenResolver
 
     new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
-        IGenerationSettingsProvider generationSettingsProvider, Map<EObject, String> protobufArtifacts)
+        IGenerationSettings generationSettings, Map<EObject, String> protobufArtifacts)
     {
         this.idl = idl
         this.fileSystemAccess = fileSystemAccess
         this.qualifiedNameProvider = qualifiedNameProvider
         this.protobufArtifacts = protobufArtifacts
-        this.generationSettingsProvider = generationSettingsProvider
+        this.generationSettings = generationSettings
         this.groupId = this.idl.eResource.URI.lastSegment // TODO this must be customizable
         mavenResolver = new MavenResolver(groupId)
     }
@@ -84,15 +84,15 @@ class JavaGenerator
 
     private def void generateModuleContents(ModuleDeclaration module)
     {
-        new ModuleProjectGenerator(fileSystemAccess, qualifiedNameProvider, generationSettingsProvider,
-            protobufArtifacts, idl, mavenResolver, module).generate
+        new ModuleProjectGenerator(fileSystemAccess, qualifiedNameProvider, generationSettings, protobufArtifacts, idl,
+            mavenResolver, module).generate
     }
 
     private def void generateInterfaceProjects(ModuleDeclaration module)
     {
         for (interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
-            new InterfaceProjectGenerator(fileSystemAccess, qualifiedNameProvider, generationSettingsProvider,
+            new InterfaceProjectGenerator(fileSystemAccess, qualifiedNameProvider, generationSettings,
                 protobufArtifacts, idl, mavenResolver, interfaceDeclaration).generate
         }
     }

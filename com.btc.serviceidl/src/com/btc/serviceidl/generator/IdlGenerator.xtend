@@ -75,8 +75,9 @@ class IdlGenerator implements IGenerator2
             return
         }
 
-        val projectTypes = generation_settings_provider.projectTypes
-        val languages = generation_settings_provider.languages
+        val generationSettings = generation_settings_provider.getSettings(resource)
+        val projectTypes = generationSettings.projectTypes
+        val languages = generationSettings.languages
 
 // TODO REFACTOR invert these dependencies
         var ProtobufGenerator protobuf_generator
@@ -85,20 +86,20 @@ class IdlGenerator implements IGenerator2
         {
             protobuf_generator = new ProtobufGenerator
             protobuf_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider,
-                generation_settings_provider.moduleStructureStrategy, languages)
+                generationSettings.moduleStructureStrategy, languages)
             protobuf_artifacts = protobuf_generator.generatedArtifacts
         }
 
         if (languages.contains(ArtifactNature.CPP))
         {
-            val cpp_generator = new CppGenerator(idl, fsa, qualified_name_provider, scope_provider,
-                generation_settings_provider, protobuf_generator?.getProjectReferences(ArtifactNature.CPP))
+            val cpp_generator = new CppGenerator(idl, fsa, qualified_name_provider, scope_provider, generationSettings,
+                protobuf_generator?.getProjectReferences(ArtifactNature.CPP))
             cpp_generator.doGenerate
         }
 
         if (languages.contains(ArtifactNature.JAVA))
         {
-            val java_generator = new JavaGenerator(idl, fsa, qualified_name_provider, generation_settings_provider,
+            val java_generator = new JavaGenerator(idl, fsa, qualified_name_provider, generationSettings,
                 protobuf_artifacts)
             java_generator.doGenerate
         }
@@ -109,7 +110,7 @@ class IdlGenerator implements IGenerator2
                 idl,
                 fsa,
                 qualified_name_provider,
-                generation_settings_provider,
+                generationSettings,
                 projectTypes,
                 protobuf_generator?.getProjectReferences(ArtifactNature.DOTNET)
             )

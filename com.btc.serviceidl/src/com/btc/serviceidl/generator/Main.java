@@ -13,14 +13,9 @@
  */
 package com.btc.serviceidl.generator;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -44,13 +39,6 @@ import org.eclipse.xtext.validation.Issue;
 
 import com.btc.serviceidl.IdlStandaloneSetup;
 import com.btc.serviceidl.generator.common.ArtifactNature;
-import com.btc.serviceidl.generator.common.ProjectType;
-import com.btc.serviceidl.generator.cpp.cab.CABModuleStructureStrategy;
-import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSetFactory;
-import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
@@ -64,27 +52,8 @@ public class Main {
     public static final String OPTION_CPP_PROJECT_SYSTEM                     = "cppProjectSystem";
     public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE         = "cmake";
     public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ = "prins-vcxproj";
-    public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT       = OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ;
     public static final String OPTION_VERSIONS                               = "versions";
     public static final String OPTION_PROJECT_SET                            = "projectSet";
-    public static final String OPTION_VALUE_PROJECT_SET_API                  = "api";
-    public static final String OPTION_VALUE_PROJECT_SET_CLIENT               = "client";
-    public static final String OPTION_VALUE_PROJECT_SET_SERVER               = "server";
-    public static final String OPTION_VALUE_PROJECT_SET_FULL                 = "full";
-    public static final String OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON   = "full-with-skeleton";
-
-    public static final Set<ProjectType> API_PROJECT_SET    = ImmutableSet.of(ProjectType.SERVICE_API,
-            ProjectType.COMMON);
-    public static final Set<ProjectType> CLIENT_PROJECT_SET = Sets.union(API_PROJECT_SET,
-            ImmutableSet.of(ProjectType.PROTOBUF, ProjectType.PROXY, ProjectType.CLIENT_CONSOLE));
-    public static final Set<ProjectType> SERVER_PROJECT_SET = Sets.union(API_PROJECT_SET,
-            ImmutableSet.of(ProjectType.PROTOBUF, ProjectType.DISPATCHER, ProjectType.SERVER_RUNNER));
-    public static final Set<ProjectType> FULL_PROJECT_SET   = Sets.union(CLIENT_PROJECT_SET, SERVER_PROJECT_SET);
-
-    public static final Map<String, Set<ProjectType>> PROJECT_SET_MAPPING = ImmutableMap.of(
-            OPTION_VALUE_PROJECT_SET_API, API_PROJECT_SET, OPTION_VALUE_PROJECT_SET_CLIENT, CLIENT_PROJECT_SET,
-            OPTION_VALUE_PROJECT_SET_SERVER, SERVER_PROJECT_SET, OPTION_VALUE_PROJECT_SET_FULL, FULL_PROJECT_SET,
-            OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON, ImmutableSet.copyOf(ProjectType.values()));
 
     public static final int EXIT_CODE_GOOD              = 0;
     public static final int EXIT_CODE_GENERATION_FAILED = 1;
@@ -117,6 +86,9 @@ public class Main {
                     + OPTION_JAVA_OUTPUT_PATH + ", -" + OPTION_DOTNET_OUTPUT_PATH);
             return EXIT_CODE_INVALID_ARGUMENTS;
         }
+        // TODO this might need to be moved somewhere else, or at least be changed such
+        // that in case of a generic output path the set of languages from a config file
+        // is not overridden
         Map<ArtifactNature, IPath> outputPaths = new HashMap<ArtifactNature, IPath>();
         if (genericOutputPath) {
             IPath baseOutputPath = new Path(commandLine.getOptionValue(OPTION_OUTPUT_PATH));
@@ -137,27 +109,11 @@ public class Main {
 
         final boolean res = main.tryRunGenerator(commandLine.getArgs(), outputPaths,
                 commandLine.hasOption(OPTION_CPP_PROJECT_SYSTEM) ? commandLine.getOptionValue(OPTION_CPP_PROJECT_SYSTEM)
-                        : OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT,
-                commandLine.hasOption(OPTION_VERSIONS) ? splitVersions(commandLine.getOptionValue(OPTION_VERSIONS))
-                        : new ArrayList<Map.Entry<String, String>>(),
-                commandLine.hasOption(OPTION_PROJECT_SET)
-                        ? PROJECT_SET_MAPPING.get(commandLine.getOptionValue(OPTION_PROJECT_SET))
-                        : ImmutableSet.copyOf(ProjectType.values()));
+                        : null,
+                commandLine.hasOption(OPTION_VERSIONS) ? commandLine.getOptionValue(OPTION_VERSIONS) : null,
+                commandLine.hasOption(OPTION_PROJECT_SET) ? commandLine.getOptionValue(OPTION_PROJECT_SET) : null);
 
         return res ? EXIT_CODE_GOOD : EXIT_CODE_GENERATION_FAILED;
-    }
-
-    private static Iterable<Map.Entry<String, String>> splitVersions(String optionValue) {
-        Collection<Map.Entry<String, String>> res = new ArrayList<Map.Entry<String, String>>();
-        for (String versionEntry : optionValue.split(",")) {
-            String[] versionEntryParts = versionEntry.split("=");
-            if (versionEntryParts.length != 2) {
-                throw new IllegalArgumentException(
-                        "Invalid version specifiction '" + versionEntry + "', use kind=version");
-            }
-            res.add(new AbstractMap.SimpleImmutableEntry<String, String>(versionEntryParts[0], versionEntryParts[1]));
-        }
-        return res;
     }
 
     private static Options createOptions() {
@@ -169,9 +125,9 @@ public class Main {
         options.addOption(OPTION_CPP_PROJECT_SYSTEM, true, "C++ project system ("
                 + OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE + "," + OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ + ")");
         options.addOption(OPTION_VERSIONS, true, "target Version overrides");
-        options.addOption(OPTION_PROJECT_SET, true,
-                "set of projects to generate (" + String.join(",", PROJECT_SET_MAPPING.keySet()) + "), default is "
-                        + OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON);
+        options.addOption(OPTION_PROJECT_SET, true, "set of projects to generate ("
+                + String.join(",", DefaultGenerationSettingsProvider.PROJECT_SET_MAPPING.keySet()) + "), default is "
+                + DefaultGenerationSettingsProvider.OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON);
         return options;
     }
 
@@ -200,8 +156,8 @@ public class Main {
     @Inject
     private IGenerationSettingsProvider generationSettingsProvider;
 
-    private boolean tryRunGenerator(String[] inputFiles, Map<ArtifactNature, IPath> outputPaths, String projectSystem,
-            Iterable<Map.Entry<String, String>> versions, Set<ProjectType> projectSet) {
+    private boolean tryRunGenerator(String[] inputFiles, Map<ArtifactNature, IPath> outputPaths, String cppProjectSystem,
+            String versions, String projectSet) {
         // Load the resource
         ResourceSet set = resourceSetProvider.get();
         for (String inputFile : inputFiles) {
@@ -235,7 +191,7 @@ public class Main {
         }
 
         try {
-            configureGenerationSetings(projectSystem, versions, outputPaths.keySet(), projectSet);
+            configureGenerationSettings(cppProjectSystem, versions, outputPaths.keySet(), projectSet);
         } catch (Exception ex) {
             System.err.println("Error when configuring generation settings: " + ex);
             return false;
@@ -253,39 +209,11 @@ public class Main {
         return true;
     }
 
-    private void configureGenerationSetings(String projectSystem, Iterable<Map.Entry<String, String>> versions,
-            Iterable<ArtifactNature> languages, Iterable<ProjectType> projectSet) {
+    private void configureGenerationSettings(String cppProjectSystem, String versions, Iterable<ArtifactNature> languages,
+            String projectSet) {
         DefaultGenerationSettingsProvider defaultGenerationSettingsProvider = (DefaultGenerationSettingsProvider) generationSettingsProvider;
 
-        configureGenerationSettings(defaultGenerationSettingsProvider, projectSystem, versions, languages, projectSet);
+        defaultGenerationSettingsProvider.configureGenerationSettings(cppProjectSystem, versions, languages, projectSet);
     }
 
-    public static void configureGenerationSettings(DefaultGenerationSettingsProvider defaultGenerationSettingsProvider,
-            String projectSystem, Iterable<Map.Entry<String, String>> versions, Iterable<ArtifactNature> languages,
-            Iterable<ProjectType> projectSet) {
-        defaultGenerationSettingsProvider.languages = ImmutableSet.copyOf(languages);
-        defaultGenerationSettingsProvider.projectTypes = ImmutableSet.copyOf(projectSet);
-
-        switch (projectSystem) {
-        case OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
-            defaultGenerationSettingsProvider.projectSetFactory = new CMakeProjectSetFactory();
-
-            // TODO instead of printing on System.out, use some event mechanism here
-            System.out.println("Disabling ODB generation, this is unsupported with CMake project system");
-            defaultGenerationSettingsProvider.projectTypes = Sets.difference(
-                    defaultGenerationSettingsProvider.projectTypes, ImmutableSet.of(ProjectType.EXTERNAL_DB_IMPL));
-            defaultGenerationSettingsProvider.moduleStructureStrategy = new CABModuleStructureStrategy();
-
-            break;
-        case OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ:
-            defaultGenerationSettingsProvider.projectSetFactory = new VSSolutionFactory();
-            break;
-        default:
-            throw new IllegalArgumentException("Unknown project system: " + projectSystem);
-        }
-
-        for (Entry<String, String> version : versions) {
-            defaultGenerationSettingsProvider.setVersion(version.getKey(), version.getValue());
-        }
-    }
 }

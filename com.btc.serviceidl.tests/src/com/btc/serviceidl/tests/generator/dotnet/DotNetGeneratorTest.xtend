@@ -335,6 +335,6 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
         Map<String, String> contents)
     {
         checkGenerators(input, new HashSet<ArtifactNature>(Arrays.asList(ArtifactNature.DOTNET)), projectTypes,
-            fileCount, contents)
+            null, fileCount, contents)
     }
 }

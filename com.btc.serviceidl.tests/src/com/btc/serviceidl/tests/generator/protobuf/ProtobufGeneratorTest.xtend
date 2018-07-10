@@ -97,6 +97,6 @@ class ProtobufGeneratorTest extends AbstractGeneratorTest
     def void checkGenerators(CharSequence input, int fileCount, Map<String, String> contents)
     {
         checkGenerators(input, #[ArtifactNature.CPP].toSet,
-            new HashSet<ProjectType>(Arrays.asList(ProjectType.PROTOBUF)), fileCount, contents)
+            new HashSet<ProjectType>(Arrays.asList(ProjectType.PROTOBUF)), null, fileCount, contents)
     }
 }

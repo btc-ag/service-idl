@@ -10,67 +10,158 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator
 
+import com.btc.serviceidl.generator.DefaultGenerationSettings
 import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
-import com.btc.serviceidl.generator.Main
 import com.btc.serviceidl.generator.common.ArtifactNature
-import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
+import com.btc.serviceidl.idl.IDLSpecification
+import com.btc.serviceidl.tests.IdlInjectorProvider
+import com.btc.serviceidl.tests.testdata.TestData
 import com.google.common.collect.ImmutableSet
-import java.util.HashMap
+import com.google.inject.Inject
+import java.io.InputStream
+import java.util.Map
+import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.resource.impl.ExtensibleURIConverterImpl
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
+import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtext.generator.InMemoryFileSystemAccess
+import org.eclipse.xtext.testing.InjectWith
+import org.eclipse.xtext.testing.XtextRunner
+import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.Test
+import org.junit.runner.RunWith
 
 import static org.junit.Assert.*
+import org.eclipse.core.runtime.Path
+import org.eclipse.xtext.util.StringInputStream
+import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider.OptionalGenerationSettings
+import com.btc.serviceidl.generator.Main
 
+@RunWith(XtextRunner)
+@InjectWith(IdlInjectorProvider)
 class DefaultGenerationSettingsProviderTest
 {
+    @Inject extension ParseHelper<IDLSpecification>
+
     @Test
     def void testBasic()
     {
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
         assertEquals(ImmutableSet.of(ArtifactNature.CPP, ArtifactNature.JAVA, ArtifactNature.DOTNET),
-            defaultGenerationSettingsProvider.getLanguages)
+            defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource).getLanguages)
     }
 
     @Test(expected=IllegalArgumentException)
     def void testSetVersionUnknownVersionFails()
     {
-        val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.setVersion(CppConstants.SERVICECOMM_VERSION_KIND, "foo")
+        val defaultGenerationSettings = new DefaultGenerationSettings
+        defaultGenerationSettings.setVersion(CppConstants.SERVICECOMM_VERSION_KIND, "foo")
     }
 
     @Test(expected=IllegalArgumentException)
     def void testSetVersionUnknownVersionKindFails()
     {
-        val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.setVersion("foo", "bar")
+        val defaultGenerationSettings = new DefaultGenerationSettings
+        defaultGenerationSettings.setVersion("foo", "bar")
     }
 
     @Test
     def void testSetVersionKnownVersion()
     {
-        val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
+        val defaultGenerationSettings = new DefaultGenerationSettings
         for (version : CppConstants.SERVICECOMM_VERSIONS)
-            defaultGenerationSettingsProvider.setVersion(CppConstants.SERVICECOMM_VERSION_KIND, version)
+            defaultGenerationSettings.setVersion(CppConstants.SERVICECOMM_VERSION_KIND, version)
     }
 
     @Test
     def void testConfigureVersions()
     {
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
-        Main.configureGenerationSettings(defaultGenerationSettingsProvider,
-            Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_DEFAULT,
-            #{CppConstants.SERVICECOMM_VERSION_KIND -> ServiceCommVersion.V0_10.label}.entrySet, ArtifactNature.values,
-            ProjectType.values)
+        defaultGenerationSettingsProvider.configureGenerationSettings(null,
+            #{CppConstants.SERVICECOMM_VERSION_KIND -> ServiceCommVersion.V0_10.label}.entrySet, null, null)
         assertEquals(ServiceCommVersion.V0_10.label,
-            defaultGenerationSettingsProvider.getTargetVersion(CppConstants.SERVICECOMM_VERSION_KIND))
+            defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource).getTargetVersion(
+                CppConstants.SERVICECOMM_VERSION_KIND))
     }
 
     @Test(expected=IllegalArgumentException)
     def void testConfigureUnknownProjectSystemFails()
     {
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
-        Main.configureGenerationSettings(defaultGenerationSettingsProvider, "foo",
-            new HashMap<String, String>().entrySet, ArtifactNature.values, ProjectType.values)
+        defaultGenerationSettingsProvider.configureGenerationSettings("foo", null as String, null, null)
+        defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource)
+    }
+
+    @Test
+    def void testFindConfigurationFileGeneric()
+    {
+        val fileSystemAccess = new InMemoryFileSystemAccess
+        fileSystemAccess.generateFile("/foo.idl", "")
+        fileSystemAccess.generateFile("/.generator", "")
+        val rs = new ResourceSetImpl()
+        val resource = rs.createResource(fileSystemAccess.getURI("/foo.idl"))
+        assertEquals(#[fileSystemAccess.getURI("/.generator")].toList,
+            DefaultGenerationSettingsProvider.findConfigurationFileURIs(resource,
+                new InMemoryURIConverter(fileSystemAccess)).toList)
+    }
+
+    @Test
+    def void testFindConfigurationFileSpecific()
+    {
+        val fileSystemAccess = new InMemoryFileSystemAccess
+        fileSystemAccess.generateFile("/foo.idl", "")
+        fileSystemAccess.generateFile("/foo.idl.generator", "")
+        val rs = new ResourceSetImpl()
+        val resource = rs.createResource(fileSystemAccess.getURI("/foo.idl"))
+
+        assertEquals(#[fileSystemAccess.getURI("/foo.idl.generator")].toList,
+            DefaultGenerationSettingsProvider.findConfigurationFileURIs(resource,
+                new InMemoryURIConverter(fileSystemAccess)).toList)
+    }
+
+    @Test
+    def void testReadConfigurationFile()
+    {
+        val generationSettings = DefaultGenerationSettingsProvider.readConfigurationFile(new StringInputStream('''languages = java,cpp
+            cppProjectSystem = cmake
+            projectSet = full
+            versions = cpp.servicecomm=0.10
+            '''))
+        val expected = new OptionalGenerationSettings
+        expected.languages = #{ArtifactNature.JAVA, ArtifactNature.CPP}
+        expected.cppProjectSystem = Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE
+        expected.projectTypes = DefaultGenerationSettingsProvider.FULL_PROJECT_SET
+        expected.versions = #{"cpp.servicecomm" -> "0.10"}.entrySet
+            
+        assertEquals(expected, generationSettings)
+    }
+
+}
+
+@Accessors(NONE)
+class InMemoryURIConverter extends ExtensibleURIConverterImpl
+{
+    val InMemoryFileSystemAccess fileSystemAccess
+
+    override boolean exists(URI uri, Map<?, ?> options)
+    {
+        fileSystemAccess.isFile(uri.convert)
+    }
+
+    override InputStream createInputStream(URI uri, Map<?, ?> options)
+    {
+        fileSystemAccess.readBinaryFile(uri.convert)
+
+    }
+
+    def String convert(URI uri)
+    {
+        val path = Path.fromPortableString(uri.path)
+        if (uri.scheme == "memory" && path.segment(0) == "DEFAULT_OUTPUT")
+            "/" + path.removeFirstSegments(1).toPortableString
+        else
+            throw new IllegalArgumentException("Bad URI for InMemoryURIConverter: " + uri)
     }
 }

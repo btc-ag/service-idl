@@ -1,10 +1,9 @@
 package com.btc.serviceidl.generator.cpp.cmake
 
-import com.btc.serviceidl.generator.IGenerationSettingsProvider
+import com.btc.serviceidl.generator.IGenerationSettings
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.cpp.CppConstants
-import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -16,15 +15,15 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 class CMakeTopLevelProjectFileGenerator
 {
     val IFileSystemAccess file_system_access
-    val IGenerationSettingsProvider generationSettingsProvider
+    val IGenerationSettings generationSettings
     val CMakeProjectSet projectSet
     val ModuleDeclaration module
 
-    new(IFileSystemAccess file_system_access, IGenerationSettingsProvider generationSettingsProvider,
-        IProjectSet projectSet, ModuleDeclaration module)
+    new(IFileSystemAccess file_system_access, IGenerationSettings generationSettings, IProjectSet projectSet,
+        ModuleDeclaration module)
     {
         this.file_system_access = file_system_access
-        this.generationSettingsProvider = generationSettingsProvider
+        this.generationSettings = generationSettings
         this.projectSet = projectSet as CMakeProjectSet
         this.module = module
     }
@@ -61,7 +60,7 @@ class CMakeTopLevelProjectFileGenerator
 
     def generateConanfile()
     {
-        val serviceCommTargetVersion = ServiceCommVersion.get(generationSettingsProvider.getTargetVersion(
+        val serviceCommTargetVersion = ServiceCommVersion.get(generationSettings.getTargetVersion(
             CppConstants.SERVICECOMM_VERSION_KIND))
         val commonsTargetVersion = if (serviceCommTargetVersion == ServiceCommVersion.V0_10 ||
                 serviceCommTargetVersion == ServiceCommVersion.V0_11) "1.8" else "1.9"
@@ -118,7 +117,7 @@ class CMakeTopLevelProjectFileGenerator
 
     private def relativePath(ParameterBundle paramBundle)
     {
-        generationSettingsProvider.moduleStructureStrategy.getProjectDir(paramBundle).makeRelativeTo(modulePath)
+        generationSettings.moduleStructureStrategy.getProjectDir(paramBundle).makeRelativeTo(modulePath)
     }
 
 }
