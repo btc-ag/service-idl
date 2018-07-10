@@ -17,6 +17,8 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.java.MavenResolver
+import com.btc.serviceidl.idl.FunctionDeclaration
+import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
 import com.google.common.base.CaseFormat
@@ -28,18 +30,16 @@ import static com.btc.serviceidl.generator.common.GeneratorUtil.*
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.ParameterElement
-import com.btc.serviceidl.idl.FunctionDeclaration
 
 class ProtobufGeneratorUtil
 {
-    static def getModuleName(EObject object_root, ArtifactNature artifactNature)
+    static def getModuleName(EObject objectRoot, ArtifactNature artifactNature)
     {
         if (artifactNature != ArtifactNature.JAVA)
-            GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(object_root.moduleStack).with(
+            GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(objectRoot.moduleStack).with(
                 ProjectType.PROTOBUF).build, artifactNature, TransformType.PACKAGE)
         else
-            MavenResolver.makePackageId(object_root, ProjectType.PROTOBUF)
+            MavenResolver.makePackageId(objectRoot, ProjectType.PROTOBUF)
     }
 
     // TODO remove remaining calls to this method by calls based on model elements rather than String
@@ -64,10 +64,10 @@ class ProtobufGeneratorUtil
         asProtoFileAttributeName(element.name).toLowerCase
     }
 
-    static def IPath makeProtobufPath(EObject container, String file_name, ArtifactNature artifact_nature,
+    static def IPath makeProtobufPath(EObject container, String fileName, ArtifactNature artifact_nature,
         IModuleStructureStrategy moduleStructureStrategy)
     {
-        makeProtobufModulePath(container, artifact_nature, moduleStructureStrategy).append(file_name.proto)
+        makeProtobufModulePath(container, artifact_nature, moduleStructureStrategy).append(fileName.proto)
     }
 
     static def IPath makeProtobufModulePath(EObject container, ArtifactNature artifactNature,
