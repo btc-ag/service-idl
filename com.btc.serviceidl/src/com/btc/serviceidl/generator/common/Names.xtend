@@ -31,19 +31,14 @@ import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.TupleDeclaration
 import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 
 class Names
 {
-    def static dispatch String plain(ModuleDeclaration element)
-    { return element.name }
-
     def static dispatch String plain(ExceptionReferenceDeclaration element)
     { return element.name }
 
     def static dispatch String plain(ExceptionDeclaration element)
-    { return element.name }
-
-    def static dispatch String plain(StructDeclaration element)
     { return element.name }
 
     def static dispatch String plain(AliasDeclaration element)
@@ -55,7 +50,7 @@ class Names
     def static dispatch String plain(MemberElement element)
     { return element.name }
 
-    def static dispatch String plain(InterfaceDeclaration element)
+    def static dispatch String plain(AbstractStructuralDeclaration element)
     { return element.name }
 
     def static dispatch String plain(FunctionDeclaration element)
