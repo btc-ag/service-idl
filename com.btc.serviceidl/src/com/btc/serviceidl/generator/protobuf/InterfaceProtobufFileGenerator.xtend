@@ -27,10 +27,10 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
 {
     def String generateInterface(InterfaceDeclaration interfaceDeclaration)
     {
-        var requestPartId = 1
-        var responsePartId = 1
+        val requestPartId = new Counter
+        val responsePartId = new Counter
 
-        var fileBody = '''
+        val fileBody = '''
             «generateFailable(interfaceDeclaration)»
             «generateTypes(interfaceDeclaration, interfaceDeclaration.contains.toList)»
             
@@ -52,7 +52,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
             
                «FOR function : interfaceDeclaration.functions»
                    «val messagePart = function.name.asRequest»
-                   optional «messagePart» «messagePart.asProtoFileAttributeName» = «requestPartId++»;
+                   optional «messagePart» «messagePart.asProtoFileAttributeName» = «requestPartId.incrementAndGet»;
                «ENDFOR»
             }
             
@@ -75,13 +75,13 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
                «ENDFOR»
             
                «FOR function : interfaceDeclaration.functions»
-                   «val messagePart = function.name.asResponse»
-                   optional «messagePart» «messagePart.asProtoFileAttributeName» = «responsePartId++»;
+                   «val messagePart = function.name.asResponse»                   
+                   optional «messagePart» «messagePart.asProtoFileAttributeName» = «responsePartId.incrementAndGet»;
                «ENDFOR»
             }
         '''
 
-        var file_header = '''
+        val file_header = '''
             «generatePackageName(interfaceDeclaration)»
             «generateImports(interfaceDeclaration)»
         '''
@@ -89,8 +89,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
         return file_header + fileBody
     }
 
-    private def String generateReturnType(FunctionDeclaration function, EObject context, EObject container,
-        Counter id)
+    private def String generateReturnType(FunctionDeclaration function, EObject context, EObject container, Counter id)
     {
         val element = function.returnedType
         '''

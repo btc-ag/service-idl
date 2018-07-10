@@ -219,7 +219,7 @@ class ProtobufFileGeneratorBase
         if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
             context instanceof StructDeclaration)
         {
-            var fieldId = new Counter
+            val fieldId = new Counter
             '''
                 enum «element.name»
                 {
@@ -337,10 +337,10 @@ class ProtobufFileGeneratorBase
 
     private def resolveNonPrimitiveType(EObject actualType, EObject context)
     {
-        var plainName = Names.plain(actualType)
+        val plainName = Names.plain(actualType)
 
         // first, check if we are within the same namespace
-        var objectRoot = actualType.scopeDeterminant
+        val objectRoot = actualType.scopeDeterminant
 
         if (objectRoot == context.scopeDeterminant)
             plainName
