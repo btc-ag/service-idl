@@ -259,16 +259,16 @@ class Util
             throw new «typeResolver.resolve("System.NotSupportedException")»("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»");
         '''
     }
+    
+    static def getPrefix(AbstractContainerDeclaration container)
+    {
+        if (container instanceof InterfaceDeclaration) container.name else ""
+    }
 
     static def ResolvedName resolveServiceFaultHandling(TypeResolver typeResolver, AbstractContainerDeclaration owner)
     {
-        var prefix = ""
-        if (owner instanceof InterfaceDeclaration)
-        {
-            prefix = owner.name
-        }
         val namespace = typeResolver.resolve(owner, ProjectType.PROTOBUF).namespace
-        return new ResolvedName('''«namespace».«prefix»ServiceFaultHandling''', TransformType.PACKAGE)
+        return new ResolvedName('''«namespace».«owner.prefix»ServiceFaultHandling''', TransformType.PACKAGE)
     }
 
     static def String asEnumerable(TypeResolver typeResolver)
