@@ -49,7 +49,7 @@ class ProtobufUtil
                 resolveProtobuf(typeResolver, object.primitiveType, optProtobufType)
             else if (object.referenceType !== null)
                 resolveProtobuf(typeResolver, object.referenceType, optProtobufType)
-            // TODO really do nothing in case of collectionType?
+        // TODO really do nothing in case of collectionType?
         }
         else
         {
@@ -62,7 +62,8 @@ class ProtobufUtil
     private static def String getLocalName(EObject object, Optional<ProtobufType> optProtobufType)
     {
         if (object instanceof InterfaceDeclaration && Util.ensurePresentOrThrow(optProtobufType))
-            getOuterClassName(object) + Constants.SEPARATOR_PACKAGE + Names.plain(object) + optProtobufType.get.getName
+            getOuterClassName(object as InterfaceDeclaration) + Constants.SEPARATOR_PACKAGE + Names.plain(object) +
+                optProtobufType.get.getName
         else
         {
             val scopeDeterminant = object.scopeDeterminant
@@ -78,12 +79,12 @@ class ProtobufUtil
         }
     }
 
-    private static def String getOuterClassName(EObject scopeDeterminant)
+    private static def String getOuterClassName(AbstractContainerDeclaration scopeDeterminant)
     {
         Names.plain(scopeDeterminant) + (if (scopeDeterminant.interfaceWithElementWithSameName) "OuterClass" else "")
     }
 
-    def static boolean interfaceWithElementWithSameName(EObject scopeDeterminant)
+    def static boolean interfaceWithElementWithSameName(AbstractContainerDeclaration scopeDeterminant)
     {
         if (scopeDeterminant instanceof InterfaceDeclaration)
         {
@@ -115,17 +116,12 @@ class ProtobufUtil
         IQualifiedNameProvider qualifiedNameProvider, EObject element, AbstractContainerDeclaration container)
     {
         return String.join(Constants.SEPARATOR_PACKAGE,
-            #[typeResolver.resolvePackage(container, ProjectType.PROTOBUF)] + container.containerName +
-                #[GeneratorUtil.asFailable(element, container, qualifiedNameProvider)])
+            #[typeResolver.resolvePackage(container, ProjectType.PROTOBUF), container.containerName,
+                GeneratorUtil.asFailable(element, container, qualifiedNameProvider)])
     }
 
-    private static def Iterable<String> getContainerName(AbstractContainerDeclaration container)
+    private static def String getContainerName(AbstractContainerDeclaration container)
     {
-        if (container instanceof ModuleDeclaration)
-            #[Constants.FILE_NAME_TYPES]
-        else if (container instanceof InterfaceDeclaration)
-            #[container.name]
-        else
-            #[]
+        if (container instanceof ModuleDeclaration) Constants.FILE_NAME_TYPES else container.name
     }
 }
