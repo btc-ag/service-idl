@@ -24,8 +24,10 @@ import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.util.Constants
 import java.util.ArrayList
 import java.util.HashSet
 import java.util.LinkedHashSet
@@ -35,7 +37,6 @@ import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.MemberElement
 
 class CppExtensions
 {
@@ -47,7 +48,7 @@ class CppExtensions
         val baseName = if (scope_determinant instanceof InterfaceDeclaration)
                 project_type.getClassName(ArtifactNature.CPP, Names.plain(scope_determinant))
             else
-                "Types"
+                Constants.FILE_NAME_TYPES
 
         moduleStructureStrategy.getIncludeFilePath(referenced_object.moduleStack, project_type, baseName,
             HeaderType.REGULAR_HEADER)
