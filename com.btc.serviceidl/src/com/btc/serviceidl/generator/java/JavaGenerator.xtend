@@ -34,6 +34,7 @@ class JavaGenerator
     val Map<EObject, String> protobufArtifacts
     val IGenerationSettingsProvider generationSettingsProvider
     val IDLSpecification idl
+    val String groupId
     val MavenResolver mavenResolver
 
     new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
@@ -44,8 +45,8 @@ class JavaGenerator
         this.qualifiedNameProvider = qualifiedNameProvider
         this.protobufArtifacts = protobufArtifacts
         this.generationSettingsProvider = generationSettingsProvider
-
-        mavenResolver = new MavenResolver(this.idl.eResource.URI.lastSegment) // TODO this must be customizable
+        this.groupId = this.idl.eResource.URI.lastSegment // TODO this must be customizable
+        mavenResolver = new MavenResolver(groupId)
     }
 
     def void doGenerate()
@@ -61,7 +62,7 @@ class JavaGenerator
 
     private def void generateParentPOM()
     {
-        new ParentPOMGenerator(fileSystemAccess, mavenResolver).generate
+        new ParentPOMGenerator(fileSystemAccess, mavenResolver, groupId).generate
     }
 
     private def void processModule(ModuleDeclaration module)
