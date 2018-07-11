@@ -213,7 +213,7 @@ class CppExtensions
         #[] // by default, never need an external include
     }
 
-    static def private boolean declaredInternally(EObject element, EObject type)
+    static def private boolean declaredInternally(AbstractTypeReference element, AbstractTypeReference type)
     {
         !(type instanceof PrimitiveType) && type.scopeDeterminant == element.scopeDeterminant
     }
