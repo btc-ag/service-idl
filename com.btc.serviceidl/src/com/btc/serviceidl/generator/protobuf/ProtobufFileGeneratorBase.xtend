@@ -150,7 +150,7 @@ class ProtobufFileGeneratorBase
                 {
                    «val fieldId = new Counter»
                    «FOR member : element.allMembers SEPARATOR System.lineSeparator»
-                       «toText(member, container, element, fieldId)»
+                       «toText(member, element, container, fieldId)»
                    «ENDFOR»
                 }
             '''
