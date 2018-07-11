@@ -200,7 +200,7 @@ class TypeResolver
         }
     }
 
-    def void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
+    def void resolveProjectFilePath(AbstractTypeReference referenced_object, ProjectType project_type)
     {
         project_references.add(projectSet.resolve(
             new ParameterBundle.Builder().with(referenced_object.moduleStack).with(project_type).build))
