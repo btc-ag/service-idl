@@ -64,7 +64,7 @@ class ProtobufUtil
         addTargetInclude(typeResolver.moduleStructureStrategy.getIncludeFilePath(
             scope_determinant.moduleStack,
             ProjectType.PROTOBUF,
-            GeneratorUtil.getPbFileName(object),
+            GeneratorUtil.getPbFileName(scope_determinant),
             HeaderType.PROTOBUF_HEADER
         ))
 
@@ -137,7 +137,7 @@ class ProtobufUtil
         // failable wrappers always local!
         val moduleStack = if (is_failable) paramBundle.moduleStack else ultimate_type.moduleStack
 
-        val codec_name = GeneratorUtil.getCodecName(if (is_failable) container.get else ultimate_type)
+        val codec_name = GeneratorUtil.getCodecName(if (is_failable) container.get else ultimate_type.scopeDeterminant)
 
         addTargetInclude(
             typeResolver.moduleStructureStrategy.getIncludeFilePath(moduleStack, ProjectType.PROTOBUF, codec_name,

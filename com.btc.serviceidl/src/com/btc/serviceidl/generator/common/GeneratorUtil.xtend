@@ -173,19 +173,17 @@ class GeneratorUtil
         artifactNature == ArtifactNature.CPP || useCodec(element.type.actualType, artifactNature) // check type of containing elements
     }
 
-    static def String getCodecName(EObject object)
+    static def String getCodecName(AbstractContainerDeclaration object)
     {
         '''«getPbFileName(object)»«Constants.FILE_NAME_CODEC»'''
     }
 
-    static def String getPbFileName(EObject object)
+    static def String getPbFileName(AbstractContainerDeclaration object)
     {
         if (object instanceof ModuleDeclaration)
             Constants.FILE_NAME_TYPES
-        else if (object instanceof InterfaceDeclaration)
-            Names.plain(object)
         else
-            getPbFileName(Util.getScopeDeterminant(object))
+            Names.plain(object)
     }
 
     static def asPath(ParameterBundle bundle, ArtifactNature nature)

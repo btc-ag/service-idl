@@ -18,6 +18,7 @@ import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
@@ -32,7 +33,7 @@ import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
-import com.btc.serviceidl.idl.AbstractTypeReference
+import static extension com.btc.serviceidl.util.Util.*
 
 // TODO reorganize this according to logical aspects
 class Util
@@ -252,7 +253,7 @@ class Util
     {
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
 
-        val codec_name = GeneratorUtil.getCodecName(ultimate_type)
+        val codec_name = GeneratorUtil.getCodecName(ultimate_type.scopeDeterminant)
 
         typeResolver.resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
 

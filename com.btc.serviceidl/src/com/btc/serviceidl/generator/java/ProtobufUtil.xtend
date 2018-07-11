@@ -110,7 +110,8 @@ class ProtobufUtil
         val ultimateType = object.ultimateType
 
         String.join(Constants.SEPARATOR_PACKAGE,
-            #[typeResolver.resolvePackage(ultimateType.scopeDeterminant, ProjectType.PROTOBUF), ultimateType.codecName])
+            #[typeResolver.resolvePackage(ultimateType.scopeDeterminant, ProjectType.PROTOBUF),
+                ultimateType.scopeDeterminant.codecName])
     }
 
     def static String resolveFailableProtobufType(TypeResolver typeResolver,
