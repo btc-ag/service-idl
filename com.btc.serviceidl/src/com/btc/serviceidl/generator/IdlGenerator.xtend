@@ -84,9 +84,9 @@ class IdlGenerator implements IGenerator2
         var Map<EObject, String> protobuf_artifacts
         if (projectTypes.contains(ProjectType.PROTOBUF))
         {
-            protobuf_generator = new ProtobufGenerator
-            protobuf_generator.doGenerate(resource, fsa, qualified_name_provider, scope_provider,
-                generationSettings.moduleStructureStrategy, languages)
+            protobuf_generator = new ProtobufGenerator(resource, fsa, qualified_name_provider,
+                generationSettings.moduleStructureStrategy)
+            protobuf_generator.doGenerate(languages)
             protobuf_artifacts = protobuf_generator.generatedArtifacts
         }
 
