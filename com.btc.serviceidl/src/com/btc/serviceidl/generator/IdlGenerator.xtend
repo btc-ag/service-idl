@@ -58,12 +58,12 @@ class IdlGenerator implements IGenerator2
             if (event.guid === null)
             {
                 val uuid = UUID.randomUUID.toString.toUpperCase
-                GuidMapper.put(event.data, uuid)
+                GuidMapper.put(event, uuid)
                 event.guid = uuid
                 resourceChanged = true
             }
             else
-                GuidMapper.put(event.data, event.guid.toUpperCase)
+                GuidMapper.put(event, event.guid.toUpperCase)
         }
         if (resourceChanged)
         {

@@ -149,6 +149,10 @@ MemberElement: (optional ?= 'optional')?
 /* key for event subscription */
 KeyElement: type = AbstractType keyName = ID;
 
+UniquelyIdentifiedDeclaration:
+    InterfaceDeclaration | EventDeclaration
+;
+
 /* interface */
 InterfaceDeclaration:
    ( docComments += DocCommentElement )*
@@ -178,7 +182,7 @@ FunctionDeclaration:
 
 /* event */
 EventDeclaration:
-   'event' (name = ID)? ('[' ('guid' '=' guid = UUID_LITERAL) ']' )? '(' data = [StructDeclaration|QualifiedName] ')'
+   'event' (name = ID)? ('[' 'guid' '=' guid = UUID_LITERAL ']' )? '(' data = [StructDeclaration|QualifiedName] ')'
    (
       ('subscribe' 'with' '(' ( keys += KeyElement (',' keys += KeyElement)* )? ')')?
       ('raises' raisedExceptions += [AbstractException|QualifiedName] (',' raisedExceptions += [AbstractException|QualifiedName] )* )?

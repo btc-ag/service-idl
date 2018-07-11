@@ -115,7 +115,7 @@ class BasicCSharpSourceGenerator {
          {
             «IF related_event !== null»
                
-               public static readonly «resolve("System.Guid")» «eventTypeGuidProperty» = new Guid("«GuidMapper.get(related_event.data)»");
+               public static readonly «resolve("System.Guid")» «eventTypeGuidProperty» = new Guid("«GuidMapper.get(related_event)»");
             «ENDIF»
             «FOR class_member : class_members BEFORE System.lineSeparator»
                public «class_member.second»«class_member.third» «class_member.first» { get; private set; }

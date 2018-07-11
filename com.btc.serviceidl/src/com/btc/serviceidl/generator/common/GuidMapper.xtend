@@ -15,21 +15,20 @@
  */
 package com.btc.serviceidl.generator.common
 
-import com.btc.serviceidl.idl.AbstractStructuralDeclaration
+import com.btc.serviceidl.idl.UniquelyIdentifiedDeclaration
 import java.util.HashMap
 import java.util.UUID
 
 class GuidMapper
 {
+    static val guid_map = new HashMap<UniquelyIdentifiedDeclaration, String>
 
-    static val guid_map = new HashMap<AbstractStructuralDeclaration, String>
-
-    def static void put(AbstractStructuralDeclaration object, String guid)
+    def static void put(UniquelyIdentifiedDeclaration object, String guid)
     {
         guid_map.put(object, guid)
     }
 
-    def static String get(AbstractStructuralDeclaration object)
+    def static String get(UniquelyIdentifiedDeclaration object)
     {
         guid_map.computeIfAbsent(object, [UUID.randomUUID.toString.toUpperCase])
     }
