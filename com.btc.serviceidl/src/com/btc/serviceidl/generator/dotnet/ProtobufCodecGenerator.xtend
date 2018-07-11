@@ -14,15 +14,14 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.AbstractContainerDeclaration
-import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
 import java.util.Arrays
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.dotnet.ProtobufUtil.*
@@ -268,14 +267,13 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
         makeEncodeStructOrException(element, element.allMembers, Arrays.asList)
     }
 
-    private def dispatch String makeEncode(AbstractType element, AbstractContainerDeclaration owner)
+    private def dispatch String makeEncode(AbstractTypeReference element, AbstractContainerDeclaration owner)
     {
-        if (element.referenceType !== null)
-            return makeEncode(element.referenceType, owner)
+        throw new IllegalArgumentException
     }
 
-    private def String makeEncodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
-        Iterable<AbstractTypeDeclaration> type_declarations)
+    private def String makeEncodeStructOrException(AbstractTypeDeclaration element,
+        Iterable<MemberElementWrapper> members, Iterable<AbstractTypeDeclaration> type_declarations)
     {
         val api_type_name = resolve(element)
         val protobuf_type_name = resolve(element, ProjectType.PROTOBUF)
@@ -318,7 +316,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
         '''
     }
 
-    private def dispatch String makeDecode(EnumDeclaration element, EObject owner)
+    private def dispatch String makeDecode(EnumDeclaration element, AbstractContainerDeclaration owner)
     {
         val api_type_name = resolve(element)
         val protobuf_type_name = resolve(element, ProjectType.PROTOBUF)
@@ -334,18 +332,18 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
         '''
     }
 
-    private def dispatch String makeDecode(StructDeclaration element, EObject owner)
+    private def dispatch String makeDecode(StructDeclaration element, AbstractContainerDeclaration owner)
     {
         makeDecodeStructOrException(element, element.allMembers, element.typeDecls)
     }
 
-    private def dispatch String makeDecode(ExceptionDeclaration element, EObject owner)
+    private def dispatch String makeDecode(ExceptionDeclaration element, AbstractContainerDeclaration owner)
     {
         makeDecodeStructOrException(element, element.allMembers, Arrays.asList)
     }
 
-    private def String makeDecodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
-        Iterable<AbstractTypeDeclaration> type_declarations)
+    private def String makeDecodeStructOrException(AbstractTypeDeclaration element,
+        Iterable<MemberElementWrapper> members, Iterable<AbstractTypeDeclaration> type_declarations)
     {
         val api_type_name = resolve(element)
         val protobuf_type_name = resolve(element, ProjectType.PROTOBUF)
@@ -380,10 +378,9 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
         '''
     }
 
-    private def dispatch String makeDecode(AbstractType element, EObject owner)
+    private def dispatch String makeDecode(AbstractTypeReference element, AbstractContainerDeclaration owner)
     {
-        if (element.referenceType !== null)
-            return makeDecode(element.referenceType, owner)
+        throw new IllegalArgumentException
     }
 
 }
