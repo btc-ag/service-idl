@@ -159,7 +159,7 @@ class Util
         interface_declaration.name + "Const"
     }
 
-    def static dispatch boolean isNullable(EObject element)
+    def static dispatch boolean isNullable(AbstractTypeReference element)
     {
         false
     }
