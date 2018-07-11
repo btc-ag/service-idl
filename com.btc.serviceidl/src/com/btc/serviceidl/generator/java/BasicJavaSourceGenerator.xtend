@@ -206,7 +206,7 @@ class BasicJavaSourceGenerator
             public class «element.name» «IF is_derived»extends «toText(element.supertype)» «ENDIF»{
                «IF related_event !== null»
                    
-                   public static final «typeResolver.resolve(JavaClassNames.UUID)» EventTypeGuid = UUID.fromString("«GuidMapper.get(related_event)»");
+                   public static final «typeResolver.resolve(JavaClassNames.UUID)» EventTypeGuid = UUID.fromString("«GuidMapper.get(related_event.data)»");
                «ENDIF»
                «FOR class_member : class_members BEFORE newLine»
                    private «class_member.value» «class_member.key»;

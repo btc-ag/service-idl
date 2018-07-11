@@ -164,7 +164,7 @@ class BasicCppGenerator
                    «ENDFOR»
                    
                    «IF related_event !== null»
-                       /** \return {«GuidMapper.get(related_event)»} */
+                       /** \return {«GuidMapper.get(related_event.data)»} */
                        static «resolveSymbol("BTC::Commons::CoreExtras::UUID")» EVENT_TYPE_GUID();
                        
                    «ENDIF»
