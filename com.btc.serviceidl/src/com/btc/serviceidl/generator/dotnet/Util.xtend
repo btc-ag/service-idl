@@ -59,7 +59,7 @@ class Util
     /**
      * Is the given type a C# value type (suitable for Nullable)?
      */
-    def static boolean isValueType(EObject element)
+    def static boolean isValueType(AbstractTypeReference element)
     {
         if (element instanceof PrimitiveType)
         {
@@ -70,11 +70,7 @@ class Util
         }
         else if (element instanceof AliasDeclaration)
         {
-            return isValueType(element.type)
-        }
-        else if (element instanceof AbstractType)
-        {
-            return isValueType(element.actualType)
+            return isValueType(element.type.actualType)
         }
 
         return false
