@@ -15,21 +15,21 @@
  */
 package com.btc.serviceidl.generator.common
 
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import java.util.HashMap
-import org.eclipse.emf.ecore.EObject
 import java.util.UUID
 
 class GuidMapper
 {
 
-    static val guid_map = new HashMap<EObject, String>
+    static val guid_map = new HashMap<AbstractStructuralDeclaration, String>
 
-    def static void put(EObject object, String guid)
+    def static void put(AbstractStructuralDeclaration object, String guid)
     {
         guid_map.put(object, guid)
     }
 
-    def static String get(EObject object)
+    def static String get(AbstractStructuralDeclaration object)
     {
         guid_map.computeIfAbsent(object, [UUID.randomUUID.toString.toUpperCase])
     }
