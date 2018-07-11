@@ -25,6 +25,7 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
 import org.eclipse.emf.ecore.EObject
@@ -224,7 +225,7 @@ class Util
 
     static def String makeReturnType(TypeResolver typeResolver, FunctionDeclaration function)
     {
-        val is_void = function.returnedType.isVoid
+        val is_void = function.returnedType instanceof VoidType
         val is_sync = function.isSync
 
         if (is_void)

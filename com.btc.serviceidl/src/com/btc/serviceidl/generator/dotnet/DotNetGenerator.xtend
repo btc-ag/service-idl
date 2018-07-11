@@ -35,6 +35,7 @@ import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import com.google.common.collect.Sets
 import java.util.Arrays
@@ -403,7 +404,7 @@ class DotNetGenerator
          resolveProtobufDependencies(param.paramType, owner)
       }
       
-      if (!element.returnedType.isVoid)
+      if (!(element.returnedType instanceof VoidType))
          resolveProtobufDependencies(element.returnedType, owner)
    }
    

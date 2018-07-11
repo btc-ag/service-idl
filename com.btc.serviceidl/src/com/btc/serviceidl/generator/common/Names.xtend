@@ -27,9 +27,9 @@ import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.NamedDeclaration
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.TupleDeclaration
+import com.btc.serviceidl.idl.VoidType
 
 class Names
 {
@@ -66,8 +66,8 @@ class Names
     def static dispatch String plain(TupleDeclaration element)
     { return "Tuple" }
 
-    def static dispatch String plain(ReturnTypeElement element)
-    { if (element.isVoid) return "void" }
+    def static dispatch String plain(VoidType element)
+    { "void" }
 
     def static dispatch String plain(AbstractType item)
     {

@@ -14,6 +14,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.VoidType
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
@@ -80,7 +81,7 @@ class ClientConsoleProgramGenerator
                       var errorCount = 0;
                       var callCount = 0;
                       «FOR function : interface_declaration.functions»
-                          «val is_void = function.returnedType.isVoid»
+                          «val is_void = function.returnedType instanceof VoidType»
                           try
                           {
                              callCount++;

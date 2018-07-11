@@ -13,6 +13,7 @@ package com.btc.serviceidl.generator.dotnet
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -25,7 +26,7 @@ class ImplementationStubGenerator extends GeneratorBase
 
     private def makeImplementatonStub(FunctionDeclaration function)
     {
-        val is_void = function.returnedType.isVoid
+        val is_void = function.returnedType instanceof VoidType
 
         '''
             «IF !function.sync»

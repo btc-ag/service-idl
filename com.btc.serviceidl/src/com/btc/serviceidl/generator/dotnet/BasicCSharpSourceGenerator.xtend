@@ -22,14 +22,12 @@ import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.ExceptionReferenceDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
-import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.idl.TupleDeclaration
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.MemberElementWrapper
 import java.util.ArrayList
 import java.util.Map
@@ -70,12 +68,9 @@ class BasicCSharpSourceGenerator {
       '''«element.paramName.asParameter»'''
    }
    
-   def dispatch String toText(ReturnTypeElement element, EObject context)
+   def dispatch String toText(VoidType element, EObject context)
    {
-      if (element.isVoid)
-         return "void"
-
-      throw new IllegalArgumentException("Unknown ReturnTypeElement: " + element.class.toString)
+      "void"
    }
    
    def dispatch String toText(PrimitiveType element, EObject context)

@@ -21,6 +21,7 @@ import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.VoidType
 import java.util.Optional
 import org.eclipse.core.runtime.Path
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -153,7 +154,7 @@ class DispatcherGenerator extends BasicCppGenerator
     {
         val protobuf_request_method = function.name.asRequest.asCppProtobufName
         val is_sync = function.isSync
-        val is_void = function.returnedType.isVoid
+        val is_void = function.returnedType instanceof VoidType
         val protobuf_response_method = function.name.asResponse.asCppProtobufName
         val output_parameters = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]
         val protobuf_response_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
@@ -163,7 +164,7 @@ class DispatcherGenerator extends BasicCppGenerator
            // decode request -->
            auto const& concreteRequest( protoBufRequest->«protobuf_request_method»() );
            «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
-               «IF GeneratorUtil.useCodec(param.paramType, ArtifactNature.CPP)»
+               «IF GeneratorUtil.useCodec(param.paramType.actualType, ArtifactNature.CPP)»
                    «IF param.paramType.isSequenceType»
                        «val ulimate_type = param.paramType.ultimateType»
                        «val is_uuid = ulimate_type.isUUIDType»

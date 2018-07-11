@@ -15,6 +15,7 @@ import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Util
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -94,7 +95,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
     {
         val element = function.returnedType
         '''
-            «IF !element.isVoid»
+            «IF !(element instanceof VoidType)»
                 «IF requiresNewMessageType(element)»
                     «toText(element, function, container, id)»
                 «ELSE»

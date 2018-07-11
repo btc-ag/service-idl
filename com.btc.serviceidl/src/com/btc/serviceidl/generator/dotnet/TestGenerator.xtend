@@ -13,6 +13,7 @@ package com.btc.serviceidl.generator.dotnet
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -136,7 +137,7 @@ class TestGenerator extends GeneratorBase
             
                «FOR function : interface_declaration.functions»
                    «val is_sync = function.sync»
-                   «val is_void = function.returnedType.isVoid»
+                   «val is_void = function.returnedType instanceof VoidType»
                    [«resolve("NUnit.Framework.Test")»]
                    public void «function.name»Test()
                    {

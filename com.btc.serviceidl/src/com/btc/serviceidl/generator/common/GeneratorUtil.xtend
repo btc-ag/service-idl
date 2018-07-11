@@ -16,7 +16,6 @@
 package com.btc.serviceidl.generator.common
 
 import com.btc.serviceidl.idl.AbstractContainerDeclaration
-import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
@@ -24,7 +23,6 @@ import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
-import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
@@ -41,7 +39,6 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.ReturnTypeElement
 
 class GeneratorUtil
 {
@@ -155,9 +152,9 @@ class GeneratorUtil
         projectType.getClassName(artifactNature, basicName)
     }
 
-    static def dispatch boolean useCodec(EObject element, ArtifactNature artifactNature)
+    static def dispatch boolean useCodec(AbstractTypeReference element, ArtifactNature artifactNature)
     {
-        true
+        element !== null
     }
 
     static def dispatch boolean useCodec(PrimitiveType element, ArtifactNature artifactNature)
@@ -166,29 +163,14 @@ class GeneratorUtil
     // all other primitive types map directly to built-in types!
     }
 
-    static def dispatch boolean useCodec(ParameterElement element, ArtifactNature artifactNature)
-    {
-        useCodec(element.paramType, artifactNature)
-    }
-
     static def dispatch boolean useCodec(AliasDeclaration element, ArtifactNature artifactNature)
     {
-        useCodec(element.type, artifactNature)
+        useCodec(element.type.actualType, artifactNature)
     }
 
     static def dispatch boolean useCodec(SequenceDeclaration element, ArtifactNature artifactNature)
     {
-        artifactNature == ArtifactNature.CPP || useCodec(element.type, artifactNature) // check type of containing elements
-    }
-
-    static def dispatch boolean useCodec(AbstractType element, ArtifactNature artifactNature)
-    {
-        useCodec(element.actualType, artifactNature)
-    }
-
-    static def dispatch boolean useCodec(ReturnTypeElement element, ArtifactNature artifactNature)
-    {
-        false
+        artifactNature == ArtifactNature.CPP || useCodec(element.type.actualType, artifactNature) // check type of containing elements
     }
 
     static def String getCodecName(EObject object)

@@ -15,6 +15,7 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -88,7 +89,7 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
            
            «FOR func : interface_declaration.functions»
            «val request_name = func.name.asDotNetProtobufName + Constants.PROTOBUF_REQUEST»
-           «val is_void = func.returnedType.isVoid»
+           «val is_void = func.returnedType instanceof VoidType»
            «IF func != interface_declaration.functions.head»else «ENDIF»if (request.Has«request_name»)
            {
               «val out_params = func.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
@@ -105,7 +106,7 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
                     «FOR param : func.parameters SEPARATOR ","»
                        «val is_input = (param.direction == ParameterDirection.PARAM_IN)»
                        «val isFailable = com.btc.serviceidl.util.Util.isFailable(param)»
-                       «val use_codec = isFailable || GeneratorUtil.useCodec(param, ArtifactNature.DOTNET)»
+                       «val use_codec = isFailable || GeneratorUtil.useCodec(param.paramType.actualType, ArtifactNature.DOTNET)»
                        «val decodeMethod = getDecodeMethod(param.paramType.actualType, interface_declaration)»
                        «val useCast = use_codec && !isFailable»
                        «IF is_input»
@@ -119,7 +120,7 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
               // deliver response
               var responseBuilder = «protobuf_response».Types.«com.btc.serviceidl.util.Util.asResponse(func.name)».CreateBuilder()
                  «val isSequence = com.btc.serviceidl.util.Util.isSequenceType(func.returnedType)»
-                 «val use_codec = isSequence || GeneratorUtil.useCodec(func.returnedType, ArtifactNature.DOTNET)»
+                 «val use_codec = isSequence || GeneratorUtil.useCodec(func.returnedType.actualType, ArtifactNature.DOTNET)»
                  «val method_name = if (isSequence) "AddRange" + func.name.asDotNetProtobufName else "Set" + func.name.asDotNetProtobufName»
                  «val encodeMethod = getEncodeMethod(func.returnedType.actualType, interface_declaration)»
                  «val isFailable = com.btc.serviceidl.util.Util.isFailable(func.returnedType)»
@@ -128,7 +129,7 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
                  «FOR param : out_params»
                     «val param_name = param.paramName.asParameter»
                     «val isFailableParam = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
-                    «val use_codec_param = isFailableParam || GeneratorUtil.useCodec(param.paramType, ArtifactNature.DOTNET)»
+                    «val use_codec_param = isFailableParam || GeneratorUtil.useCodec(param.paramType.actualType, ArtifactNature.DOTNET)»
                     «val method_name_param = if (com.btc.serviceidl.util.Util.isSequenceType(param.paramType)) "AddRange" + param.paramName.asDotNetProtobufName else "Set" + param.paramName.asDotNetProtobufName»
                     «val encode_method_param = getEncodeMethod(param.paramType.actualType, interface_declaration)»
                     «val useCastParam = use_codec_param && !isFailableParam»

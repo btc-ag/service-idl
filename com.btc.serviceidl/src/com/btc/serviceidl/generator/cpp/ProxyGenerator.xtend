@@ -21,6 +21,7 @@ import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.VoidType
 import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -122,7 +123,7 @@ class ProxyGenerator extends BasicCppGenerator {
            // encode request -->
            auto * const concreteRequest( request->mutable_«function.name.asRequest.asCppProtobufName»() );
            «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
-              «IF GeneratorUtil.useCodec(param.paramType, ArtifactNature.CPP) && !(param.paramType.isByte || param.paramType.isInt16 || param.paramType.isChar)»
+              «IF GeneratorUtil.useCodec(param.paramType.actualType, ArtifactNature.CPP) && !(param.paramType.isByte || param.paramType.isInt16 || param.paramType.isChar)»
                  «IF param.paramType.isSequenceType»
                     «val ulimate_type = param.paramType.ultimateType»
                     «val is_failable = param.paramType.isFailable»
@@ -140,7 +141,7 @@ class ProxyGenerator extends BasicCppGenerator {
            «ENDFOR»
            // encode request <--
            
-           «IF function.returnedType.isVoid»
+           «IF function.returnedType instanceof VoidType»
               return Request«IF function.isSync»Sync«ELSE»Async«ENDIF»UnmarshalVoid( *request );
            «ELSE»
               return RequestAsyncUnmarshal< «toText(function.returnedType, interface_declaration)» >( *request, [&]( «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «protobuf_response_message» > response )

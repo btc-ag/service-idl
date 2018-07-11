@@ -81,7 +81,7 @@ AbstractCrossReference:
 ;
 
 AbstractTypeReference:
-    PrimitiveType | AbstractCrossReference | InterfaceDeclaration
+    PrimitiveType | AbstractCrossReference | InterfaceDeclaration | VoidType
 ;
 
 /* meta type for any usable type */
@@ -186,7 +186,11 @@ EventDeclaration:
 ;
 
 /* returned result of a function */
-ReturnTypeElement: ( AbstractType | void ?= 'void');
+ReturnTypeElement: ( AbstractType | VoidType );
+
+VoidType:
+    'void' {VoidType}
+;
 
 /* parameter for a function */
 ParameterElement:

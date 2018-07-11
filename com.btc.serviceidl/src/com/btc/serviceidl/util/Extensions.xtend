@@ -32,6 +32,7 @@ import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.idl.VoidType
 import java.util.ArrayList
 import java.util.Collection
 import java.util.HashSet
@@ -387,6 +388,6 @@ class Extensions
         if (returnTypeElement instanceof AbstractType)
             returnTypeElement.actualType
         else
-            null
+            returnTypeElement as VoidType
     }
 }

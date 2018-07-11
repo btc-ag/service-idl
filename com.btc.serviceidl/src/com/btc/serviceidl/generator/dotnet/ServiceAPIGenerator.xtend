@@ -10,12 +10,14 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.dotnet
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.VoidType
 import java.util.ArrayList
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.util.Pair
@@ -23,7 +25,6 @@ import org.eclipse.xtext.util.Tuples
 
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
-import com.btc.serviceidl.generator.common.ArtifactNature
 
 @Accessors(NONE)
 class ServiceAPIGenerator extends GeneratorBase
@@ -97,7 +98,7 @@ class ServiceAPIGenerator extends GeneratorBase
             {
                
                «FOR function : interface_declaration.functions SEPARATOR System.lineSeparator»
-                   «val is_void = function.returnedType.isVoid»
+                   «val is_void = function.returnedType instanceof VoidType»
                    /// <summary>
                    «FOR comment : function.docComments»«toText(comment, comment)»«ENDFOR»
                    /// </summary>

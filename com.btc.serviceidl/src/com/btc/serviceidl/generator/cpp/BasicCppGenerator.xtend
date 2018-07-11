@@ -20,6 +20,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.HeaderResolver.OutputConfigurationItem
 import com.btc.serviceidl.generator.cpp.TypeResolver.IncludeGroup
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.DocCommentElement
@@ -34,10 +35,10 @@ import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.idl.TupleDeclaration
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import java.util.ArrayList
 import java.util.Comparator
@@ -50,7 +51,6 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 
 @Accessors(NONE)
 class BasicCppGenerator
@@ -72,7 +72,7 @@ class BasicCppGenerator
     }
 
     def String generateInheritedInterfaceMethods(InterfaceDeclaration interface_declaration)
-    {        
+    {
         val class_name = resolve(interface_declaration, paramBundle.projectType)
 
         '''
@@ -110,12 +110,9 @@ class BasicCppGenerator
             '''«toText(item.paramType, context.eContainer)»«IF item.direction == ParameterDirection.PARAM_IN» const«ENDIF» &«item.paramName»'''
     }
 
-    def dispatch String toText(ReturnTypeElement return_type, EObject context)
+    def dispatch String toText(VoidType return_type, EObject context)
     {
-        if (return_type.isVoid)
-            return "void"
-
-        throw new IllegalArgumentException("Unknown ReturnTypeElement: " + return_type.class.toString)
+        "void"
     }
 
     def dispatch String toText(AbstractType item, EObject context)
@@ -221,7 +218,7 @@ class BasicCppGenerator
                        virtual void Throw() const override;
                        
                        «IF targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11»
-                          virtual void Throw() override;
+                           virtual void Throw() override;
                        «ENDIF»
                        
                        «FOR member : item.members»
@@ -230,9 +227,9 @@ class BasicCppGenerator
                        
                        protected:
                           «IF targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11»
-                             virtual «resolveSymbol("BTC::Commons::Core::Exception")» *IntClone() const;
+                              virtual «resolveSymbol("BTC::Commons::Core::Exception")» *IntClone() const;
                           «ELSE»
-                             virtual «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Exception")»> IntClone() const override;
+                              virtual «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Exception")»> IntClone() const override;
                           «ENDIF»
                     };
                 '''
@@ -376,7 +373,7 @@ class BasicCppGenerator
 
         return result
     }
-    
+
     def generateIncludesSection(boolean isHeader, OutputConfigurationItem outputConfigurationItem,
         Map<IncludeGroup, Set<IPath>> includes, StringBuilder result)
     {
