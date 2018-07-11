@@ -36,7 +36,6 @@ import com.btc.serviceidl.idl.VoidType
 import java.util.ArrayList
 import java.util.Collection
 import java.util.HashSet
-import org.eclipse.emf.ecore.EObject
 
 class Extensions
 {
@@ -316,7 +315,7 @@ class Extensions
         return element.members.map[e|e.wrapMember]
     }
 
-    static def dispatch Iterable<MemberElementWrapper> effectiveMembers(EObject element)
+    static def dispatch Iterable<MemberElementWrapper> effectiveMembers(AbstractTypeReference element)
     {
         return #[] // default case: no members
     }
