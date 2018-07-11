@@ -10,6 +10,7 @@ import com.btc.serviceidl.generator.cpp.CppGenerator
 import com.btc.serviceidl.generator.dotnet.DotNetGenerator
 import com.btc.serviceidl.generator.java.JavaGenerator
 import com.btc.serviceidl.generator.protobuf.ProtobufGenerator
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
@@ -17,7 +18,6 @@ import com.google.inject.Inject
 import java.util.Collections
 import java.util.Map
 import java.util.UUID
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGenerator2
@@ -81,7 +81,7 @@ class IdlGenerator implements IGenerator2
 
 // TODO REFACTOR invert these dependencies
         var ProtobufGenerator protobuf_generator
-        var Map<EObject, String> protobuf_artifacts
+        var Map<AbstractContainerDeclaration, String> protobuf_artifacts
         if (projectTypes.contains(ProjectType.PROTOBUF))
         {
             protobuf_generator = new ProtobufGenerator(resource, fsa, qualified_name_provider,

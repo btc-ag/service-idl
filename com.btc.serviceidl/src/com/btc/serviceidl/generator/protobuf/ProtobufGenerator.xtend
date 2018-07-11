@@ -26,7 +26,6 @@ import com.btc.serviceidl.util.Constants
 import java.util.HashMap
 import java.util.Map
 import java.util.Set
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -42,7 +41,7 @@ final class ProtobufGenerator
    val IQualifiedNameProvider qualifiedNameProvider
    val IModuleStructureStrategy moduleStructureStrategy
       
-   val generatedArtifacts = new HashMap<EObject, String>
+   val generatedArtifacts = new HashMap<AbstractContainerDeclaration, String>
    val typedefTable = new HashMap<String, String>
    val allProjectReferences = new HashMap<ArtifactNature, Map<ParameterBundle, Set<ParameterBundle>>>
    
@@ -51,7 +50,7 @@ final class ProtobufGenerator
         allProjectReferences.computeIfAbsent(artifactNature, [new HashMap<ParameterBundle, Set<ParameterBundle>>])
     }
    
-   def Map<EObject, String> getGeneratedArtifacts()
+   def Map<AbstractContainerDeclaration, String> getGeneratedArtifacts()
    {
       return generatedArtifacts
    }

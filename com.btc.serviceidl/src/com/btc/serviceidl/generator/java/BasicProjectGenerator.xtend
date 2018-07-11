@@ -30,7 +30,6 @@ import java.util.HashSet
 import java.util.Map
 import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -52,7 +51,7 @@ abstract class BasicProjectGenerator
     val IFileSystemAccess fileSystemAccess
     val IQualifiedNameProvider qualifiedNameProvider
     val IGenerationSettings generationSettings
-    val Map<EObject, String> protobufArtifacts
+    val Map<AbstractContainerDeclaration, String> protobufArtifacts
     val IDLSpecification idl
     val MavenResolver mavenResolver
 
