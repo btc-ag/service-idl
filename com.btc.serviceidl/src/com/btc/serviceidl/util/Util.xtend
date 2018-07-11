@@ -102,8 +102,6 @@ class Util
         if (t.isAssignableFrom(element.class)) element as T else getParent(element.eContainer, t)
     }
 
-    // TODO actually, the return value can only be InterfaceDeclaration or ModuleDeclaration, 
-    // not a StructDeclaration; introduce another base class?
     def static AbstractContainerDeclaration getScopeDeterminant(EObject element)
     {
         var container = element
