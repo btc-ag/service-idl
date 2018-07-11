@@ -64,7 +64,6 @@ class CppExtensions
     static def Iterable<TypeWrapper> getTopologicallySortedTypes(AbstractContainerDeclaration owner)
     {
         // aggregate enums, typedefs, structs and exceptions into the same collection
-        // TODO change metamodel such that these types have a common supertype (besides EObject)
         val all_elements = new HashSet<AbstractTypeReference>
         all_elements.addAll(owner.eContents.filter(EnumDeclaration))
         all_elements.addAll(owner.eContents.filter(AliasDeclaration))
@@ -209,7 +208,7 @@ class CppExtensions
             #[]
     }
 
-    static def dispatch Iterable<AbstractTypeReference> predecessors(EObject element)
+    static def dispatch Iterable<AbstractTypeReference> predecessors(AbstractTypeReference element)
     {
         #[] // by default, never need an external include
     }
