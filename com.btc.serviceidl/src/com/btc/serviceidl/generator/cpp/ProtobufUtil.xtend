@@ -28,14 +28,13 @@ import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
 import com.google.common.base.CaseFormat
 import java.util.Optional
-import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufUtil
 {
-    static def ResolvedName resolveProtobuf(extension TypeResolver typeResolver, EObject object,
+    static def ResolvedName resolveProtobuf(extension TypeResolver typeResolver, AbstractTypeReference object,
         ProtobufType protobuf_type)
     {
         if (object.isUUIDType)
