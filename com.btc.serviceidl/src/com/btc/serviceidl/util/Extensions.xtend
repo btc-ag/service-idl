@@ -19,7 +19,6 @@ import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractException
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeReference
-import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
@@ -199,40 +198,6 @@ class Extensions
     static def dispatch Collection<AbstractTypeReference> requirements(AbstractTypeReference element)
     {
         return #[] // default: none
-    }
-
-    private static def dispatch void getUnderlyingTypes(StructDeclaration element, HashSet<EObject> all_types)
-    {
-        for (type : element.members)
-        {
-            if (!all_types.contains(type))
-                getUnderlyingTypes(type, all_types)
-        }
-    }
-
-    private static def dispatch void getUnderlyingTypes(AliasDeclaration element, HashSet<EObject> all_types)
-    {
-        val type = Util.getUltimateType(element)
-
-        if (!all_types.contains(type))
-            getUnderlyingTypes(type, all_types)
-
-        if (!Util.isPrimitive(type))
-            all_types.add(type)
-    }
-
-    private static def dispatch void getUnderlyingTypes(ExceptionDeclaration element, HashSet<EObject> all_types)
-    {
-        for (type : element.members)
-        {
-            if (!all_types.contains(type))
-                getUnderlyingTypes(type, all_types)
-        }
-    }
-
-    private static def dispatch void getUnderlyingTypes(EObject element, HashSet<EObject> all_types)
-    {
-        // do nothing by default
     }
 
     static def boolean isAllUpperCase(String text)
