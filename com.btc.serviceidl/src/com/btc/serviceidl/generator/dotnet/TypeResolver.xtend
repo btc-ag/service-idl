@@ -70,7 +70,7 @@ class TypeResolver
 
     def ResolvedName resolve(EObject element)
     {
-        return resolve(element, element.mainProjectType)
+        return resolve(element, element.scopeDeterminant.mainProjectType)
     }
 
     // TODO looks somewhat similar to java.TypeResolver.resolve
@@ -96,7 +96,7 @@ class TypeResolver
                 else if (element.referenceType !== null)
                 {
                     return resolve(element.referenceType, if (project_type != ProjectType.PROTOBUF)
-                        element.referenceType.mainProjectType
+                        element.referenceType.scopeDeterminant.mainProjectType
                     else
                         project_type)
                 }

@@ -98,7 +98,7 @@ class TypeResolver
 
     def ResolvedName resolve(EObject element)
     {
-        return resolve(element, element.mainProjectType)
+        return resolve(element, element.scopeDeterminant.mainProjectType)
     }
 
     def ResolvedName resolve(EObject element, ProjectType project_type)
@@ -124,7 +124,7 @@ class TypeResolver
                 else if (element.referenceType !== null)
                 {
                     return resolve(element.referenceType.ultimateType, if (project_type != ProjectType.PROTOBUF)
-                        element.referenceType.mainProjectType
+                        element.referenceType.scopeDeterminant.mainProjectType
                     else
                         project_type)
                 }

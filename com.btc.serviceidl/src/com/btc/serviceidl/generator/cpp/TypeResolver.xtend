@@ -169,7 +169,7 @@ class TypeResolver
 
     def ResolvedName resolve(AbstractTypeReference object)
     {
-        return resolve(object, object.mainProjectType)
+        return resolve(object, object.scopeDeterminant.mainProjectType)
     }
 
     def ResolvedName resolve(AbstractTypeReference object, ProjectType project_type)
