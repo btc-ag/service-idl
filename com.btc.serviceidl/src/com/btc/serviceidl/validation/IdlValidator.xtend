@@ -15,6 +15,7 @@
  */
 package com.btc.serviceidl.validation
 
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
@@ -39,7 +40,6 @@ import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
 import java.util.regex.Pattern
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.validation.Check
 
 import static extension com.btc.serviceidl.util.Extensions.*
@@ -170,8 +170,7 @@ class IdlValidator extends AbstractIdlValidator
         for (interface_declaration : idl_specification.eAllContents.filter(InterfaceDeclaration).toIterable)
         {
             if (name_map.containsKey(interface_declaration.name))
-                error(Messages.NAME_COLLISION, interface_declaration,
-                    IdlPackage.Literals.NAMED_DECLARATION__NAME)
+                error(Messages.NAME_COLLISION, interface_declaration, IdlPackage.Literals.NAMED_DECLARATION__NAME)
             else
                 name_map.put(interface_declaration.name, Boolean.TRUE)
         }
@@ -256,8 +255,7 @@ class IdlValidator extends AbstractIdlValidator
     {
         if (KeywordValidator.isKeyword(element.name, Pattern.LITERAL))
         {
-            error(Messages.IDENTIFIER_NAME_IS_KEYWORD, element,
-                IdlPackage.Literals.NAMED_DECLARATION__NAME)
+            error(Messages.IDENTIFIER_NAME_IS_KEYWORD, element, IdlPackage.Literals.NAMED_DECLARATION__NAME)
         }
 
         if (element.declarator !== null && KeywordValidator.isKeyword(element.declarator, Pattern.CASE_INSENSITIVE))
@@ -271,8 +269,7 @@ class IdlValidator extends AbstractIdlValidator
     {
         if (KeywordValidator.isKeyword(element.name, Pattern.CASE_INSENSITIVE))
         {
-            error(Messages.IDENTIFIER_NAME_IS_KEYWORD, element,
-                IdlPackage.Literals.NAMED_DECLARATION__NAME)
+            error(Messages.IDENTIFIER_NAME_IS_KEYWORD, element, IdlPackage.Literals.NAMED_DECLARATION__NAME)
         }
     }
 
@@ -376,7 +373,7 @@ class IdlValidator extends AbstractIdlValidator
     @Check
     def ensureConstructability(StructDeclaration element)
     {
-        val questionable_types = new HashSet<EObject>
+        val questionable_types = new HashSet<AbstractTypeReference>
         questionable_types.add(element)
 
         if (!isConstructible(element, questionable_types))
@@ -385,7 +382,8 @@ class IdlValidator extends AbstractIdlValidator
         }
     }
 
-    private def boolean isConstructible(EObject element, Collection<EObject> questionable_types)
+    private def boolean isConstructible(AbstractTypeReference element,
+        Collection<AbstractTypeReference> questionable_types)
     {
         val non_primitive_types = element.effectiveMembers.filter[!optional].filter[!Util.isSequenceType(type)].filter [
             !Util.isPrimitive(type)
