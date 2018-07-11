@@ -371,10 +371,10 @@ class DotNetGenerator
       }
    }
    
-   private def dispatch void resolveProtobufDependencies(EObject element, EObject owner)
+   private def dispatch void resolveProtobufDependencies(EObject element, AbstractContainerDeclaration owner)
    { /* no-operation dispatch method to match all non-handled cases */ }
    
-   private def dispatch void resolveProtobufDependencies(StructDeclaration element, EObject owner)
+   private def dispatch void resolveProtobufDependencies(StructDeclaration element, AbstractContainerDeclaration owner)
    {
       typeResolver.resolve(element, ProjectType.PROTOBUF)
       
@@ -384,12 +384,12 @@ class DotNetGenerator
       }
    }
    
-   private def dispatch void resolveProtobufDependencies(EnumDeclaration element, EObject owner)
+   private def dispatch void resolveProtobufDependencies(EnumDeclaration element, AbstractContainerDeclaration owner)
    {
       typeResolver.resolve(element, ProjectType.PROTOBUF)
    }
    
-   private def dispatch void resolveProtobufDependencies(ExceptionDeclaration element, EObject owner)
+   private def dispatch void resolveProtobufDependencies(ExceptionDeclaration element, AbstractContainerDeclaration owner)
    {
       typeResolver.resolve(element, ProjectType.PROTOBUF)
       
@@ -397,7 +397,7 @@ class DotNetGenerator
          resolveProtobufDependencies(element.supertype, owner)
    }
    
-   private def dispatch void resolveProtobufDependencies(FunctionDeclaration element, EObject owner)
+   private def dispatch void resolveProtobufDependencies(FunctionDeclaration element, AbstractContainerDeclaration owner)
    {
       for (param : element.parameters)
       {
@@ -408,7 +408,7 @@ class DotNetGenerator
          resolveProtobufDependencies(element.returnedType, owner)
    }
    
-   private def dispatch void resolveProtobufDependencies(AbstractType element, EObject owner)
+   private def dispatch void resolveProtobufDependencies(AbstractType element, AbstractContainerDeclaration owner)
    {
       if (element.referenceType !== null)
          resolveProtobufDependencies(element.referenceType, owner)
