@@ -29,7 +29,6 @@ import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
-import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
@@ -187,7 +186,12 @@ class Util
 
     }
 
-    static def String makeDefaultValue(BasicCSharpSourceGenerator basicCSharpSourceGenerator, EObject element)
+    static def String makeDefaultValue(BasicCSharpSourceGenerator basicCSharpSourceGenerator, AbstractType element)
+    {
+        makeDefaultValue(basicCSharpSourceGenerator, element.actualType)
+    }
+    
+    static def String makeDefaultValue(BasicCSharpSourceGenerator basicCSharpSourceGenerator, AbstractTypeReference element)
     {
         val typeResolver = basicCSharpSourceGenerator.typeResolver
         if (element instanceof PrimitiveType)
@@ -198,10 +202,6 @@ class Util
         else if (element instanceof AliasDeclaration)
         {
             return makeDefaultValue(basicCSharpSourceGenerator, element.type)
-        }
-        else if (element instanceof AbstractType)
-        {
-            return makeDefaultValue(basicCSharpSourceGenerator, element.actualType)
         }
         else if (element instanceof SequenceDeclaration)
         {
