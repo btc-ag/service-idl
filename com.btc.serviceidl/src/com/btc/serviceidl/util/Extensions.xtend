@@ -31,6 +31,7 @@ import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.ReturnTypeElement
+import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.idl.VoidType
 import java.util.ArrayList
@@ -109,7 +110,7 @@ class Extensions
      * 
      * \return true, if yes, false otherwise (also e.g. if such an owner could not be found at all)
      */
-    static def boolean isOutputParameter(EObject element)
+    static def boolean isOutputParameter(SequenceDeclaration element)
     {
         var container = element.eContainer
 
