@@ -500,7 +500,7 @@ class Util
         return true
     }
 
-    static def Iterable<AbstractException> getFailableExceptions(EObject container)
+    static def Iterable<AbstractException> getFailableExceptions(AbstractContainerDeclaration container)
     {
         var exceptions = new HashSet<AbstractException>
 

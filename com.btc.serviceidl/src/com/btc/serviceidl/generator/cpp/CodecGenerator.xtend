@@ -21,7 +21,6 @@ import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.MemberElementWrapper
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
@@ -54,7 +53,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
     
-    def generateEnsureFailableHandlers(EObject owner)
+    def generateEnsureFailableHandlers(AbstractContainerDeclaration owner)
     {
         val cab_string = resolveSymbol("BTC::Commons::Core::String")
         val cab_create_unique = resolveSymbol("BTC::Commons::Core::CreateUnique")
