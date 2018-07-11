@@ -141,7 +141,7 @@ class GeneratorUtil
             qualifiedNameProvider.getFullyQualifiedName(type).segments
     }
 
-    static def Iterable<AbstractTypeReference> getEncodableTypes(EObject owner)
+    static def Iterable<AbstractTypeReference> getEncodableTypes(AbstractContainerDeclaration owner)
     {
         val nestedTypes = new TreeSet<AbstractTypeReference>[e1, e2|Names.plain(e1).compareTo(Names.plain(e2))]
         nestedTypes.addAll(owner.eContents.filter(StructDeclaration))
