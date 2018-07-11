@@ -21,6 +21,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
 import com.btc.serviceidl.generator.cpp.cmake.CMakeTopLevelProjectFileGenerator
 import com.btc.serviceidl.generator.cpp.prins.OdbProjectGenerator
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.google.common.collect.Sets
@@ -48,7 +49,7 @@ class CppGenerator
 
     val IProjectSet projectSet
     val IModuleStructureStrategy moduleStructureStrategy
-    val smartPointerMap = new HashMap<EObject, Collection<EObject>>
+    val smartPointerMap = new HashMap<AbstractTypeReference, Collection<AbstractTypeReference>>
 
     new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IScopeProvider scopeProvider, IGenerationSettings generationSettings,

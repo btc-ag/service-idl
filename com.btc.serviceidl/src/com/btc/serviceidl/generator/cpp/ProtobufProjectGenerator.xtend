@@ -16,6 +16,7 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractContainerDeclaration
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -23,7 +24,6 @@ import com.btc.serviceidl.util.Constants
 import java.util.Collection
 import java.util.Map
 import java.util.Optional
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -41,7 +41,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
         IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
         ITargetVersionProvider targetVersionProvider, Iterable<IProjectReference> protobuf_project_references,
-        Map<EObject, Collection<EObject>> smart_pointer_map, ModuleDeclaration module)
+        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map, ModuleDeclaration module)
     {
         super(file_system_access, qualified_name_provider, scope_provider, idl, projectSetFactory, vsSolution,
             moduleStructureStrategy, targetVersionProvider, smart_pointer_map, ProjectType.PROTOBUF, module)

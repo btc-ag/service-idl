@@ -15,28 +15,28 @@
  */
 package com.btc.serviceidl.generator.common
 
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.xtend.lib.annotations.Accessors
+import com.btc.serviceidl.idl.AbstractTypeReference
 import java.util.Collection
 import java.util.LinkedHashSet
+import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors(PUBLIC_GETTER)
 class TypeWrapper
 {
-    private EObject type
-    private Collection<EObject> forwardDeclarations = new LinkedHashSet<EObject>
+    private AbstractTypeReference type
+    private Collection<AbstractTypeReference> forwardDeclarations = new LinkedHashSet<AbstractTypeReference>
         
-    def void addForwardDeclaration(EObject object)
+    def void addForwardDeclaration(AbstractTypeReference object)
     {
         forwardDeclarations.add(object)
     }
 
-    def Iterable<EObject> getForwardDeclarations()
+    def Iterable<AbstractTypeReference> getForwardDeclarations()
     {
         forwardDeclarations.unmodifiableView
     }
 
-    new(EObject type)
+    new(AbstractTypeReference type)
     {
         this.type = type
     }

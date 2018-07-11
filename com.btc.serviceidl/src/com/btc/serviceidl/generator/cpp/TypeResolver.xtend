@@ -48,7 +48,7 @@ class TypeResolver
 
     val Collection<IProjectReference> project_references
     val Collection<ExternalDependency> cab_libs
-    val Map<EObject, Collection<EObject>> smart_pointer_map
+    val Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map
 
     @Accessors(NONE) val Map<IncludeGroup, Set<IPath>> includes = new HashMap<IncludeGroup, Set<IPath>>
 
@@ -107,7 +107,7 @@ class TypeResolver
         IModuleStructureStrategy moduleStructureStrategy,
         Collection<IProjectReference> project_references,
         Collection<ExternalDependency> cab_libs,
-        Map<EObject, Collection<EObject>> smart_pointer_map
+        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map
     )
     {
         this.qualified_name_provider = qualified_name_provider
@@ -253,12 +253,12 @@ class TypeResolver
         return dependencies !== null && dependencies.contains(other_type.ultimateType)
     }
 
-    def Iterable<EObject> resolveForwardDeclarations(Iterable<TypeWrapper> types)
+    def Iterable<AbstractTypeReference> resolveForwardDeclarations(Iterable<TypeWrapper> types)
     {
         // TODO does this really need to iterate twice through types? 
         for (wrapper : types)
         {
-            smart_pointer_map.computeIfAbsent(wrapper.type, [new LinkedHashSet<EObject>]).addAll(
+            smart_pointer_map.computeIfAbsent(wrapper.type, [new LinkedHashSet<AbstractTypeReference>]).addAll(
                 wrapper.forwardDeclarations)
         }
 

@@ -13,13 +13,13 @@ package com.btc.serviceidl.generator.cpp
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import java.util.Collection
 import java.util.Map
 import java.util.Optional
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
@@ -29,12 +29,12 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
     new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
         IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
-        ITargetVersionProvider targetVersionProvider,
-        Map<EObject, Collection<EObject>> smart_pointer_map, ProjectType type, ModuleDeclaration module)
+        ITargetVersionProvider targetVersionProvider, Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map,
+        ProjectType type, ModuleDeclaration module)
     {
         super(file_system_access, qualified_name_provider, scope_provider, idl, projectSetFactory, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, smart_pointer_map, type,
-            module, new SourceGenerationStrategy)
+            moduleStructureStrategy, targetVersionProvider, smart_pointer_map, type, module,            
+            new SourceGenerationStrategy)
     }
 
     private static class SourceGenerationStrategy implements ISourceGenerationStrategy

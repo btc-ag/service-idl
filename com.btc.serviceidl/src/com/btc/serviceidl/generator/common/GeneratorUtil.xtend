@@ -33,7 +33,6 @@ import java.util.ArrayList
 import java.util.TreeSet
 import java.util.regex.Pattern
 import org.eclipse.core.runtime.Path
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.naming.QualifiedName
 
@@ -130,7 +129,7 @@ class GeneratorUtil
             Util.getUltimateType(element), qualifiedNameProvider).map[toFirstUpper]].flatten.join(FAILABLE_SEPARATOR)
     }
 
-    private static def Iterable<String> getTypeName(EObject type, IQualifiedNameProvider qualifiedNameProvider)
+    private static def Iterable<String> getTypeName(AbstractTypeReference type, IQualifiedNameProvider qualifiedNameProvider)
     {
         if (type.isPrimitive)
             #[Names.plain(type)]

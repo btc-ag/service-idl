@@ -173,9 +173,9 @@ class Extensions
      * Requirements are all elements, which are essentially needed by the given
      * element, no matter if defined externally or internally.
      */
-    static def dispatch Collection<EObject> requirements(StructDeclaration element)
+    static def dispatch Collection<AbstractTypeReference> requirements(StructDeclaration element)
     {
-        val result = new HashSet<EObject>(element.members.size)
+        val result = new HashSet<AbstractTypeReference>(element.members.size)
         for (member : element.members)
         {
             if (Util.isStruct(member.type))
@@ -184,9 +184,9 @@ class Extensions
         return result
     }
 
-    static def dispatch Collection<EObject> requirements(ExceptionDeclaration element)
+    static def dispatch Collection<AbstractTypeReference> requirements(ExceptionDeclaration element)
     {
-        val result = new HashSet<EObject>(element.members.size)
+        val result = new HashSet<AbstractTypeReference>(element.members.size)
         for (member : element.members)
         {
             if (Util.isException(member.type))
@@ -195,7 +195,7 @@ class Extensions
         return result
     }
 
-    static def dispatch Collection<EObject> requirements(EObject element)
+    static def dispatch Collection<AbstractTypeReference> requirements(AbstractTypeReference element)
     {
         return #[] // default: none
     }
