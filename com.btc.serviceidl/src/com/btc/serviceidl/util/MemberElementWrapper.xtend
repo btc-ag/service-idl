@@ -42,7 +42,7 @@ class MemberElementWrapper
     private AbstractTypeReference type
     private String name
     private boolean optional
-    private EObject container
+    private EObject container // TODO check if this is always an AbstractContainerDeclaration
 
     new(MemberElement member)
     {
