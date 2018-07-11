@@ -20,6 +20,7 @@ import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.MemberElement
@@ -71,14 +72,14 @@ class ProtobufUtil
         return new ResolvedName(result, TransformType.NAMESPACE)
     }
 
-    static def String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject element,
-        AbstractContainerDeclaration container)
+    static def String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle,
+        AbstractTypeReference element, AbstractContainerDeclaration container)
     {
         resolveDecode(typeResolver, paramBundle, element, container, true)
     }
 
-    static def String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject element,
-        AbstractContainerDeclaration container, boolean use_codec_ns)
+    static def String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle,
+        AbstractTypeReference element, AbstractContainerDeclaration container, boolean use_codec_ns)
     {
         // handle sequence first, because it may include UUIDs and other types from below
         if (element.isSequenceType)
@@ -96,10 +97,13 @@ class ProtobufUtil
             val isUUIDType = ultimate_type.isUUIDType
             val decodeMethodName = (if (is_failable)
                 "DecodeFailable"
-            else if (isUUIDType) "DecodeUUID" else "Decode") + if (element.eContainer instanceof MemberElement)
-                "ToVector"
-            else
-                ""
+            else if (isUUIDType) "DecodeUUID" else "Decode") +
+                if (element.eContainer instanceof AbstractType &&
+                    (element.eContainer as AbstractType).collectionType !== null &&
+                    element.eContainer.eContainer instanceof MemberElement)
+                    "ToVector"
+                else
+                    ""
 
             return '''«IF use_codec_ns»«typeResolver.resolveCodecNS(paramBundle, ultimate_type, is_failable, Optional.of(container))»::«ENDIF»«decodeMethodName»«IF is_failable || !isUUIDType»< «protobuf_type», «resolve(ultimate_type)» >«ENDIF»'''
         }
@@ -119,13 +123,14 @@ class ProtobufUtil
         return '''«typeResolver.resolveCodecNS(paramBundle, element)»::Decode'''
     }
 
-    static def String resolveCodecNS(TypeResolver typeResolver, ParameterBundle paramBundle, EObject object)
+    static def String resolveCodecNS(TypeResolver typeResolver, ParameterBundle paramBundle,
+        AbstractTypeReference object)
     {
         resolveCodecNS(typeResolver, paramBundle, object, false, Optional.empty)
     }
 
-    static def String resolveCodecNS(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject object,
-        boolean is_failable, Optional<EObject> container)
+    static def String resolveCodecNS(extension TypeResolver typeResolver, ParameterBundle paramBundle,
+        AbstractTypeReference object, boolean is_failable, Optional<AbstractContainerDeclaration> container)
     {
         val ultimate_type = object.ultimateType
 
@@ -145,7 +150,7 @@ class ProtobufUtil
             TransformType.NAMESPACE) + TransformType.NAMESPACE.separator + codec_name
     }
 
-    static def String resolveFailableProtobufType(extension TypeResolver typeResolver, EObject element,
+    static def String resolveFailableProtobufType(extension TypeResolver typeResolver, AbstractTypeReference element,
         AbstractContainerDeclaration container)
     {
         // TODO isn't there a specific type that is used from that library? Is it really required?

@@ -27,23 +27,26 @@
  */
 package com.btc.serviceidl.util
 
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.xtend.lib.annotations.Accessors
-import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.MemberElement
+import com.btc.serviceidl.idl.StructDeclaration
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtend.lib.annotations.Accessors
+
+import static extension com.btc.serviceidl.util.Extensions.*
 
 @Accessors(PUBLIC_GETTER)
 class MemberElementWrapper
 {
-    private EObject type
+    private AbstractTypeReference type
     private String name
     private boolean optional
     private EObject container
 
     new(MemberElement member)
     {
-        type = member.type
+        type = member.type.actualType
         name = member.name
         optional = member.optional
         container = member.eContainer

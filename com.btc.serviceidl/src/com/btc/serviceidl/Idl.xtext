@@ -33,6 +33,10 @@ AbstractStructuralDeclaration:
     AbstractContainerDeclaration | StructDeclaration
 ;
 
+NamedDeclaration:
+    AbstractContainerDeclaration | AbstractInterfaceComponent 
+;
+
 AbstractContainerDeclaration:
     ModuleDeclaration | InterfaceDeclaration 
 ;
@@ -44,11 +48,8 @@ ModuleDeclaration:
 
 /* nested components which may occur within a regular module */
 AbstractModuleComponent:
-   EnumDeclaration ';'
-   | StructDeclaration ';'
-   | AbstractException ';'
+   AbstractTypeDeclaration ';'
    | InterfaceDeclaration ';'
-   | AliasDeclaration ';'
 ;
 
 /* generic exception */
@@ -75,14 +76,16 @@ AbstractTypeDeclaration:
 
 /* previously declared types which can be used in a cross-reference */
 AbstractCrossReference:
-   AliasDeclaration
-   | EnumDeclaration
-   | StructDeclaration
-   | AbstractCollection
-   | AbstractException
+   AbstractTypeDeclaration
+   | AbstractCollection   
+;
+
+AbstractTypeReference:
+    PrimitiveType | AbstractCrossReference | InterfaceDeclaration
 ;
 
 /* meta type for any usable type */
+/* TODO consider renaming since it is not abstract contrary to its name */
 AbstractType:
    primitiveType = PrimitiveType 
    | referenceType = [AbstractCrossReference|QualifiedName]

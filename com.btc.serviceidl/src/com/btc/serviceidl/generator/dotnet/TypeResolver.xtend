@@ -19,6 +19,7 @@ import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
@@ -195,7 +196,7 @@ class TypeResolver
         throw new IllegalArgumentException("Unknown PrimitiveType: " + element.class.toString)
     }
 
-    def String resolveFailableProtobufType(EObject element, AbstractContainerDeclaration container)
+    def String resolveFailableProtobufType(AbstractTypeReference element, AbstractContainerDeclaration container)
     {
         val namespace = GeneratorUtil.getTransformedModuleName(
             ParameterBundle.createBuilder(container.scopeDeterminant.moduleStack).with(ProjectType.PROTOBUF).build,

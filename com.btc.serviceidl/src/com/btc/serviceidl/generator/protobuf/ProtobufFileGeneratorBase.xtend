@@ -20,11 +20,11 @@ import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.SequenceDeclaration
@@ -102,7 +102,7 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def String generatePackageName(EObject container)
+    protected def String generatePackageName(AbstractContainerDeclaration container)
     {
         '''
             syntax = "proto2";
@@ -110,7 +110,7 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def String generateImports(EObject container)
+    protected def String generateImports(AbstractContainerDeclaration container)
     {
         '''
             «FOR importFile : referencedFiles»
@@ -119,7 +119,7 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def dispatch String toText(StructDeclaration element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(StructDeclaration element, EObject context, AbstractContainerDeclaration container, Counter id)
     {
         if (context instanceof AbstractContainerDeclaration)
             '''
@@ -290,7 +290,7 @@ class ProtobufFileGeneratorBase
             (element instanceof SequenceDeclaration && (element as SequenceDeclaration).type.collectionType !== null)
     }
 
-    protected def String makeSequence(EObject nestedType, boolean isFailable, EObject context,
+    protected def String makeSequence(AbstractTypeReference nestedType, boolean isFailable, EObject context,
         AbstractContainerDeclaration container, String protobufName, Counter id)
     {
         '''
@@ -303,7 +303,7 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def String resolve(EObject object, EObject context, EObject container)
+    protected def String resolve(AbstractTypeReference object, EObject context, EObject container)
     {
         if (object.isSequenceType)
             toText(object, context, container, new Counter)

@@ -106,10 +106,10 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
                        «val is_input = (param.direction == ParameterDirection.PARAM_IN)»
                        «val isFailable = com.btc.serviceidl.util.Util.isFailable(param)»
                        «val use_codec = isFailable || GeneratorUtil.useCodec(param, ArtifactNature.DOTNET)»
-                       «val decodeMethod = getDecodeMethod(param.paramType, interface_declaration)»
+                       «val decodeMethod = getDecodeMethod(param.paramType.actualType, interface_declaration)»
                        «val useCast = use_codec && !isFailable»
                        «IF is_input»
-                          «IF use_codec»«IF useCast»(«resolveDecode(param.paramType)») «ENDIF»«resolveCodec(typeResolver, parameterBundle, param.paramType)».«decodeMethod»(«ENDIF»«IF use_codec»«resolve(param.paramType, ProjectType.PROTOBUF).alias("request")»«ELSE»request«ENDIF».«request_name».«param.paramName.asDotNetProtobufName»«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»List«ENDIF»«IF use_codec»)«ENDIF»
+                          «IF use_codec»«IF useCast»(«resolveDecode(param.paramType.actualType)») «ENDIF»«resolveCodec(typeResolver, parameterBundle, param.paramType.actualType)».«decodeMethod»(«ENDIF»«IF use_codec»«resolve(param.paramType, ProjectType.PROTOBUF).alias("request")»«ELSE»request«ENDIF».«request_name».«param.paramName.asDotNetProtobufName»«IF (com.btc.serviceidl.util.Util.isSequenceType(param.paramType))»List«ENDIF»«IF use_codec»)«ENDIF»
                        «ELSE»
                           out «param.paramName.asParameter»
                        «ENDIF»
@@ -121,18 +121,18 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
                  «val isSequence = com.btc.serviceidl.util.Util.isSequenceType(func.returnedType)»
                  «val use_codec = isSequence || GeneratorUtil.useCodec(func.returnedType, ArtifactNature.DOTNET)»
                  «val method_name = if (isSequence) "AddRange" + func.name.asDotNetProtobufName else "Set" + func.name.asDotNetProtobufName»
-                 «val encodeMethod = getEncodeMethod(func.returnedType, interface_declaration)»
+                 «val encodeMethod = getEncodeMethod(func.returnedType.actualType, interface_declaration)»
                  «val isFailable = com.btc.serviceidl.util.Util.isFailable(func.returnedType)»
                  «val useCast = use_codec && !isFailable»
-                 «IF !is_void».«method_name»(«IF use_codec»«IF useCast»(«resolveEncode(func.returnedType)») «ENDIF»«resolveCodec(typeResolver, parameterBundle, func.returnedType)».«encodeMethod»(«ENDIF»«IF use_codec»«resolve(func.returnedType).alias("result")»«ELSE»result«ENDIF»«IF use_codec»)«ENDIF»)«ENDIF»
+                 «IF !is_void».«method_name»(«IF use_codec»«IF useCast»(«resolveEncode(func.returnedType.actualType)») «ENDIF»«resolveCodec(typeResolver, parameterBundle, func.returnedType.actualType)».«encodeMethod»(«ENDIF»«IF use_codec»«resolve(func.returnedType).alias("result")»«ELSE»result«ENDIF»«IF use_codec»)«ENDIF»)«ENDIF»
                  «FOR param : out_params»
                     «val param_name = param.paramName.asParameter»
                     «val isFailableParam = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
                     «val use_codec_param = isFailableParam || GeneratorUtil.useCodec(param.paramType, ArtifactNature.DOTNET)»
                     «val method_name_param = if (com.btc.serviceidl.util.Util.isSequenceType(param.paramType)) "AddRange" + param.paramName.asDotNetProtobufName else "Set" + param.paramName.asDotNetProtobufName»
-                    «val encode_method_param = getEncodeMethod(param.paramType, interface_declaration)»
+                    «val encode_method_param = getEncodeMethod(param.paramType.actualType, interface_declaration)»
                     «val useCastParam = use_codec_param && !isFailableParam»
-                    .«method_name_param»(«IF use_codec_param»«IF useCastParam»(«resolveEncode(param.paramType)») «ENDIF»«resolveCodec(typeResolver, parameterBundle, param.paramType)».«encode_method_param»(«ENDIF»«IF use_codec_param»«resolve(param.paramType).alias(param_name)»«ELSE»«param_name»«ENDIF»«IF use_codec_param»)«ENDIF»)
+                    .«method_name_param»(«IF use_codec_param»«IF useCastParam»(«resolveEncode(param.paramType.actualType)») «ENDIF»«resolveCodec(typeResolver, parameterBundle, param.paramType.actualType)».«encode_method_param»(«ENDIF»«IF use_codec_param»«resolve(param.paramType).alias(param_name)»«ELSE»«param_name»«ENDIF»«IF use_codec_param»)«ENDIF»)
                  «ENDFOR»
                  ;
               

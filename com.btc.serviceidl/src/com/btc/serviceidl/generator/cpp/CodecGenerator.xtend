@@ -14,8 +14,9 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
-import com.btc.serviceidl.idl.AbstractContainerDeclaration 
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
@@ -32,7 +33,7 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors
 class CodecGenerator extends BasicCppGenerator
 {
-    private def generateHCodecInline(AbstractContainerDeclaration owner, Iterable<EObject> nested_types)
+    private def generateHCodecInline(AbstractContainerDeclaration owner, Iterable<AbstractTypeReference> nested_types)
     {
         val failable_types = GeneratorUtil.getFailableTypes(owner)
 
@@ -482,7 +483,7 @@ class CodecGenerator extends BasicCppGenerator
 
     }
     
-    def generateCodec(EObject type, EObject owner)
+    def generateCodec(AbstractTypeReference type, AbstractContainerDeclaration owner)
     {
         val api_type_name = resolve(type)
         /* TODO change such that ProtobufType does not need to be passed, it is irrelevant here */
@@ -505,7 +506,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
     
-    def generateFailableCodec(EObject type, AbstractContainerDeclaration owner)
+    def generateFailableCodec(AbstractTypeReference type, AbstractContainerDeclaration owner)
     {
         val api_type_name = resolve(type)
         val proto_failable_type_name = typeResolver.resolveFailableProtobufType(type, owner)
@@ -666,7 +667,7 @@ class CodecGenerator extends BasicCppGenerator
             return makeEncode(element.referenceType)
     }
 
-    private def String resolveEncode(EObject element)
+    private def String resolveEncode(AbstractTypeReference element)
     {
         if (element.isFailable)
             "EncodeFailable"
@@ -676,7 +677,7 @@ class CodecGenerator extends BasicCppGenerator
             '''«typeResolver.resolveCodecNS(paramBundle, element)»::Encode'''
     }
 
-    private static def boolean isMutableField(EObject type)
+    private static def boolean isMutableField(AbstractTypeReference type)
     {
         val ultimate_type = type.ultimateType
 

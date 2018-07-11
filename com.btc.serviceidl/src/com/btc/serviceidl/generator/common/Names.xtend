@@ -15,23 +15,21 @@
  */
 package com.btc.serviceidl.generator.common
 
-import com.btc.serviceidl.idl.AliasDeclaration
-import com.btc.serviceidl.idl.StructDeclaration
-import com.btc.serviceidl.idl.ModuleDeclaration
-import com.btc.serviceidl.idl.ExceptionReferenceDeclaration
-import com.btc.serviceidl.idl.ExceptionDeclaration
-import com.btc.serviceidl.idl.MemberElement
-import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.idl.FunctionDeclaration
-import com.btc.serviceidl.idl.EventDeclaration
-import com.btc.serviceidl.idl.EnumDeclaration
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AliasDeclaration
+import com.btc.serviceidl.idl.EnumDeclaration
+import com.btc.serviceidl.idl.EventDeclaration
+import com.btc.serviceidl.idl.ExceptionDeclaration
+import com.btc.serviceidl.idl.ExceptionReferenceDeclaration
+import com.btc.serviceidl.idl.FunctionDeclaration
+import com.btc.serviceidl.idl.MemberElement
+import com.btc.serviceidl.idl.NamedDeclaration
 import com.btc.serviceidl.idl.ParameterElement
+import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.TupleDeclaration
-import com.btc.serviceidl.idl.ReturnTypeElement
-import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 
 class Names
 {
@@ -51,7 +49,7 @@ class Names
     { return element.name }
 
     def static dispatch String plain(AbstractStructuralDeclaration element)
-    { return element.name }
+    { return (element as NamedDeclaration).name }
 
     def static dispatch String plain(FunctionDeclaration element)
     { return element.name }

@@ -15,8 +15,10 @@
  */
 package com.btc.serviceidl.util
 
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractException
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
@@ -28,12 +30,12 @@ import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.StructDeclaration
 import java.util.ArrayList
 import java.util.Collection
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
-import com.btc.serviceidl.idl.AbstractContainerDeclaration
 
 class Extensions
 {
@@ -373,10 +375,18 @@ class Extensions
         // should be included here as well. Adjust naming of the methods. 
         interfaceDeclaration.contains.filter(EventDeclaration).filter[name !== null]
     }
-    
+
     static def getActualType(AbstractType abstractType)
     {
         JavaUtil.checkConsistency(abstractType);
-        abstractType.primitiveType ?: abstractType.referenceType ?: abstractType.collectionType        
+        abstractType.primitiveType ?: abstractType.referenceType ?: abstractType.collectionType
+    }
+
+    static def AbstractTypeReference getActualType(ReturnTypeElement returnTypeElement)
+    {
+        if (returnTypeElement instanceof AbstractType)
+            returnTypeElement.actualType
+        else
+            null
     }
 }

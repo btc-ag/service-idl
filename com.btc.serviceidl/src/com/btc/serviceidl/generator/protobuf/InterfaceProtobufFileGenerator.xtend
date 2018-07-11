@@ -44,7 +44,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
                           «IF Util.isSequenceType(param.paramType)»
                               «makeSequence(Util.getUltimateType(param.paramType), Util.isFailable(param.paramType), param, interfaceDeclaration, param.protoFileAttributeName, fieldId)»
                           «ELSE»
-                              required «resolve(param.paramType, interfaceDeclaration, interfaceDeclaration)» «param.protoFileAttributeName» = «fieldId.incrementAndGet»;
+                              required «resolve(param.paramType.actualType, interfaceDeclaration, interfaceDeclaration)» «param.protoFileAttributeName» = «fieldId.incrementAndGet»;
                           «ENDIF»
                       «ENDFOR»
                    }
@@ -67,7 +67,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
                               «val sequence = Util.tryGetSequence(param.paramType).get»
                               «toText(sequence, param, interfaceDeclaration, fieldId)»
                           «ELSE»
-                              required «resolve(param.paramType, interfaceDeclaration, interfaceDeclaration)» «param.protoFileAttributeName» = «fieldId.incrementAndGet»;
+                              required «resolve(param.paramType.actualType, interfaceDeclaration, interfaceDeclaration)» «param.protoFileAttributeName» = «fieldId.incrementAndGet»;
                           «ENDIF»
                       «ENDFOR»
                       «generateReturnType(function, interfaceDeclaration, interfaceDeclaration, fieldId)»
@@ -100,7 +100,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
                     «IF Util.isSequenceType(element)»
                         «toText(element, function, container, id)»
                     «ELSE»
-                        required «resolve(element, context, container)» «function.protoFileAttributeName» = «id.incrementAndGet»;
+                        required «resolve(element.actualType, context, container)» «function.protoFileAttributeName» = «id.incrementAndGet»;
                     «ENDIF»
                 «ENDIF»
             «ENDIF»

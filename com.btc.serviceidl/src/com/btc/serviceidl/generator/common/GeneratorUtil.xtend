@@ -15,7 +15,9 @@
  */
 package com.btc.serviceidl.generator.common
 
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
@@ -39,7 +41,7 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.AbstractContainerDeclaration
+import com.btc.serviceidl.idl.ReturnTypeElement
 
 class GeneratorUtil
 {
@@ -92,27 +94,30 @@ class GeneratorUtil
         name.replaceAll(Pattern.quote(sourceTransformType.separator), targetTransformType.separator)
     }
 
-    static def Iterable<EObject> getFailableTypes(AbstractContainerDeclaration container)
+    static def Iterable<AbstractTypeReference> getFailableTypes(AbstractContainerDeclaration container)
     {
-        var objects = new ArrayList<Iterable<EObject>>
+        var objects = new ArrayList<Iterable<AbstractTypeReference>>
 
         // interfaces: special handling due to inheritance
         if (container instanceof InterfaceDeclaration)
         {
-            objects.add(container.functions.map[parameters].flatten.filter[isFailable(paramType)].filter(EObject))
-            objects.add(container.functions.map[returnedType].filter[isFailable].filter(EObject))
+            objects.add(
+                container.functions.map[parameters].flatten.map[paramType].filter[isFailable].map[actualType].filter(
+                    AbstractTypeReference))
+            objects.add(
+                container.functions.map[returnedType].filter[isFailable].map[actualType].filter(AbstractTypeReference))
         }
 
         val contents = container.eAllContents.toList
 
         // typedefs
         objects.add(
-            contents.filter(AliasDeclaration).filter[isFailable(type)].map[type]
+            contents.filter(AliasDeclaration).filter[isFailable(type)].map[type.actualType]
         )
 
         // structs
         objects.add(
-            contents.filter(StructDeclaration).map[members].flatten.filter[isFailable(type)].map[type]
+            contents.filter(StructDeclaration).map[members].flatten.filter[isFailable(type)].map[type.actualType]
         )
 
         // filter out duplicates (especially primitive types) before delivering the result!
@@ -121,7 +126,7 @@ class GeneratorUtil
 
     static val FAILABLE_SEPARATOR = "_"
 
-    static def String asFailable(EObject element, AbstractContainerDeclaration container,
+    static def String asFailable(AbstractTypeReference element, AbstractContainerDeclaration container,
         IQualifiedNameProvider qualifiedNameProvider)
     {
         #[#["Failable"], qualifiedNameProvider.getFullyQualifiedName(container).segments, getTypeName(
@@ -136,9 +141,9 @@ class GeneratorUtil
             qualifiedNameProvider.getFullyQualifiedName(type).segments
     }
 
-    static def Iterable<EObject> getEncodableTypes(EObject owner)
+    static def Iterable<AbstractTypeReference> getEncodableTypes(EObject owner)
     {
-        val nestedTypes = new TreeSet<EObject>[e1, e2|Names.plain(e1).compareTo(Names.plain(e2))]
+        val nestedTypes = new TreeSet<AbstractTypeReference>[e1, e2|Names.plain(e1).compareTo(Names.plain(e2))]
         nestedTypes.addAll(owner.eContents.filter(StructDeclaration))
         nestedTypes.addAll(owner.eContents.filter(ExceptionDeclaration))
         nestedTypes.addAll(owner.eContents.filter(EnumDeclaration))
@@ -179,6 +184,11 @@ class GeneratorUtil
     static def dispatch boolean useCodec(AbstractType element, ArtifactNature artifactNature)
     {
         useCodec(element.actualType, artifactNature)
+    }
+
+    static def dispatch boolean useCodec(ReturnTypeElement element, ArtifactNature artifactNature)
+    {
+        false
     }
 
     static def String getCodecName(EObject object)

@@ -72,7 +72,7 @@ class BasicCppGenerator
     }
 
     def String generateInheritedInterfaceMethods(InterfaceDeclaration interface_declaration)
-    {
+    {        
         val class_name = resolve(interface_declaration, paramBundle.projectType)
 
         '''
@@ -161,7 +161,7 @@ class BasicCppGenerator
                        «toText(type_declaration, item)»
                    «ENDFOR»
                    «FOR member : item.members»
-                       «val is_pointer = useSmartPointer(item, member.type)»
+                       «val is_pointer = useSmartPointer(item, member.type.actualType)»
                        «val is_optional = member.isOptional»
                        «IF is_optional && !is_pointer»«resolveSymbol("BTC::Commons::CoreExtras::Optional")»< «ENDIF»«IF is_pointer»«resolveSymbol("std::shared_ptr")»< «ENDIF»«toText(member.type, item)»«IF is_pointer» >«ENDIF»«IF is_optional && !is_pointer» >«ENDIF» «member.name.asMember»;
                    «ENDFOR»

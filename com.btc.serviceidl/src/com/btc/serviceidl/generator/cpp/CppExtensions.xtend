@@ -20,6 +20,7 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TypeWrapper
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
@@ -178,27 +179,28 @@ class CppExtensions
      * headers are NOT among the predecessors, since they are resolved based
      * on the #include directive. 
      */
-    static def dispatch Iterable<EObject> predecessors(StructDeclaration element)
+    static def dispatch Iterable<AbstractTypeReference> predecessors(StructDeclaration element)
     {
         predecessors(element.supertype, element.members)
     }
 
-    static def dispatch Iterable<EObject> predecessors(AliasDeclaration element)
+    static def dispatch Iterable<AbstractTypeReference> predecessors(AliasDeclaration element)
     {
-        resolvePredecessor(element.type)
+        resolvePredecessor(element.type.actualType)
     }
 
-    static def dispatch Iterable<EObject> predecessors(ExceptionDeclaration element)
+    static def dispatch Iterable<AbstractTypeReference> predecessors(ExceptionDeclaration element)
     {
         predecessors(element.supertype, element.members)
     }
-    
-    static def Iterable<EObject> predecessors(EObject supertype, Iterable<MemberElement> members)
+
+    static def Iterable<AbstractTypeReference> predecessors(AbstractTypeReference supertype,
+        Iterable<MemberElement> members)
     {
-        #[members.map[type], #[supertype].reject[it === null]].flatten.flatMap[resolvePredecessor]        
+        #[members.map[type.actualType], #[supertype].reject[it === null]].flatten.flatMap[resolvePredecessor]
     }
 
-    private static def Iterable<EObject> resolvePredecessor(EObject element)
+    private static def Iterable<AbstractTypeReference> resolvePredecessor(AbstractTypeReference element)
     {
         val type = element.getUltimateType(false)
         if (declaredInternally(element, type))

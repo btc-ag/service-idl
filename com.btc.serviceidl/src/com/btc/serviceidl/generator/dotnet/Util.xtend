@@ -31,6 +31,7 @@ import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import com.btc.serviceidl.idl.AbstractTypeReference
 
 // TODO reorganize this according to logical aspects
 class Util
@@ -225,20 +226,28 @@ class Util
     {
         val is_void = function.returnedType.isVoid
         val is_sync = function.isSync
-        val isSequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)
-        val isFailable = isSequence && com.btc.serviceidl.util.Util.isFailable(function.returnedType)
-        val basicType = typeResolver.resolve(com.btc.serviceidl.util.Util.getUltimateType(function.returnedType))
-        var effectiveType = basicType.toString
 
-        if (isSequence)
+        if (is_void)
+            '''«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»'''
+        else
         {
-            effectiveType = '''«typeResolver.resolve("System.Collections.Generic.IEnumerable")»<«IF isFailable»«typeResolver.resolveFailableType(basicType.fullyQualifiedName)»«ELSE»«basicType»«ENDIF»>'''
-        }
+            val isSequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)
+            val isFailable = isSequence && com.btc.serviceidl.util.Util.isFailable(function.returnedType)
+            val basicType = typeResolver.resolve(
+                com.btc.serviceidl.util.Util.getUltimateType(function.returnedType.actualType))
+            var effectiveType = if (isSequence)
+                {
+                    '''«typeResolver.resolve("System.Collections.Generic.IEnumerable")»<«IF isFailable»«typeResolver.resolveFailableType(basicType.fullyQualifiedName)»«ELSE»«basicType»«ENDIF»>'''
+                }
+                else
+                    basicType.toString
 
-        '''«IF is_void»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»«ELSE»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»<«ENDIF»«effectiveType»«IF !is_sync»>«ENDIF»«ENDIF»'''
+            '''«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»<«ENDIF»«effectiveType»«IF !is_sync»>«ENDIF»'''
+        }
     }
 
-    static def String resolveCodec(TypeResolver typeResolver, ParameterBundle param_bundle, EObject object)
+    static def String resolveCodec(TypeResolver typeResolver, ParameterBundle param_bundle,
+        AbstractTypeReference object)
     {
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
 
@@ -259,7 +268,7 @@ class Util
             throw new «typeResolver.resolve("System.NotSupportedException")»("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»");
         '''
     }
-    
+
     static def getPrefix(AbstractContainerDeclaration container)
     {
         if (container instanceof InterfaceDeclaration) container.name else ""

@@ -61,7 +61,7 @@ class IdlFormatter extends AbstractFormatter2
       
       element.regionFor.feature(IdlPackage::Literals::MODULE_DECLARATION__VIRTUAL).prepend[noSpace].append[oneSpace]
       element.regionFor.feature(IdlPackage::Literals::MODULE_DECLARATION__MAIN).surround[oneSpace]
-      element.regionFor.feature(IdlPackage::Literals::ABSTRACT_STRUCTURAL_DECLARATION__NAME).surround[oneSpace]
+      element.regionFor.feature(IdlPackage::Literals::NAMED_DECLARATION__NAME).surround[oneSpace]
       
       element.nestedModules.forEach[format]
       
@@ -74,7 +74,7 @@ class IdlFormatter extends AbstractFormatter2
       indentBlock(element, document)
       
       element.regionFor.feature(IdlPackage::Literals::INTERFACE_DECLARATION__ABSTRACT).prepend[noSpace].append[oneSpace]
-      element.regionFor.feature(IdlPackage::Literals::ABSTRACT_STRUCTURAL_DECLARATION__NAME).surround[oneSpace]
+      element.regionFor.feature(IdlPackage::Literals::NAMED_DECLARATION__NAME).surround[oneSpace]
       element.regionFor.keyword("guid").surround[oneSpace]
       element.regionFor.keyword("version").surround[oneSpace]
       element.regionFor.keywords("=").forEach[surround[oneSpace]]
@@ -91,7 +91,7 @@ class IdlFormatter extends AbstractFormatter2
    {
       indentBlock(element, document)
       
-      element.regionFor.feature(IdlPackage::Literals::ABSTRACT_STRUCTURAL_DECLARATION__NAME).surround[oneSpace]
+      element.regionFor.feature(IdlPackage::Literals::NAMED_DECLARATION__NAME).surround[oneSpace]
       element.regionFor.feature(IdlPackage::Literals::STRUCT_DECLARATION__DECLARATOR).prepend[oneSpace].append[noSpace]
       element.regionFor.keyword(":").surround[oneSpace]
       element.members.forEach[prepend[newLine]]
@@ -111,7 +111,7 @@ class IdlFormatter extends AbstractFormatter2
    {
       indentBlock(element, document)
       
-      element.regionFor.feature(IdlPackage::Literals::ABSTRACT_EXCEPTION__NAME).surround[oneSpace]
+      element.regionFor.feature(IdlPackage::Literals::NAMED_DECLARATION__NAME).surround[oneSpace]
       element.regionFor.keyword(":").surround[oneSpace]
       element.members.forEach[prepend[newLine]]
       element.members.forEach[format]
@@ -121,7 +121,7 @@ class IdlFormatter extends AbstractFormatter2
    
    def dispatch void format(ExceptionReferenceDeclaration element, extension IFormattableDocument document)
    {
-      element.regionFor.feature(IdlPackage::Literals::ABSTRACT_EXCEPTION__NAME).surround[oneSpace]
+      element.regionFor.feature(IdlPackage::Literals::NAMED_DECLARATION__NAME).surround[oneSpace]
       element.regionFor.keyword("ref").append[oneSpace]
       
       formatClosingSemicolon(element, document)
@@ -130,7 +130,7 @@ class IdlFormatter extends AbstractFormatter2
    def dispatch void format(AliasDeclaration element, extension IFormattableDocument document)
    {
       element.regionFor.keyword("typedef").append[oneSpace]
-      element.regionFor.feature(IdlPackage::Literals::ALIAS_DECLARATION__NAME).prepend[oneSpace]
+      element.regionFor.feature(IdlPackage::Literals::NAMED_DECLARATION__NAME).prepend[oneSpace]
       
       formatClosingSemicolon(element, document)
    }
@@ -139,7 +139,7 @@ class IdlFormatter extends AbstractFormatter2
    {
       indentBlock(element, document)
       
-      element.regionFor.feature(IdlPackage::Literals::ENUM_DECLARATION__NAME).surround[oneSpace]
+      element.regionFor.feature(IdlPackage::Literals::NAMED_DECLARATION__NAME).surround[oneSpace]
       element.regionFor.feature(IdlPackage::Literals::ENUM_DECLARATION__DECLARATOR).prepend[oneSpace].append[noSpace]
       element.regionFor.keywords(",").forEach[prepend[noSpace].append[newLine]]
       
@@ -150,7 +150,7 @@ class IdlFormatter extends AbstractFormatter2
    {
       element.regionFor.feature(IdlPackage::Literals::FUNCTION_DECLARATION__SYNC).append[oneSpace]
       element.regionFor.feature(IdlPackage::Literals::FUNCTION_DECLARATION__QUERY).append[oneSpace]
-      element.regionFor.feature(IdlPackage::Literals::FUNCTION_DECLARATION__NAME).append[noSpace]
+      element.regionFor.feature(IdlPackage::Literals::NAMED_DECLARATION__NAME).append[noSpace]
       element.parameters.forEach[format]
       element.regionFor.keyword("(").surround[noSpace]
       element.regionFor.keyword(")").prepend[noSpace]
@@ -173,7 +173,7 @@ class IdlFormatter extends AbstractFormatter2
    def dispatch void format(EventDeclaration element, extension IFormattableDocument document)
    {
       element.regionFor.keyword("event").append[oneSpace]
-      element.regionFor.feature(IdlPackage::Literals::EVENT_DECLARATION__NAME).surround[oneSpace]
+      element.regionFor.feature(IdlPackage::Literals::NAMED_DECLARATION__NAME).surround[oneSpace]
       element.regionFor.keyword("guid").surround[oneSpace]
       element.regionFor.keywords("=").forEach[surround[oneSpace]]
       element.regionFor.feature(IdlPackage::Literals::EVENT_DECLARATION__GUID).surround[oneSpace]

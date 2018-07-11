@@ -18,6 +18,7 @@ import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -34,7 +35,7 @@ import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufUtil
 {
-    def static ResolvedName resolveProtobuf(TypeResolver typeResolver, EObject object,
+    def static ResolvedName resolveProtobuf(TypeResolver typeResolver, AbstractTypeReference object,
         Optional<ProtobufType> optProtobufType)
     {
         if (object.isUUIDType)
@@ -104,7 +105,7 @@ class ProtobufUtil
     }
 
     // TODO reconsider placement of this method
-    def static String resolveCodec(EObject object, TypeResolver typeResolver)
+    def static String resolveCodec(AbstractTypeReference object, TypeResolver typeResolver)
     {
         val ultimateType = object.ultimateType
 
@@ -113,7 +114,8 @@ class ProtobufUtil
     }
 
     def static String resolveFailableProtobufType(TypeResolver typeResolver,
-        IQualifiedNameProvider qualifiedNameProvider, EObject element, AbstractContainerDeclaration container)
+        IQualifiedNameProvider qualifiedNameProvider, AbstractTypeReference element,
+        AbstractContainerDeclaration container)
     {
         return String.join(Constants.SEPARATOR_PACKAGE,
             #[typeResolver.resolvePackage(container, ProjectType.PROTOBUF), container.containerName,

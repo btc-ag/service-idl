@@ -17,6 +17,7 @@ import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
@@ -319,7 +320,7 @@ class ProtobufCodecGenerator
         makeDecodeStructOrException(element, element.allMembers, Optional.empty)
     }
 
-    private def String makeDecodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
+    private def String makeDecodeStructOrException(AbstractTypeReference element, Iterable<MemberElementWrapper> members,
         Optional<Collection<AbstractTypeDeclaration>> type_declarations)
     {
         val api_type_name = typeResolver.resolve(element)
@@ -389,7 +390,7 @@ class ProtobufCodecGenerator
         makeEncodeStructOrException(element, element.allMembers, Optional.empty)
     }
 
-    private def String makeEncodeStructOrException(EObject element, Iterable<MemberElementWrapper> members,
+    private def String makeEncodeStructOrException(AbstractTypeReference element, Iterable<MemberElementWrapper> members,
         Optional<Collection<AbstractTypeDeclaration>> type_declarations)
     {
         val protobuf_type = resolveProtobuf(element, Optional.empty)
@@ -426,7 +427,7 @@ class ProtobufCodecGenerator
         member.name.toFirstUpper
     }
 
-    def resolveProtobuf(EObject object, Optional<ProtobufType> optionaProtobufTypel)
+    def resolveProtobuf(AbstractTypeReference object, Optional<ProtobufType> optionaProtobufTypel)
     {
         ProtobufUtil.resolveProtobuf(typeResolver, object, optionaProtobufTypel)
     }

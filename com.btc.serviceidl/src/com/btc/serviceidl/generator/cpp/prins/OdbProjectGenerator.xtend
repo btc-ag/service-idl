@@ -39,6 +39,7 @@ import static com.btc.serviceidl.generator.cpp.Util.*
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors
 class OdbProjectGenerator extends ProjectGeneratorBase {
@@ -55,8 +56,8 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
    override void generate()
    {
       val all_elements = module.moduleComponents
-         .filter[e | Util.isStruct(e)]
-         .map(e | Util.getUltimateType(e) as StructDeclaration)
+         .filter[e | e.isStruct]
+         .map(e | e.structType.ultimateType as StructDeclaration)
          .filter[!members.empty]
          .filter[!members.filter[m | m.name.toUpperCase == "ID" && Util.isUUIDType(m.type)].empty]
          .resolveAllDependencies

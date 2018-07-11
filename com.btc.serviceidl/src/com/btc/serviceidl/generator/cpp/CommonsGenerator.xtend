@@ -12,7 +12,7 @@ package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.FeatureProfile
 import com.btc.serviceidl.generator.common.Names
-import com.btc.serviceidl.idl.AbstractContainerDeclaration
+import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.SequenceDeclaration
@@ -56,7 +56,7 @@ class CommonsGenerator extends BasicCppGenerator
            
       // resolve any type to include the header: important for *.lib file
       // to be built even if there is no actual content in the *.cpp file
-      resolve(module.moduleComponents.reject[it instanceof AbstractContainerDeclaration].head)
+      resolve(module.moduleComponents.filter(AbstractTypeDeclaration).head)      
 
       '''
           «FOR exception : module.moduleComponents.filter(ExceptionDeclaration)»
