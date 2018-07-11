@@ -15,6 +15,7 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
@@ -127,7 +128,7 @@ class TypeResolver
                     else
                         project_type)
                 }
-                // TODO really fall through in case of collectionType?
+            // TODO really fall through in case of collectionType?
             }
             else if (element instanceof PrimitiveType)
             {
@@ -144,7 +145,7 @@ class TypeResolver
             return new ResolvedName(Names.plain(element), TransformType.PACKAGE, fully_qualified)
         }
 
-        val effective_name = resolvePackage(element, project_type) + TransformType.PACKAGE.separator +
+        val effective_name = resolvePackage(element.scopeDeterminant, project_type) + TransformType.PACKAGE.separator +
             if (element instanceof InterfaceDeclaration)
                 project_type.getClassName(ArtifactNature.JAVA, name.lastSegment)
             else if (element instanceof EventDeclaration) getObservableName(element) else name.lastSegment
@@ -178,7 +179,7 @@ class TypeResolver
         event.name.toFirstUpper + "Observable"
     }
 
-    def resolvePackage(EObject container, ProjectType projectType)
+    def resolvePackage(AbstractContainerDeclaration container, ProjectType projectType)
     {
         val dependency = mavenResolver.resolveDependency(container, projectType)
         addDependency(dependency)

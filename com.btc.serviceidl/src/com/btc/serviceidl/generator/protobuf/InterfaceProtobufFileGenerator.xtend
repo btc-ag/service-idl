@@ -11,6 +11,7 @@
 
 package com.btc.serviceidl.generator.protobuf
 
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
@@ -89,7 +90,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
         return file_header + fileBody
     }
 
-    private def String generateReturnType(FunctionDeclaration function, EObject context, EObject container, Counter id)
+    private def String generateReturnType(FunctionDeclaration function, EObject context, AbstractContainerDeclaration container, Counter id)
     {
         val element = function.returnedType
         '''

@@ -72,7 +72,7 @@ abstract class BasicProjectGenerator
                 dependencies, if (projectType == ProjectType.PROTOBUF) protobufArtifacts?.get(container) else null))
     }
 
-    private def IPath makeProjectRootPath(EObject container, ProjectType projectType)
+    private def IPath makeProjectRootPath(AbstractContainerDeclaration container, ProjectType projectType)
     {
         Path.fromPortableString(MavenResolver.makePackageId(container, projectType))
     }
@@ -131,9 +131,8 @@ abstract class BasicProjectGenerator
        generationSettings.projectTypes
    }
 
-   protected def <T extends EObject> void generateJavaFile(IPath fileName, ParameterBundle paramBundle, T declarator, (BasicJavaSourceGenerator)=>CharSequence generateBody)
+   protected def void generateJavaFile(IPath fileName, ParameterBundle paramBundle, AbstractContainerDeclaration declarator, (BasicJavaSourceGenerator)=>CharSequence generateBody)
    {
-       // TODO T can be InterfaceDeclaration or ModuleDeclaration, the metamodel should be changed to introduce a common base type of these
       val basicJavaSourceGenerator = createBasicJavaSourceGenerator(paramBundle)
       fileSystemAccess.generateFile(fileName.toPortableString, ArtifactNature.JAVA.label, 
          generateSourceFile(
@@ -145,7 +144,7 @@ abstract class BasicProjectGenerator
       )
    }
 
-   private def generateSourceFile(EObject container, ProjectType projectType, TypeResolver typeResolver, CharSequence mainContents)
+   private def generateSourceFile(AbstractContainerDeclaration container, ProjectType projectType, TypeResolver typeResolver, CharSequence mainContents)
    {
       '''
       package «mavenResolver.registerPackage(container, projectType)»;

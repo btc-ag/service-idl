@@ -567,7 +567,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    private def dispatch String makeDecode(ExceptionDeclaration element, EObject container)
+    private def dispatch String makeDecode(ExceptionDeclaration element, AbstractContainerDeclaration container)
     {
         throw new UnsupportedOperationException("Decode for exception types with custom attributes is unsupported right now")
 
@@ -581,7 +581,7 @@ class CodecGenerator extends BasicCppGenerator
 //        '''
     }
 
-    private def dispatch String makeDecode(EnumDeclaration element, EObject container)
+    private def dispatch String makeDecode(EnumDeclaration element, AbstractContainerDeclaration container)
     {
         '''
             «FOR enum_value : element.containedIdentifiers»
@@ -609,7 +609,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    private def dispatch String makeDecode(AbstractType element, EObject container)
+    private def dispatch String makeDecode(AbstractType element, AbstractContainerDeclaration container)
     {
         if (element.referenceType !== null)
             return makeDecode(element.referenceType, container)

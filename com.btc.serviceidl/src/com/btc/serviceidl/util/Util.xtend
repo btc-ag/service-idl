@@ -142,7 +142,7 @@ class Util
         return event_structs
     }
 
-    def static Iterable<AbstractException> getRaisedExceptions(EObject container)
+    def static Iterable<AbstractException> getRaisedExceptions(AbstractContainerDeclaration container)
     {
         val exceptions = new HashSet<AbstractException>
         for (function : container.eContents.filter(FunctionDeclaration))

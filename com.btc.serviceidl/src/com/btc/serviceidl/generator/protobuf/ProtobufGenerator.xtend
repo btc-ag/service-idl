@@ -81,7 +81,7 @@ final class ProtobufGenerator
       }
    }
    
-   private def void generateProtobufFileForEachLanguage(Iterable<ArtifactNature> languages, EObject object,
+   private def void generateProtobufFileForEachLanguage(Iterable<ArtifactNature> languages, AbstractContainerDeclaration object,
         String artifactName, (ArtifactNature)=>CharSequence generateContent)
     {
          // TODO why is the proto file generated for each language?
@@ -91,7 +91,7 @@ final class ProtobufGenerator
         generatedArtifacts.put(object, artifactName)
     }
    
-   private def void generateProtobufFile(ArtifactNature artifactNature, EObject container, String artifactName,
+   private def void generateProtobufFile(ArtifactNature artifactNature, AbstractContainerDeclaration container, String artifactName,
         CharSequence fileContent)
     {
         fileSystemAccess.generateFile(

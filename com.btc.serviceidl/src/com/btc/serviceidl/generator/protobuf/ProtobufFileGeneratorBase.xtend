@@ -81,7 +81,7 @@ class ProtobufFileGeneratorBase
         }
     }
 
-    protected def String generateTypes(EObject container, Collection<? extends EObject> contents)
+    protected def String generateTypes(AbstractContainerDeclaration container, Collection<? extends EObject> contents)
     {
         '''
             «FOR typedef : contents.filter(AliasDeclaration).filter[requiresNewMessageType(type)] SEPARATOR System.lineSeparator»
@@ -142,7 +142,7 @@ class ProtobufFileGeneratorBase
         }
     }
 
-    protected def dispatch String toText(ExceptionDeclaration element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(ExceptionDeclaration element, EObject context, AbstractContainerDeclaration container, Counter id)
     {
         if (context instanceof AbstractContainerDeclaration)
             '''
@@ -203,7 +203,7 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def dispatch String toText(ParameterElement element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(ParameterElement element, EObject context, AbstractContainerDeclaration container, Counter id)
     {
         val sequence = element.tryGetSequence
         '''
@@ -215,7 +215,7 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def dispatch String toText(EnumDeclaration element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(EnumDeclaration element, EObject context, AbstractContainerDeclaration container, Counter id)
     {
         if (context instanceof AbstractStructuralDeclaration)
         {
@@ -233,7 +233,7 @@ class ProtobufFileGeneratorBase
             resolve(element, context, container)
     }
 
-    protected def dispatch String toText(AliasDeclaration element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(AliasDeclaration element, EObject context, AbstractContainerDeclaration container, Counter id)
     {
         if (requiresNewMessageType(element.type))
             Names.plain(element).toFirstUpper + WRAPPER_SUFFIX
@@ -246,12 +246,12 @@ class ProtobufFileGeneratorBase
             ])
     }
 
-    protected def dispatch String toText(AbstractType element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(AbstractType element, EObject context, AbstractContainerDeclaration container, Counter id)
     {
         toText(element.actualType, context, container, id)
     }
 
-    protected def dispatch String toText(PrimitiveType element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(PrimitiveType element, EObject context, AbstractContainerDeclaration container, Counter id)
     {
         id.incrementAndGet
 
@@ -303,7 +303,7 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def String resolve(AbstractTypeReference object, EObject context, EObject container)
+    protected def String resolve(AbstractTypeReference object, EObject context, AbstractContainerDeclaration container)
     {
         if (object.isSequenceType)
             toText(object, context, container, new Counter)

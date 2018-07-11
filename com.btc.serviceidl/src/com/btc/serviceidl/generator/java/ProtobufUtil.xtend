@@ -54,9 +54,9 @@ class ProtobufUtil
         }
         else
         {
-            typeResolver.resolvePackage(object, ProjectType.PROTOBUF)
-            new ResolvedName(typeResolver.resolvePackage(object, ProjectType.PROTOBUF) + Constants.SEPARATOR_PACKAGE +
-                getLocalName(object, optProtobufType), TransformType.PACKAGE)
+            new ResolvedName(
+                typeResolver.resolvePackage(object.scopeDeterminant, ProjectType.PROTOBUF) +
+                    Constants.SEPARATOR_PACKAGE + getLocalName(object, optProtobufType), TransformType.PACKAGE)
         }
     }
 
@@ -110,7 +110,7 @@ class ProtobufUtil
         val ultimateType = object.ultimateType
 
         String.join(Constants.SEPARATOR_PACKAGE,
-            #[typeResolver.resolvePackage(ultimateType, ProjectType.PROTOBUF), ultimateType.codecName])
+            #[typeResolver.resolvePackage(ultimateType.scopeDeterminant, ProjectType.PROTOBUF), ultimateType.codecName])
     }
 
     def static String resolveFailableProtobufType(TypeResolver typeResolver,
