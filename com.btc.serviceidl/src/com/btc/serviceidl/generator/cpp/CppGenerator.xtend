@@ -29,7 +29,6 @@ import java.util.Collection
 import java.util.HashMap
 import java.util.Map
 import java.util.Set
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider

@@ -35,14 +35,13 @@ import java.util.HashSet
 import java.util.LinkedHashSet
 import java.util.List
 import org.eclipse.core.runtime.IPath
-import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
 class CppExtensions
 {
-    static def IPath getIncludeFilePath(EObject referenced_object, ProjectType project_type,
+    static def IPath getIncludeFilePath(AbstractTypeReference referenced_object, ProjectType project_type,
         IModuleStructureStrategy moduleStructureStrategy)
     {
         val scope_determinant = referenced_object.scopeDeterminant
@@ -110,7 +109,8 @@ class CppExtensions
      * Execute topological sorting based on Kahn's algorithm
      */
     private static def Iterable<TypeWrapper> applyKahnsAlgorithm(
-        HashSet<Pair<AbstractTypeReference, AbstractTypeReference>> graph, List<AbstractTypeReference> independent_elements)
+        HashSet<Pair<AbstractTypeReference, AbstractTypeReference>> graph,
+        List<AbstractTypeReference> independent_elements)
     {
         // list finally containing the sorted elements
         val result = new LinkedHashSet<TypeWrapper>
@@ -219,7 +219,8 @@ class CppExtensions
         !(type instanceof PrimitiveType) && type.scopeDeterminant == element.scopeDeterminant
     }
 
-    private static def dispatch void getUnderlyingTypes(StructDeclaration struct, HashSet<AbstractTypeReference> all_types)
+    private static def dispatch void getUnderlyingTypes(StructDeclaration struct,
+        HashSet<AbstractTypeReference> all_types)
     {
         val contained_types = struct.members.map[type.ultimateType].filter(StructDeclaration)
 
@@ -232,7 +233,8 @@ class CppExtensions
         all_types.addAll(contained_types)
     }
 
-    private static def dispatch void getUnderlyingTypes(ExceptionDeclaration element, HashSet<AbstractTypeReference> all_types)
+    private static def dispatch void getUnderlyingTypes(ExceptionDeclaration element,
+        HashSet<AbstractTypeReference> all_types)
     {
         val contained_types = element.members.map[type.ultimateType].filter(ExceptionDeclaration)
 
@@ -245,7 +247,8 @@ class CppExtensions
         all_types.addAll(contained_types)
     }
 
-    private static def dispatch void getUnderlyingTypes(AbstractTypeReference element, HashSet<AbstractTypeReference> all_types)
+    private static def dispatch void getUnderlyingTypes(AbstractTypeReference element,
+        HashSet<AbstractTypeReference> all_types)
     {
         // default: no operation
     }
