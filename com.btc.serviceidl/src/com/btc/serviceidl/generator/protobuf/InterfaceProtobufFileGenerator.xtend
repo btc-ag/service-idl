@@ -96,7 +96,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
         val element = function.returnedType
         '''
             «IF !(element instanceof VoidType)»
-                «IF requiresNewMessageType(element)»
+                «IF requiresNewMessageType(element.actualType)»
                     «toText(element, function, container, id)»
                 «ELSE»
                     «IF Util.isSequenceType(element)»
