@@ -27,11 +27,11 @@
  */
 package com.btc.serviceidl.util
 
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.StructDeclaration
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.util.Extensions.*
@@ -39,17 +39,17 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors(PUBLIC_GETTER)
 class MemberElementWrapper
 {
-	val AbstractTypeReference type
+    val AbstractTypeReference type
     val String name
     val boolean optional
-    val EObject container // TODO check if this is always an AbstractContainerDeclaration
+    val AbstractStructuralDeclaration container
 
     new(MemberElement member)
     {
         type = member.type.actualType
         name = member.name
         optional = member.optional
-        container = member.eContainer
+        container = member.eContainer as AbstractStructuralDeclaration
     }
 
     new(StructDeclaration struct)
@@ -57,7 +57,7 @@ class MemberElementWrapper
         type = struct
         name = struct.declarator
         optional = false
-        container = struct.eContainer
+        container = struct.eContainer as AbstractStructuralDeclaration
     }
 
     new(EnumDeclaration enum_declaration)
@@ -65,6 +65,6 @@ class MemberElementWrapper
         type = enum_declaration
         name = enum_declaration.declarator
         optional = false
-        container = enum_declaration.eContainer
+        container = enum_declaration.eContainer as AbstractStructuralDeclaration
     }
 }

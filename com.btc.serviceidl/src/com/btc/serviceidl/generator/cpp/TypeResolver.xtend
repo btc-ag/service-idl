@@ -20,6 +20,7 @@ import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.common.TypeWrapper
 import com.btc.serviceidl.generator.cpp.HeaderResolver.GroupedHeader
 import com.btc.serviceidl.generator.cpp.prins.PrinsHeaderResolver
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.PrimitiveType
@@ -30,7 +31,6 @@ import java.util.LinkedHashSet
 import java.util.Map
 import java.util.Set
 import org.eclipse.core.runtime.IPath
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -242,7 +242,7 @@ class TypeResolver
      * For a given element, check if another type (as member of this element)
      * must be represented as smart pointer + forward declaration, or as-is.
      */
-    def boolean useSmartPointer(EObject element, AbstractTypeReference other_type)
+    def boolean useSmartPointer(AbstractStructuralDeclaration element, AbstractTypeReference other_type)
     {
         // sequences use forward-declared types as template parameters
         // and do not need the smart pointer wrapping
