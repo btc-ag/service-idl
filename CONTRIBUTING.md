@@ -100,3 +100,9 @@ There are some specific conventions regarding Xtend code style:
 * Access and storage class modifiers for members
 ** Order: Always place the access modifier ('public', 'protected', 'private') first (if any), then maybe the storage class modifier 'static', and then 'def', 'override', 'val' or 'var'.
 ** DO NOT specify the default access modifier explicitly. Attributes are private by default, methods are public by default.
+* Use of return
+** A function should not use an explicit return if it consists only of a single expression, regardless of its complexity, which is preceded by a sequence of final variable declarations
+* Declaration of return type
+** A function should declare a return type if and only if
+*** it cannot be inferred, or
+*** the desired return type is more general than the inferred return type (i.e. to hide implementation details)
