@@ -51,7 +51,7 @@ class CppExtensions
             else
                 Constants.FILE_NAME_TYPES
 
-        moduleStructureStrategy.getIncludeFilePath(referenced_object.moduleStack, project_type, baseName,
+        moduleStructureStrategy.getIncludeFilePath(referenced_object.scopeDeterminant.moduleStack, project_type, baseName,
             HeaderType.REGULAR_HEADER)
     }
 

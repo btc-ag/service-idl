@@ -333,8 +333,8 @@ class ProtobufFileGeneratorBase
             plainName
         else
             resolveNonPrimitiveImportedType(objectRoot, plainName,
-                new ParameterBundle.Builder().with(context.moduleStack).with(ProjectType.PROTOBUF).build,
-                artifactNature)
+                new ParameterBundle.Builder().with(context.scopeDeterminant.moduleStack).with(ProjectType.PROTOBUF).
+                    build, artifactNature)
     }
 
     private def resolveNonPrimitiveImportedType(AbstractContainerDeclaration referencedObjectContainer,

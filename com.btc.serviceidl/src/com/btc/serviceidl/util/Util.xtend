@@ -35,7 +35,6 @@ import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import java.util.ArrayDeque
-import java.util.Deque
 import java.util.HashSet
 import java.util.Optional
 import java.util.function.Function
@@ -82,10 +81,10 @@ class Util
         makeBasicMessageName(name, Constants.PROTOBUF_RESPONSE)
     }
 
-    def static Iterable<ModuleDeclaration> getModuleStack(EObject element)
+    def static Iterable<ModuleDeclaration> getModuleStack(AbstractContainerDeclaration element)
     {
-        var module_stack = new ArrayDeque<ModuleDeclaration>
-        var current_container = if (element instanceof ModuleDeclaration) element else element.eContainer
+        val module_stack = new ArrayDeque<ModuleDeclaration>
+        var EObject current_container = element
 
         while (current_container !== null && !(current_container instanceof IDLSpecification))
         {
@@ -112,7 +111,7 @@ class Util
             else
                 container = container.eContainer
         }
-        throw new IllegalArgumentException 
+        throw new IllegalArgumentException
     }
 
     def static EventDeclaration getRelatedEvent(StructDeclaration object)

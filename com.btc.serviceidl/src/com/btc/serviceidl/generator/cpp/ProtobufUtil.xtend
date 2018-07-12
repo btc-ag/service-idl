@@ -134,7 +134,7 @@ class ProtobufUtil
         val ultimate_type = object.ultimateType
 
         // failable wrappers always local!
-        val moduleStack = if (is_failable) paramBundle.moduleStack else ultimate_type.moduleStack
+        val moduleStack = if (is_failable) paramBundle.moduleStack else ultimate_type.scopeDeterminant.moduleStack
 
         val codec_name = GeneratorUtil.getCodecName(if (is_failable) container.get else ultimate_type.scopeDeterminant)
 

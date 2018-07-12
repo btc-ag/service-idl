@@ -248,14 +248,14 @@ class Util
     static def String resolveCodec(TypeResolver typeResolver, ParameterBundle param_bundle,
         AbstractTypeReference object)
     {
-        val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
+        val ultimate_type = object.ultimateType
 
         val codec_name = GeneratorUtil.getCodecName(ultimate_type.scopeDeterminant)
 
         typeResolver.resolveProjectFilePath(ultimate_type.scopeDeterminant, ProjectType.PROTOBUF)
 
         GeneratorUtil.getTransformedModuleName(
-            new ParameterBundle.Builder().with(com.btc.serviceidl.util.Util.getModuleStack(ultimate_type)).with(
+            new ParameterBundle.Builder().with(ultimate_type.scopeDeterminant.moduleStack).with(
                 ProjectType.PROTOBUF).build, ArtifactNature.DOTNET, TransformType.PACKAGE) +
             TransformType.PACKAGE.separator + codec_name
     }

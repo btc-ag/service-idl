@@ -203,7 +203,8 @@ class TypeResolver
     def void resolveProjectFilePath(AbstractTypeReference referenced_object, ProjectType project_type)
     {
         project_references.add(projectSet.resolve(
-            new ParameterBundle.Builder().with(referenced_object.moduleStack).with(project_type).build))
+            new ParameterBundle.Builder().with(referenced_object.scopeDeterminant.moduleStack).with(project_type).
+                build))
     }
 
     def getPrimitiveTypeName(PrimitiveType item)
