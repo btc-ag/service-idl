@@ -82,7 +82,7 @@ class Util
         makeBasicMessageName(name, Constants.PROTOBUF_RESPONSE)
     }
 
-    def static Deque<ModuleDeclaration> getModuleStack(EObject element)
+    def static Iterable<ModuleDeclaration> getModuleStack(EObject element)
     {
         var module_stack = new ArrayDeque<ModuleDeclaration>
         var current_container = if (element instanceof ModuleDeclaration) element else element.eContainer
