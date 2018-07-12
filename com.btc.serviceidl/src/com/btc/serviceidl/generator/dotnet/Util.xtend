@@ -190,8 +190,9 @@ class Util
     {
         makeDefaultValue(basicCSharpSourceGenerator, element.actualType)
     }
-    
-    static def String makeDefaultValue(BasicCSharpSourceGenerator basicCSharpSourceGenerator, AbstractTypeReference element)
+
+    static def String makeDefaultValue(BasicCSharpSourceGenerator basicCSharpSourceGenerator,
+        AbstractTypeReference element)
     {
         val typeResolver = basicCSharpSourceGenerator.typeResolver
         if (element instanceof PrimitiveType)
@@ -251,7 +252,7 @@ class Util
 
         val codec_name = GeneratorUtil.getCodecName(ultimate_type.scopeDeterminant)
 
-        typeResolver.resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
+        typeResolver.resolveProjectFilePath(ultimate_type.scopeDeterminant, ProjectType.PROTOBUF)
 
         GeneratorUtil.getTransformedModuleName(
             new ParameterBundle.Builder().with(com.btc.serviceidl.util.Util.getModuleStack(ultimate_type)).with(
@@ -274,7 +275,7 @@ class Util
 
     static def ResolvedName resolveServiceFaultHandling(TypeResolver typeResolver, AbstractContainerDeclaration owner)
     {
-        val namespace = typeResolver.resolve(owner, ProjectType.PROTOBUF).namespace
+        val namespace = typeResolver.resolveNamedDeclaration(owner, ProjectType.PROTOBUF).namespace
         return new ResolvedName('''«namespace».«owner.prefix»ServiceFaultHandling''', TransformType.PACKAGE)
     }
 

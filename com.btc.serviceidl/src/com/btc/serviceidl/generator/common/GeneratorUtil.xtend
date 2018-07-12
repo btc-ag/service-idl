@@ -33,6 +33,7 @@ import java.util.ArrayList
 import java.util.TreeSet
 import java.util.regex.Pattern
 import org.eclipse.core.runtime.Path
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.naming.QualifiedName
 

@@ -21,12 +21,13 @@ import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
+import com.btc.serviceidl.idl.NamedDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.util.Constants
 import java.util.HashSet
 import java.util.Set
 import java.util.regex.Pattern
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.naming.QualifiedName
@@ -68,41 +69,53 @@ class TypeResolver
         return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, false)
     }
 
-    def ResolvedName resolve(EObject element)
+    def ResolvedName resolve(AbstractType element)
     {
         return resolve(element, element.scopeDeterminant.mainProjectType)
     }
 
-    // TODO looks somewhat similar to java.TypeResolver.resolve
-    def ResolvedName resolve(EObject element, ProjectType project_type)
-    {
-        val fully_qualified = true
+    static val FULLY_QUALIFIED = true
 
+    def ResolvedName resolve(ReturnTypeElement element)
+    {
+        if (element instanceof AbstractType)
+            return resolve(element)
+        else
+            return new ResolvedName(Names.plain(element), TransformType.PACKAGE, FULLY_QUALIFIED)
+    }
+
+    def ResolvedName resolve(AbstractTypeReference element)
+    {
+        resolve(element, element.scopeDeterminant.mainProjectType)
+    }
+
+    def ResolvedName resolve(AbstractType element, ProjectType project_type)
+    {
+        if (element.primitiveType !== null)
+            resolve(element.primitiveType, project_type)
+        else if (element.referenceType !== null)
+            resolve(element.referenceType, if (project_type != ProjectType.PROTOBUF)
+                element.referenceType.scopeDeterminant.mainProjectType
+            else
+                project_type)
+
+    // TODO really fall through in case of collectionType?
+    }
+
+    // TODO looks somewhat similar to java.TypeResolver.resolve
+    def ResolvedName resolve(AbstractTypeReference element, ProjectType project_type)
+    {
         // use the underlying type for typedefs
         if (element instanceof AliasDeclaration)
         {
             return resolve(element.ultimateType)
         }
 
-        val name = qualifiedNameProvider.getFullyQualifiedName(element)
-        if (name === null)
+        if (element instanceof NamedDeclaration)
+            return resolveNamedDeclaration(element, project_type)
+        else
         {
-            if (element instanceof AbstractType)
-            {
-                if (element.primitiveType !== null)
-                {
-                    return resolve(element.primitiveType, project_type)
-                }
-                else if (element.referenceType !== null)
-                {
-                    return resolve(element.referenceType, if (project_type != ProjectType.PROTOBUF)
-                        element.referenceType.scopeDeterminant.mainProjectType
-                    else
-                        project_type)
-                }
-                // TODO really fall through in case of collectionType?
-            }
-            else if (element instanceof PrimitiveType)
+            if (element instanceof PrimitiveType)
             {
                 if (element.uuidType !== null)
                 {
@@ -112,12 +125,16 @@ class TypeResolver
                         return resolve("System.Guid")
                 }
                 else
-                    return new ResolvedName(primitiveTypeName(element), TransformType.PACKAGE, fully_qualified)
+                    return new ResolvedName(primitiveTypeName(element), TransformType.PACKAGE, FULLY_QUALIFIED)
             }
-            return new ResolvedName(Names.plain(element), TransformType.PACKAGE, fully_qualified)
+            return new ResolvedName(Names.plain(element), TransformType.PACKAGE, FULLY_QUALIFIED)
         }
+    }
 
-        var result = GeneratorUtil.getFullyQualifiedClassName(element, name, project_type, ArtifactNature.DOTNET,
+    def resolveNamedDeclaration(NamedDeclaration element, ProjectType project_type)
+    {
+        val result = GeneratorUtil.getFullyQualifiedClassName(element,
+            qualifiedNameProvider.getFullyQualifiedName(element), project_type, ArtifactNature.DOTNET,
             TransformType.PACKAGE)
 
         val package_name = QualifiedName.create(result.split(Pattern.quote(Constants.SEPARATOR_PACKAGE))).skipLast(1)
@@ -125,10 +142,10 @@ class TypeResolver
         {
             // just use namespace, no assembly required - project reference will be used instead!
             namespaceReferences.add(package_name.toString)
-            element.resolveProjectFilePath(project_type)
+            element.scopeDeterminant.resolveProjectFilePath(project_type)
         }
 
-        return new ResolvedName(result, TransformType.PACKAGE, fully_qualified)
+        return new ResolvedName(result, TransformType.PACKAGE, FULLY_QUALIFIED)
     }
 
     private static def String resolveException(String name)
@@ -150,10 +167,10 @@ class TypeResolver
             referenced_package.toString
     }
 
-    def void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
+    def void resolveProjectFilePath(AbstractContainerDeclaration referencedContainer, ProjectType project_type)
     {
         projectReferences.add(
-            new ParameterBundle.Builder().with(referenced_object.moduleStack).with(project_type).build)
+            new ParameterBundle.Builder().with(referencedContainer.moduleStack).with(project_type).build)
     }
 
     def primitiveTypeName(PrimitiveType element)
