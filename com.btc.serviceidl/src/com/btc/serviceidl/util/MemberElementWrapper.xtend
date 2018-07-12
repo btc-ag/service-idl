@@ -39,10 +39,10 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors(PUBLIC_GETTER)
 class MemberElementWrapper
 {
-    private AbstractTypeReference type
-    private String name
-    private boolean optional
-    private EObject container // TODO check if this is always an AbstractContainerDeclaration
+	val AbstractTypeReference type
+    val String name
+    val boolean optional
+    val EObject container // TODO check if this is always an AbstractContainerDeclaration
 
     new(MemberElement member)
     {
@@ -56,6 +56,7 @@ class MemberElementWrapper
     {
         type = struct
         name = struct.declarator
+        optional = false
         container = struct.eContainer
     }
 
@@ -63,6 +64,7 @@ class MemberElementWrapper
     {
         type = enum_declaration
         name = enum_declaration.declarator
+        optional = false
         container = enum_declaration.eContainer
     }
 }
