@@ -31,6 +31,7 @@ import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
 import static org.junit.Assert.assertEquals
+import com.btc.serviceidl.idl.InterfaceDeclaration
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -74,5 +75,22 @@ class ProtobufUtilTest
         assertEquals("foo::Protobuf::TypesCodec::Decode",
             ProtobufUtil.resolveDecode(typeResolver, new ParameterBundle.Builder().with(module.moduleStack).build,
                 member.type.actualType, module).replace(" ", ""))
+    }
+
+    @Test
+    def void testInterfaceWithFailableReturn()
+    {
+        val idl = TestData.getGoodTestCase("interface-with-failable-return").parse
+
+        val typeResolver = createTypeResolver
+
+        val module = idl.modules.head
+        val containingInterface = module.moduleComponents.filter(InterfaceDeclaration).head
+        val operation = containingInterface.functions.head
+        val returnedType = operation.returnedType
+
+        assertEquals("foo::Protobuf::TestCodec::DecodeFailable<foo::Protobuf::Failable_foo_Test_Uuid,BTC::Commons::CoreExtras::UUID>",
+            ProtobufUtil.resolveDecode(typeResolver, new ParameterBundle.Builder().with(module.moduleStack).build,
+                returnedType.actualType, containingInterface).replace(" ", ""))
     }
 }
