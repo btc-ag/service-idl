@@ -1,0 +1,11 @@
+module foo {
+
+    struct Foo {
+        Bar bar;
+    };
+
+    struct Bar {
+        string barContent;
+    };
+
+}

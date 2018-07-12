@@ -94,6 +94,32 @@ class ProtobufGeneratorTest extends AbstractGeneratorTest
         checkGenerators(TestData.full, fileCount, contents)
     }
 
+    @Test
+    def void testNestedStruct()
+    {
+        val fileCount = 6
+
+        // TODO the exception message type is probably not used anywhere, and should be removed (if there were custom attributes, something like this might be required) 
+        val contents = ImmutableMap.of(ArtifactNature.CPP.label +
+            "modules/foo/Protobuf/gen/Types.proto", '''
+            syntax = "proto2";
+            package foo.Protobuf;
+            
+            message Foo
+            {
+               required Bar bar = 1;
+            }
+            
+            message Bar
+            {
+               required string bar_content = 1;
+            }
+        ''')
+
+        checkGenerators(TestData.getGoodTestCase("struct-nested"), fileCount, contents)
+    }
+    
+
     def void checkGenerators(CharSequence input, int fileCount, Map<String, String> contents)
     {
         checkGenerators(input, #[ArtifactNature.CPP].toSet,
