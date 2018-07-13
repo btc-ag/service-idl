@@ -19,9 +19,9 @@ import static com.btc.serviceidl.generator.dotnet.Util.*
 @Accessors(NONE)
 class ProxyEventGenerator extends ProxyDispatcherGeneratorBase
 {
-    def String generateProxyEvent(EventDeclaration event, InterfaceDeclaration interface_declaration)
+    def String generateProxyEvent(EventDeclaration event, InterfaceDeclaration interfaceDeclaration)
     {
-        val deserialazing_observer = getDeserializingObserverName(event)
+        val deserialazingObserver = getDeserializingObserverName(event)
 
         // TODO: Handling for keys.
         '''
@@ -38,14 +38,14 @@ class ProxyEventGenerator extends ProxyDispatcherGeneratorBase
                   public override «resolve("System.IDisposable")» Subscribe(«resolve("System.IObserver")»<«toText(event.data, event)»> subscriber)
                   {
                       _endpoint.EventRegistry.CreateEventRegistration(«toText(event.data, event)».«eventTypeGuidProperty», EventKind.EventKindPublishSubscribe, «toText(event.data, event)».«eventTypeGuidProperty».ToString());
-                      return _endpoint.EventRegistry.SubscriberManager.Subscribe(«toText(event.data, event)».«eventTypeGuidProperty», new «deserialazing_observer»(subscriber));
+                      return _endpoint.EventRegistry.SubscriberManager.Subscribe(«toText(event.data, event)».«eventTypeGuidProperty», new «deserialazingObserver»(subscriber));
                   }
                   
-                  class «deserialazing_observer» : «resolve("System.IObserver")»<«resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")»>
+                  class «deserialazingObserver» : «resolve("System.IObserver")»<«resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")»>
                   {
                       private readonly «resolve("System.IObserver")»<«toText(event.data, event)»> _subscriber;
             
-                      public «deserialazing_observer»(«resolve("System.IObserver")»<«toText(event.data, event)»> subscriber)
+                      public «deserialazingObserver»(«resolve("System.IObserver")»<«toText(event.data, event)»> subscriber)
                       {
                 _subscriber = subscriber;
                       }
@@ -53,7 +53,7 @@ class ProxyEventGenerator extends ProxyDispatcherGeneratorBase
                       public void OnNext(«resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")» value)
                       {
                 var protobufEvent = «resolveProtobuf(event.data)».ParseFrom(value.PopFront());
-                _subscriber.OnNext((«toText(event.data, event)»)«resolveCodec(typeResolver, parameterBundle, interface_declaration)».decode(protobufEvent));
+                _subscriber.OnNext((«toText(event.data, event)»)«resolveCodec(typeResolver, parameterBundle, interfaceDeclaration)».decode(protobufEvent));
                       }
             
                       public void OnError(Exception error)

@@ -21,15 +21,15 @@ import java.util.UUID
 
 class GuidMapper
 {
-    static val guid_map = new HashMap<UniquelyIdentifiedDeclaration, String>
+    static val guidMap = new HashMap<UniquelyIdentifiedDeclaration, String>
 
     def static void put(UniquelyIdentifiedDeclaration object, String guid)
     {
-        guid_map.put(object, guid)
+        guidMap.put(object, guid)
     }
 
     def static String get(UniquelyIdentifiedDeclaration object)
     {
-        guid_map.computeIfAbsent(object, [UUID.randomUUID.toString.toUpperCase])
+        guidMap.computeIfAbsent(object, [UUID.randomUUID.toString.toUpperCase])
     }
 }

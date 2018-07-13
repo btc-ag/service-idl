@@ -22,38 +22,38 @@ import static extension com.btc.serviceidl.generator.common.Extensions.*
 class ServerRegistrationGenerator extends GeneratorBase
 {
 
-    def generate(InterfaceDeclaration interface_declaration, String class_name)
+    def generate(InterfaceDeclaration interfaceDeclaration, String className)
     {
-        val basic_name = interface_declaration.name
-        val const_class = resolve(interface_declaration).alias(getConstName(interface_declaration))
+        val basicName = interfaceDeclaration.name
+        val constClass = resolve(interfaceDeclaration).alias(getConstName(interfaceDeclaration))
 
         '''
-            internal class «class_name» : «resolve("System.IDisposable")»
+            internal class «className» : «resolve("System.IDisposable")»
             {
                private readonly «resolve("BTC.CAB.ServiceComm.NET.Util.ServerRegistration")» _serverRegistration;
                private «resolve("BTC.CAB.ServiceComm.NET.Util.ServerRegistration")».ServerServiceRegistration _serverServiceRegistration;
             
-               public «class_name»(«resolve("BTC.CAB.ServiceComm.NET.API.IServer")» server)
+               public «className»(«resolve("BTC.CAB.ServiceComm.NET.API.IServer")» server)
                {
                _serverRegistration = new «resolve("BTC.CAB.ServiceComm.NET.Util.ServerRegistration")»(server);
                }
             
                public void RegisterService()
                {
-               // create ServiceDescriptor for «basic_name»
+               // create ServiceDescriptor for «basicName»
                var serviceDescriptor = new «resolve("BTC.CAB.ServiceComm.NET.API.DTO.ServiceDescriptor")»()
                {
-                  ServiceTypeGuid = «const_class».«typeGuidProperty»,
-                  ServiceTypeName = «const_class».«typeNameProperty»,
-                  ServiceInstanceName = "«basic_name»TestService",
-                  ServiceInstanceDescription = "«resolve(interface_declaration)» instance for integration tests",
+                  ServiceTypeGuid = «constClass».«typeGuidProperty»,
+                  ServiceTypeName = «constClass».«typeNameProperty»,
+                  ServiceInstanceName = "«basicName»TestService",
+                  ServiceInstanceDescription = "«resolve(interfaceDeclaration)» instance for integration tests",
                   ServiceInstanceGuid = «resolve("System.Guid")».NewGuid()
                };
             
-                  // create «basic_name» instance and dispatcher
+                  // create «basicName» instance and dispatcher
                   var protoBufServerHelper = new «resolve("BTC.CAB.ServiceComm.NET.ProtobufUtil.ProtoBufServerHelper")»();
-                  var dispatchee = new «resolve(interface_declaration, ProjectType.IMPL)»();
-                  var dispatcher = new «resolve(interface_declaration, ProjectType.DISPATCHER)»(dispatchee, protoBufServerHelper);
+                  var dispatchee = new «resolve(interfaceDeclaration, ProjectType.IMPL)»();
+                  var dispatcher = new «resolve(interfaceDeclaration, ProjectType.DISPATCHER)»(dispatchee, protoBufServerHelper);
             
                   // register dispatcher
                   _serverServiceRegistration = _serverRegistration.RegisterService(serviceDescriptor, dispatcher);

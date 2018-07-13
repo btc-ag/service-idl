@@ -24,11 +24,11 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors(NONE)
 class TestGenerator extends GeneratorBase
 {
-    def generateIntegrationTest(InterfaceDeclaration interface_declaration, String class_name)
+    def generateIntegrationTest(InterfaceDeclaration interfaceDeclaration, String className)
     {
-        val api_class_name = resolve(interface_declaration)
-        val logger_factory = resolve("BTC.CAB.Logging.Log4NET.Log4NETLoggerFactory")
-        val server_registration = getServerRegistrationName(interface_declaration)
+        val apiClassName = resolve(interfaceDeclaration)
+        val loggerFactory = resolve("BTC.CAB.Logging.Log4NET.Log4NETLoggerFactory")
+        val serverRegistration = getServerRegistrationName(interfaceDeclaration)
         val connectionFactory = resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory")
 
         // explicit resolution of necessary assemblies
@@ -39,16 +39,16 @@ class TestGenerator extends GeneratorBase
 
         '''
             [«resolve("NUnit.Framework.TestFixture")»]
-            public class «class_name» : «getTestClassName(interface_declaration)»
+            public class «className» : «getTestClassName(interfaceDeclaration)»
             {
-               private «api_class_name» _testSubject;
+               private «apiClassName» _testSubject;
                
                private «resolve("BTC.CAB.ServiceComm.NET.API.IClient")» _client;
-               private «server_registration» _serverRegistration;
+               private «serverRegistration» _serverRegistration;
                private «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.API.IConnectionFactory")» _serverConnectionFactory;
                private «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.Server")» _server;
                
-               public «class_name»()
+               public «className»()
                {}
             
                [«resolve("NUnit.Framework.SetUp")»]
@@ -56,7 +56,7 @@ class TestGenerator extends GeneratorBase
                {
                   const «resolve("System.string")» connectionString = "tcp://127.0.0.1:«Constants.DEFAULT_PORT»";
                   
-                  var loggerFactory = new «logger_factory»();
+                  var loggerFactory = new «loggerFactory»();
                   
                   // server
                   StartServer(loggerFactory, connectionString);
@@ -66,15 +66,15 @@ class TestGenerator extends GeneratorBase
                   «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.API.IConnectionFactory")» connectionFactory = new «connectionFactory»(connectionOptions, loggerFactory);
                   _client = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.Client")»(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcClientEndpoint")»(loggerFactory), connectionFactory);
                   
-                  _testSubject = «resolve(interface_declaration, ProjectType.PROXY).alias(getProxyFactoryName(interface_declaration))».CreateProtobufProxy(_client.ClientEndpoint);
+                  _testSubject = «resolve(interfaceDeclaration, ProjectType.PROXY).alias(getProxyFactoryName(interfaceDeclaration))».CreateProtobufProxy(_client.ClientEndpoint);
                }
             
-               private void StartServer(«logger_factory» loggerFactory, string connectionString)
+               private void StartServer(«loggerFactory» loggerFactory, string connectionString)
                {
                    var connectionOptions = «connectionFactory».«resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.API.ConnectionOptions").alias("DefaultServerConnectionOptions")»;
                   _serverConnectionFactory = new «connectionFactory»(connectionOptions, loggerFactory);
                   _server = new Server(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcServerEndpoint")»(loggerFactory), _serverConnectionFactory);
-                  _serverRegistration = new «server_registration»(_server);
+                  _serverRegistration = new «serverRegistration»(_server);
                   _serverRegistration.RegisterService();
                   // ensure that the server runs when the client is created.
                   System.Threading.Thread.Sleep(1000);
@@ -90,7 +90,7 @@ class TestGenerator extends GeneratorBase
                      _client.Dispose();
                }
             
-               protected override «api_class_name» TestSubject
+               protected override «apiClassName» TestSubject
                {
                   get { return _testSubject; }
                }
@@ -99,24 +99,24 @@ class TestGenerator extends GeneratorBase
 
     }
 
-    def generateImplTestStub(InterfaceDeclaration interface_declaration, String class_name)
+    def generateImplTestStub(InterfaceDeclaration interfaceDeclaration, String className)
     {
 
-        val api_class_name = resolve(interface_declaration)
+        val apiClassName = resolve(interfaceDeclaration)
 
         '''
             [«resolve("NUnit.Framework.TestFixture")»]
-            public class «class_name» : «getTestClassName(interface_declaration)»
+            public class «className» : «getTestClassName(interfaceDeclaration)»
             {
-               private «api_class_name» _testSubject;
+               private «apiClassName» _testSubject;
                
                [«resolve("NUnit.Framework.SetUp")»]
                public void Setup()
                {
-                  _testSubject = new «resolve(interface_declaration, ProjectType.IMPL)»();
+                  _testSubject = new «resolve(interfaceDeclaration, ProjectType.IMPL)»();
                }
                
-               protected override «api_class_name» TestSubject
+               protected override «apiClassName» TestSubject
                {
                   get { return _testSubject; }
                }
@@ -124,20 +124,20 @@ class TestGenerator extends GeneratorBase
         '''
     }
 
-    def generateCsTest(InterfaceDeclaration interface_declaration, String class_name)
+    def generateCsTest(InterfaceDeclaration interfaceDeclaration, String className)
     {
 
-        val aggregate_exception = resolve("System.AggregateException")
-        val not_implemented_exception = resolve("System.NotSupportedException")
+        val aggregateException = resolve("System.AggregateException")
+        val notImplementedException = resolve("System.NotSupportedException")
 
         '''
-            public abstract class «class_name»
+            public abstract class «className»
             {
-               protected abstract «resolve(interface_declaration)» TestSubject { get; }
+               protected abstract «resolve(interfaceDeclaration)» TestSubject { get; }
             
-               «FOR function : interface_declaration.functions»
-                   «val is_sync = function.sync»
-                   «val is_void = function.returnedType instanceof VoidType»
+               «FOR function : interfaceDeclaration.functions»
+                   «val isSync = function.sync»
+                   «val isVoid = function.returnedType instanceof VoidType»
                    [«resolve("NUnit.Framework.Test")»]
                    public void «function.name»Test()
                    {
@@ -146,12 +146,12 @@ class TestGenerator extends GeneratorBase
                          «FOR param : function.parameters»
                              var «param.paramName.asParameter» = «basicCSharpSourceGenerator.makeDefaultValue(param.paramType)»;
                          «ENDFOR»
-                   «IF !is_void»var «resolve(com.btc.serviceidl.util.Util.getUltimateType(function.returnedType.actualType)).alias("result")» = «ENDIF»TestSubject.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !is_sync».«IF is_void»Wait()«ELSE»Result«ENDIF»«ENDIF»;
+                   «IF !isVoid»var «resolve(com.btc.serviceidl.util.Util.getUltimateType(function.returnedType.actualType)).alias("result")» = «ENDIF»TestSubject.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !isSync».«IF isVoid»Wait()«ELSE»Result«ENDIF»«ENDIF»;
                    });
                    
-                   var realException = (e is «aggregate_exception») ? (e as «aggregate_exception»).Flatten().InnerException : e;
+                   var realException = (e is «aggregateException») ? (e as «aggregateException»).Flatten().InnerException : e;
                    
-                   Assert.IsInstanceOf<«not_implemented_exception»>(realException);
+                   Assert.IsInstanceOf<«notImplementedException»>(realException);
                    Assert.IsTrue(realException.Message.Equals("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»"));
                    }
                «ENDFOR»

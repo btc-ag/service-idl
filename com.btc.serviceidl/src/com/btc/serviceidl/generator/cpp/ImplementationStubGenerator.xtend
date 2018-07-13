@@ -19,29 +19,29 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors
 class ImplementationStubGenerator extends BasicCppGenerator
 {
-    def generateCppImpl(InterfaceDeclaration interface_declaration)
+    def generateCppImpl(InterfaceDeclaration interfaceDeclaration)
     {
-        val class_name = resolve(interface_declaration, paramBundle.projectType).shortName
+        val className = resolve(interfaceDeclaration, paramBundle.projectType).shortName
 
         '''
-            «class_name»::«class_name»
+            «className»::«className»
             (
                «resolveSymbol("BTC::Commons::Core::Context")»& context
                ,«resolveSymbol("BTC::Logging::API::LoggerFactory")»& loggerFactory
             ) :
             m_context(context)
             , «resolveSymbol("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
-            «FOR event : interface_declaration.events»
+            «FOR event : interfaceDeclaration.events»
                 , «event.observableName»(context)
             «ENDFOR»
             {}
             
-            «generateCppDestructor(interface_declaration)»
+            «generateCppDestructor(interfaceDeclaration)»
             
-            «generateInheritedInterfaceMethods(interface_declaration)»
+            «generateInheritedInterfaceMethods(interfaceDeclaration)»
             
-            «FOR event : interface_declaration.events»
-                «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> «class_name»::Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«toText(event.data, event)»> &observer )
+            «FOR event : interfaceDeclaration.events»
+                «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> «className»::Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«toText(event.data, event)»> &observer )
                 {
                    return «event.observableName».Subscribe(observer);
                 }

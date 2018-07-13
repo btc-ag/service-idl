@@ -30,34 +30,34 @@ class TestGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def generateFileImplTest(String class_name, String super_class,
-        InterfaceDeclaration interface_declaration)
+    def generateFileImplTest(String className, String superClass,
+        InterfaceDeclaration interfaceDeclaration)
     {
         '''
-        public class «class_name» extends «super_class» {
+        public class «className» extends «superClass» {
         
            «typeResolver.resolve(JavaClassNames.JUNIT_BEFORE).alias("@Before")»
            public void setUp() throws Exception {
               super.setUp();
-              testSubject = new «typeResolver.resolve(interface_declaration, ProjectType.IMPL)»();
+              testSubject = new «typeResolver.resolve(interfaceDeclaration, ProjectType.IMPL)»();
            }
         }
         '''
     }
 
-    def generateTestStub(String class_name, IPath src_root_path,
-        InterfaceDeclaration interface_declaration)
+    def generateTestStub(String className, IPath srcRootPath,
+        InterfaceDeclaration interfaceDeclaration)
     {
         // TODO is this really useful? it only generates a stub, what should be done when regenerating?
         // TODO _assertExceptionType should be moved to com.btc.cab.commons or the like
-        val api_class = typeResolver.resolve(interface_declaration)
-        val junit_assert = typeResolver.resolve(JavaClassNames.JUNIT_ASSERT)
+        val apiClass = typeResolver.resolve(interfaceDeclaration)
+        val junitAssert = typeResolver.resolve(JavaClassNames.JUNIT_ASSERT)
 
         '''
         «typeResolver.resolve(JavaClassNames.JUNIT_IGNORE).alias("@Ignore")»
-        public abstract class «class_name» {
+        public abstract class «className» {
         
-           protected «api_class» testSubject;
+           protected «apiClass» testSubject;
         
            «typeResolver.resolve(JavaClassNames.JUNIT_BEFORE_CLASS).alias("@BeforeClass")»
            public static void setUpBeforeClass() throws Exception {
@@ -75,8 +75,8 @@ class TestGenerator
            public void tearDown() throws Exception {
            }
         
-           «FOR function : interface_declaration.functions»
-            «val is_sync = function.sync»
+           «FOR function : interfaceDeclaration.functions»
+            «val isSync = function.sync»
             «typeResolver.resolve(JavaClassNames.JUNIT_TEST).alias("@Test")»
             public void «function.name.asMethod»Test() throws Exception
             {
@@ -85,18 +85,18 @@ class TestGenerator
                    «basicJavaSourceGenerator.toText(param.paramType)» «param.paramName.asParameter» = «basicJavaSourceGenerator.makeDefaultValue(param.paramType)»;
                «ENDFOR»
                try {
-                  testSubject.«function.name.asMethod»(«function.parameters.map[paramName.asParameter].join(",")»)«IF !is_sync».get()«ENDIF»;
+                  testSubject.«function.name.asMethod»(«function.parameters.map[paramName.asParameter].join(",")»)«IF !isSync».get()«ENDIF»;
                } catch (Exception e) {
                   _success = _assertExceptionType(e);
                   if (!_success)
                      e.printStackTrace();
                } finally {
-                  «junit_assert».assertTrue(_success);
+                  «junitAssert».assertTrue(_success);
                }
             }
            «ENDFOR»
            
-           public «typeResolver.resolve(interface_declaration)» getTestSubject() {
+           public «typeResolver.resolve(interfaceDeclaration)» getTestSubject() {
            return testSubject;
            }
            
@@ -114,12 +114,12 @@ class TestGenerator
         '''
     }
 
-    def generateFileZeroMQItegrationTest(String class_name, String super_class, String log4j_name,
-        IPath src_root_path, InterfaceDeclaration interface_declaration)
+    def generateFileZeroMQItegrationTest(String className, String superClass, String log4j_name,
+        IPath srcRootPath, InterfaceDeclaration interfaceDeclaration)
     {
-        val resources_location = MavenArtifactType.TEST_RESOURCES.directoryLayout
-        val junit_assert = typeResolver.resolve(JavaClassNames.JUNIT_ASSERT)
-        val server_runner_name = typeResolver.resolve(interface_declaration, ProjectType.SERVER_RUNNER)
+        val resourcesLocation = MavenArtifactType.TEST_RESOURCES.directoryLayout
+        val junitAssert = typeResolver.resolve(JavaClassNames.JUNIT_ASSERT)
+        val serverRunnerName = typeResolver.resolve(interfaceDeclaration, ProjectType.SERVER_RUNNER)
 
         val loggerFactoryType = basicJavaSourceGenerator.resolveLoggerFactory 
         val loggerType = basicJavaSourceGenerator.resolveLogger 
@@ -128,16 +128,16 @@ class TestGenerator
         val zeroMqClientConnectionFactoryType = basicJavaSourceGenerator.resolveZeroMqClientConnectionFactory 
          
         '''
-        public class «class_name» extends «super_class» {
+        public class «className» extends «superClass» {
         
            private final static String connectionString = "tcp://127.0.0.1:«Constants.DEFAULT_PORT»";
-           private static final «loggerType» logger = «loggerFactoryType».getLogger(«class_name».class);
+           private static final «loggerType» logger = «loggerFactoryType».getLogger(«className».class);
            
            private «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
            private «typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» _clientEndpoint;
-           private «server_runner_name» _serverRunner;
+           private «serverRunnerName» _serverRunner;
            
-           public «class_name»() {
+           public «className»() {
            }
            
            «typeResolver.resolve(JavaClassNames.JUNIT_BEFORE).alias("@Before")»
@@ -145,7 +145,7 @@ class TestGenerator
               super.setUp();
         
               «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
-              «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
+              «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resourcesLocation»/«log4j_name»", 60 * 1000);
               «ENDIF»
         
               // Start Server
@@ -160,7 +160,7 @@ class TestGenerator
                     logger,
                     «ENDIF» 
                     _serverConnectionFactory).create(connectionString);
-                 _serverRunner = new «server_runner_name»(_serverEndpoint);
+                 _serverRunner = new «serverRunnerName»(_serverEndpoint);
                  _serverRunner.registerService();
         
                  logger.debug("Server started...");
@@ -178,14 +178,14 @@ class TestGenerator
                     connectionFactory).create(connectionString);
         
                  logger.debug("Client started...");
-                 testSubject = «typeResolver.resolve(basicJavaSourceGenerator.typeResolver.resolvePackage(interface_declaration, ProjectType.PROXY) + '''.«interface_declaration.name»ProxyFactory''')»
+                 testSubject = «typeResolver.resolve(basicJavaSourceGenerator.typeResolver.resolvePackage(interfaceDeclaration, ProjectType.PROXY) + '''.«interfaceDeclaration.name»ProxyFactory''')»
                        .createDirectProtobufProxy(_clientEndpoint);
         
-                 logger.debug("«interface_declaration.name» instantiated...");
+                 logger.debug("«interfaceDeclaration.name» instantiated...");
                  
               } catch (Exception e) {
                  logger.error("Error on start: ", e);
-                 «junit_assert».fail(e.getMessage());
+                 «junitAssert».fail(e.getMessage());
               }
            }
         
@@ -197,7 +197,7 @@ class TestGenerator
                     _serverEndpoint.close();
               } catch (Exception e) {
                  e.printStackTrace();
-                 «junit_assert».fail(e.getMessage());
+                 «junitAssert».fail(e.getMessage());
               }
               try {
                  if (_clientEndpoint != null)
@@ -206,7 +206,7 @@ class TestGenerator
         
               } catch (Exception e) {
                  e.printStackTrace();
-                 «junit_assert».fail(e.getMessage());
+                 «junitAssert».fail(e.getMessage());
               }
            }
         }

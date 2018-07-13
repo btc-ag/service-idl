@@ -27,12 +27,12 @@ class VSSolutionFactory implements IProjectSetFactory
         Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
         IPath projectPath, String projectName)
     {
-        val dependency_file_name = Constants.FILE_NAME_DEPENDENCIES.cpp
-        val source_path = projectPath.append("source")
+        val dependencyFileName = Constants.FILE_NAME_DEPENDENCIES.cpp
+        val sourcePath = projectPath.append("source")
 
-        fileSystemAccess.generateFile(source_path.append(dependency_file_name).toString, ArtifactNature.CPP.label,
+        fileSystemAccess.generateFile(sourcePath.append(dependencyFileName).toString, ArtifactNature.CPP.label,
             generateDependencies(externalDependencies))
-        projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependency_file_name)
+        projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependencyFileName)
 
         new VSProjectFileGenerator(fileSystemAccess, parameterBundle, projectSet, projectReferences, projectFileSet,
             projectType, projectPath, projectName).generate()

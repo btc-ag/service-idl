@@ -18,7 +18,7 @@ class VSSolution
         IPath path
     }
 
-    val vs_projects = new HashMap<String, Entry>
+    val vsProjects = new HashMap<String, Entry>
 
     def String getCsprojName(ParameterBundle parameterBundle)
     {
@@ -31,7 +31,7 @@ class VSSolution
     {
         val projectName = GeneratorUtil.getTransformedModuleName(parameterBundle, ArtifactNature.DOTNET,
             TransformType.PACKAGE)
-        vs_projects.computeIfAbsent(projectName, [
+        vsProjects.computeIfAbsent(projectName, [
             new Entry(UUID.nameUUIDFromBytes(projectName.bytes),
                 GeneratorUtil.asPath(parameterBundle, ArtifactNature.DOTNET))
         ])
@@ -42,12 +42,12 @@ class VSSolution
     {
         // TODO this is used to reference other projects. Make registration & referencing explicit, 
         // and check at the end of generation that all forward references have been resolved.
-        vs_projects.get(registerCsprojGUID(parameterBundle)).uuid.toString.toUpperCase
+        vsProjects.get(registerCsprojGUID(parameterBundle)).uuid.toString.toUpperCase
     }
 
     def getAllProjects()
     {
-        return vs_projects.entrySet.immutableCopy
+        return vsProjects.entrySet.immutableCopy
     }
 
 }

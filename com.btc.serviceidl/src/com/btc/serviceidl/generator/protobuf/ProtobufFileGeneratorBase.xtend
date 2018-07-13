@@ -300,8 +300,8 @@ class ProtobufFileGeneratorBase
     {
         '''
             «IF isFailable»
-                «val failable_type = resolve(nestedType, context, container).alias(GeneratorUtil.asFailable(nestedType, container, qualifiedNameProvider))»
-                «IF !(context instanceof InterfaceDeclaration || context instanceof AliasDeclaration)»repeated «failable_type» «protobufName» = «id.incrementAndGet»;«ENDIF»
+                «val failableType = resolve(nestedType, context, container).alias(GeneratorUtil.asFailable(nestedType, container, qualifiedNameProvider))»
+                «IF !(context instanceof InterfaceDeclaration || context instanceof AliasDeclaration)»repeated «failableType» «protobufName» = «id.incrementAndGet»;«ENDIF»
             «ELSE»
                 repeated «toText(nestedType, context, container, new Counter)» «protobufName» = «id.incrementAndGet»;
             «ENDIF»

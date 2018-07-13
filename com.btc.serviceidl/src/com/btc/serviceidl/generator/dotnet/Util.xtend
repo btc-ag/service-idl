@@ -138,24 +138,24 @@ class Util
         (event.name ?: "") + "DeserializingObserver"
     }
 
-    def static String getTestClassName(InterfaceDeclaration interface_declaration)
+    def static String getTestClassName(InterfaceDeclaration interfaceDeclaration)
     {
-        interface_declaration.name + "Test"
+        interfaceDeclaration.name + "Test"
     }
 
-    def static String getProxyFactoryName(InterfaceDeclaration interface_declaration)
+    def static String getProxyFactoryName(InterfaceDeclaration interfaceDeclaration)
     {
-        interface_declaration.name + "ProxyFactory"
+        interfaceDeclaration.name + "ProxyFactory"
     }
 
-    def static String getServerRegistrationName(InterfaceDeclaration interface_declaration)
+    def static String getServerRegistrationName(InterfaceDeclaration interfaceDeclaration)
     {
-        interface_declaration.name + "ServerRegistration"
+        interfaceDeclaration.name + "ServerRegistration"
     }
 
-    def static String getConstName(InterfaceDeclaration interface_declaration)
+    def static String getConstName(InterfaceDeclaration interfaceDeclaration)
     {
-        interface_declaration.name + "Const"
+        interfaceDeclaration.name + "Const"
     }
 
     def static dispatch boolean isNullable(AbstractTypeReference element)
@@ -179,9 +179,9 @@ class Util
         element.primitiveType !== null && isNullable(element.primitiveType)
     }
 
-    static def String getLog4NetConfigFile(ParameterBundle param_bundle)
+    static def String getLog4NetConfigFile(ParameterBundle paramBundle)
     {
-        GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.DOTNET, TransformType.PACKAGE).toLowerCase +
+        GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.DOTNET, TransformType.PACKAGE).toLowerCase +
             ".log4net".config
 
     }
@@ -223,11 +223,11 @@ class Util
 
     static def String makeReturnType(TypeResolver typeResolver, FunctionDeclaration function)
     {
-        val is_void = function.returnedType instanceof VoidType
-        val is_sync = function.isSync
+        val isVoid = function.returnedType instanceof VoidType
+        val isSync = function.isSync
 
-        if (is_void)
-            '''«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»'''
+        if (isVoid)
+            '''«IF !isSync»«typeResolver.resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»'''
         else
         {
             val isSequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)
@@ -241,23 +241,23 @@ class Util
                 else
                     basicType.toString
 
-            '''«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»<«ENDIF»«effectiveType»«IF !is_sync»>«ENDIF»'''
+            '''«IF !isSync»«typeResolver.resolve("System.Threading.Tasks.Task")»<«ENDIF»«effectiveType»«IF !isSync»>«ENDIF»'''
         }
     }
 
-    static def String resolveCodec(TypeResolver typeResolver, ParameterBundle param_bundle,
+    static def String resolveCodec(TypeResolver typeResolver, ParameterBundle paramBundle,
         AbstractTypeReference object)
     {
-        val ultimate_type = object.ultimateType
+        val ultimateType = object.ultimateType
 
-        val codec_name = GeneratorUtil.getCodecName(ultimate_type.scopeDeterminant)
+        val codecName = GeneratorUtil.getCodecName(ultimateType.scopeDeterminant)
 
-        typeResolver.resolveProjectFilePath(ultimate_type.scopeDeterminant, ProjectType.PROTOBUF)
+        typeResolver.resolveProjectFilePath(ultimateType.scopeDeterminant, ProjectType.PROTOBUF)
 
         GeneratorUtil.getTransformedModuleName(
-            new ParameterBundle.Builder().with(ultimate_type.scopeDeterminant.moduleStack).with(
+            new ParameterBundle.Builder().with(ultimateType.scopeDeterminant.moduleStack).with(
                 ProjectType.PROTOBUF).build, ArtifactNature.DOTNET, TransformType.PACKAGE) +
-            TransformType.PACKAGE.separator + codec_name
+            TransformType.PACKAGE.separator + codecName
     }
 
     def static String makeDefaultMethodStub(TypeResolver typeResolver)

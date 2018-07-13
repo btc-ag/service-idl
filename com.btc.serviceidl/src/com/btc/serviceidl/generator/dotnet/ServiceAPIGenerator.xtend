@@ -67,38 +67,38 @@ class ServiceAPIGenerator extends GeneratorBase
 
     }
 
-    def generate(InterfaceDeclaration interface_declaration, AbstractTypeDeclaration abstract_type)
+    def generate(InterfaceDeclaration interfaceDeclaration, AbstractTypeDeclaration abstractType)
     {
-        toText(abstract_type, interface_declaration)
+        toText(abstractType, interfaceDeclaration)
     }
 
-    def generateConstants(InterfaceDeclaration interface_declaration, String file_name)
+    def generateConstants(InterfaceDeclaration interfaceDeclaration, String fileName)
     {
         '''
-            public static class «file_name»
+            public static class «fileName»
             {
-               public static readonly «resolve("System.Guid")» «typeGuidProperty» = new Guid("«GuidMapper.get(interface_declaration)»");
+               public static readonly «resolve("System.Guid")» «typeGuidProperty» = new Guid("«GuidMapper.get(interfaceDeclaration)»");
                
-               public static readonly «resolve("System.string")» «typeNameProperty» = typeof(«resolve(interface_declaration)»).FullName;
+               public static readonly «resolve("System.string")» «typeNameProperty» = typeof(«resolve(interfaceDeclaration)»).FullName;
             }
         '''
     }
 
-    def generateInterface(InterfaceDeclaration interface_declaration, String file_name)
+    def generateInterface(InterfaceDeclaration interfaceDeclaration, String fileName)
     {
-        val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)
+        val anonymousEvent = com.btc.serviceidl.util.Util.getAnonymousEvent(interfaceDeclaration)
 
         '''
-            «IF !interface_declaration.docComments.empty»
+            «IF !interfaceDeclaration.docComments.empty»
                 /// <summary>
-                «FOR comment : interface_declaration.docComments»«toText(comment, comment)»«ENDFOR»
+                «FOR comment : interfaceDeclaration.docComments»«toText(comment, comment)»«ENDFOR»
                 /// </summary>
             «ENDIF»
-            public interface «GeneratorUtil.getClassName(ArtifactNature.DOTNET, parameterBundle.projectType, interface_declaration.name)»«IF anonymous_event !== null» : «resolve("System.IObservable")»<«toText(anonymous_event.data, anonymous_event)»>«ENDIF»
+            public interface «GeneratorUtil.getClassName(ArtifactNature.DOTNET, parameterBundle.projectType, interfaceDeclaration.name)»«IF anonymousEvent !== null» : «resolve("System.IObservable")»<«toText(anonymousEvent.data, anonymousEvent)»>«ENDIF»
             {
                
-               «FOR function : interface_declaration.functions SEPARATOR System.lineSeparator»
-                   «val is_void = function.returnedType instanceof VoidType»
+               «FOR function : interfaceDeclaration.functions SEPARATOR System.lineSeparator»
+                   «val isVoid = function.returnedType instanceof VoidType»
                    /// <summary>
                    «FOR comment : function.docComments»«toText(comment, comment)»«ENDFOR»
                    /// </summary>
@@ -108,7 +108,7 @@ class ServiceAPIGenerator extends GeneratorBase
                    «FOR exception : function.raisedExceptions»
                        /// <exception cref="«toText(exception, function)»"></exception>
                    «ENDFOR»
-                   «IF !is_void»/// <returns></returns>«ENDIF»
+                   «IF !isVoid»/// <returns></returns>«ENDIF»
                    «typeResolver.makeReturnType(function)» «function.name»(
                       «FOR param : function.parameters SEPARATOR ","»
                           «IF param.direction == ParameterDirection.PARAM_OUT»out «ENDIF»«toText(param.paramType, function)» «toText(param, function)»
@@ -116,8 +116,8 @@ class ServiceAPIGenerator extends GeneratorBase
                    );
                «ENDFOR»
                
-               «FOR event : interface_declaration.events.filter[name !== null]»
-                   «toText(event, interface_declaration)» Get«toText(event, interface_declaration)»();
+               «FOR event : interfaceDeclaration.events.filter[name !== null]»
+                   «toText(event, interfaceDeclaration)» Get«toText(event, interfaceDeclaration)»();
                «ENDFOR»
             }
         '''

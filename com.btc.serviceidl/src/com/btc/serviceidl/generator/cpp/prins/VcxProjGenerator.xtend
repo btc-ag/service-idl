@@ -27,29 +27,29 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 @Accessors
 class VcxProjGenerator
 {
-    val ParameterBundle param_bundle
+    val ParameterBundle paramBundle
     val VSSolution vsSolution
-    val Set<VSSolution.ProjectReference> project_references
+    val Set<VSSolution.ProjectReference> projectReferences
 
     val ProjectFileSet projectFileSet
 
-    def generate(String project_name, IPath project_path)
+    def generate(String projectName, IPath projectPath)
     {
-        val project_export_macro = GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
+        val projectExportMacro = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER)
-        val is_protobuf = (param_bundle.projectType == ProjectType.PROTOBUF)
-        val is_server_runner = (param_bundle.projectType == ProjectType.SERVER_RUNNER)
-        val is_test = (param_bundle.projectType == ProjectType.TEST)
-        val is_proxy = (param_bundle.projectType == ProjectType.PROXY)
-        val is_dispatcher = (param_bundle.projectType == ProjectType.DISPATCHER)
-        val is_external_db_impl = (param_bundle.projectType == ProjectType.EXTERNAL_DB_IMPL)
-        val project_guid = vsSolution.getVcxprojGUID(vsSolution.resolve(project_name, project_path))
+        val isProtobuf = (paramBundle.projectType == ProjectType.PROTOBUF)
+        val isServerRunner = (paramBundle.projectType == ProjectType.SERVER_RUNNER)
+        val isTest = (paramBundle.projectType == ProjectType.TEST)
+        val isProxy = (paramBundle.projectType == ProjectType.PROXY)
+        val isDispatcher = (paramBundle.projectType == ProjectType.DISPATCHER)
+        val isExternalDbImpl = (paramBundle.projectType == ProjectType.EXTERNAL_DB_IMPL)
+        val projectGuid = vsSolution.getVcxprojGUID(vsSolution.resolve(projectName, projectPath))
 
-        var prebuild_step = if (is_server_runner)
+        var prebuildStep = if (isServerRunner)
             {
                 '''
-                    @ECHO @SET PATH=%%PATH%%;$(CabBin);>$(TargetDir)«project_name».bat
-                    @ECHO «project_name».exe --connection tcp://127.0.0.1:«Constants.DEFAULT_PORT» --ioc $(ProjectDir)etc\ServerFactory.xml >> $(TargetDir)«project_name».bat
+                    @ECHO @SET PATH=%%PATH%%;$(CabBin);>$(TargetDir)«projectName».bat
+                    @ECHO «projectName».exe --connection tcp://127.0.0.1:«Constants.DEFAULT_PORT» --ioc $(ProjectDir)etc\ServerFactory.xml >> $(TargetDir)«projectName».bat
                 '''
             }
 
@@ -78,26 +78,26 @@ class VcxProjGenerator
             </ProjectConfiguration>
           </ItemGroup>
           <PropertyGroup Label="Globals">
-            <ProjectGuid>{«project_guid»}</ProjectGuid>
+            <ProjectGuid>{«projectGuid»}</ProjectGuid>
             <Keyword>Win32Proj</Keyword>
           </PropertyGroup>
           <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
           <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-            <ConfigurationType>«IF is_protobuf»StaticLibrary«ELSEIF is_server_runner»Application«ELSE»DynamicLibrary«ENDIF»</ConfigurationType>
+            <ConfigurationType>«IF isProtobuf»StaticLibrary«ELSEIF isServerRunner»Application«ELSE»DynamicLibrary«ENDIF»</ConfigurationType>
             <PlatformToolset>v140</PlatformToolset>
             <WholeProgramOptimization>true</WholeProgramOptimization>
           </PropertyGroup>
           <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-            <ConfigurationType>«IF is_protobuf»StaticLibrary«ELSEIF is_server_runner»Application«ELSE»DynamicLibrary«ENDIF»</ConfigurationType>
+            <ConfigurationType>«IF isProtobuf»StaticLibrary«ELSEIF isServerRunner»Application«ELSE»DynamicLibrary«ENDIF»</ConfigurationType>
             <PlatformToolset>v140</PlatformToolset>
             <WholeProgramOptimization>true</WholeProgramOptimization>
           </PropertyGroup>
           <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-            <ConfigurationType>«IF is_protobuf»StaticLibrary«ELSEIF is_server_runner»Application«ELSE»DynamicLibrary«ENDIF»</ConfigurationType>
+            <ConfigurationType>«IF isProtobuf»StaticLibrary«ELSEIF isServerRunner»Application«ELSE»DynamicLibrary«ENDIF»</ConfigurationType>
             <PlatformToolset>v140</PlatformToolset>
           </PropertyGroup>
           <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-            <ConfigurationType>«IF is_protobuf»StaticLibrary«ELSEIF is_server_runner»Application«ELSE»DynamicLibrary«ENDIF»</ConfigurationType>
+            <ConfigurationType>«IF isProtobuf»StaticLibrary«ELSEIF isServerRunner»Application«ELSE»DynamicLibrary«ENDIF»</ConfigurationType>
             <PlatformToolset>v140</PlatformToolset>
           </PropertyGroup>
           <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -106,26 +106,26 @@ class VcxProjGenerator
           <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
             <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
             <Import Project="$(SolutionDir)\vsprops\modules.props" />
-            «IF is_protobuf || is_proxy || is_dispatcher || is_server_runner»<Import Project="$(SolutionDir)\vsprops\protobuf_paths.props" />«ENDIF»
-            «IF is_test»<Import Project="$(SolutionDir)\vsprops\unit_test.props" />«ENDIF»
+            «IF isProtobuf || isProxy || isDispatcher || isServerRunner»<Import Project="$(SolutionDir)\vsprops\protobufPaths.props" />«ENDIF»
+            «IF isTest»<Import Project="$(SolutionDir)\vsprops\unitTest.props" />«ENDIF»
           </ImportGroup>
           <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
             <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
             <Import Project="$(SolutionDir)\vsprops\modules.props" />
-            «IF is_protobuf || is_proxy || is_dispatcher || is_server_runner»<Import Project="$(SolutionDir)\vsprops\protobuf_paths.props" />«ENDIF»
-            «IF is_test»<Import Project="$(SolutionDir)\vsprops\unit_test.props" />«ENDIF»
+            «IF isProtobuf || isProxy || isDispatcher || isServerRunner»<Import Project="$(SolutionDir)\vsprops\protobufPaths.props" />«ENDIF»
+            «IF isTest»<Import Project="$(SolutionDir)\vsprops\unitTest.props" />«ENDIF»
           </ImportGroup>
           <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
             <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
             <Import Project="$(SolutionDir)\vsprops\modules.props" />
-            «IF is_protobuf || is_proxy || is_dispatcher || is_server_runner»<Import Project="$(SolutionDir)\vsprops\protobuf_paths.props" />«ENDIF»
-            «IF is_test»<Import Project="$(SolutionDir)\vsprops\unit_test.props" />«ENDIF»
+            «IF isProtobuf || isProxy || isDispatcher || isServerRunner»<Import Project="$(SolutionDir)\vsprops\protobufPaths.props" />«ENDIF»
+            «IF isTest»<Import Project="$(SolutionDir)\vsprops\unitTest.props" />«ENDIF»
           </ImportGroup>
           <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
             <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
             <Import Project="$(SolutionDir)\vsprops\modules.props" />
-            «IF is_protobuf || is_proxy || is_dispatcher || is_server_runner»<Import Project="$(SolutionDir)\vsprops\protobuf_paths.props" />«ENDIF»
-            «IF is_test»<Import Project="$(SolutionDir)\vsprops\unit_test.props" />«ENDIF»
+            «IF isProtobuf || isProxy || isDispatcher || isServerRunner»<Import Project="$(SolutionDir)\vsprops\protobufPaths.props" />«ENDIF»
+            «IF isTest»<Import Project="$(SolutionDir)\vsprops\unitTest.props" />«ENDIF»
           </ImportGroup>
           <PropertyGroup Label="UserMacros" />
           <PropertyGroup>
@@ -146,8 +146,8 @@ class VcxProjGenerator
           <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
             <ClCompile>
               <Optimization>Disabled</Optimization>
-              «IF is_external_db_impl»«disableSpecfificWarnings»«ENDIF»
-              <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;«project_export_macro»_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+              «IF isExternalDbImpl»«disableSpecfificWarnings»«ENDIF»
+              <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;«projectExportMacro»_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
               <MinimalRebuild>true</MinimalRebuild>
               <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
               <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -157,21 +157,21 @@ class VcxProjGenerator
             </ClCompile>
             <Link>
               <GenerateDebugInformation>true</GenerateDebugInformation>
-              <SubSystem>«IF is_server_runner»Console«ELSE»Windows«ENDIF»</SubSystem>
+              <SubSystem>«IF isServerRunner»Console«ELSE»Windows«ENDIF»</SubSystem>
               <TargetMachine>MachineX86</TargetMachine>
               <LargeAddressAware>true</LargeAddressAware>
             </Link>
-            «IF is_server_runner»
+            «IF isServerRunner»
                 <PreBuildEvent>
-                  <Command>«prebuild_step»</Command>
+                  <Command>«prebuildStep»</Command>
                 </PreBuildEvent>
             «ENDIF»
           </ItemDefinitionGroup>
           <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
             <ClCompile>
               <Optimization>Disabled</Optimization>
-              «IF is_external_db_impl»«disableSpecfificWarnings»«ENDIF»
-              <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;«project_export_macro»_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+              «IF isExternalDbImpl»«disableSpecfificWarnings»«ENDIF»
+              <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;«projectExportMacro»_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
               <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
               <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
               <PrecompiledHeader>
@@ -181,11 +181,11 @@ class VcxProjGenerator
             </ClCompile>
             <Link>
               <GenerateDebugInformation>true</GenerateDebugInformation>
-              <SubSystem>«IF is_server_runner»Console«ELSE»Windows«ENDIF»</SubSystem>
+              <SubSystem>«IF isServerRunner»Console«ELSE»Windows«ENDIF»</SubSystem>
             </Link>
-            «IF is_server_runner»
+            «IF isServerRunner»
                 <PreBuildEvent>
-                  <Command>«prebuild_step»</Command>
+                  <Command>«prebuildStep»</Command>
                 </PreBuildEvent>
             «ENDIF»
           </ItemDefinitionGroup>
@@ -193,8 +193,8 @@ class VcxProjGenerator
             <ClCompile>
               <Optimization>MaxSpeed</Optimization>
               <IntrinsicFunctions>true</IntrinsicFunctions>
-              «IF is_external_db_impl»«disableSpecfificWarnings»«ENDIF»
-              <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;«project_export_macro»_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+              «IF isExternalDbImpl»«disableSpecfificWarnings»«ENDIF»
+              <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;«projectExportMacro»_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
               <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
               <FunctionLevelLinking>true</FunctionLevelLinking>
               <PrecompiledHeader />
@@ -203,15 +203,15 @@ class VcxProjGenerator
             </ClCompile>
             <Link>
               <GenerateDebugInformation>true</GenerateDebugInformation>
-              <SubSystem>«IF is_server_runner»Console«ELSE»Windows«ENDIF»</SubSystem>
+              <SubSystem>«IF isServerRunner»Console«ELSE»Windows«ENDIF»</SubSystem>
               <OptimizeReferences>true</OptimizeReferences>
               <EnableCOMDATFolding>true</EnableCOMDATFolding>
               <TargetMachine>MachineX86</TargetMachine>
               <LargeAddressAware>true</LargeAddressAware>
             </Link>
-            «IF is_server_runner»
+            «IF isServerRunner»
                 <PreBuildEvent>
-                  <Command>«prebuild_step»</Command>
+                  <Command>«prebuildStep»</Command>
                 </PreBuildEvent>
             «ENDIF»
           </ItemDefinitionGroup>
@@ -219,8 +219,8 @@ class VcxProjGenerator
             <ClCompile>
               <Optimization>MaxSpeed</Optimization>
               <IntrinsicFunctions>true</IntrinsicFunctions>
-              «IF is_external_db_impl»«disableSpecfificWarnings»«ENDIF»
-              <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;«project_export_macro»_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+              «IF isExternalDbImpl»«disableSpecfificWarnings»«ENDIF»
+              <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;«projectExportMacro»_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
               <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
               <FunctionLevelLinking>true</FunctionLevelLinking>
               <PrecompiledHeader>
@@ -230,77 +230,77 @@ class VcxProjGenerator
             </ClCompile>
             <Link>
               <GenerateDebugInformation>true</GenerateDebugInformation>
-              <SubSystem>«IF is_server_runner»Console«ELSE»Windows«ENDIF»</SubSystem>
+              <SubSystem>«IF isServerRunner»Console«ELSE»Windows«ENDIF»</SubSystem>
               <OptimizeReferences>true</OptimizeReferences>
               <EnableCOMDATFolding>true</EnableCOMDATFolding>
             </Link>
-            «IF is_server_runner»
+            «IF isServerRunner»
                 <PreBuildEvent>
-                  <Command>«prebuild_step»</Command>
+                  <Command>«prebuildStep»</Command>
                 </PreBuildEvent>
             «ENDIF»
           </ItemDefinitionGroup>
           «IF !projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty»
               <ItemGroup>
-                «FOR proto_file : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
-                    <Google_Protocol_Buffers Include="gen\«proto_file».proto" />
+                «FOR protoFile : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
+                    <Google_Protocol_Buffers Include="gen\«protoFile».proto" />
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
           «IF !(projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty && projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP).empty && projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
               <ItemGroup>
-                «FOR cpp_file : projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP)»
-                    <ClCompile Include="source\«cpp_file»" />
+                «FOR cppFile : projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP)»
+                    <ClCompile Include="source\«cppFile»" />
                 «ENDFOR»
-                «FOR dependency_file : projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP)»
-                    <ClCompile Include="source\«dependency_file»" />
+                «FOR dependencyFile : projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP)»
+                    <ClCompile Include="source\«dependencyFile»" />
                 «ENDFOR»
-                «FOR pb_cc_file : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
-                    <ClCompile Include="gen\«pb_cc_file».pb.cc" />
+                «FOR pbCcFile : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
+                    <ClCompile Include="gen\«pbCcFile».pb.cc" />
                 «ENDFOR»
-                «FOR cxx_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
-                    <ClCompile Include="odb\«cxx_file»-odb.cxx" />
-                    <ClCompile Include="odb\«cxx_file»-odb-mssql.cxx" />
-                    <ClCompile Include="odb\«cxx_file»-odb-oracle.cxx" />
+                «FOR cxxFile : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
+                    <ClCompile Include="odb\«cxxFile»-odb.cxx" />
+                    <ClCompile Include="odb\«cxxFile»-odb-mssql.cxx" />
+                    <ClCompile Include="odb\«cxxFile»-odb-oracle.cxx" />
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
           «IF !(projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP).empty && projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
               <ItemGroup>
-                «FOR header_file : projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP)»
-                    <ClInclude Include="include\«header_file»" />
+                «FOR headerFile : projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP)»
+                    <ClInclude Include="include\«headerFile»" />
                 «ENDFOR»
-                «FOR pb_h_file : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
-                    <ClInclude Include="gen\«pb_h_file.pb.h»" />
+                «FOR pbHFile : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
+                    <ClInclude Include="gen\«pbHFile.pb.h»" />
                 «ENDFOR»
-                «FOR hxx_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
-                    <ClInclude Include="odb\«hxx_file.hxx»" />
-                    <ClInclude Include="odb\«hxx_file»-odb.hxx" />
-                    <ClInclude Include="odb\«hxx_file»-odb-mssql.hxx" />
-                    <ClInclude Include="odb\«hxx_file»-odb-oracle.hxx" />
+                «FOR hxxFile : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
+                    <ClInclude Include="odb\«hxxFile.hxx»" />
+                    <ClInclude Include="odb\«hxxFile»-odb.hxx" />
+                    <ClInclude Include="odb\«hxxFile»-odb-mssql.hxx" />
+                    <ClInclude Include="odb\«hxxFile»-odb-oracle.hxx" />
                 «ENDFOR»
-                «FOR odb_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
-                    <CustomBuild Include="odb\«odb_file.hxx»">
-                      <Message>odb «odb_file.hxx»</Message>
-                      <Command>"$(ODBExe)" --std c++11 -I $(SolutionDir).. -I $(CabInc) -I $(BoostInc) --multi-database dynamic --database common --database mssql --database oracle --generate-query --generate-prepared --generate-schema --schema-format embedded «ignoreGCCWarnings» --hxx-prologue "#include \"«Constants.FILE_NAME_ODB_TRAITS.hxx»\"" --output-dir .\odb odb\«odb_file.hxx»</Command>
-                      <Outputs>odb\«odb_file»-odb.hxx;odb\«odb_file»-odb.ixx;odb\«odb_file»-odb.cxx;odb\«odb_file»-odb-mssql.hxx;odb\«odb_file»-odb-mssql.ixx;odb\«odb_file»-odb-mssql.cxx;odb\«odb_file»-odb-oracle.hxx;odb\«odb_file»-odb-oracle.ixx;odb\«odb_file»-odb-oracle.cxx;</Outputs>
+                «FOR odbFile : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
+                    <CustomBuild Include="odb\«odbFile.hxx»">
+                      <Message>odb «odbFile.hxx»</Message>
+                      <Command>"$(ODBExe)" --std c++11 -I $(SolutionDir).. -I $(CabInc) -I $(BoostInc) --multi-database dynamic --database common --database mssql --database oracle --generate-query --generate-prepared --generate-schema --schema-format embedded «ignoreGCCWarnings» --hxx-prologue "#include \"«Constants.FILE_NAME_ODB_TRAITS.hxx»\"" --output-dir .\odb odb\«odbFile.hxx»</Command>
+                      <Outputs>odb\«odbFile»-odb.hxx;odb\«odbFile»-odb.ixx;odb\«odbFile»-odb.cxx;odb\«odbFile»-odb-mssql.hxx;odb\«odbFile»-odb-mssql.ixx;odb\«odbFile»-odb-mssql.cxx;odb\«odbFile»-odb-oracle.hxx;odb\«odbFile»-odb-oracle.ixx;odb\«odbFile»-odb-oracle.cxx;</Outputs>
                     </CustomBuild>
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
           «IF !projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty»
               <ItemGroup>
-                «FOR odb_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
-                    <None Include="odb\«odb_file»-odb.ixx" />
-                    <None Include="odb\«odb_file»-odb-mssql.ixx" />
-                    <None Include="odb\«odb_file»-odb-oracle.ixx" />
+                «FOR odbFile : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
+                    <None Include="odb\«odbFile»-odb.ixx" />
+                    <None Include="odb\«odbFile»-odb-mssql.ixx" />
+                    <None Include="odb\«odbFile»-odb-oracle.ixx" />
                 «ENDFOR»
               </ItemGroup>
           «ENDIF»
-          «val effective_project_references = project_references.filter[it.projectName != project_name]»
-          «IF !effective_project_references.empty»
+          «val effectiveProjectReferences = projectReferences.filter[it.projectName != projectName]»
+          «IF !effectiveProjectReferences.empty»
               <ItemGroup>
-                «FOR name : effective_project_references»
+                «FOR name : effectiveProjectReferences»
                     <ProjectReference Include="$(SolutionDir)«vsSolution.getVcxProjPath(name).toWindowsString».vcxproj">
                       <Project>{«vsSolution.getVcxprojGUID(name)»}</Project>
                     </ProjectReference>
@@ -309,7 +309,7 @@ class VcxProjGenerator
           «ENDIF»
           <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
           <ImportGroup Label="ExtensionTargets">
-            «IF is_protobuf»<Import Project="$(SolutionDir)vsprops\protobuf.targets" />«ENDIF»
+            «IF isProtobuf»<Import Project="$(SolutionDir)vsprops\protobuf.targets" />«ENDIF»
           </ImportGroup>
         </Project>'''
     }
@@ -363,13 +363,13 @@ class VcxProjGenerator
               </ItemGroup>
               «IF !(projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP).empty && projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty)»
                   <ItemGroup>
-                    «FOR pb_h_file : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
-                        <ClCompile Include="gen\«pb_h_file.pb.h»">
+                    «FOR pbHFile : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
+                        <ClCompile Include="gen\«pbHFile.pb.h»">
                           <Filter>Header Files</Filter>
                         </ClCompile>
                     «ENDFOR»
-                    «FOR header_file : projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP)»
-                        <ClInclude Include="include\«header_file»">
+                    «FOR headerFile : projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP)»
+                        <ClInclude Include="include\«headerFile»">
                           <Filter>Header Files</Filter>
                         </ClInclude>
                     «ENDFOR»
@@ -377,13 +377,13 @@ class VcxProjGenerator
               «ENDIF»
               «IF !(projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty && projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty)»
                   <ItemGroup>
-                    «FOR pb_cc_file : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
-                        <ClCompile Include="gen\«pb_cc_file».pb.cc">
+                    «FOR pbCcFile : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
+                        <ClCompile Include="gen\«pbCcFile».pb.cc">
                           <Filter>Source Files</Filter>
                         </ClCompile>
                     «ENDFOR»
-                    «FOR cpp_file : projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP)»
-                        <ClCompile Include="source\«cpp_file»">
+                    «FOR cppFile : projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP)»
+                        <ClCompile Include="source\«cppFile»">
                           <Filter>Source Files</Filter>
                         </ClCompile>
                     «ENDFOR»
@@ -391,8 +391,8 @@ class VcxProjGenerator
               «ENDIF»
               «IF !projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP).empty»
                   <ItemGroup>
-                    «FOR dependency_file : projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP)»
-                        <ClCompile Include="source\«dependency_file»">
+                    «FOR dependencyFile : projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP)»
+                        <ClCompile Include="source\«dependencyFile»">
                           <Filter>Dependencies</Filter>
                         </ClCompile>
                     «ENDFOR»
@@ -400,8 +400,8 @@ class VcxProjGenerator
               «ENDIF»
               «IF !projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty»
                   <ItemGroup>
-                    «FOR proto_file : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
-                        <Google_Protocol_Buffers Include="gen\«proto_file».proto">
+                    «FOR protoFile : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
+                        <Google_Protocol_Buffers Include="gen\«protoFile».proto">
                           <Filter>Protobuf Files</Filter>
                         </Google_Protocol_Buffers>
                     «ENDFOR»
@@ -409,50 +409,50 @@ class VcxProjGenerator
               «ENDIF»
               «IF !projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty»
                   <ItemGroup>
-                    «FOR odb_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
-                        <ClInclude Include="odb\«odb_file.hxx»">
+                    «FOR odbFile : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
+                        <ClInclude Include="odb\«odbFile.hxx»">
                           <Filter>ODB Files</Filter>
                         </ClInclude>
-                        <ClInclude Include="odb\«odb_file»-odb.hxx">
+                        <ClInclude Include="odb\«odbFile»-odb.hxx">
                           <Filter>ODB Files</Filter>
                         </ClInclude>
-                        <ClInclude Include="odb\«odb_file»-odb-oracle.hxx">
+                        <ClInclude Include="odb\«odbFile»-odb-oracle.hxx">
                           <Filter>ODB Files</Filter>
                         </ClInclude>
-                        <ClInclude Include="odb\«odb_file»-odb-mssql.hxx">
+                        <ClInclude Include="odb\«odbFile»-odb-mssql.hxx">
                           <Filter>ODB Files</Filter>
                         </ClInclude>
                     «ENDFOR»
                   </ItemGroup>
                   <ItemGroup>
-                    «FOR odb_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
-                        <ClCompile Include="odb\«odb_file»-odb.cxx">
+                    «FOR odbFile : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
+                        <ClCompile Include="odb\«odbFile»-odb.cxx">
                           <Filter>ODB Files</Filter>
                         </ClCompile>
-                        <ClCompile Include="odb\«odb_file»-odb-oracle.cxx">
+                        <ClCompile Include="odb\«odbFile»-odb-oracle.cxx">
                           <Filter>ODB Files</Filter>
                         </ClCompile>
-                        <ClCompile Include="odb\«odb_file»-odb-mssql.cxx">
+                        <ClCompile Include="odb\«odbFile»-odb-mssql.cxx">
                           <Filter>ODB Files</Filter>
                         </ClCompile>
                     «ENDFOR»
                   </ItemGroup>
                   <ItemGroup>
-                    «FOR odb_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
-                        <None Include="odb\«odb_file»-odb.ixx">
+                    «FOR odbFile : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
+                        <None Include="odb\«odbFile»-odb.ixx">
                           <Filter>ODB Files</Filter>
                         </None>
-                        <None Include="odb\«odb_file»-odb-oracle.ixx">
+                        <None Include="odb\«odbFile»-odb-oracle.ixx">
                           <Filter>ODB Files</Filter>
                         </None>
-                        <None Include="odb\«odb_file»-odb-mssql.ixx">
+                        <None Include="odb\«odbFile»-odb-mssql.ixx">
                           <Filter>ODB Files</Filter>
                         </None>
                     «ENDFOR»
                   </ItemGroup>
                   <ItemGroup>
-                    «FOR odb_file : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
-                        <CustomBuild Include="odb\«odb_file.hxx»">
+                    «FOR odbFile : projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP)»
+                        <CustomBuild Include="odb\«odbFile.hxx»">
                           <Filter>Header Files</Filter>
                         </CustomBuild>
                     «ENDFOR»
@@ -462,14 +462,14 @@ class VcxProjGenerator
         '''
     }
 
-    def generateVcxprojUser(ProjectType project_type)
+    def generateVcxprojUser(ProjectType projectType)
     {
         // Please do NOT edit line indents in the code below (even though they
         // may look misplaced) unless you are fully aware of what you are doing!!!
         // Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
-        val path = if (project_type == ProjectType.TEST) "$(UnitTestLibraryPaths)" else "$(CabBin)"
-        val command = if (project_type == ProjectType.TEST) "$(UnitTestRunner)" else "$(TargetPath)"
-        val args = if (project_type ==
+        val path = if (projectType == ProjectType.TEST) "$(UnitTestLibraryPaths)" else "$(CabBin)"
+        val command = if (projectType == ProjectType.TEST) "$(UnitTestRunner)" else "$(TargetPath)"
+        val args = if (projectType ==
                 ProjectType.
                     TEST) "$(UnitTestDefaultArguments)" else '''--connection tcp://127.0.0.1:«Constants.DEFAULT_PORT» --ioc $(ProjectDir)etc\ServerFactory.xml'''
 

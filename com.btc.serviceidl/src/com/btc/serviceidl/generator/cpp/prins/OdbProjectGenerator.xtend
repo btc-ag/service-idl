@@ -43,19 +43,19 @@ import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors
 class OdbProjectGenerator extends ProjectGeneratorBase {
-    new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,IProjectSet vsSolution,
+    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
+        IScopeProvider scopeProvider, IDLSpecification idl, IProjectSetFactory projectSetFactory,IProjectSet vsSolution,
         IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
-        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map,  ModuleDeclaration module)
+        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap,  ModuleDeclaration module)
     {
-        super(file_system_access, qualified_name_provider, scope_provider, idl, projectSetFactory, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, smart_pointer_map,
+        super(fileSystemAccess, qualifiedNameProvider, scopeProvider, idl, projectSetFactory, vsSolution,
+            moduleStructureStrategy, targetVersionProvider, smartPointerMap,
             ProjectType.EXTERNAL_DB_IMPL, module, new OdbSourceGenerationStrategy)
     }
     
    override void generate()
    {
-      val all_elements = module.moduleComponents
+      val allElements = module.moduleComponents
          .filter[e | e.isStruct]
          .map(e | e.structType.ultimateType as StructDeclaration)
          .filter[!members.empty]
@@ -67,80 +67,80 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       
       // all structs, for which ODB files will be generated; characteristic: 
       // they have a member called "ID" with type UUID
-      val id_structs = all_elements.filter[!members.filter[m | m.name.toUpperCase == "ID" && Util.isUUIDType(m.type)].empty ]
+      val id_structs = allElements.filter[!members.filter[m | m.name.toUpperCase == "ID" && Util.isUUIDType(m.type)].empty ]
       
       // nothing to do...
       if (id_structs.empty)
       { return }
                   
       // paths
-      val odb_path = projectPath + Constants.SEPARATOR_FILE + "odb" + Constants.SEPARATOR_FILE
+      val odbPath = projectPath + Constants.SEPARATOR_FILE + "odb" + Constants.SEPARATOR_FILE
       
       // collect all commonly used types to include them in an centralized header
-      val common_types = all_elements
+      val commonTypes = allElements
          .filter[members.filter[m | m.name.toUpperCase == "ID" && Util.isUUIDType(m.type)].empty]
-      if (!common_types.empty)
+      if (!commonTypes.empty)
       {
-         val basic_file_name = Constants.FILE_NAME_ODB_COMMON
-         file_system_access.generateFile(odb_path + basic_file_name.hxx, ArtifactNature.CPP.label, generateCommonHxx(common_types))
-         projectFileSet.addToGroup(OdbConstants.ODB_FILE_GROUP, basic_file_name)
+         val basicFileName = Constants.FILE_NAME_ODB_COMMON
+         fileSystemAccess.generateFile(odbPath + basicFileName.hxx, ArtifactNature.CPP.label, generateCommonHxx(commonTypes))
+         projectFileSet.addToGroup(OdbConstants.ODB_FILE_GROUP, basicFileName)
       }
       for ( struct : id_structs )
       {
-         val basic_file_name = struct.name.toLowerCase
-         file_system_access.generateFile(odb_path + basic_file_name.hxx, ArtifactNature.CPP.label, generateHxx(struct))
-         projectFileSet.addToGroup(OdbConstants.ODB_FILE_GROUP, basic_file_name)
+         val basicFileName = struct.name.toLowerCase
+         fileSystemAccess.generateFile(odbPath + basicFileName.hxx, ArtifactNature.CPP.label, generateHxx(struct))
+         projectFileSet.addToGroup(OdbConstants.ODB_FILE_GROUP, basicFileName)
       }
-      file_system_access.generateFile(odb_path + Constants.FILE_NAME_ODB_TRAITS.hxx, ArtifactNature.CPP.label, generateODBTraits)
+      fileSystemAccess.generateFile(odbPath + Constants.FILE_NAME_ODB_TRAITS.hxx, ArtifactNature.CPP.label, generateODBTraits)
       
       super.generate()
       
-      for ( interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
+      for ( interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
       {
-         val basic_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType, interface_declaration.name)
-         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, basic_file_name.h)
-         projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, basic_file_name.cpp)
+         val basicFileName = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType, interfaceDeclaration.name)
+         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, basicFileName.h)
+         projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, basicFileName.cpp)
       }
       
-      generateProjectFiles(ProjectType.EXTERNAL_DB_IMPL, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)
+      generateProjectFiles(ProjectType.EXTERNAL_DB_IMPL, projectPath, vsSolution.getVcxprojName(paramBundle), projectFileSet)
    }
 
-   private def String generateCommonHxx(Iterable<StructDeclaration> common_types)
+   private def String generateCommonHxx(Iterable<StructDeclaration> commonTypes)
    {
       val basicCppGenerator = createBasicCppGenerator
       
-      val file_content = new OdbGenerator(basicCppGenerator.typeResolver).generateCommonHxx(common_types).toString      
-      makeHxx(basicCppGenerator, file_content, false)
+      val fileContent = new OdbGenerator(basicCppGenerator.typeResolver).generateCommonHxx(commonTypes).toString      
+      makeHxx(basicCppGenerator, fileContent, false)
    }
    
    private def String generateHxx(StructDeclaration struct)
    {
       val basicCppGenerator = createBasicCppGenerator
       
-      val file_content = new OdbGenerator(basicCppGenerator.typeResolver).generateHxx(struct).toString
-      var underlying_types = getUnderlyingTypes(struct)
-      makeHxx(basicCppGenerator, file_content, !underlying_types.empty)
+      val fileContent = new OdbGenerator(basicCppGenerator.typeResolver).generateHxx(struct).toString
+      var underlyingTypes = getUnderlyingTypes(struct)
+      makeHxx(basicCppGenerator, fileContent, !underlyingTypes.empty)
    }
    
    private def String generateODBTraits()
    {
       val basicCppGenerator = createBasicCppGenerator
       
-      val file_content = new OdbGenerator(basicCppGenerator.typeResolver).generateODBTraitsBody()
+      val fileContent = new OdbGenerator(basicCppGenerator.typeResolver).generateODBTraitsBody()
       
-      makeHxx(basicCppGenerator, file_content.toString, false)
+      makeHxx(basicCppGenerator, fileContent.toString, false)
    }
    
-   private def String makeHxx(BasicCppGenerator basicCppGenerator, String file_content, boolean use_common_types)
+   private def String makeHxx(BasicCppGenerator basicCppGenerator, String fileContent, boolean useCommonTypes)
    {
       '''
       #pragma once
       
       #include "modules/Commons/include/BeginPrinsModulesInclude.h"
       
-      «IF use_common_types»#include "«Constants.FILE_NAME_ODB_COMMON.hxx»"«ENDIF»
+      «IF useCommonTypes»#include "«Constants.FILE_NAME_ODB_COMMON.hxx»"«ENDIF»
       «basicCppGenerator.generateIncludes(true)»
-      «file_content»
+      «fileContent»
       
       #include "modules/Commons/include/EndPrinsModulesInclude.h"
       '''
@@ -148,23 +148,23 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
    
    private static class OdbSourceGenerationStrategy implements ISourceGenerationStrategy
     {
-        override String generateProjectSource(BasicCppGenerator basicCppGenerator, InterfaceDeclaration interface_declaration)
+        override String generateProjectSource(BasicCppGenerator basicCppGenerator, InterfaceDeclaration interfaceDeclaration)
         {
-            val file_content = generateCppImpl(basicCppGenerator.typeResolver, basicCppGenerator.targetVersionProvider, 
-                basicCppGenerator.paramBundle, interface_declaration
+            val fileContent = generateCppImpl(basicCppGenerator.typeResolver, basicCppGenerator.targetVersionProvider, 
+                basicCppGenerator.paramBundle, interfaceDeclaration
             )
 
-            generateSource(basicCppGenerator, file_content.toString, Optional.empty)
+            generateSource(basicCppGenerator, fileContent.toString, Optional.empty)
         }
 
         override String generateProjectHeader(BasicCppGenerator basicCppGenerator, IModuleStructureStrategy moduleStructureStrategy, 
-            InterfaceDeclaration interface_declaration, String export_header)
+            InterfaceDeclaration interfaceDeclaration, String exportHeader)
         {
-            val file_content = generateInterface(basicCppGenerator.typeResolver, basicCppGenerator.targetVersionProvider, 
-                basicCppGenerator.paramBundle, interface_declaration
+            val fileContent = generateInterface(basicCppGenerator.typeResolver, basicCppGenerator.targetVersionProvider, 
+                basicCppGenerator.paramBundle, interfaceDeclaration
             )
 
-            generateHeader(basicCppGenerator, moduleStructureStrategy, file_content.toString, Optional.of(export_header))
+            generateHeader(basicCppGenerator, moduleStructureStrategy, fileContent.toString, Optional.of(exportHeader))
         }
     }
 }

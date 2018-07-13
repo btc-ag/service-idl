@@ -83,12 +83,12 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
             }
         '''
 
-        val file_header = '''
+        val fileHeader = '''
             «generatePackageName(interfaceDeclaration)»
             «generateImports(interfaceDeclaration)»
         '''
 
-        return file_header + fileBody
+        return fileHeader + fileBody
     }
 
     private def String generateReturnType(FunctionDeclaration function, EObject context, AbstractContainerDeclaration container, Counter id)

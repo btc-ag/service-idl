@@ -52,10 +52,10 @@ class TypeResolver
 
     def ResolvedName resolve(String name)
     {
-        val effective_name = resolveException(name) ?: name
-        val fully_qualified_name = QualifiedName.create(
-            effective_name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
-        val namespace = fully_qualified_name.skipLast(1).toString
+        val effectiveName = resolveException(name) ?: name
+        val fullyQualifiedName = QualifiedName.create(
+            effectiveName.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
+        val namespace = fullyQualifiedName.skipLast(1).toString
 
         if (namespace.startsWith("System"))
             referencedAssemblies.add(DotNetAssemblies.getAssemblyForNamespace(namespace, frameworkVersion))
@@ -66,7 +66,7 @@ class TypeResolver
         }
 
         namespaceReferences.add(namespace)
-        return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, false)
+        return new ResolvedName(fullyQualifiedName, TransformType.PACKAGE, false)
     }
 
     def ResolvedName resolve(AbstractType element)
@@ -89,21 +89,21 @@ class TypeResolver
         resolve(element, element.scopeDeterminant.mainProjectType)
     }
 
-    def ResolvedName resolve(AbstractType element, ProjectType project_type)
+    def ResolvedName resolve(AbstractType element, ProjectType projectType)
     {
         if (element.primitiveType !== null)
-            resolve(element.primitiveType, project_type)
+            resolve(element.primitiveType, projectType)
         else if (element.referenceType !== null)
-            resolve(element.referenceType, if (project_type != ProjectType.PROTOBUF)
+            resolve(element.referenceType, if (projectType != ProjectType.PROTOBUF)
                 element.referenceType.scopeDeterminant.mainProjectType
             else
-                project_type)
+                projectType)
 
     // TODO really fall through in case of collectionType?
     }
 
     // TODO looks somewhat similar to java.TypeResolver.resolve
-    def ResolvedName resolve(AbstractTypeReference element, ProjectType project_type)
+    def ResolvedName resolve(AbstractTypeReference element, ProjectType projectType)
     {
         // use the underlying type for typedefs
         if (element instanceof AliasDeclaration)
@@ -112,14 +112,14 @@ class TypeResolver
         }
 
         if (element instanceof NamedDeclaration)
-            return resolveNamedDeclaration(element, project_type)
+            return resolveNamedDeclaration(element, projectType)
         else
         {
             if (element instanceof PrimitiveType)
             {
                 if (element.uuidType !== null)
                 {
-                    if (project_type == ProjectType.PROTOBUF)
+                    if (projectType == ProjectType.PROTOBUF)
                         return resolve(PROTOBUF_UUID_TYPE)
                     else
                         return resolve("System.Guid")
@@ -131,18 +131,18 @@ class TypeResolver
         }
     }
 
-    def resolveNamedDeclaration(NamedDeclaration element, ProjectType project_type)
+    def resolveNamedDeclaration(NamedDeclaration element, ProjectType projectType)
     {
         val result = GeneratorUtil.getFullyQualifiedClassName(element,
-            qualifiedNameProvider.getFullyQualifiedName(element), project_type, ArtifactNature.DOTNET,
+            qualifiedNameProvider.getFullyQualifiedName(element), projectType, ArtifactNature.DOTNET,
             TransformType.PACKAGE)
 
-        val package_name = QualifiedName.create(result.split(Pattern.quote(Constants.SEPARATOR_PACKAGE))).skipLast(1)
-        if (!isSameProject(package_name))
+        val packageName = QualifiedName.create(result.split(Pattern.quote(Constants.SEPARATOR_PACKAGE))).skipLast(1)
+        if (!isSameProject(packageName))
         {
             // just use namespace, no assembly required - project reference will be used instead!
-            namespaceReferences.add(package_name.toString)
-            element.scopeDeterminant.resolveProjectFilePath(project_type)
+            namespaceReferences.add(packageName.toString)
+            element.scopeDeterminant.resolveProjectFilePath(projectType)
         }
 
         return new ResolvedName(result, TransformType.PACKAGE, FULLY_QUALIFIED)
@@ -161,16 +161,16 @@ class TypeResolver
         }
     }
 
-    private def boolean isSameProject(QualifiedName referenced_package)
+    private def boolean isSameProject(QualifiedName referencedPackage)
     {
         GeneratorUtil.getTransformedModuleName(parameterBundle, ArtifactNature.DOTNET, TransformType.PACKAGE) ==
-            referenced_package.toString
+            referencedPackage.toString
     }
 
-    def void resolveProjectFilePath(AbstractContainerDeclaration referencedContainer, ProjectType project_type)
+    def void resolveProjectFilePath(AbstractContainerDeclaration referencedContainer, ProjectType projectType)
     {
         projectReferences.add(
-            new ParameterBundle.Builder().with(referencedContainer.moduleStack).with(project_type).build)
+            new ParameterBundle.Builder().with(referencedContainer.moduleStack).with(projectType).build)
     }
 
     def primitiveTypeName(PrimitiveType element)

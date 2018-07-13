@@ -26,10 +26,10 @@ import static extension com.btc.serviceidl.generator.cpp.Util.*
 class CABModuleStructureStrategy implements IModuleStructureStrategy
 {
 
-    override getIncludeFilePath(Iterable<ModuleDeclaration> module_stack, ProjectType project_type, String baseName,
+    override getIncludeFilePath(Iterable<ModuleDeclaration> moduleStack, ProjectType projectType, String baseName,
         HeaderType headerType)
     {
-        getProjectDir(new ParameterBundle(module_stack, project_type)).append(headerType.includeDirectoryName).append(
+        getProjectDir(new ParameterBundle(moduleStack, projectType)).append(headerType.includeDirectoryName).append(
             baseName).addFileExtension(headerType.fileExtension)
     }
 

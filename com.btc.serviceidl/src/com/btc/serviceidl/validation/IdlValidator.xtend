@@ -114,8 +114,8 @@ class IdlValidator extends AbstractIdlValidator
     {
         if (module.isVirtual && module.eContainer instanceof ModuleDeclaration)
         {
-            val parent_module = module.eContainer as ModuleDeclaration
-            if (!parent_module.isVirtual)
+            val parentModule = module.eContainer as ModuleDeclaration
+            if (!parentModule.isVirtual)
             {
                 error(
                     "Virtual modules cannot be nested within non-virtual modules",
@@ -155,24 +155,24 @@ class IdlValidator extends AbstractIdlValidator
      * problems with currently implemented way of Profotbuf artifacts generation.
      */
     @Check
-    def namingCollisions(IDLSpecification idl_specification)
+    def namingCollisions(IDLSpecification idlSpecification)
     {
-        val name_map = new HashMap<String, Boolean>
+        val nameMap = new HashMap<String, Boolean>
 
-        for (module : idl_specification.eAllContents.filter(ModuleDeclaration).toIterable)
+        for (module : idlSpecification.eAllContents.filter(ModuleDeclaration).toIterable)
         {
-            if (name_map.containsKey(module.name))
+            if (nameMap.containsKey(module.name))
                 error(Messages.NAME_COLLISION, module, IdlPackage.Literals.NAMED_DECLARATION__NAME)
             else
-                name_map.put(module.name, Boolean.TRUE)
+                nameMap.put(module.name, Boolean.TRUE)
         }
 
-        for (interface_declaration : idl_specification.eAllContents.filter(InterfaceDeclaration).toIterable)
+        for (interfaceDeclaration : idlSpecification.eAllContents.filter(InterfaceDeclaration).toIterable)
         {
-            if (name_map.containsKey(interface_declaration.name))
-                error(Messages.NAME_COLLISION, interface_declaration, IdlPackage.Literals.NAMED_DECLARATION__NAME)
+            if (nameMap.containsKey(interfaceDeclaration.name))
+                error(Messages.NAME_COLLISION, interfaceDeclaration, IdlPackage.Literals.NAMED_DECLARATION__NAME)
             else
-                name_map.put(interface_declaration.name, Boolean.TRUE)
+                nameMap.put(interfaceDeclaration.name, Boolean.TRUE)
         }
     }
 
@@ -184,9 +184,9 @@ class IdlValidator extends AbstractIdlValidator
     {
         if (element.supertype !== null)
         {
-            val base_types = element.baseTypes as Collection<StructDeclaration>
-            val all_member_names = base_types.map[members].flatten.map[name].toList
-            if (element.members.findFirst[e|all_member_names.contains(e.name)] !== null)
+            val baseTypes = element.baseTypes as Collection<StructDeclaration>
+            val allMemberNames = baseTypes.map[members].flatten.map[name].toList
+            if (element.members.findFirst[e|allMemberNames.contains(e.name)] !== null)
             {
                 error(Messages.NAME_COLLISION_MEMBERS, element, IdlPackage.Literals.STRUCT_DECLARATION__MEMBERS)
             }
@@ -199,15 +199,15 @@ class IdlValidator extends AbstractIdlValidator
      * not possible to have multiple GUIDs for the same structure!
      */
     @Check
-    def checkRelatedEvents(IDLSpecification idl_specification)
+    def checkRelatedEvents(IDLSpecification idlSpecification)
     {
-        for (event_data : idl_specification.eAllContents.filter(StructDeclaration).toIterable)
+        for (eventData : idlSpecification.eAllContents.filter(StructDeclaration).toIterable)
         {
-            val related_events = idl_specification.eAllContents.filter(EventDeclaration).filter[data === event_data].
+            val relatedEvents = idlSpecification.eAllContents.filter(EventDeclaration).filter[data === eventData].
                 toList
-            if (related_events.size > 1)
+            if (relatedEvents.size > 1)
             {
-                for (event : related_events.drop(1))
+                for (event : relatedEvents.drop(1))
                 {
                     error("Event type " + event.data.name +
                         " is already used in another event. Multiple events cannot use the same type due to GUID collisions",
@@ -222,12 +222,12 @@ class IdlValidator extends AbstractIdlValidator
      * namespace decorations (e.g. in .NET this module will get the ".NET" extension)
      */
     @Check
-    def checkMainModule(IDLSpecification idl_specification)
+    def checkMainModule(IDLSpecification idlSpecification)
     {
-        if (idl_specification.eAllContents.filter(ModuleDeclaration).filter[main].size > 1)
+        if (idlSpecification.eAllContents.filter(ModuleDeclaration).filter[main].size > 1)
         {
             error("No more than one main module is allowed!",
-                idl_specification.eAllContents.filter(ModuleDeclaration).filter[main].tail.head,
+                idlSpecification.eAllContents.filter(ModuleDeclaration).filter[main].tail.head,
                 IdlPackage.Literals.MODULE_DECLARATION__MAIN)
         }
     }
@@ -237,13 +237,13 @@ class IdlValidator extends AbstractIdlValidator
      * in .NET Framework System.Tuple type.
      */
     @Check
-    def checkTupleTemplateNumber(TupleDeclaration tuple_declaration)
+    def checkTupleTemplateNumber(TupleDeclaration tupleDeclaration)
     {
-        if (tuple_declaration.types.size > 8)
+        if (tupleDeclaration.types.size > 8)
         {
             error(
                 "No more than 8 tuple items (octuple) are supported to comply with the .NET Framework System.Tuple type",
-                tuple_declaration, IdlPackage.Literals.TUPLE_DECLARATION__TYPES)
+                tupleDeclaration, IdlPackage.Literals.TUPLE_DECLARATION__TYPES)
         }
     }
 
@@ -373,36 +373,36 @@ class IdlValidator extends AbstractIdlValidator
     @Check
     def ensureConstructability(StructDeclaration element)
     {
-        val questionable_types = new HashSet<AbstractTypeReference>
-        questionable_types.add(element)
+        val questionableTypes = new HashSet<AbstractTypeReference>
+        questionableTypes.add(element)
 
-        if (!isConstructible(element, questionable_types))
+        if (!isConstructible(element, questionableTypes))
         {
             error(Messages.TYPE_NOT_CONSTRUCTIBLE, element, IdlPackage.Literals.NAMED_DECLARATION__NAME)
         }
     }
 
     private def boolean isConstructible(AbstractTypeReference element,
-        Collection<AbstractTypeReference> questionable_types)
+        Collection<AbstractTypeReference> questionableTypes)
     {
-        val non_primitive_types = element.effectiveMembers.filter[!optional].filter[!Util.isSequenceType(type)].filter [
+        val nonPrimitiveTypes = element.effectiveMembers.filter[!optional].filter[!Util.isSequenceType(type)].filter [
             !Util.isPrimitive(type)
         ].map[Util.getUltimateType(type)]
 
-        if (!non_primitive_types.empty)
+        if (!nonPrimitiveTypes.empty)
         {
-            for (type : non_primitive_types)
+            for (type : nonPrimitiveTypes)
             {
-                if (questionable_types.contains(type))
+                if (questionableTypes.contains(type))
                     return false
 
-                questionable_types.add(type)
-                if (!isConstructible(type, questionable_types))
+                questionableTypes.add(type)
+                if (!isConstructible(type, questionableTypes))
                     return false
             }
         }
 
-        questionable_types.remove(element)
+        questionableTypes.remove(element)
         return true
     }
 
@@ -541,7 +541,7 @@ class IdlValidator extends AbstractIdlValidator
 //   @Check
 //   def unsupportedTransboundaryCircularDependencies(ModuleDeclaration module)
 //   {
-//      val external_forward_declarations =
+//      val externalForwardDeclarations =
 //         module
 //         .eContents
 //         .toList
@@ -549,7 +549,7 @@ class IdlValidator extends AbstractIdlValidator
 //         .filter[ e | !e.forwardDeclarations.filter[!module.eContents.toList.contains(it)].empty ]
 //         .map[type]
 //      
-//      for ( item : external_forward_declarations )
+//      for ( item : externalForwardDeclarations )
 //      {
 //         if (item instanceof StructDeclaration)
 //         {

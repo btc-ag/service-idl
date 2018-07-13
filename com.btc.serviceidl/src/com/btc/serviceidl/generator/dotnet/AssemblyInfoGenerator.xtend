@@ -10,11 +10,11 @@ import static com.btc.serviceidl.generator.dotnet.Util.*
 @Accessors
 class AssemblyInfoGenerator
 {
-    val ParameterBundle param_bundle
+    val ParameterBundle paramBundle
 
-    def generate(String project_name)
+    def generate(String projectName)
     {
-        val is_exe = isExecutable(param_bundle.projectType)
+        val isExe = isExecutable(paramBundle.projectType)
 
         '''
             using System.Reflection;
@@ -24,11 +24,11 @@ class AssemblyInfoGenerator
             // General Information about an assembly is controlled through the following 
             // set of attributes. Change these attribute values to modify the information
             // associated with an assembly.
-            [assembly: AssemblyTitle("«project_name»")]
+            [assembly: AssemblyTitle("«projectName»")]
             [assembly: AssemblyDescription("")]
             [assembly: AssemblyConfiguration("")]
-            [assembly: AssemblyProduct("«project_name»")]
-            «IF !is_exe»
+            [assembly: AssemblyProduct("«projectName»")]
+            «IF !isExe»
                 [assembly: AssemblyCompany("BTC Business Technology Consulting AG")]
                 [assembly: AssemblyCopyright("Copyright (C) BTC Business Technology Consulting AG «Calendar.getInstance().get(Calendar.YEAR)»")]
                 [assembly: AssemblyTrademark("")]
@@ -41,7 +41,7 @@ class AssemblyInfoGenerator
             [assembly: ComVisible(false)]
             
             // The following GUID is for the ID of the typelib if this project is exposed to COM
-            [assembly: Guid("«UUID.nameUUIDFromBytes((project_name+"Assembly").bytes).toString.toLowerCase»")]
+            [assembly: Guid("«UUID.nameUUIDFromBytes((projectName+"Assembly").bytes).toString.toLowerCase»")]
         '''
     }
 

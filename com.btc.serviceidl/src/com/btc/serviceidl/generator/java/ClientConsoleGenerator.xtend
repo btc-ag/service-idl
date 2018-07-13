@@ -30,28 +30,28 @@ class ClientConsoleGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def generateClientConsoleProgram(String class_name, String log4j_name,
-        InterfaceDeclaration interface_declaration)
+    def generateClientConsoleProgram(String className, String log4j_name,
+        InterfaceDeclaration interfaceDeclaration)
     {
-        val resources_location = MavenArtifactType.TEST_RESOURCES.directoryLayout
-        val api_name = typeResolver.resolve(interface_declaration)
-        val connection_string = '''tcp://127.0.0.1:«Constants.DEFAULT_PORT»'''
+        val resourcesLocation = MavenArtifactType.TEST_RESOURCES.directoryLayout
+        val apiName = typeResolver.resolve(interfaceDeclaration)
+        val connectionString = '''tcp://127.0.0.1:«Constants.DEFAULT_PORT»'''
 
         val loggerFactoryType = basicJavaSourceGenerator.resolveLoggerFactory 
         val loggerType = basicJavaSourceGenerator.resolveLogger 
 
         '''
-        public class «class_name» {
+        public class «className» {
         
-           private final static String connectionString = "«connection_string»";
-           private static final «loggerType» logger = «loggerFactoryType».getLogger(«class_name».class);
+           private final static String connectionString = "«connectionString»";
+           private static final «loggerType» logger = «loggerFactoryType».getLogger(«className».class);
            
            public static void main(String[] args) {
               
               «typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» client = null;
-              «api_name» proxy = null;
+              «apiName» proxy = null;
               «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
-              «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
+              «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resourcesLocation»/«log4j_name»", 60 * 1000);
               «ENDIF»
         
               logger.info("Client trying to connect to " + connectionString);
@@ -69,12 +69,12 @@ class ClientConsoleGenerator
                      connectionFactory).create(connectionString);
               } catch (Exception e)
               {
-                 logger.error("Client could not start! Is there a server running on «connection_string»? Error: " + e.toString());
+                 logger.error("Client could not start! Is there a server running on «connectionString»? Error: " + e.toString());
               }
         
               logger.info("Client started...");
               try {
-                 proxy = «typeResolver.resolve(basicJavaSourceGenerator.typeResolver.resolvePackage(interface_declaration, ProjectType.PROXY) + '''.«interface_declaration.name»ProxyFactory''')».createDirectProtobufProxy(client);
+                 proxy = «typeResolver.resolve(basicJavaSourceGenerator.typeResolver.resolvePackage(interfaceDeclaration, ProjectType.PROXY) + '''.«interfaceDeclaration.name»ProxyFactory''')».createDirectProtobufProxy(client);
               } catch (Exception e) {
                  logger.error("Could not create proxy! Error: " + e.toString());
               }
@@ -95,29 +95,29 @@ class ClientConsoleGenerator
               System.exit(0);
            }
            
-           private static void callAllProxyMethods(«api_name» proxy) {
+           private static void callAllProxyMethods(«apiName» proxy) {
               
               int errorCount = 0;
               int callCount = 0;
-              «FOR function : interface_declaration.functions»
-                  «val function_name = function.name.asMethod»
-                  «val is_void = function.returnedType instanceof VoidType»
+              «FOR function : interfaceDeclaration.functions»
+                  «val functionName = function.name.asMethod»
+                  «val isVoid = function.returnedType instanceof VoidType»
                   try
                   {
                      callCount++;
                      «FOR param : function.parameters»
-                         «val is_sequence = param.paramType.isSequenceType»
-                         «val basic_type = typeResolver.resolve(param.paramType.ultimateType)»
-                         «val is_failable = is_sequence && param.paramType.isFailable»
-                     «IF is_sequence»«typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«ENDIF»«basic_type»«IF is_sequence»«IF is_failable»>«ENDIF»>«ENDIF» «param.paramName.asParameter» = «basicJavaSourceGenerator.makeDefaultValue(param.paramType)»;
+                         «val isSequence = param.paramType.isSequenceType»
+                         «val basicType = typeResolver.resolve(param.paramType.ultimateType)»
+                         «val isFailable = isSequence && param.paramType.isFailable»
+                     «IF isSequence»«typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF isFailable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«ENDIF»«basicType»«IF isSequence»«IF isFailable»>«ENDIF»>«ENDIF» «param.paramName.asParameter» = «basicJavaSourceGenerator.makeDefaultValue(param.paramType)»;
                   «ENDFOR»
-                  «IF !is_void»Object result = «ENDIF»proxy.«function_name»(«function.parameters.map[paramName.asParameter].join(", ")»)«IF !function.sync».get()«ENDIF»;
-                  logger.info("Result of «api_name».«function_name»: «IF is_void»void"«ELSE»" + result.toString()«ENDIF»);
+                  «IF !isVoid»Object result = «ENDIF»proxy.«functionName»(«function.parameters.map[paramName.asParameter].join(", ")»)«IF !function.sync».get()«ENDIF»;
+                  logger.info("Result of «apiName».«functionName»: «IF isVoid»void"«ELSE»" + result.toString()«ENDIF»);
                   }
                   catch (Exception e)
                   {
                      errorCount++;
-                     logger.error("Result of «api_name».«function_name»: " + e.toString());
+                     logger.error("Result of «apiName».«functionName»: " + e.toString());
                   }
               «ENDFOR»
               

@@ -33,16 +33,16 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors
 class ProxyGenerator extends BasicCppGenerator {
         
-    def generateImplementationFileBody(InterfaceDeclaration interface_declaration) {
-      val class_name = resolve(interface_declaration, paramBundle.projectType)
-      val api_class_name = resolve(interface_declaration, ProjectType.SERVICE_API)
+    def generateImplementationFileBody(InterfaceDeclaration interfaceDeclaration) {
+      val className = resolve(interfaceDeclaration, paramBundle.projectType)
+      val apiClassName = resolve(interfaceDeclaration, ProjectType.SERVICE_API)
       
       // the class name is not used explicitly in the following code, but
       // we need to include this *.impl.h file to avoid linker errors
       resolveSymbolWithImplementation("BTC::ServiceComm::Util::CDefaultObservableRegistrationProxy")
       
       '''
-      «class_name.shortName»::«class_name.shortName»
+      «className.shortName»::«className.shortName»
       (
          «resolveSymbol("BTC::Commons::Core::Context")» &context
          ,«resolveSymbol("BTC::Logging::API::LoggerFactory")» &loggerFactory
@@ -51,24 +51,24 @@ class ProxyGenerator extends BasicCppGenerator {
       ) :
       m_context(context)
       , «resolveSymbol("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
-      , «interface_declaration.asBaseName»(context, localEndpoint, «api_class_name»::TYPE_GUID(), serverServiceInstanceGuid)
-      «FOR event : interface_declaration.events»
+      , «interfaceDeclaration.asBaseName»(context, localEndpoint, «apiClassName»::TYPE_GUID(), serverServiceInstanceGuid)
+      «FOR event : interfaceDeclaration.events»
       , «event.observableRegistrationName»(context, localEndpoint.GetEventRegistry(), «event.eventParamsName»())
       «ENDFOR»
-      { «getRegisterServerFaults(interface_declaration, Optional.of(GeneratorUtil.getTransformedModuleName(new ParameterBundle.Builder(paramBundle).with(ProjectType.SERVICE_API).build, ArtifactNature.CPP, TransformType.NAMESPACE)))»( GetClientServiceReference().GetServiceFaultHandlerManager() ); }
+      { «getRegisterServerFaults(interfaceDeclaration, Optional.of(GeneratorUtil.getTransformedModuleName(new ParameterBundle.Builder(paramBundle).with(ProjectType.SERVICE_API).build, ArtifactNature.CPP, TransformType.NAMESPACE)))»( GetClientServiceReference().GetServiceFaultHandlerManager() ); }
       
-      «generateCppDestructor(interface_declaration)»
+      «generateCppDestructor(interfaceDeclaration)»
       
-      «generateInheritedInterfaceMethods(interface_declaration)»
+      «generateInheritedInterfaceMethods(interfaceDeclaration)»
       
-      «FOR event : interface_declaration.events AFTER System.lineSeparator»
-         «val event_type = resolve(event.data)»
-         «val event_name = event_type.shortName»
-         «val event_params_name = event.eventParamsName»
+      «FOR event : interfaceDeclaration.events AFTER System.lineSeparator»
+         «val eventType = resolve(event.data)»
+         «val eventName = eventType.shortName»
+         «val eventParamsName = event.eventParamsName»
          
          namespace // anonymous namespace to avoid naming collisions
          {
-            «event_type» const Unmarshal«event_name»( «resolveSymbol("BTC::ServiceComm::API::IEventSubscriberManager")»::ObserverType::OnNextParamType event )
+            «eventType» const Unmarshal«eventName»( «resolveSymbol("BTC::ServiceComm::API::IEventSubscriberManager")»::ObserverType::OnNextParamType event )
             {
                «/* TODO remove ProtobufType argument */»
                «typeResolver.resolveProtobuf(event.data, ProtobufType.REQUEST)» eventProtobuf;
@@ -82,29 +82,29 @@ class ProxyGenerator extends BasicCppGenerator {
             }
          }
          
-         «resolveSymbol("BTC::Commons::CoreExtras::UUID")» «class_name.shortName»::«event_params_name»::GetEventTypeGuid()
+         «resolveSymbol("BTC::Commons::CoreExtras::UUID")» «className.shortName»::«eventParamsName»::GetEventTypeGuid()
          {
            /** this uses a global event type, i.e. if there are multiple instances of the service (dispatcher), these will all be subscribed;
            *  alternatively, an instance-specific type guid must be registered by the dispatcher and queried by the proxy */
-           return «event_type»::EVENT_TYPE_GUID();
+           return «eventType»::EVENT_TYPE_GUID();
          }
          
-         «resolveSymbol("BTC::ServiceComm::API::EventKind")» «class_name.shortName»::«event_params_name»::GetEventKind()
+         «resolveSymbol("BTC::ServiceComm::API::EventKind")» «className.shortName»::«eventParamsName»::GetEventKind()
          {
            return «resolveSymbol("BTC::ServiceComm::API::EventKind")»::EventKind_PublishSubscribe;
          }
          
-         «resolveSymbol("BTC::Commons::Core::String")» «class_name.shortName»::«event_params_name»::GetEventTypeDescription()
+         «resolveSymbol("BTC::Commons::Core::String")» «className.shortName»::«eventParamsName»::GetEventTypeDescription()
          {
-           return «resolveSymbol("CABTYPENAME")»(«event_type»);
+           return «resolveSymbol("CABTYPENAME")»(«eventType»);
          }
          
-         «resolveSymbol("std::function")»<«class_name.shortName»::«event_params_name»::EventDataType const ( «resolveSymbol("BTC::ServiceComm::API::IEventSubscriberManager::ObserverType::OnNextParamType")»)> «class_name»::«event_params_name»::GetUnmarshalFunction( )
+         «resolveSymbol("std::function")»<«className.shortName»::«eventParamsName»::EventDataType const ( «resolveSymbol("BTC::ServiceComm::API::IEventSubscriberManager::ObserverType::OnNextParamType")»)> «className»::«eventParamsName»::GetUnmarshalFunction( )
          {
-           return &Unmarshal«event_name»;
+           return &Unmarshal«eventName»;
          }
          
-         «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> «class_name.shortName»::Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«event_type»> &observer )
+         «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> «className.shortName»::Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«eventType»> &observer )
          {
            return «event.observableRegistrationName».Subscribe(observer);
          }
@@ -112,23 +112,23 @@ class ProxyGenerator extends BasicCppGenerator {
       '''
     }
     
-    override generateFunctionBody(InterfaceDeclaration interface_declaration, FunctionDeclaration function)
+    override generateFunctionBody(InterfaceDeclaration interfaceDeclaration, FunctionDeclaration function)
     {
-        val protobuf_request_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)
-        val protobuf_response_message= typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
+        val protobufRequestMessage = typeResolver.resolveProtobuf(interfaceDeclaration, ProtobufType.REQUEST)
+        val protobufResponseMessage= typeResolver.resolveProtobuf(interfaceDeclaration, ProtobufType.RESPONSE)
         
         '''
-           «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «protobuf_request_message» > request( BorrowRequestMessage() );
+           «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «protobufRequestMessage» > request( BorrowRequestMessage() );
 
            // encode request -->
            auto * const concreteRequest( request->mutable_«function.name.asRequest.asCppProtobufName»() );
            «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
               «IF GeneratorUtil.useCodec(param.paramType.actualType, ArtifactNature.CPP) && !(param.paramType.isByte || param.paramType.isInt16 || param.paramType.isChar)»
                  «IF param.paramType.isSequenceType»
-                    «val ulimate_type = param.paramType.ultimateType»
-                    «val is_failable = param.paramType.isFailable»
-                    «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.RESPONSE).fullyQualifiedName»
-                    «typeResolver.resolveCodecNS(paramBundle, ulimate_type, is_failable, Optional.of(interface_declaration))»::Encode«IF is_failable»Failable«ENDIF»< «resolve(ulimate_type)», «IF is_failable»«typeResolver.resolveFailableProtobufType(param.paramType.actualType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF» >
+                    «val ulimateType = param.paramType.ultimateType»
+                    «val isFailable = param.paramType.isFailable»
+                    «val protobufType = typeResolver.resolveProtobuf(ulimateType, ProtobufType.RESPONSE).fullyQualifiedName»
+                    «typeResolver.resolveCodecNS(paramBundle, ulimateType, isFailable, Optional.of(interfaceDeclaration))»::Encode«IF isFailable»Failable«ENDIF»< «resolve(ulimateType)», «IF isFailable»«typeResolver.resolveFailableProtobufType(param.paramType.actualType, interfaceDeclaration)»«ELSE»«protobufType»«ENDIF» >
                        ( «resolveSymbol("std::move")»(«param.paramName»), concreteRequest->mutable_«param.paramName.asCppProtobufName»() );
                  «ELSEIF param.paramType.isEnumType»
                     concreteRequest->set_«param.paramName.asCppProtobufName»( «typeResolver.resolveCodecNS(paramBundle, param.paramType.actualType)»::Encode(«param.paramName») );
@@ -144,32 +144,32 @@ class ProxyGenerator extends BasicCppGenerator {
            «IF function.returnedType instanceof VoidType»
               return Request«IF function.isSync»Sync«ELSE»Async«ENDIF»UnmarshalVoid( *request );
            «ELSE»
-              return RequestAsyncUnmarshal< «toText(function.returnedType, interface_declaration)» >( *request, [&]( «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «protobuf_response_message» > response )
+              return RequestAsyncUnmarshal< «toText(function.returnedType, interfaceDeclaration)» >( *request, [&]( «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «protobufResponseMessage» > response )
               {
                  // decode response -->
                  auto const& concreteResponse( response->«function.name.asResponse.asCppProtobufName»() );
-                 «val output_parameters = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
-                 «IF !output_parameters.empty»
+                 «val outputParameters = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
+                 «IF !outputParameters.empty»
                     // handle [out] parameters
-                    «FOR param : output_parameters»
+                    «FOR param : outputParameters»
                        «IF param.paramType.isSequenceType»
-                          «typeResolver.resolveDecode(paramBundle, param.paramType.actualType, interface_declaration)»( concreteResponse.«param.paramName.asCppProtobufName»(), «param.paramName» );
+                          «typeResolver.resolveDecode(paramBundle, param.paramType.actualType, interfaceDeclaration)»( concreteResponse.«param.paramName.asCppProtobufName»(), «param.paramName» );
                        «ELSE»
-                          «param.paramName» = «makeDecodeResponse(param.paramType.actualType, interface_declaration, param.paramName.asCppProtobufName)»
+                          «param.paramName» = «makeDecodeResponse(param.paramType.actualType, interfaceDeclaration, param.paramName.asCppProtobufName)»
                        «ENDIF»
                     «ENDFOR»
                  «ENDIF»
-                 return «makeDecodeResponse(function.returnedType.actualType, interface_declaration, function.name.asCppProtobufName)»
+                 return «makeDecodeResponse(function.returnedType.actualType, interfaceDeclaration, function.name.asCppProtobufName)»
                  // decode response <--
               } )«IF function.isSync».Get()«ENDIF»;
            «ENDIF»
         '''
     }
 
-   private def String makeDecodeResponse(AbstractTypeReference type, AbstractContainerDeclaration container, String protobuf_name)
+   private def String makeDecodeResponse(AbstractTypeReference type, AbstractContainerDeclaration container, String protobufName)
    {
-      val use_codec = GeneratorUtil.useCodec(type, ArtifactNature.CPP)
-      '''«IF use_codec»«typeResolver.resolveDecode(paramBundle, type, container)»( «ENDIF»concreteResponse.«protobuf_name»()«IF use_codec» )«ENDIF»;'''
+      val useCodec = GeneratorUtil.useCodec(type, ArtifactNature.CPP)
+      '''«IF useCodec»«typeResolver.resolveDecode(paramBundle, type, container)»( «ENDIF»concreteResponse.«protobufName»()«IF useCodec» )«ENDIF»;'''
    }
    
     

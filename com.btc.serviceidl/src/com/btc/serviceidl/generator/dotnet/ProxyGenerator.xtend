@@ -25,140 +25,140 @@ import static extension com.btc.serviceidl.util.Extensions.*
 @Accessors(NONE)
 class ProxyGenerator extends ProxyDispatcherGeneratorBase {
 
-    def generate(String class_name, InterfaceDeclaration interface_declaration)
+    def generate(String className, InterfaceDeclaration interfaceDeclaration)
     {
-      val api_fully_qualified_name = resolve(interface_declaration)
-      val feature_profile = new FeatureProfile(interface_declaration)
-      if (feature_profile.uses_futures)
+      val apiFullyQualifiedName = resolve(interfaceDeclaration)
+      val featureProfile = new FeatureProfile(interfaceDeclaration)
+      if (featureProfile.usesFutures)
          resolve("BTC.CAB.ServiceComm.NET.Util.ClientEndpointExtensions")
-      if (feature_profile.uses_events)
+      if (featureProfile.usesEvents)
          resolve("BTC.CAB.ServiceComm.NET.Util.EventRegistryExtensions")
       val serviceFaultHandler = "serviceFaultHandler"
       
       '''
-      public class «class_name» : «api_fully_qualified_name.shortName»
+      public class «className» : «apiFullyQualifiedName.shortName»
       {
          private readonly «resolve("BTC.CAB.ServiceComm.NET.API.IClientEndpoint")» _endpoint;
          private readonly «resolve("BTC.CAB.ServiceComm.NET.API.IClientServiceReference")» _serviceReference;
          
-         public «class_name»(IClientEndpoint endpoint)
+         public «className»(IClientEndpoint endpoint)
          {
             _endpoint = endpoint;
 
-            _serviceReference = _endpoint.ConnectService(«interface_declaration.name»Const.«typeGuidProperty»);
+            _serviceReference = _endpoint.ConnectService(«interfaceDeclaration.name»Const.«typeGuidProperty»);
             
-            «makeExceptionRegistration(serviceFaultHandler, interface_declaration)»
+            «makeExceptionRegistration(serviceFaultHandler, interfaceDeclaration)»
             
             _serviceReference.ServiceFaultHandlerManager.RegisterHandler(«serviceFaultHandler»);
          }
          
-         «FOR function : interface_declaration.functions SEPARATOR System.lineSeparator»
-            «val api_request_name = getProtobufRequestClassName(interface_declaration)»
-            «val api_response_name = getProtobufResponseClassName(interface_declaration)»
-            «val out_params = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
-            «val is_void = function.returnedType instanceof VoidType»
-            «val return_type = if (is_void) null else resolveDecode(function.returnedType.actualType)»
-            «val is_sync = function.isSync»
-            /// <see cref="«api_fully_qualified_name».«function.name»"/>
+         «FOR function : interfaceDeclaration.functions SEPARATOR System.lineSeparator»
+            «val apiRequestName = getProtobufRequestClassName(interfaceDeclaration)»
+            «val apiResponseName = getProtobufResponseClassName(interfaceDeclaration)»
+            «val outParams = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
+            «val isVoid = function.returnedType instanceof VoidType»
+            «val returnType = if (isVoid) null else resolveDecode(function.returnedType.actualType)»
+            «val isSync = function.isSync»
+            /// <see cref="«apiFullyQualifiedName».«function.name»"/>
             public «typeResolver.makeReturnType(function)» «function.name»(
                «FOR param : function.parameters SEPARATOR ","»
                   «IF param.direction == ParameterDirection.PARAM_OUT»out «ENDIF»«toText(param.paramType, function)» «toText(param, function)»
                «ENDFOR»
             )
             {
-               var methodRequestBuilder = «api_request_name».Types.«com.btc.serviceidl.util.Util.asRequest(function.name)».CreateBuilder();
+               var methodRequestBuilder = «apiRequestName».Types.«com.btc.serviceidl.util.Util.asRequest(function.name)».CreateBuilder();
                «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
                   «val isSequence = com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
                   «val isFailable = isSequence && com.btc.serviceidl.util.Util.isFailable(param.paramType)»
-                  «val use_codec = isFailable || GeneratorUtil.useCodec(param.paramType.actualType, ArtifactNature.DOTNET)»
-                  «val encodeMethod = getEncodeMethod(param.paramType.actualType, interface_declaration)»
+                  «val useCodec = isFailable || GeneratorUtil.useCodec(param.paramType.actualType, ArtifactNature.DOTNET)»
+                  «val encodeMethod = getEncodeMethod(param.paramType.actualType, interfaceDeclaration)»
                   «val codec = resolveCodec(typeResolver, parameterBundle, param.paramType.actualType)»
-                  «val useCast = use_codec && !isFailable»
-                  methodRequestBuilder.«IF isSequence»AddRange«ELSE»Set«ENDIF»«param.paramName.asDotNetProtobufName»(«IF use_codec»«IF useCast»(«resolveEncode(param.paramType.actualType)») «ENDIF»«codec».«encodeMethod»(«ENDIF»«toText(param, function)»«IF use_codec»)«ENDIF»);
+                  «val useCast = useCodec && !isFailable»
+                  methodRequestBuilder.«IF isSequence»AddRange«ELSE»Set«ENDIF»«param.paramName.asDotNetProtobufName»(«IF useCodec»«IF useCast»(«resolveEncode(param.paramType.actualType)») «ENDIF»«codec».«encodeMethod»(«ENDIF»«toText(param, function)»«IF useCodec»)«ENDIF»);
                «ENDFOR»
-               var requestBuilder = «api_request_name».CreateBuilder();
+               var requestBuilder = «apiRequestName».CreateBuilder();
                requestBuilder.Set«function.name.asDotNetProtobufName»Request(methodRequestBuilder.BuildPartial());
                var protobufRequest = requestBuilder.BuildPartial();
                
-               «IF !out_params.empty»
+               «IF !outParams.empty»
                   // prepare placeholders for [out] parameters
-                  «FOR param : out_params»
+                  «FOR param : outParams»
                      var «param.paramName.asParameter»Placeholder = «makeDefaultValue(basicCSharpSourceGenerator, param.paramType)»;
                   «ENDFOR»
                   
                «ENDIF»
                var result =_serviceReference.RequestAsync(new «resolve("BTC.CAB.ServiceComm.NET.Common.MessageBuffer")»(protobufRequest.ToByteArray())).ContinueWith(task =>
                {
-                  «api_response_name» response = «api_response_name».ParseFrom(task.Result.PopFront());
+                  «apiResponseName» response = «apiResponseName».ParseFrom(task.Result.PopFront());
                   «val isFailable = com.btc.serviceidl.util.Util.isFailable(function.returnedType)»
-                  «val use_codec = isFailable || GeneratorUtil.useCodec(function.returnedType.actualType, ArtifactNature.DOTNET)»
-                  «val useCast = use_codec && !isFailable»
-                  «val decodeMethod = getDecodeMethod(function.returnedType.actualType, interface_declaration)»
-                  «val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)»
-                  «val codec = if (use_codec) resolveCodec(typeResolver, parameterBundle, function.returnedType.actualType) else null»
-                  «IF !out_params.empty»
+                  «val useCodec = isFailable || GeneratorUtil.useCodec(function.returnedType.actualType, ArtifactNature.DOTNET)»
+                  «val useCast = useCodec && !isFailable»
+                  «val decodeMethod = getDecodeMethod(function.returnedType.actualType, interfaceDeclaration)»
+                  «val isSequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)»
+                  «val codec = if (useCodec) resolveCodec(typeResolver, parameterBundle, function.returnedType.actualType) else null»
+                  «IF !outParams.empty»
                      // handle [out] parameters
                   «ENDIF»
-                  «FOR param : out_params»
-                     «val basic_name = param.paramName.asParameter»
+                  «FOR param : outParams»
+                     «val basicName = param.paramName.asParameter»
                      «val isFailableParam = com.btc.serviceidl.util.Util.isFailable(param.paramType)»
-                     «val is_sequence_param = com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
-                     «val use_codec_param = isFailableParam || GeneratorUtil.useCodec(param.paramType.actualType, ArtifactNature.DOTNET)»
-                     «val decode_method_param = getDecodeMethod(param.paramType.actualType, interface_declaration)»
-                     «val codec_param = resolveCodec(typeResolver, parameterBundle, param.paramType.actualType)»
-                     «val useCastParam = use_codec_param && !isFailableParam»
-                     «basic_name»Placeholder = «IF use_codec_param»«IF useCastParam»(«resolveDecode(param.paramType.actualType)») «ENDIF»«codec_param».«decode_method_param»(«ENDIF»response.«function.name.asDotNetProtobufName»Response.«basic_name.asDotNetProtobufName»«IF is_sequence_param»List«ENDIF»«IF use_codec_param»)«ENDIF»;
+                     «val isSequenceParam = com.btc.serviceidl.util.Util.isSequenceType(param.paramType)»
+                     «val useCodecParam = isFailableParam || GeneratorUtil.useCodec(param.paramType.actualType, ArtifactNature.DOTNET)»
+                     «val decodeMethodParam = getDecodeMethod(param.paramType.actualType, interfaceDeclaration)»
+                     «val codecParam = resolveCodec(typeResolver, parameterBundle, param.paramType.actualType)»
+                     «val useCastParam = useCodecParam && !isFailableParam»
+                     «basicName»Placeholder = «IF useCodecParam»«IF useCastParam»(«resolveDecode(param.paramType.actualType)») «ENDIF»«codecParam».«decodeMethodParam»(«ENDIF»response.«function.name.asDotNetProtobufName»Response.«basicName.asDotNetProtobufName»«IF isSequenceParam»List«ENDIF»«IF useCodecParam»)«ENDIF»;
                   «ENDFOR»
-                  «IF !is_void»return «IF use_codec»«IF useCast»(«return_type») «ENDIF»«codec».«decodeMethod»(«ENDIF»response.«function.name.asDotNetProtobufName»Response.«function.name.asDotNetProtobufName»«IF is_sequence»List«ENDIF»«IF use_codec»)«ELSEIF is_sequence»«typeResolver.asEnumerable»«ENDIF»;«ENDIF»
+                  «IF !isVoid»return «IF useCodec»«IF useCast»(«returnType») «ENDIF»«codec».«decodeMethod»(«ENDIF»response.«function.name.asDotNetProtobufName»Response.«function.name.asDotNetProtobufName»«IF isSequence»List«ENDIF»«IF useCodec»)«ELSEIF isSequence»«typeResolver.asEnumerable»«ENDIF»;«ENDIF»
                });
-               «IF out_params.empty»
-                  «IF is_sync»«IF is_void»result.Wait();«ELSE»return result.Result;«ENDIF»«ELSE»return result;«ENDIF»
+               «IF outParams.empty»
+                  «IF isSync»«IF isVoid»result.Wait();«ELSE»return result.Result;«ENDIF»«ELSE»return result;«ENDIF»
                «ELSE»
                   
                   result.Wait();
                   // assign [out] parameters
-                  «FOR param : out_params»
-                     «val basic_name = param.paramName.asParameter»
-                     «basic_name» = «basic_name»Placeholder;
+                  «FOR param : outParams»
+                     «val basicName = param.paramName.asParameter»
+                     «basicName» = «basicName»Placeholder;
                   «ENDFOR»
-                  «IF is_sync»«IF !is_void»return result.Result;«ENDIF»«ELSE»return result;«ENDIF»
+                  «IF isSync»«IF !isVoid»return result.Result;«ENDIF»«ELSE»return result;«ENDIF»
                «ENDIF»
             }
          «ENDFOR»
          
-         «FOR event : interface_declaration.events.filter[name !== null]»
-            «val event_name = toText(event, interface_declaration)»
-            /// <see cref="«api_fully_qualified_name».Get«event_name»"/>
-            public «event_name» Get«event_name»()
+         «FOR event : interfaceDeclaration.events.filter[name !== null]»
+            «val eventName = toText(event, interfaceDeclaration)»
+            /// <see cref="«apiFullyQualifiedName».Get«eventName»"/>
+            public «eventName» Get«eventName»()
             {
-               return new «event_name»Impl(_endpoint);
+               return new «eventName»Impl(_endpoint);
             }
          «ENDFOR»
-         «val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)»
-         «IF anonymous_event !== null»
-            «val event_type_name = toText(anonymous_event.data, anonymous_event)»
-            «val deserializing_observer = getDeserializingObserverName(anonymous_event)»
+         «val anonymousEvent = com.btc.serviceidl.util.Util.getAnonymousEvent(interfaceDeclaration)»
+         «IF anonymousEvent !== null»
+            «val eventTypeName = toText(anonymousEvent.data, anonymousEvent)»
+            «val deserializingObserver = getDeserializingObserverName(anonymousEvent)»
             
             /// <see cref="System.IObservable.Subscribe"/>
-            public «resolve("System.IDisposable")» Subscribe(«resolve("System.IObserver")»<«event_type_name»> observer)
+            public «resolve("System.IDisposable")» Subscribe(«resolve("System.IObserver")»<«eventTypeName»> observer)
             {
-               _endpoint.EventRegistry.CreateEventRegistration(«event_type_name».«eventTypeGuidProperty», «resolve("BTC.CAB.ServiceComm.NET.API.EventKind")».EventKindPublishSubscribe, «event_type_name».«eventTypeGuidProperty».ToString());
-               return _endpoint.EventRegistry.SubscriberManager.Subscribe(«resolve(anonymous_event.data)».«eventTypeGuidProperty», new «deserializing_observer»(observer));
+               _endpoint.EventRegistry.CreateEventRegistration(«eventTypeName».«eventTypeGuidProperty», «resolve("BTC.CAB.ServiceComm.NET.API.EventKind")».EventKindPublishSubscribe, «eventTypeName».«eventTypeGuidProperty».ToString());
+               return _endpoint.EventRegistry.SubscriberManager.Subscribe(«resolve(anonymousEvent.data)».«eventTypeGuidProperty», new «deserializingObserver»(observer));
             }
             
-            class «deserializing_observer» : «resolve("System.IObserver")»<«resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")»>
+            class «deserializingObserver» : «resolve("System.IObserver")»<«resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")»>
             {
-                private readonly «resolve("System.IObserver")»<«toText(anonymous_event.data, anonymous_event)»> _subscriber;
+                private readonly «resolve("System.IObserver")»<«toText(anonymousEvent.data, anonymousEvent)»> _subscriber;
 
-                public «deserializing_observer»(«resolve("System.IObserver")»<«toText(anonymous_event.data, anonymous_event)»> subscriber)
+                public «deserializingObserver»(«resolve("System.IObserver")»<«toText(anonymousEvent.data, anonymousEvent)»> subscriber)
                 {
                     _subscriber = subscriber;
                 }
 
                 public void OnNext(«resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")» value)
                 {
-                    var protobufEvent = «resolveProtobuf(anonymous_event.data)».ParseFrom(value.PopFront());
-                    _subscriber.OnNext((«toText(anonymous_event.data, anonymous_event)»)«resolveCodec(typeResolver, parameterBundle, interface_declaration)».decode(protobufEvent));
+                    var protobufEvent = «resolveProtobuf(anonymousEvent.data)».ParseFrom(value.PopFront());
+                    _subscriber.OnNext((«toText(anonymousEvent.data, anonymousEvent)»)«resolveCodec(typeResolver, parameterBundle, interfaceDeclaration)».decode(protobufEvent));
                 }
 
                 public void OnError(Exception error)

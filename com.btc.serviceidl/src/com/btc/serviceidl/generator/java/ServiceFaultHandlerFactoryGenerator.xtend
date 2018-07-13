@@ -30,18 +30,18 @@ class ServiceFaultHandlerFactoryGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def generateServiceFaultHandlerFactory(String class_name, AbstractContainerDeclaration container)
+    def generateServiceFaultHandlerFactory(String className, AbstractContainerDeclaration container)
     {
-        val service_fault_handler = typeResolver.resolve(JavaClassNames.DEFAULT_SERVICE_FAULT_HANDLER)
-        val i_error = typeResolver.resolve(JavaClassNames.ERROR)
+        val serviceFaultHandler = typeResolver.resolve(JavaClassNames.DEFAULT_SERVICE_FAULT_HANDLER)
+        val iError = typeResolver.resolve(JavaClassNames.ERROR)
         val optional = typeResolver.resolve(JavaClassNames.OPTIONAL)
-        val raised_exceptions = container.raisedExceptions
-        val failable_exceptions = container.failableExceptions
+        val raisedExceptions = container.raisedExceptions
+        val failableExceptions = container.failableExceptions
 
         // merge both collections to avoid duplicate entries
         val exceptions = new HashSet<AbstractException>
-        exceptions.addAll(raised_exceptions)
-        exceptions.addAll(failable_exceptions)
+        exceptions.addAll(raisedExceptions)
+        exceptions.addAll(failableExceptions)
         
         val errorMapValueType = if (basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3) "Exception" else "Class"
 
@@ -50,7 +50,7 @@ class ServiceFaultHandlerFactoryGenerator
         // TODO InvalidArgumentException and UnsupportedOperationException should not be added to the error map, only 
         // service-specific subtypes 
         '''
-        public class «class_name»
+        public class «className»
         {
            «// TODO the map should not use exception instances as values, but their types/Classes
            »
@@ -59,7 +59,7 @@ class ServiceFaultHandlerFactoryGenerator
            static
            {
               «FOR exception : exceptions.sortBy[name]»
-                  errorMap.put("«Util.getCommonExceptionName(exception, basicJavaSourceGenerator.qualified_name_provider)»", «getClassOrObject(typeResolver.resolve(exception))»);
+                  errorMap.put("«Util.getCommonExceptionName(exception, basicJavaSourceGenerator.qualifiedNameProvider)»", «getClassOrObject(typeResolver.resolve(exception))»);
               «ENDFOR»
               
               // most commonly used exception types
@@ -69,7 +69,7 @@ class ServiceFaultHandlerFactoryGenerator
            
            public static final «typeResolver.resolve(JavaClassNames.SERVICE_FAULT_HANDLER)» createServiceFaultHandler()
            {
-              «service_fault_handler» serviceFaultHandler = new «service_fault_handler»();
+              «serviceFaultHandler» serviceFaultHandler = new «serviceFaultHandler»();
               errorMap.forEach( (key, value) -> serviceFaultHandler.registerException(key, value) );
               return serviceFaultHandler;
               
@@ -101,7 +101,7 @@ class ServiceFaultHandlerFactoryGenerator
               return new Exception(message); // default exception
            }
            
-           public static final «i_error» createError(Exception exception)
+           public static final «iError» createError(Exception exception)
            {
               «optional»<String> errorType = «optional».empty();
               for («errorMapValueType» e : errorMap.values())
@@ -112,7 +112,7 @@ class ServiceFaultHandlerFactoryGenerator
                     break;
                  }
               }
-              «i_error» error = new «typeResolver.resolve("com.btc.cab.servicecomm.faulthandling.ErrorMessage")»(
+              «iError» error = new «typeResolver.resolve("com.btc.cab.servicecomm.faulthandling.ErrorMessage")»(
                   exception.getMessage(),
                   errorType.isPresent() ? errorType.get() : exception.getClass().getName(),
                   «typeResolver.resolve("org.apache.commons.lang3.exception.ExceptionUtils")».getStackTrace(exception));

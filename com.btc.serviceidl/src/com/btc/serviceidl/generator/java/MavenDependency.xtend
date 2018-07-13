@@ -35,19 +35,19 @@ class MavenDependency
 
     override String toString()
     {
-        val string_builder = new StringBuilder
-        string_builder.append("groupId:")
-        string_builder.append(groupId)
-        string_builder.append(",artifactId:")
-        string_builder.append(artifactId)
-        string_builder.append(",version:")
-        string_builder.append(version)
+        val stringBuilder = new StringBuilder
+        stringBuilder.append("groupId:")
+        stringBuilder.append(groupId)
+        stringBuilder.append(",artifactId:")
+        stringBuilder.append(artifactId)
+        stringBuilder.append(",version:")
+        stringBuilder.append(version)
         if (scope !== null)
         {
-            string_builder.append(",scope:")
-            string_builder.append(scope)
+            stringBuilder.append(",scope:")
+            stringBuilder.append(scope)
         }
-        string_builder.toString
+        stringBuilder.toString
     }
 
     override boolean equals(Object e)

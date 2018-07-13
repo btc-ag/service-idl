@@ -29,34 +29,34 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(NONE)
 class ProxyDispatcherGeneratorBase extends GeneratorBase
 {
-    protected def String getProtobufRequestClassName(InterfaceDeclaration interface_declaration)
+    protected def String getProtobufRequestClassName(InterfaceDeclaration interfaceDeclaration)
     {
-        resolve(interface_declaration, ProjectType.PROTOBUF)
+        resolve(interfaceDeclaration, ProjectType.PROTOBUF)
         return GeneratorUtil.getTransformedModuleName(new ParameterBundle.Builder(parameterBundle).with(ProjectType.PROTOBUF).build,
             ArtifactNature.DOTNET, TransformType.PACKAGE) + Constants.SEPARATOR_PACKAGE +
-            com.btc.serviceidl.util.Util.asRequest(interface_declaration.name)
+            com.btc.serviceidl.util.Util.asRequest(interfaceDeclaration.name)
     }
 
-    protected def String getProtobufResponseClassName(InterfaceDeclaration interface_declaration)
+    protected def String getProtobufResponseClassName(InterfaceDeclaration interfaceDeclaration)
     {
-        resolve(interface_declaration, ProjectType.PROTOBUF)
+        resolve(interfaceDeclaration, ProjectType.PROTOBUF)
         return GeneratorUtil.getTransformedModuleName(new ParameterBundle.Builder(parameterBundle).with(ProjectType.PROTOBUF).build,
             ArtifactNature.DOTNET, TransformType.PACKAGE) + Constants.SEPARATOR_PACKAGE +
-            com.btc.serviceidl.util.Util.asResponse(interface_declaration.name)
+            com.btc.serviceidl.util.Util.asResponse(interfaceDeclaration.name)
     }
 
     protected def String getEncodeMethod(AbstractTypeReference type, AbstractContainerDeclaration container)
     {
-        val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(type)
-        val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(type)
-        if (is_sequence)
+        val isSequence = com.btc.serviceidl.util.Util.isSequenceType(type)
+        val ultimateType = com.btc.serviceidl.util.Util.getUltimateType(type)
+        if (isSequence)
         {
             if (type.isFailable)
             {
-                '''encodeFailable<«resolveFailableProtobufType(ultimate_type, container)», «toText(ultimate_type, null)»>'''
+                '''encodeFailable<«resolveFailableProtobufType(ultimateType, container)», «toText(ultimateType, null)»>'''
             }
             else
-                "encodeEnumerable<" + resolveEncode(ultimate_type) + ", " + toText(ultimate_type, null) + ">"
+                "encodeEnumerable<" + resolveEncode(ultimateType) + ", " + toText(ultimateType, null) + ">"
         }
         else if (com.btc.serviceidl.util.Util.isByte(type))
             "encodeByte"
@@ -85,8 +85,8 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
 
     protected def String getDecodeMethod(AbstractTypeReference type, AbstractContainerDeclaration container)
     {
-        val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(type)
-        if (is_sequence)
+        val isSequence = com.btc.serviceidl.util.Util.isSequenceType(type)
+        if (isSequence)
         {
             val ultimateType = com.btc.serviceidl.util.Util.getUltimateType(type)
             if (type.isFailable)

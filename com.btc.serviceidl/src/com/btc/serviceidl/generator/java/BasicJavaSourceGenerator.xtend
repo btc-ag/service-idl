@@ -44,11 +44,11 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(PACKAGE_GETTER)
 class BasicJavaSourceGenerator
 {
-    val IQualifiedNameProvider qualified_name_provider
+    val IQualifiedNameProvider qualifiedNameProvider
     @Accessors(NONE) val ITargetVersionProvider targetVersionProvider
     val TypeResolver typeResolver
     val IDLSpecification idl
-    val Map<String, ResolvedName> typedef_table
+    val Map<String, ResolvedName> typedefTable
     val MavenResolver mavenResolver
 
     def getTargetVersion()
@@ -58,15 +58,15 @@ class BasicJavaSourceGenerator
 
     def dispatch String toText(ExceptionDeclaration element)
     {
-        typeResolver.resolveException(qualified_name_provider.getFullyQualifiedName(element).toString) ?:
+        typeResolver.resolveException(qualifiedNameProvider.getFullyQualifiedName(element).toString) ?:
             '''«typeResolver.resolve(element)»'''
     }
 
     def dispatch String toText(SequenceDeclaration item)
     {
-        val is_failable = item.failable
+        val isFailable = item.failable
 
-        '''«typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«toText(item.type)»«IF is_failable»>«ENDIF»>'''
+        '''«typeResolver.resolve(JavaClassNames.COLLECTION)»<«IF isFailable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«toText(item.type)»«IF isFailable»>«ENDIF»>'''
     }
 
     def dispatch String toText(ParameterElement element)
@@ -108,12 +108,12 @@ class BasicJavaSourceGenerator
 
     def dispatch String toText(AliasDeclaration element)
     {
-        val ultimate_type = element.type.ultimateType
-        val type_name = typedef_table.computeIfAbsent(element.name, [typeResolver.resolve(ultimate_type)]) 
+        val ultimateType = element.type.ultimateType
+        val typeName = typedefTable.computeIfAbsent(element.name, [typeResolver.resolve(ultimateType)]) 
 
-        if (!Util.isPrimitive(ultimate_type))
-            typeResolver.resolve(type_name.fullyQualifiedName)
-        return type_name.toString
+        if (!Util.isPrimitive(ultimateType))
+            typeResolver.resolve(typeName.fullyQualifiedName)
+        return typeName.toString
     }
 
     def dispatch String toText(EnumDeclaration element)
@@ -140,35 +140,35 @@ class BasicJavaSourceGenerator
 
     def dispatch String toDeclaration(ExceptionDeclaration element)
     {
-        val class_members = new ArrayList<Pair<String, String>>
+        val classMembers = new ArrayList<Pair<String, String>>
         for (member : element.effectiveMembers)
-            class_members.add(Pair.of(member.name, toText(member.type)))
+            classMembers.add(Pair.of(member.name, toText(member.type)))
 
         '''
             public class «element.name» extends «IF element.supertype === null»Exception«ELSE»«toText(element.supertype)»«ENDIF» {
                
                static final long serialVersionUID = «element.name.hashCode»L;
-               «FOR class_member : class_members BEFORE newLine»
-                   private «class_member.value» «class_member.key»;
+               «FOR classMember : classMembers BEFORE newLine»
+                   private «classMember.value» «classMember.key»;
                «ENDFOR»
                
                public «element.name»() {
                   // this default constructor is always necessary for exception registration in ServiceComm framework
                }
                
-               «IF !class_members.empty»
-                   public «element.name»(«FOR class_member : class_members SEPARATOR ", "»«class_member.value» «class_member.key»«ENDFOR») {
-                      «FOR class_member : class_members»
-                          this.«class_member.key» = «class_member.key»;
+               «IF !classMembers.empty»
+                   public «element.name»(«FOR classMember : classMembers SEPARATOR ", "»«classMember.value» «classMember.key»«ENDFOR») {
+                      «FOR classMember : classMembers»
+                          this.«classMember.key» = «classMember.key»;
                       «ENDFOR»
                    };
                «ENDIF»
                
-               «FOR class_member : class_members SEPARATOR newLine»
-                   «makeGetterSetter(class_member.value, class_member.key)»
+               «FOR classMember : classMembers SEPARATOR newLine»
+                   «makeGetterSetter(classMember.value, classMember.key)»
                «ENDFOR»
                
-               «IF !(class_members.size == 1 && class_members.head.value.equalsIgnoreCase("string"))»
+               «IF !(classMembers.size == 1 && classMembers.head.value.equalsIgnoreCase("string"))»
                    public «element.name»(String message) {
                       // this default constructor is necessary to be able to use Exception#getMessage() method
                       super(message);
@@ -182,8 +182,8 @@ class BasicJavaSourceGenerator
     {
         '''
             public enum «element.name» {
-               «FOR enum_value : element.containedIdentifiers SEPARATOR ","»
-                   «enum_value»
+               «FOR enumValue : element.containedIdentifiers SEPARATOR ","»
+                   «enumValue»
                «ENDFOR»
             }
         '''
@@ -191,39 +191,39 @@ class BasicJavaSourceGenerator
 
     def dispatch String toDeclaration(StructDeclaration element)
     {
-        val class_members = new ArrayList<Pair<String, String>>
+        val classMembers = new ArrayList<Pair<String, String>>
         for (member : element.effectiveMembers)
-            class_members.add(Pair.of(member.name, member.format.toString))
+            classMembers.add(Pair.of(member.name, member.format.toString))
 
-        val all_class_members = new ArrayList<Pair<String, String>>
+        val allClassMembers = new ArrayList<Pair<String, String>>
         for (member : element.allMembers)
-            all_class_members.add(Pair.of(member.name, member.format.toString))
+            allClassMembers.add(Pair.of(member.name, member.format.toString))
 
-        val is_derived = ( element.supertype !== null )
-        val related_event = element.getRelatedEvent
+        val isDerived = ( element.supertype !== null )
+        val relatedEvent = element.getRelatedEvent
 
         '''
-            public class «element.name» «IF is_derived»extends «toText(element.supertype)» «ENDIF»{
-               «IF related_event !== null»
+            public class «element.name» «IF isDerived»extends «toText(element.supertype)» «ENDIF»{
+               «IF relatedEvent !== null»
                    
-                   public static final «typeResolver.resolve(JavaClassNames.UUID)» EventTypeGuid = UUID.fromString("«GuidMapper.get(related_event)»");
+                   public static final «typeResolver.resolve(JavaClassNames.UUID)» EventTypeGuid = UUID.fromString("«GuidMapper.get(relatedEvent)»");
                «ENDIF»
-               «FOR class_member : class_members BEFORE newLine»
-                   private «class_member.value» «class_member.key»;
+               «FOR classMember : classMembers BEFORE newLine»
+                   private «classMember.value» «classMember.key»;
                «ENDFOR»
                
-               «IF !class_members.empty»public «element.name»() { «IF is_derived»super(); «ENDIF»};«ENDIF»
+               «IF !classMembers.empty»public «element.name»() { «IF isDerived»super(); «ENDIF»};«ENDIF»
                
-               public «element.name»(«FOR class_member : all_class_members SEPARATOR ", "»«class_member.value» «class_member.key»«ENDFOR») {
-               «IF is_derived»super(«element.supertype.allMembers.map[name].join(", ")»);«ENDIF»
+               public «element.name»(«FOR classMember : allClassMembers SEPARATOR ", "»«classMember.value» «classMember.key»«ENDFOR») {
+               «IF isDerived»super(«element.supertype.allMembers.map[name].join(", ")»);«ENDIF»
                
-               «FOR class_member : class_members»
-                this.«class_member.key» = «class_member.key»;
+               «FOR classMember : classMembers»
+                this.«classMember.key» = «classMember.key»;
                «ENDFOR»
                };
                
-               «FOR class_member : class_members SEPARATOR newLine»
-                «makeGetterSetter(class_member.value, class_member.key)»
+               «FOR classMember : classMembers SEPARATOR newLine»
+                «makeGetterSetter(classMember.value, classMember.key)»
                «ENDFOR»
                
                «FOR type : element.typeDecls SEPARATOR newLine AFTER newLine»
@@ -235,11 +235,11 @@ class BasicJavaSourceGenerator
 
     def String makeInterfaceMethodSignature(FunctionDeclaration function)
     {
-        val is_sync = function.isSync
-        val is_void = function.returnedType instanceof VoidType
+        val isSync = function.isSync
+        val isVoid = function.returnedType instanceof VoidType
 
         '''
-        «IF !is_sync»«typeResolver.resolve("java.util.concurrent.Future")»<«ENDIF»«IF !is_sync && is_void»Void«ELSE»«toText(function.returnedType)»«ENDIF»«IF !function.isSync»>«ENDIF» «function.name.toFirstLower»(
+        «IF !isSync»«typeResolver.resolve("java.util.concurrent.Future")»<«ENDIF»«IF !isSync && isVoid»Void«ELSE»«toText(function.returnedType)»«ENDIF»«IF !function.isSync»>«ENDIF» «function.name.toFirstLower»(
            «FOR param : function.parameters SEPARATOR ","»
                «IF param.direction == ParameterDirection.PARAM_IN»final «ENDIF»«toText(param.paramType)» «toText(param)»
            «ENDFOR»
@@ -283,10 +283,10 @@ class BasicJavaSourceGenerator
     def dispatch String makeDefaultValue(SequenceDeclaration element)
     {
         val type = toText(element.type)
-        val is_failable = element.failable
+        val isFailable = element.failable
 
         // TODO this should better use Collections.emptyList
-        '''new «typeResolver.resolve("java.util.Vector")»<«IF is_failable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«type»«IF is_failable»>«ENDIF»>()'''
+        '''new «typeResolver.resolve("java.util.Vector")»<«IF isFailable»«typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)»<«ENDIF»«type»«IF isFailable»>«ENDIF»>()'''
     }
 
     def dispatch String makeDefaultValue(StructDeclaration element)
@@ -304,29 +304,29 @@ class BasicJavaSourceGenerator
         throw new IllegalArgumentException("Cannot make default value for element of type " + element.eClass.name)
     }
 
-    private static def String makeGetterSetter(String type_name, String var_name)
+    private static def String makeGetterSetter(String typeName, String varName)
     {
         '''
-            «makeGetter(type_name, var_name)»
+            «makeGetter(typeName, varName)»
             
-            «makeSetter(type_name, var_name)»
+            «makeSetter(typeName, varName)»
         '''
     }
 
-    def static String makeGetter(String type_name, String var_name)
+    def static String makeGetter(String typeName, String varName)
     {
         '''
-            public «type_name» get«var_name.toFirstUpper»() {
-               return «var_name»;
+            public «typeName» get«varName.toFirstUpper»() {
+               return «varName»;
             };
         '''
     }
 
-    private static def String makeSetter(String type_name, String var_name)
+    private static def String makeSetter(String typeName, String varName)
     {
         '''
-            public void set«var_name.toFirstUpper»(«type_name» «var_name») {
-               this.«var_name» = «var_name»;
+            public void set«varName.toFirstUpper»(«typeName» «varName») {
+               this.«varName» = «varName»;
             };
         '''
     }

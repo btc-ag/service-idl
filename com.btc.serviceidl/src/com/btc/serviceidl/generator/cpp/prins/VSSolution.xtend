@@ -26,7 +26,7 @@ class VSSolution implements IProjectSet
 // it is important for this container to be static! if an *.IDL file contains
 // "import" references to external *.IDL files, each file will be generated separately
 // but we need consistent project GUIDs in order to create valid project references!
-    static val vs_projects = new HashMap<String, Entry>
+    static val vsProjects = new HashMap<String, Entry>
 
     @Data
     private static class Entry
@@ -37,23 +37,23 @@ class VSSolution implements IProjectSet
 
     override String getVcxprojName(ParameterBundle paramBundle)
     {
-        var project_name = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP,
+        var projectName = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP,
             TransformType.PACKAGE)
-        val projectPath = makeProjectPath(paramBundle, project_name)
-        ensureEntryExists(project_name, projectPath)
-        return project_name
+        val projectPath = makeProjectPath(paramBundle, projectName)
+        ensureEntryExists(projectName, projectPath)
+        return projectName
     }
 
-    protected def ensureEntryExists(String project_name, IPath projectPath)
+    protected def ensureEntryExists(String projectName, IPath projectPath)
     {
-        if (!vs_projects.containsKey(project_name))
+        if (!vsProjects.containsKey(projectName))
         {
-            val guid = UUID.nameUUIDFromBytes(project_name.bytes)
-            vs_projects.put(project_name, new Entry(guid, projectPath))
+            val guid = UUID.nameUUIDFromBytes(projectName.bytes)
+            vsProjects.put(projectName, new Entry(guid, projectPath))
         }
         else
         {
-            val entry = vs_projects.get(project_name)
+            val entry = vsProjects.get(projectName)
             if (!entry.path.equals(projectPath))
             {
                 throw new IllegalArgumentException(
@@ -64,7 +64,7 @@ class VSSolution implements IProjectSet
 
     def String getVcxprojGUID(ProjectReference projectReference)
     {
-        return vs_projects.get(projectReference.projectName).uuid.toString.toUpperCase
+        return vsProjects.get(projectReference.projectName).uuid.toString.toUpperCase
     }
 
     @Deprecated
@@ -92,18 +92,18 @@ class VSSolution implements IProjectSet
         val String projectName
     }
 
-    def getVcxProjPath(ProjectReference project_name)
+    def getVcxProjPath(ProjectReference projectName)
     {
-        vs_projects.get(project_name.projectName).path
+        vsProjects.get(projectName.projectName).path
     }
 
-    private static def IPath makeProjectPath(ParameterBundle paramBundle, String project_name)
+    private static def IPath makeProjectPath(ParameterBundle paramBundle, String projectName)
     {
-        makeProjectPath(GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP), project_name)
+        makeProjectPath(GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP), projectName)
     }
 
-    private static def IPath makeProjectPath(IPath projectPath, String project_name)
+    private static def IPath makeProjectPath(IPath projectPath, String projectName)
     {
-        projectPath.append(project_name)
+        projectPath.append(projectName)
     }
 }

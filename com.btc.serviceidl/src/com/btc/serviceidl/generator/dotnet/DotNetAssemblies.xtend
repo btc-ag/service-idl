@@ -18,15 +18,15 @@ package com.btc.serviceidl.generator.dotnet
 
 final class DotNetAssemblies
 {
-    static def String getAssemblyForNamespace(String namespace, DotNetFrameworkVersion framework_version)
+    static def String getAssemblyForNamespace(String namespace, DotNetFrameworkVersion frameworkVersion)
     {
-        switch (framework_version)
+        switch (frameworkVersion)
         {
             case NET46:
                return getNet46AssemblyForNamespace(namespace)
         }
 
-        throw new IllegalArgumentException("Unknown .NET framework version: " + framework_version)
+        throw new IllegalArgumentException("Unknown .NET framework version: " + frameworkVersion)
     }
 
    /**
@@ -38,7 +38,7 @@ final class DotNetAssemblies
     */
    def private static String getNet46AssemblyForNamespace(String namespace)
    {
-      val dotnet_assemblies = 
+      val dotnetAssemblies = 
       #[
          "Accessibility",
          "CustomMarshalers",
@@ -226,6 +226,6 @@ final class DotNetAssemblies
          "mscorlib",
          "sysglobl"
       ]
-      return dotnet_assemblies.findFirst[equals(namespace)] ?: "System"
+      return dotnetAssemblies.findFirst[equals(namespace)] ?: "System"
    }
 }

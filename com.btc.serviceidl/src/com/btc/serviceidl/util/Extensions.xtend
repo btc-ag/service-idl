@@ -39,57 +39,57 @@ import java.util.HashSet
 
 class Extensions
 {
-    static def boolean isByte(PrimitiveType primitive_type)
+    static def boolean isByte(PrimitiveType primitiveType)
     {
-        (primitive_type !== null && primitive_type.integerType !== null && primitive_type.integerType.equals("byte"))
+        (primitiveType !== null && primitiveType.integerType !== null && primitiveType.integerType.equals("byte"))
     }
 
-    static def boolean isInt16(PrimitiveType primitive_type)
+    static def boolean isInt16(PrimitiveType primitiveType)
     {
-        (primitive_type !== null && primitive_type.integerType !== null && primitive_type.integerType.equals("int16"))
+        (primitiveType !== null && primitiveType.integerType !== null && primitiveType.integerType.equals("int16"))
     }
 
-    static def boolean isInt32(PrimitiveType primitive_type)
+    static def boolean isInt32(PrimitiveType primitiveType)
     {
-        (primitive_type !== null && primitive_type !== null && primitive_type.integerType !== null &&
-            primitive_type.integerType.equals("int32"))
+        (primitiveType !== null && primitiveType !== null && primitiveType.integerType !== null &&
+            primitiveType.integerType.equals("int32"))
     }
 
-    static def boolean isInt64(PrimitiveType primitive_type)
+    static def boolean isInt64(PrimitiveType primitiveType)
     {
-        (primitive_type !== null && primitive_type.integerType !== null && primitive_type.integerType.equals("int64"))
+        (primitiveType !== null && primitiveType.integerType !== null && primitiveType.integerType.equals("int64"))
     }
 
-    static def boolean isChar(PrimitiveType primitive_type)
+    static def boolean isChar(PrimitiveType primitiveType)
     {
-        (primitive_type !== null && primitive_type.charType !== null)
+        (primitiveType !== null && primitiveType.charType !== null)
     }
 
-    static def boolean isString(PrimitiveType primitive_type)
+    static def boolean isString(PrimitiveType primitiveType)
     {
-        (primitive_type !== null && primitive_type.stringType !== null)
+        (primitiveType !== null && primitiveType.stringType !== null)
     }
 
-    static def boolean isUUID(PrimitiveType primitive_type)
+    static def boolean isUUID(PrimitiveType primitiveType)
     {
-        (primitive_type !== null && primitive_type.uuidType !== null)
+        (primitiveType !== null && primitiveType.uuidType !== null)
     }
 
-    static def boolean isBoolean(PrimitiveType primitive_type)
+    static def boolean isBoolean(PrimitiveType primitiveType)
     {
-        (primitive_type !== null && primitive_type.booleanType !== null)
+        (primitiveType !== null && primitiveType.booleanType !== null)
     }
 
-    static def boolean isDouble(PrimitiveType primitive_type)
+    static def boolean isDouble(PrimitiveType primitiveType)
     {
-        (primitive_type !== null && primitive_type.floatingPointType !== null &&
-            primitive_type.floatingPointType.equals("double"))
+        (primitiveType !== null && primitiveType.floatingPointType !== null &&
+            primitiveType.floatingPointType.equals("double"))
     }
 
-    static def boolean isFloat(PrimitiveType primitive_type)
+    static def boolean isFloat(PrimitiveType primitiveType)
     {
-        (primitive_type !== null && primitive_type.floatingPointType !== null &&
-            primitive_type.floatingPointType.equals("float"))
+        (primitiveType !== null && primitiveType.floatingPointType !== null &&
+            primitiveType.floatingPointType.equals("float"))
     }
 
     static def boolean containsTypes(ModuleDeclaration module)
@@ -128,34 +128,34 @@ class Extensions
      * For a given interface, return all function it offers, i.e. own functions
      * as well as functions from all super classes.
      */
-    static def Iterable<FunctionDeclaration> functions(InterfaceDeclaration interface_declaration)
+    static def Iterable<FunctionDeclaration> functions(InterfaceDeclaration interfaceDeclaration)
     {
-        val function_collection = new HashSet<FunctionDeclaration>
+        val functionCollection = new HashSet<FunctionDeclaration>
 
-        function_collection.addAll(interface_declaration.contains.filter(FunctionDeclaration))
-        for (parent : interface_declaration.derivesFrom)
+        functionCollection.addAll(interfaceDeclaration.contains.filter(FunctionDeclaration))
+        for (parent : interfaceDeclaration.derivesFrom)
         {
-            function_collection.addAll(parent.functions)
+            functionCollection.addAll(parent.functions)
         }
 
-        return function_collection.sortBy[name]
+        return functionCollection.sortBy[name]
     }
 
     /**
      * For a given interface, return all function it offers, i.e. own functions
      * as well as functions from all super classes.
      */
-    static def Iterable<EventDeclaration> events(InterfaceDeclaration interface_declaration)
+    static def Iterable<EventDeclaration> events(InterfaceDeclaration interfaceDeclaration)
     {
-        val event_collection = new HashSet<EventDeclaration>
+        val eventCollection = new HashSet<EventDeclaration>
 
-        event_collection.addAll(interface_declaration.contains.filter(EventDeclaration))
-        for (parent : interface_declaration.derivesFrom)
+        eventCollection.addAll(interfaceDeclaration.contains.filter(EventDeclaration))
+        for (parent : interfaceDeclaration.derivesFrom)
         {
-            event_collection.addAll(parent.events)
+            eventCollection.addAll(parent.events)
         }
 
-        return event_collection.sortBy[data.name]
+        return eventCollection.sortBy[data.name]
     }
 
     /**
@@ -206,48 +206,48 @@ class Extensions
 
     static def dispatch Collection<StructDeclaration> getBaseTypes(StructDeclaration element)
     {
-        val base_types = new HashSet<StructDeclaration>
-        var current_type = element.supertype
-        while (current_type !== null && !(base_types.contains(current_type)))
+        val baseTypes = new HashSet<StructDeclaration>
+        var currentType = element.supertype
+        while (currentType !== null && !(baseTypes.contains(currentType)))
         {
-            base_types.add(current_type)
-            current_type = current_type.supertype
+            baseTypes.add(currentType)
+            currentType = currentType.supertype
         }
-        return base_types
+        return baseTypes
     }
 
     static def dispatch Collection<InterfaceDeclaration> getBaseTypes(InterfaceDeclaration element)
     {
-        val base_types = new HashSet<InterfaceDeclaration>
-        collectBaseTypes(element, base_types)
-        return base_types
+        val baseTypes = new HashSet<InterfaceDeclaration>
+        collectBaseTypes(element, baseTypes)
+        return baseTypes
     }
 
-    private static def void collectBaseTypes(InterfaceDeclaration element, HashSet<InterfaceDeclaration> base_types)
+    private static def void collectBaseTypes(InterfaceDeclaration element, HashSet<InterfaceDeclaration> baseTypes)
     {
-        for (base_type : element.derivesFrom)
+        for (baseType : element.derivesFrom)
         {
-            if (!base_types.contains(base_type))
+            if (!baseTypes.contains(baseType))
             {
-                base_types.add(base_type)
-                collectBaseTypes(base_type, base_types)
+                baseTypes.add(baseType)
+                collectBaseTypes(baseType, baseTypes)
             }
         }
     }
 
     static def dispatch Collection<AbstractException> getBaseTypes(ExceptionDeclaration element)
     {
-        val base_types = new HashSet<AbstractException>
-        var current_type = element.supertype
-        while (current_type !== null && !(base_types.contains(current_type)))
+        val baseTypes = new HashSet<AbstractException>
+        var currentType = element.supertype
+        while (currentType !== null && !(baseTypes.contains(currentType)))
         {
-            base_types.add(current_type)
-            if (current_type instanceof ExceptionDeclaration)
-                current_type = current_type.supertype
+            baseTypes.add(currentType)
+            if (currentType instanceof ExceptionDeclaration)
+                currentType = currentType.supertype
             else
-                current_type = null
+                currentType = null
         }
-        return base_types
+        return baseTypes
     }
 
     /**
@@ -258,10 +258,10 @@ class Extensions
     {
         if (element.supertype !== null)
         {
-            val base_types = element.baseTypes as Collection<StructDeclaration>
-            val all_members = base_types.map[effectiveMembers].flatten.toList
-            all_members.addAll(element.effectiveMembers)
-            return all_members
+            val baseTypes = element.baseTypes as Collection<StructDeclaration>
+            val allMembers = baseTypes.map[effectiveMembers].flatten.toList
+            allMembers.addAll(element.effectiveMembers)
+            return allMembers
         }
         else
         {
@@ -273,10 +273,10 @@ class Extensions
     {
         if (element.supertype !== null)
         {
-            val base_types = element.baseTypes.filter(ExceptionDeclaration)
-            val all_members = base_types.map[members].flatten.map[e|e.wrapMember].toList
-            all_members.addAll(element.members.map[e|e.wrapMember])
-            return all_members
+            val baseTypes = element.baseTypes.filter(ExceptionDeclaration)
+            val allMembers = baseTypes.map[members].flatten.map[e|e.wrapMember].toList
+            allMembers.addAll(element.members.map[e|e.wrapMember])
+            return allMembers
         }
         else
         {
@@ -330,9 +330,9 @@ class Extensions
         return new MemberElementWrapper(struct)
     }
 
-    private static def dispatch MemberElementWrapper wrapMember(EnumDeclaration enum_declaration)
+    private static def dispatch MemberElementWrapper wrapMember(EnumDeclaration enumDeclaration)
     {
-        return new MemberElementWrapper(enum_declaration)
+        return new MemberElementWrapper(enumDeclaration)
     }
 
     static def namedEvents(InterfaceDeclaration interfaceDeclaration)

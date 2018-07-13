@@ -33,51 +33,51 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 @Accessors(PROTECTED_GETTER)
 class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
 {
-    new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
+    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
+        IScopeProvider scopeProvider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
         IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
         ITargetVersionProvider targetVersionProvider,
-        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map, ModuleDeclaration module)
+        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ModuleDeclaration module)
     {
-        super(file_system_access, qualified_name_provider, scope_provider, idl, projectSetFactory, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, smart_pointer_map,
+        super(fileSystemAccess, qualifiedNameProvider, scopeProvider, idl, projectSetFactory, vsSolution,
+            moduleStructureStrategy, targetVersionProvider, smartPointerMap,
             ProjectType.SERVER_RUNNER, module)
     }
 
     def generate()
     {
         // paths
-        val include_path = projectPath.append("include")
-        val source_path = projectPath.append("source")
-        val etc_path = projectPath.append("etc")
+        val includePath = projectPath.append("include")
+        val sourcePath = projectPath.append("source")
+        val etcPath = projectPath.append("etc")
 
         // sub-folder "./include"
-        val export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
+        val exportHeaderFileName = (GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
-        file_system_access.generateFile(include_path.append(export_header_file_name).toString, ArtifactNature.CPP.label,
+        fileSystemAccess.generateFile(includePath.append(exportHeaderFileName).toString, ArtifactNature.CPP.label,
             generateExportHeader())
-        projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
+        projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, exportHeaderFileName)
 
         // sub-folder "./source"
-        for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
+        for (interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
-            val cpp_file = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType,
-                interface_declaration.name).cpp
-            file_system_access.generateFile(source_path.append(cpp_file).toString, ArtifactNature.CPP.label,
-                generateCppServerRunner(interface_declaration))
-            projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cpp_file)
+            val cppFile = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType,
+                interfaceDeclaration.name).cpp
+            fileSystemAccess.generateFile(sourcePath.append(cppFile).toString, ArtifactNature.CPP.label,
+                generateCppServerRunner(interfaceDeclaration))
+            projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cppFile)
         }
 
         // individual project files for every interface
-        for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
+        for (interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
             // TODO remove reference to OdbConstants here, it is PRINS-specific
             val localProjectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP))
-            val project_name = GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
-                TransformType.PACKAGE) + TransformType.PACKAGE.separator + interface_declaration.name
-            val cpp_file = GeneratorUtil.getClassName(ArtifactNature.CPP, param_bundle.projectType,
-                interface_declaration.name).cpp
-            localProjectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cpp_file)
+            val projectName = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP,
+                TransformType.PACKAGE) + TransformType.PACKAGE.separator + interfaceDeclaration.name
+            val cppFile = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType,
+                interfaceDeclaration.name).cpp
+            localProjectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cppFile)
 
             // TODO this is wrong somehow... all files must be generated separately for each interface if they are separate projects
             projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP).forEach [
@@ -87,32 +87,32 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
                 localProjectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, it)
             ]
 
-            generateProjectFiles(ProjectType.SERVER_RUNNER, projectPath, project_name, localProjectFileSet)
+            generateProjectFiles(ProjectType.SERVER_RUNNER, projectPath, projectName, localProjectFileSet)
         }
 
         // sub-folder "./etc"
-        val ioc_file_name = "ServerFactory".xml
-        file_system_access.generateFile(etc_path.append(ioc_file_name).toString, ArtifactNature.CPP.label,
+        val iocFileName = "ServerFactory".xml
+        fileSystemAccess.generateFile(etcPath.append(iocFileName).toString, ArtifactNature.CPP.label,
             generateIoCServerRunner())
     }
 
-    private def String generateCppServerRunner(InterfaceDeclaration interface_declaration)
+    private def String generateCppServerRunner(InterfaceDeclaration interfaceDeclaration)
     {
         val basicCppGenerator = createBasicCppGenerator
 
-        val file_content = new ServerRunnerGenerator(basicCppGenerator.typeResolver, targetVersionProvider,
-            param_bundle).generateImplFileBody(interface_declaration)
+        val fileContent = new ServerRunnerGenerator(basicCppGenerator.typeResolver, targetVersionProvider,
+            paramBundle).generateImplFileBody(interfaceDeclaration)
 
         '''
             «basicCppGenerator.generateIncludes(false)»
-            «file_content»
+            «fileContent»
         '''
     }
 
     private def generateIoCServerRunner()
     {
         // TODO for generating the IoC file, none of the arguments are required
-        new ServerRunnerGenerator(createTypeResolver, targetVersionProvider, param_bundle).generateIoC()
+        new ServerRunnerGenerator(createTypeResolver, targetVersionProvider, paramBundle).generateIoC()
     }
 
 }

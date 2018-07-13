@@ -46,38 +46,38 @@ class FeatureProfile
         var contents = element.eAllContents.toList
         contents.add(element)
 
-        uses_tuples = uses_tuples || contents.exists[o|o instanceof TupleDeclaration]
+        usesTuples = usesTuples || contents.exists[o|o instanceof TupleDeclaration]
 
-        uses_strings = uses_strings || contents.filter(PrimitiveType).exists[stringType !== null]
+        usesStrings = usesStrings || contents.filter(PrimitiveType).exists[stringType !== null]
 
-        uses_futures = uses_futures || contents.filter(FunctionDeclaration).exists[!isSync]
+        usesFutures = usesFutures || contents.filter(FunctionDeclaration).exists[!isSync]
 
-        uses_events = uses_events || contents.exists[o|o instanceof EventDeclaration]
+        usesEvents = usesEvents || contents.exists[o|o instanceof EventDeclaration]
 
-        uses_sequences = uses_sequences || contents.exists[o|o instanceof SequenceDeclaration]
+        usesSequences = usesSequences || contents.exists[o|o instanceof SequenceDeclaration]
 
-        uses_failable_handles = uses_failable_handles || contents.filter(SequenceDeclaration).exists[isFailable]
+        usesFailableHandles = usesFailableHandles || contents.filter(SequenceDeclaration).exists[isFailable]
 
-        uses_optionals = uses_optionals || contents.filter(MemberElement).exists[isOptional]
+        usesOptionals = usesOptionals || contents.filter(MemberElement).exists[isOptional]
 
-        uses_cstdint = uses_cstdint || contents.filter(PrimitiveType).exists[integerType !== null]
+        usesCstdint = usesCstdint || contents.filter(PrimitiveType).exists[integerType !== null]
 
-        uses_exceptions = uses_exceptions || contents.filter(ExceptionDeclaration).exists[supertype === null]
+        usesExceptions = usesExceptions || contents.filter(ExceptionDeclaration).exists[supertype === null]
 
-        uses_uuids = uses_uuids || contents.filter(PrimitiveType).exists[uuidType !== null]
+        usesUuids = usesUuids || contents.filter(PrimitiveType).exists[uuidType !== null]
 
-        uses_objects = uses_objects || contents.filter(InterfaceDeclaration).exists[derivesFrom === null]
+        usesObjects = usesObjects || contents.filter(InterfaceDeclaration).exists[derivesFrom === null]
     }
 
-    public boolean uses_tuples;
-    public boolean uses_strings;
-    public boolean uses_futures;
-    public boolean uses_events;
-    public boolean uses_sequences;
-    public boolean uses_failable_handles;
-    public boolean uses_optionals;
-    public boolean uses_cstdint;
-    public boolean uses_exceptions;
-    public boolean uses_objects;
-    public boolean uses_uuids;
+    public boolean usesTuples;
+    public boolean usesStrings;
+    public boolean usesFutures;
+    public boolean usesEvents;
+    public boolean usesSequences;
+    public boolean usesFailableHandles;
+    public boolean usesOptionals;
+    public boolean usesCstdint;
+    public boolean usesExceptions;
+    public boolean usesObjects;
+    public boolean usesUuids;
 }

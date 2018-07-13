@@ -8,7 +8,7 @@ import static extension com.btc.serviceidl.generator.common.Extensions.*
 class ServerRunnerGenerator extends GeneratorBase
 {
 
-    def generate(String class_name)
+    def generate(String className)
     {
         '''
             /// <summary>
@@ -16,7 +16,7 @@ class ServerRunnerGenerator extends GeneratorBase
             /// explicitly under this name or directly from VisualStudio. The configuration can also be used directly with the generic
             /// BTC.CAB.ServiceComm.NET.ServerRunner.
             /// </summary>
-            public class «class_name»
+            public class «className»
             {
                public static int Main(«resolve("System.string")»[] args)
                {

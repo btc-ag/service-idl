@@ -27,15 +27,15 @@ class ImplementationStubGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def generateImplementationStubBody(String impl_name, InterfaceDeclaration interface_declaration)
+    def generateImplementationStubBody(String implName, InterfaceDeclaration interfaceDeclaration)
     {
-        val api_name = typeResolver.resolve(interface_declaration)
+        val apiName = typeResolver.resolve(interfaceDeclaration)
         '''
-        public class «impl_name» implements «api_name» {
+        public class «implName» implements «apiName» {
            
-           «FOR function : interface_declaration.functions SEPARATOR BasicJavaSourceGenerator.newLine»
+           «FOR function : interfaceDeclaration.functions SEPARATOR BasicJavaSourceGenerator.newLine»
                /**
-                  @see «api_name.fullyQualifiedName»#«function.name.toFirstLower»
+                  @see «apiName.fullyQualifiedName»#«function.name.toFirstLower»
                */
                @Override
                public «basicJavaSourceGenerator.makeInterfaceMethodSignature(function)» {
@@ -43,13 +43,13 @@ class ImplementationStubGenerator
                }
            «ENDFOR»
            
-           «FOR event : interface_declaration.namedEvents»
-               «val observable_name = basicJavaSourceGenerator.toText(event)»
+           «FOR event : interfaceDeclaration.namedEvents»
+               «val observableName = basicJavaSourceGenerator.toText(event)»
                /**
-                  @see «api_name»#get«observable_name»
+                  @see «apiName»#get«observableName»
                */
                @Override
-               public «observable_name» get«observable_name»() {
+               public «observableName» get«observableName»() {
                   «makeDefaultMethodStub»
                }
            «ENDFOR»

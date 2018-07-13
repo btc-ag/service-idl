@@ -26,16 +26,16 @@ class ProxyFactoryGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def generateProxyFactory(String class_name, InterfaceDeclaration interface_declaration)
+    def generateProxyFactory(String className, InterfaceDeclaration interfaceDeclaration)
     {
-        val api_type = typeResolver.resolve(interface_declaration)
+        val apiType = typeResolver.resolve(interfaceDeclaration)
 
         '''
-        public class «class_name» {
+        public class «className» {
            
-           public static «api_type» createDirectProtobufProxy(«typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» endpoint) throws Exception
+           public static «apiType» createDirectProtobufProxy(«typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» endpoint) throws Exception
            {
-              return new «GeneratorUtil.getClassName(ArtifactNature.JAVA, ProjectType.PROXY, interface_declaration.name)»(endpoint);
+              return new «GeneratorUtil.getClassName(ArtifactNature.JAVA, ProjectType.PROXY, interfaceDeclaration.name)»(endpoint);
            }
         }
         '''
