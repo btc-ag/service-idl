@@ -26,23 +26,23 @@ import static extension com.btc.serviceidl.util.Util.*
 class ClientConsoleProgramGenerator
 {
     val extension BasicCSharpSourceGenerator basicCSharpSourceGenerator
-    val NuGetPackageResolver nuget_packages
+    val NuGetPackageResolver nugetPackages
 
     private def getTypeResolver()
     {
         basicCSharpSourceGenerator.typeResolver
     }
 
-    def generate(String class_name, ModuleDeclaration module)
+    def generate(String className, ModuleDeclaration module)
     {
-        nuget_packages.resolvePackage("CommandLine")
+        nugetPackages.resolvePackage("CommandLine")
 
         val console = typeResolver.resolve("System.Console")
         val exception = typeResolver.resolve("System.Exception")
-        val aggregate_exception = typeResolver.resolve("System.AggregateException")
+        val aggregateException = typeResolver.resolve("System.AggregateException")
 
         '''
-            internal class «class_name»
+            internal class «className»
             {
                private static int Main(«typeResolver.resolve("System.string")»[] args)
                {
@@ -62,11 +62,11 @@ class ClientConsoleProgramGenerator
                   
                   var client = clientFactory.Create(options.ConnectionString);
                   
-                  «FOR interface_declaration : module.moduleComponents.filter(InterfaceDeclaration)»
-                      «val proxy_name = interface_declaration.name.toFirstLower + "Proxy"»
-                      // «interface_declaration.name» proxy
-                      var «proxy_name» = «typeResolver.resolve(interface_declaration, ProjectType.PROXY).alias(getProxyFactoryName(interface_declaration))».CreateProtobufProxy(client.ClientEndpoint);
-                      TestRequestResponse«interface_declaration.name»(«proxy_name»);
+                  «FOR interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration)»
+                      «val proxyName = interfaceDeclaration.name.toFirstLower + "Proxy"»
+                      // «interfaceDeclaration.name» proxy
+                      var «proxyName» = «typeResolver.resolve(interfaceDeclaration, ProjectType.PROXY).alias(getProxyFactoryName(interfaceDeclaration))».CreateProtobufProxy(client.ClientEndpoint);
+                      TestRequestResponse«interfaceDeclaration.name»(«proxyName»);
                       
                   «ENDFOR»
                   
@@ -74,28 +74,28 @@ class ClientConsoleProgramGenerator
                   return 0;
                }
                
-               «FOR interface_declaration : module.moduleComponents.filter(InterfaceDeclaration)»
-                   «val api_name = typeResolver.resolve(interface_declaration).shortName»
-                   private static void TestRequestResponse«interface_declaration.name»(«typeResolver.resolve(interface_declaration)» proxy)
+               «FOR interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration)»
+                   «val apiName = typeResolver.resolve(interfaceDeclaration).shortName»
+                   private static void TestRequestResponse«interfaceDeclaration.name»(«typeResolver.resolve(interfaceDeclaration)» proxy)
                    {
                       var errorCount = 0;
                       var callCount = 0;
-                      «FOR function : interface_declaration.functions»
-                          «val is_void = function.returnedType instanceof VoidType»
+                      «FOR function : interfaceDeclaration.functions»
+                          «val isVoid = function.returnedType instanceof VoidType»
                           try
                           {
                              callCount++;
                              «FOR param : function.parameters»
                                  var «param.paramName.asParameter» = «makeDefaultValue(basicCSharpSourceGenerator, param.paramType)»;
                              «ENDFOR»
-                      «IF !is_void»var «typeResolver.resolve(function.returnedType.actualType.ultimateType).alias("result")» = «ENDIF»proxy.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !function.sync».«IF is_void»Wait()«ELSE»Result«ENDIF»«ENDIF»;
-                      «console».WriteLine("Result of «api_name».«function.name»: «IF is_void»Void"«ELSE»" + result.ToString()«ENDIF»);
+                      «IF !isVoid»var «typeResolver.resolve(function.returnedType.actualType.ultimateType).alias("result")» = «ENDIF»proxy.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !function.sync».«IF isVoid»Wait()«ELSE»Result«ENDIF»«ENDIF»;
+                      «console».WriteLine("Result of «apiName».«function.name»: «IF isVoid»Void"«ELSE»" + result.ToString()«ENDIF»);
                       }
                       catch («exception» e)
                       {
                          errorCount++;
-                         var realException = (e is «aggregate_exception») ? (e as «aggregate_exception»).Flatten().InnerException : e;
-                         «console».WriteLine("Result of «api_name».«function.name»: " + realException.ToString());
+                         var realException = (e is «aggregateException») ? (e as «aggregateException»).Flatten().InnerException : e;
+                         «console».WriteLine("Result of «apiName».«function.name»: " + realException.ToString());
                           }
                «ENDFOR»
                

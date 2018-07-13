@@ -30,19 +30,19 @@ class Util
 
     static def Iterable<StructDeclaration> getUnderlyingTypes(StructDeclaration struct)
     {
-        val all_types = new HashSet<StructDeclaration>
-        val contained_types = struct.members.filter[type.ultimateType instanceof StructDeclaration].map [
+        val allTypes = new HashSet<StructDeclaration>
+        val containedTypes = struct.members.filter[type.ultimateType instanceof StructDeclaration].map [
             type.ultimateType as StructDeclaration
         ]
 
-        for (type : contained_types)
+        for (type : containedTypes)
         {
-            if (!all_types.contains(type))
-                all_types.addAll(getUnderlyingTypes(type))
+            if (!allTypes.contains(type))
+                allTypes.addAll(getUnderlyingTypes(type))
         }
 
-        all_types.addAll(contained_types)
-        return all_types
+        allTypes.addAll(containedTypes)
+        return allTypes
     }
 
     /**
@@ -67,21 +67,21 @@ class Util
         asMember(name) // currently the same convention
     }
 
-    static def String asBaseName(InterfaceDeclaration interface_declaration)
+    static def String asBaseName(InterfaceDeclaration interfaceDeclaration)
     {
-        '''«interface_declaration.name»Base'''
+        '''«interfaceDeclaration.name»Base'''
     }
 
-    static def String getRegisterServerFaults(InterfaceDeclaration interface_declaration, Optional<String> namespace)
+    static def String getRegisterServerFaults(InterfaceDeclaration interfaceDeclaration, Optional<String> namespace)
     {
-        '''«IF namespace.present»«namespace.get»::«ENDIF»Register«interface_declaration.name»ServiceFaults'''
+        '''«IF namespace.present»«namespace.get»::«ENDIF»Register«interfaceDeclaration.name»ServiceFaults'''
     }
 
     static def String getObservableName(EventDeclaration event)
     {
-        val basic_name = (event.name ?: "") + "Observable"
+        val basicName = (event.name ?: "") + "Observable"
 
-        '''m_«basic_name.asMember»'''
+        '''m_«basicName.asMember»'''
     }
 
     static def String getObservableRegistrationName(EventDeclaration event)

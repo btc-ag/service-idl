@@ -60,11 +60,11 @@ class MemberElementWrapper
         container = struct.eContainer as AbstractStructuralDeclaration
     }
 
-    new(EnumDeclaration enum_declaration)
+    new(EnumDeclaration enumDeclaration)
     {
-        type = enum_declaration
-        name = enum_declaration.declarator
+        type = enumDeclaration
+        name = enumDeclaration.declarator
         optional = false
-        container = enum_declaration.eContainer as AbstractStructuralDeclaration
+        container = enumDeclaration.eContainer as AbstractStructuralDeclaration
     }
 }

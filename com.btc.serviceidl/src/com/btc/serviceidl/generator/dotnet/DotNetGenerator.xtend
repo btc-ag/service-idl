@@ -500,23 +500,23 @@ class DotNetGenerator
 
    private def void generateTest(IPath projectRootPath, InterfaceDeclaration interfaceDeclaration)
     {
-        val test_name = getTestClassName(interfaceDeclaration)
-        generateProjectSourceFile(projectRootPath, test_name, generateCsTest(test_name, interfaceDeclaration))
+        val testName = getTestClassName(interfaceDeclaration)
+        generateProjectSourceFile(projectRootPath, testName, generateCsTest(testName, interfaceDeclaration))
 
-        val impl_test_name = interfaceDeclaration.name + "ImplTest"
-        generateProjectSourceFile(projectRootPath, impl_test_name,
-            generateCsImplTest(impl_test_name, interfaceDeclaration))
+        val implTestName = interfaceDeclaration.name + "ImplTest"
+        generateProjectSourceFile(projectRootPath, implTestName,
+            generateCsImplTest(implTestName, interfaceDeclaration))
 
-        val server_registration_name = getServerRegistrationName(interfaceDeclaration)
+        val serverRegistrationName = getServerRegistrationName(interfaceDeclaration)
         generateProjectSourceFile(
             projectRootPath,
-            server_registration_name,
-            generateCsServerRegistration(server_registration_name, interfaceDeclaration)
+            serverRegistrationName,
+            generateCsServerRegistration(serverRegistrationName, interfaceDeclaration)
         )
 
-        val zmq_integration_test_name = interfaceDeclaration.name + "ZeroMQIntegrationTest"
-        generateProjectSourceFile(projectRootPath, zmq_integration_test_name,
-            generateCsZeroMQIntegrationTest(zmq_integration_test_name, interfaceDeclaration))        
+        val zmqIntegrationTestName = interfaceDeclaration.name + "ZeroMQIntegrationTest"
+        generateProjectSourceFile(projectRootPath, zmqIntegrationTestName,
+            generateCsZeroMQIntegrationTest(zmqIntegrationTestName, interfaceDeclaration))        
     }
    
    private def generateCsTest(String className, InterfaceDeclaration interfaceDeclaration)
@@ -547,14 +547,14 @@ class DotNetGenerator
 
    private def void generateProxy(IPath projectRootPath, InterfaceDeclaration interfaceDeclaration)
    {
-      val proxy_factory_name = getProxyFactoryName(interfaceDeclaration)
-      generateProjectSourceFile(projectRootPath, proxy_factory_name,
-         generateProxyFactory(proxy_factory_name, interfaceDeclaration))      
+      val proxyFactoryName = getProxyFactoryName(interfaceDeclaration)
+      generateProjectSourceFile(projectRootPath, proxyFactoryName,
+         generateProxyFactory(proxyFactoryName, interfaceDeclaration))      
 
       
-      val proxy_class_name = GeneratorUtil.getClassName(ArtifactNature.DOTNET, ProjectType.PROXY, interfaceDeclaration.name)
-      generateProjectSourceFile(projectRootPath, proxy_class_name,
-            generateProxyImplementation(proxy_class_name, interfaceDeclaration))
+      val proxyClassName = GeneratorUtil.getClassName(ArtifactNature.DOTNET, ProjectType.PROXY, interfaceDeclaration.name)
+      generateProjectSourceFile(projectRootPath, proxyClassName,
+            generateProxyImplementation(proxyClassName, interfaceDeclaration))
       
       // generate named events
       for (event : interfaceDeclaration.events.filter[name !== null])

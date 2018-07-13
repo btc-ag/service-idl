@@ -41,17 +41,17 @@ import static extension com.btc.serviceidl.util.Util.*
 
 class CppExtensions
 {
-    static def IPath getIncludeFilePath(AbstractTypeReference referenced_object, ProjectType project_type,
+    static def IPath getIncludeFilePath(AbstractTypeReference referencedObject, ProjectType projectType,
         IModuleStructureStrategy moduleStructureStrategy)
     {
-        val scope_determinant = referenced_object.scopeDeterminant
+        val scopeDeterminant = referencedObject.scopeDeterminant
 
-        val baseName = if (scope_determinant instanceof InterfaceDeclaration)
-                project_type.getClassName(ArtifactNature.CPP, Names.plain(scope_determinant))
+        val baseName = if (scopeDeterminant instanceof InterfaceDeclaration)
+                projectType.getClassName(ArtifactNature.CPP, Names.plain(scopeDeterminant))
             else
                 Constants.FILE_NAME_TYPES
 
-        moduleStructureStrategy.getIncludeFilePath(referenced_object.scopeDeterminant.moduleStack, project_type, baseName,
+        moduleStructureStrategy.getIncludeFilePath(referencedObject.scopeDeterminant.moduleStack, projectType, baseName,
             HeaderType.REGULAR_HEADER)
     }
 
@@ -64,21 +64,21 @@ class CppExtensions
     static def Iterable<TypeWrapper> getTopologicallySortedTypes(AbstractContainerDeclaration owner)
     {
         // aggregate enums, typedefs, structs and exceptions into the same collection
-        val all_elements = new HashSet<AbstractTypeReference>
-        all_elements.addAll(owner.eContents.filter(EnumDeclaration))
-        all_elements.addAll(owner.eContents.filter(AliasDeclaration))
-        all_elements.addAll(owner.eContents.filter(StructDeclaration))
-        all_elements.addAll(owner.eContents.filter(ExceptionDeclaration))
+        val allElements = new HashSet<AbstractTypeReference>
+        allElements.addAll(owner.eContents.filter(EnumDeclaration))
+        allElements.addAll(owner.eContents.filter(AliasDeclaration))
+        allElements.addAll(owner.eContents.filter(StructDeclaration))
+        allElements.addAll(owner.eContents.filter(ExceptionDeclaration))
 
         // construct a directed graph representation; a dependency relation between two
         // elements is represented as a pair X -> Y (meaning: X depends on Y)
         val graph = new HashSet<Pair<AbstractTypeReference, AbstractTypeReference>>
-        all_elements.forEach[it.predecessors.forEach[dependency|graph.add(it -> dependency)]]
+        allElements.forEach[it.predecessors.forEach[dependency|graph.add(it -> dependency)]]
 
         // sort out all independent elements
-        val independent_elements = all_elements.filter[it.predecessors.empty].toList
+        val independentElements = allElements.filter[it.predecessors.empty].toList
 
-        return applyKahnsAlgorithm(graph, independent_elements)
+        return applyKahnsAlgorithm(graph, independentElements)
     }
 
     /**
@@ -93,15 +93,15 @@ class CppExtensions
         // elements is represented as a pair X -> Y (meaning: X depends on Y)
         val graph = new HashSet<Pair<AbstractTypeReference, AbstractTypeReference>>
 
-        val all_types = new HashSet<AbstractTypeReference>
-        all_types.addAll(elements)
+        val allTypes = new HashSet<AbstractTypeReference>
+        allTypes.addAll(elements)
         for (e : elements)
         {
-            getUnderlyingTypes(e, all_types)
+            getUnderlyingTypes(e, allTypes)
         }
-        all_types.forEach[it.requirements.forEach[dependency|graph.add(it -> dependency)]]
+        allTypes.forEach[it.requirements.forEach[dependency|graph.add(it -> dependency)]]
 
-        return applyKahnsAlgorithm(graph, all_types.filter[it.requirements.empty].toList)
+        return applyKahnsAlgorithm(graph, allTypes.filter[it.requirements.empty].toList)
     }
 
     /**
@@ -109,21 +109,21 @@ class CppExtensions
      */
     private static def Iterable<TypeWrapper> applyKahnsAlgorithm(
         HashSet<Pair<AbstractTypeReference, AbstractTypeReference>> graph,
-        List<AbstractTypeReference> independent_elements)
+        List<AbstractTypeReference> independentElements)
     {
         // list finally containing the sorted elements
         val result = new LinkedHashSet<TypeWrapper>
 
-        while (!independent_elements.empty)
+        while (!independentElements.empty)
         {
-            val n = independent_elements.remove(0)
+            val n = independentElements.remove(0)
             result.add(new TypeWrapper(n))
             for (m : graph.filter[value == n].map[key].toList)
             {
                 val edge = graph.findFirst[key == m && value == n]
                 graph.remove(edge)
                 if (graph.filter[key == m].empty)
-                    independent_elements.add(m)
+                    independentElements.add(m)
             }
         }
 
@@ -134,39 +134,39 @@ class CppExtensions
             // is important: if element depends on a type declared later, the 
             // effective type must be resolved as smart pointer of a forward
             // declaration, otherwise directly
-            val indexed_list = new ArrayList<TypeWrapper>
+            val indexedList = new ArrayList<TypeWrapper>
             while (!graph.empty)
             {
                 // get next unhandled element
                 val edge = graph.head
-                var type_wrapper = new TypeWrapper(edge.key)
+                var typeWrapper = new TypeWrapper(edge.key)
 
                 // retrieve index of the element; if not yet existent, add it
-                var index = indexed_list.indexOf(type_wrapper)
+                var index = indexedList.indexOf(typeWrapper)
                 if (index < 0)
                 {
-                    indexed_list.add(type_wrapper)
-                    index = indexed_list.indexOf(type_wrapper)
+                    indexedList.add(typeWrapper)
+                    index = indexedList.indexOf(typeWrapper)
                 }
                 else
                 {
-                    type_wrapper = indexed_list.get(index)
+                    typeWrapper = indexedList.get(index)
                 }
 
                 // retrieve index of the superior type; if not yet existent or 
                 // coming later than the dependent type, add to dependency list
-                val dependency_wrapper = new TypeWrapper(edge.value)
-                val index_dependency = indexed_list.indexOf(dependency_wrapper)
+                val dependencyWrapper = new TypeWrapper(edge.value)
+                val indexDependency = indexedList.indexOf(dependencyWrapper)
 
-                if (index_dependency >= index || index_dependency < 0)
+                if (indexDependency >= index || indexDependency < 0)
                 {
-                    type_wrapper.addForwardDeclaration(dependency_wrapper.type)
+                    typeWrapper.addForwardDeclaration(dependencyWrapper.type)
                 }
 
                 graph.remove(edge)
             }
 
-            result.addAll(indexed_list)
+            result.addAll(indexedList)
         }
 
         return result
@@ -219,57 +219,57 @@ class CppExtensions
     }
 
     private static def dispatch void getUnderlyingTypes(StructDeclaration struct,
-        HashSet<AbstractTypeReference> all_types)
+        HashSet<AbstractTypeReference> allTypes)
     {
-        val contained_types = struct.members.map[type.ultimateType].filter(StructDeclaration)
+        val containedTypes = struct.members.map[type.ultimateType].filter(StructDeclaration)
 
-        for (type : contained_types)
+        for (type : containedTypes)
         {
-            if (!all_types.contains(type))
-                getUnderlyingTypes(type, all_types)
+            if (!allTypes.contains(type))
+                getUnderlyingTypes(type, allTypes)
         }
 
-        all_types.addAll(contained_types)
+        allTypes.addAll(containedTypes)
     }
 
     private static def dispatch void getUnderlyingTypes(ExceptionDeclaration element,
-        HashSet<AbstractTypeReference> all_types)
+        HashSet<AbstractTypeReference> allTypes)
     {
-        val contained_types = element.members.map[type.ultimateType].filter(ExceptionDeclaration)
+        val containedTypes = element.members.map[type.ultimateType].filter(ExceptionDeclaration)
 
-        for (type : contained_types)
+        for (type : containedTypes)
         {
-            if (!all_types.contains(type))
-                getUnderlyingTypes(type, all_types)
+            if (!allTypes.contains(type))
+                getUnderlyingTypes(type, allTypes)
         }
 
-        all_types.addAll(contained_types)
+        allTypes.addAll(containedTypes)
     }
 
     private static def dispatch void getUnderlyingTypes(AbstractTypeReference element,
-        HashSet<AbstractTypeReference> all_types)
+        HashSet<AbstractTypeReference> allTypes)
     {
         // default: no operation
     }
 
-    def static String openNamespaces(ParameterBundle param_bundle)
+    def static String openNamespaces(ParameterBundle paramBundle)
     {
         '''
-            «FOR module : param_bundle.getModuleStack»
+            «FOR module : paramBundle.getModuleStack»
                 namespace «module.name»
                 {
             «ENDFOR»
-            «IF param_bundle.getProjectType !== null»
-                namespace «param_bundle.getProjectType.getName»
+            «IF paramBundle.getProjectType !== null»
+                namespace «paramBundle.getProjectType.getName»
                 {
             «ENDIF»
         '''
     }
 
-    def static String closeNamespaces(ParameterBundle param_bundle)
+    def static String closeNamespaces(ParameterBundle paramBundle)
     {
         '''
-            «FOR module : param_bundle.moduleStack»}«ENDFOR»«IF param_bundle.getProjectType !== null»}«ENDIF»
+            «FOR module : paramBundle.moduleStack»}«ENDFOR»«IF paramBundle.getProjectType !== null»}«ENDIF»
             
         '''
     }

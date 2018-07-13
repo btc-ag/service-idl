@@ -26,7 +26,7 @@ class ImplementationStubGenerator extends GeneratorBase
 
     private def makeImplementatonStub(FunctionDeclaration function)
     {
-        val is_void = function.returnedType instanceof VoidType
+        val isVoid = function.returnedType instanceof VoidType
 
         '''
             «IF !function.sync»
@@ -34,23 +34,23 @@ class ImplementationStubGenerator extends GeneratorBase
                 «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
                     «param.paramName.asParameter» = «basicCSharpSourceGenerator.makeDefaultValue(param.paramType)»;
                 «ENDFOR»
-                return «resolve("System.Threading.Tasks.Task")»«IF !is_void»<«toText(function.returnedType, function)»>«ENDIF».Factory.StartNew(() => { throw new «resolve("System.NotSupportedException")»("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»"); });
+                return «resolve("System.Threading.Tasks.Task")»«IF !isVoid»<«toText(function.returnedType, function)»>«ENDIF».Factory.StartNew(() => { throw new «resolve("System.NotSupportedException")»("«Constants.AUTO_GENERATED_METHOD_STUB_MESSAGE»"); });
             «ELSE»
                 «makeDefaultMethodStub(typeResolver)»
             «ENDIF»
         '''
     }
 
-    def generate(InterfaceDeclaration interface_declaration, String impl_class_name)
+    def generate(InterfaceDeclaration interfaceDeclaration, String implClassName)
     {
-        val api_fully_qualified_name = resolve(interface_declaration)
+        val apiFullyQualifiedName = resolve(interfaceDeclaration)
 
-        val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)
+        val anonymousEvent = com.btc.serviceidl.util.Util.getAnonymousEvent(interfaceDeclaration)
         '''
-            public class «impl_class_name» : «IF anonymous_event !== null»«resolve("BTC.CAB.ServiceComm.NET.Base.ABasicObservable")»<«resolve(anonymous_event.data)»>, «ENDIF»«api_fully_qualified_name.shortName»
+            public class «implClassName» : «IF anonymousEvent !== null»«resolve("BTC.CAB.ServiceComm.NET.Base.ABasicObservable")»<«resolve(anonymousEvent.data)»>, «ENDIF»«apiFullyQualifiedName.shortName»
             {
-               «FOR function : interface_declaration.functions SEPARATOR System.lineSeparator»
-                   /// <see cref="«api_fully_qualified_name».«function.name»"/>
+               «FOR function : interfaceDeclaration.functions SEPARATOR System.lineSeparator»
+                   /// <see cref="«apiFullyQualifiedName».«function.name»"/>
                    public «typeResolver.makeReturnType(function)» «function.name»(
                       «FOR param : function.parameters SEPARATOR ","»
                           «IF param.direction == ParameterDirection.PARAM_OUT»out «ENDIF»«toText(param.paramType, function)» «toText(param, function).asParameter»
@@ -61,10 +61,10 @@ class ImplementationStubGenerator extends GeneratorBase
                    }
                «ENDFOR»
                
-               «FOR event : interface_declaration.events.filter[name !== null]»
-                   «val event_name = toText(event, interface_declaration)»
-                   /// <see cref="«api_fully_qualified_name».Get«event_name»"/>
-                   public «event_name» Get«event_name»()
+               «FOR event : interfaceDeclaration.events.filter[name !== null]»
+                   «val eventName = toText(event, interfaceDeclaration)»
+                   /// <see cref="«apiFullyQualifiedName».Get«eventName»"/>
+                   public «eventName» Get«eventName»()
                    {
                       «makeDefaultMethodStub(typeResolver)»
                    }

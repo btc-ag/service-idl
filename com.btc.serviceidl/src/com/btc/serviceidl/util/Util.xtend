@@ -51,18 +51,18 @@ class Util
     /**
      * Given a predicate, add a new line or return empty string
      */
-    def static String addNewLine(boolean add_new_line)
+    def static String addNewLine(boolean addNewLine)
     {
         '''
-            «IF add_new_line»
+            «IF addNewLine»
                 
             «ENDIF»
         '''
     }
 
-    def private static String makeBasicMessageName(String name, String message_type)
+    def private static String makeBasicMessageName(String name, String messageType)
     {
-        return name + message_type
+        return name + messageType
     }
 
     /**
@@ -83,17 +83,17 @@ class Util
 
     def static Iterable<ModuleDeclaration> getModuleStack(AbstractContainerDeclaration element)
     {
-        val module_stack = new ArrayDeque<ModuleDeclaration>
-        var EObject current_container = element
+        val moduleStack = new ArrayDeque<ModuleDeclaration>
+        var EObject currentContainer = element
 
-        while (current_container !== null && !(current_container instanceof IDLSpecification))
+        while (currentContainer !== null && !(currentContainer instanceof IDLSpecification))
         {
-            if (current_container instanceof ModuleDeclaration)
-                module_stack.push(current_container)
-            current_container = current_container.eContainer
+            if (currentContainer instanceof ModuleDeclaration)
+                moduleStack.push(currentContainer)
+            currentContainer = currentContainer.eContainer
         }
 
-        return module_stack
+        return moduleStack
     }
 
     def static <T> T getParent(EObject element, Class<T> t)
@@ -119,24 +119,24 @@ class Util
         return object.getParent(IDLSpecification).eAllContents.filter(EventDeclaration).findFirst[data === object]
     }
 
-    def static EventDeclaration getAnonymousEvent(InterfaceDeclaration interface_declaration)
+    def static EventDeclaration getAnonymousEvent(InterfaceDeclaration interfaceDeclaration)
     {
-        return interface_declaration.contains.filter(EventDeclaration).filter[name === null].head as EventDeclaration
+        return interfaceDeclaration.contains.filter(EventDeclaration).filter[name === null].head as EventDeclaration
     }
 
     /**
      * Get all structures which act message types in event within the given interface.
      */
     def static Iterable<StructDeclaration> getEventStructures(IDLSpecification idl,
-        InterfaceDeclaration interface_declaration)
+        InterfaceDeclaration interfaceDeclaration)
     {
-        val event_structs = new HashSet<StructDeclaration>
+        val eventStructs = new HashSet<StructDeclaration>
         for (struct : idl.eAllContents.filter(StructDeclaration).toIterable)
         {
-            if (!interface_declaration.contains.filter(EventDeclaration).filter[data === struct].empty)
-                event_structs.add(struct)
+            if (!interfaceDeclaration.contains.filter(EventDeclaration).filter[data === struct].empty)
+                eventStructs.add(struct)
         }
-        return event_structs
+        return eventStructs
     }
 
     def static Iterable<AbstractException> getRaisedExceptions(AbstractContainerDeclaration container)
@@ -451,19 +451,19 @@ class Util
     }
 
     /**
-     * Core logic for getUltimateType; the flag "decompose_typedef" allows us either
+     * Core logic for getUltimateType; the flag "decomposeTypedef" allows us either
      * to get the basic type defined by this typedef (true) or the typedef itself (false).
      */
-    def static AbstractTypeReference getUltimateType(AbstractTypeReference element, boolean decompose_typedef)
+    def static AbstractTypeReference getUltimateType(AbstractTypeReference element, boolean decomposeTypedef)
     {
         if (element instanceof SequenceDeclaration)
-            return getUltimateType(element.type.actualType, decompose_typedef)
+            return getUltimateType(element.type.actualType, decomposeTypedef)
         else if (element instanceof ParameterElement)
-            return getUltimateType(element.paramType.actualType, decompose_typedef)
+            return getUltimateType(element.paramType.actualType, decomposeTypedef)
         else if (element instanceof AliasDeclaration)
         {
-            if (decompose_typedef)
-                return getUltimateType((element as AliasDeclaration).type.actualType, decompose_typedef)
+            if (decomposeTypedef)
+                return getUltimateType((element as AliasDeclaration).type.actualType, decomposeTypedef)
             else
                 return element
         }
@@ -484,9 +484,9 @@ class Util
      * This method generates a consistent name for exceptions used on all sides
      * of the ServiceComm framework in order to correctly resolve the type.
      */
-    static def String getCommonExceptionName(AbstractException exception, IQualifiedNameProvider name_provider)
+    static def String getCommonExceptionName(AbstractException exception, IQualifiedNameProvider nameProvider)
     {
-        return name_provider.getFullyQualifiedName(exception).toString
+        return nameProvider.getFullyQualifiedName(exception).toString
     }
 
     static def <T> boolean ensurePresentOrThrow(Optional<T> optional)
@@ -505,16 +505,16 @@ class Util
         if (container instanceof InterfaceDeclaration)
         {
             // function parameters
-            val from_parameters = container.functions.map[parameters].flatten.map[tryGetSequence].filter[present].map [
+            val fromParameters = container.functions.map[parameters].flatten.map[tryGetSequence].filter[present].map [
                 get
             ].map[raisedExceptions].flatten
 
             // function return values
-            val from_return_values = container.functions.map[returnedType].map[tryGetSequence].filter[present].map[get].
+            val fromReturnValues = container.functions.map[returnedType].map[tryGetSequence].filter[present].map[get].
                 map[raisedExceptions].flatten
 
-            exceptions.addAll(from_parameters)
-            exceptions.addAll(from_return_values)
+            exceptions.addAll(fromParameters)
+            exceptions.addAll(fromReturnValues)
         }
 
         val contents = container.eAllContents.toList

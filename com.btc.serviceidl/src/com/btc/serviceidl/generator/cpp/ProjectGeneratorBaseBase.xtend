@@ -35,130 +35,130 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(PROTECTED_GETTER)
 class ProjectGeneratorBaseBase
 {
-    val IFileSystemAccess file_system_access
-    val IQualifiedNameProvider qualified_name_provider
-    val IScopeProvider scope_provider
+    val IFileSystemAccess fileSystemAccess
+    val IQualifiedNameProvider qualifiedNameProvider
+    val IScopeProvider scopeProvider
     val IDLSpecification idl
     val IProjectSetFactory projectSetFactory
     val extension IProjectSet vsSolution
     val IModuleStructureStrategy moduleStructureStrategy
     val ITargetVersionProvider targetVersionProvider
-    val Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map
+    val Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap
 
-    val ParameterBundle param_bundle
+    val ParameterBundle paramBundle
     val ModuleDeclaration module
 
     // per-project global variables
-    val cab_libs = new HashSet<ExternalDependency>
-    val project_references = new HashSet<IProjectReference>
+    val cabLibs = new HashSet<ExternalDependency>
+    val projectReferences = new HashSet<IProjectReference>
     val projectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP)) // TODO inject the file groups
 
-    new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
+    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
+        IScopeProvider scopeProvider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
         IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
-        ITargetVersionProvider targetVersionProvider, Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map,
+        ITargetVersionProvider targetVersionProvider, Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap,
         ProjectType type, ModuleDeclaration module)
     {
-        this.file_system_access = file_system_access
-        this.qualified_name_provider = qualified_name_provider
-        this.scope_provider = scope_provider
+        this.fileSystemAccess = fileSystemAccess
+        this.qualifiedNameProvider = qualifiedNameProvider
+        this.scopeProvider = scopeProvider
         this.idl = idl
         this.projectSetFactory = projectSetFactory
         this.vsSolution = vsSolution
         this.moduleStructureStrategy = moduleStructureStrategy
         this.targetVersionProvider = targetVersionProvider
-        this.smart_pointer_map = smart_pointer_map
+        this.smartPointerMap = smartPointerMap
         this.module = module
 
-        this.param_bundle = new ParameterBundle.Builder().with(type).with(module.moduleStack).build
+        this.paramBundle = new ParameterBundle.Builder().with(type).with(module.moduleStack).build
     }
 
     protected def createTypeResolver()
     {
-        createTypeResolver(this.param_bundle)
+        createTypeResolver(this.paramBundle)
     }
 
-    private def createTypeResolver(ParameterBundle param_bundle)
+    private def createTypeResolver(ParameterBundle paramBundle)
     {
-        new TypeResolver(qualified_name_provider, vsSolution, moduleStructureStrategy, project_references, cab_libs,
-            smart_pointer_map)
+        new TypeResolver(qualifiedNameProvider, vsSolution, moduleStructureStrategy, projectReferences, cabLibs,
+            smartPointerMap)
     }
 
     protected def createBasicCppGenerator()
     {
-        createBasicCppGenerator(this.param_bundle)
+        createBasicCppGenerator(this.paramBundle)
     }
 
-    protected def createBasicCppGenerator(ParameterBundle param_bundle)
+    protected def createBasicCppGenerator(ParameterBundle paramBundle)
     {
-        new BasicCppGenerator(createTypeResolver(param_bundle), targetVersionProvider, param_bundle)
+        new BasicCppGenerator(createTypeResolver(paramBundle), targetVersionProvider, paramBundle)
     }
 
     def Iterable<IProjectReference> getAdditionalProjectReferences()
     { return #[] }
 
-    protected def void generateProjectFiles(ProjectType project_type, IPath project_path, String project_name,
+    protected def void generateProjectFiles(ProjectType projectType, IPath projectPath, String projectName,
         ProjectFileSet projectFileSet)
     {
         // TODO maybe find a better place to handle these extra resolutions
         // proxy and dispatcher include a *.impl.h file from the Protobuf project
         // for type-conversion routines; therefore some hidden dependencies
         // exist, which are explicitly resolved here
-        if (param_bundle.projectType == ProjectType.PROXY || param_bundle.projectType == ProjectType.DISPATCHER)
+        if (paramBundle.projectType == ProjectType.PROXY || paramBundle.projectType == ProjectType.DISPATCHER)
         {
-            cab_libs.add(new ExternalDependency("BTC.CAB.Commons.FutureUtil"))
+            cabLibs.add(new ExternalDependency("BTC.CAB.Commons.FutureUtil"))
         }
 
         // TODO This should be done differently, the PROTOBUF project should have a resolved
         // dependency on libprotobuf, and should export this dependency to its dependents
-        if (param_bundle.projectType == ProjectType.PROTOBUF || param_bundle.projectType == ProjectType.DISPATCHER ||
-            param_bundle.projectType == ProjectType.PROXY || param_bundle.projectType == ProjectType.SERVER_RUNNER)
+        if (paramBundle.projectType == ProjectType.PROTOBUF || paramBundle.projectType == ProjectType.DISPATCHER ||
+            paramBundle.projectType == ProjectType.PROXY || paramBundle.projectType == ProjectType.SERVER_RUNNER)
         {
-            cab_libs.add(new ExternalDependency("libprotobuf"))
+            cabLibs.add(new ExternalDependency("libprotobuf"))
         }
 
-        projectSetFactory.generateProjectFiles(file_system_access, param_bundle, cab_libs.unmodifiableView, vsSolution,
-            Sets.union(project_references, additionalProjectReferences.toSet), projectFileSet.unmodifiableView,
-            project_type, project_path, project_name)
+        projectSetFactory.generateProjectFiles(fileSystemAccess, paramBundle, cabLibs.unmodifiableView, vsSolution,
+            Sets.union(projectReferences, additionalProjectReferences.toSet), projectFileSet.unmodifiableView,
+            projectType, projectPath, projectName)
     }
 
     protected def generateExportHeader()
     {
-        new ExportHeaderGenerator(param_bundle).generateExportHeader()
+        new ExportHeaderGenerator(paramBundle).generateExportHeader()
     }
 
     static def String generateHeader(BasicCppGenerator basicCppGenerator,
-        IModuleStructureStrategy moduleStructureStrategy, String file_content, Optional<String> export_header)
+        IModuleStructureStrategy moduleStructureStrategy, String fileContent, Optional<String> exportHeader)
     {
         '''
             #pragma once
             
             «moduleStructureStrategy.encapsulationHeaders.key»
-            «IF export_header.present»#include "«export_header.get»"«ENDIF»
+            «IF exportHeader.present»#include "«exportHeader.get»"«ENDIF»
             «basicCppGenerator.generateIncludes(true)»
             
             «basicCppGenerator.paramBundle.openNamespaces»
-               «file_content»
+               «fileContent»
             «basicCppGenerator.paramBundle.closeNamespaces»
             «moduleStructureStrategy.encapsulationHeaders.value»
         '''
     }
 
-    static def String generateSource(BasicCppGenerator basicCppGenerator, String file_content,
-        Optional<String> file_tail)
+    static def String generateSource(BasicCppGenerator basicCppGenerator, String fileContent,
+        Optional<String> fileTail)
     {
         '''
             «basicCppGenerator.generateIncludes(false)»
             «basicCppGenerator.paramBundle.openNamespaces»
-               «file_content»
+               «fileContent»
             «basicCppGenerator.paramBundle.closeNamespaces»
-            «IF file_tail.present»«file_tail.get»«ENDIF»
+            «IF fileTail.present»«fileTail.get»«ENDIF»
         '''
     }
 
     protected def IPath getProjectPath()
     {
-        moduleStructureStrategy.getProjectDir(param_bundle)
+        moduleStructureStrategy.getProjectDir(paramBundle)
     }
 
 }

@@ -9,14 +9,14 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 @Accessors
 class Log4NetConfigGenerator
 {
-    val ParameterBundle param_bundle
+    val ParameterBundle paramBundle
 
     def generate()
     {
         '''
             <log4net>
                <appender name="RollingLogFileAppender" type="log4net.Appender.RollingFileAppender">
-                  <file value="log_«GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.DOTNET, TransformType.PACKAGE).toLowerCase».txt"/>
+                  <file value="log_«GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.DOTNET, TransformType.PACKAGE).toLowerCase».txt"/>
                   <appendToFile value="true"/>
                   <datePattern value="yyyyMMdd"/>
                   <rollingStyle value="Date"/>

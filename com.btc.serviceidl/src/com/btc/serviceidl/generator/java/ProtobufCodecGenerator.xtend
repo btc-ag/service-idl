@@ -44,35 +44,35 @@ class ProtobufCodecGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def generateProtobufCodecBody(AbstractContainerDeclaration container, String codec_name)
+    def generateProtobufCodecBody(AbstractContainerDeclaration container, String codecName)
     {
         // collect all used data types to avoid duplicates
-        val data_types = GeneratorUtil.getEncodableTypes(container)
+        val dataTypes = GeneratorUtil.getEncodableTypes(container)
 
-        val java_uuid = typeResolver.resolve(JavaClassNames.UUID)
-        val byte_string = typeResolver.resolve("com.google.protobuf.ByteString")
-        val byte_buffer = typeResolver.resolve("java.nio.ByteBuffer")
-        val i_error = typeResolver.resolve(JavaClassNames.ERROR)
-        val service_fault_handler_factory = typeResolver.resolve(
+        val javaUuid = typeResolver.resolve(JavaClassNames.UUID)
+        val byteString = typeResolver.resolve("com.google.protobuf.ByteString")
+        val byteBuffer = typeResolver.resolve("java.nio.ByteBuffer")
+        val iError = typeResolver.resolve(JavaClassNames.ERROR)
+        val serviceFaultHandlerFactory = typeResolver.resolve(
             typeResolver.resolvePackage(container, container.mainProjectType) + TransformType.PACKAGE.separator +
                 container.asServiceFaultHandlerFactory)
-        val completable_future = typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)
+        val completableFuture = typeResolver.resolve(JavaClassNames.COMPLETABLE_FUTURE)
         val method = typeResolver.resolve("java.lang.reflect.Method")
         val collection = typeResolver.resolve(JavaClassNames.COLLECTION)
         val collectors = typeResolver.resolve("java.util.stream.Collectors")
 
         '''
-            public class «codec_name» {
+            public class «codecName» {
                
-               private static «i_error» encodeException(Exception e)
+               private static «iError» encodeException(Exception e)
                {
                   Exception cause = (Exception) «typeResolver.resolve("org.apache.commons.lang3.exception.ExceptionUtils")».getRootCause(e);
-                  return «service_fault_handler_factory».createError(cause);
+                  return «serviceFaultHandlerFactory».createError(cause);
                }
                
                private static Exception decodeException(String errorType, String message, String stackTrace)
                {
-                  return «service_fault_handler_factory».createException(errorType, message, stackTrace);
+                  return «serviceFaultHandlerFactory».createException(errorType, message, stackTrace);
                }
                
                @SuppressWarnings("unchecked")
@@ -84,7 +84,7 @@ class ProtobufCodecGenerator
                      .collect(«collectors».toList());
                }
                
-               public static<TOut, TIn> «collection»<TOut> encodeFailable(«collection»<«completable_future»<TIn>> plainData, Class<TOut> targetType)
+               public static<TOut, TIn> «collection»<TOut> encodeFailable(«collection»<«completableFuture»<TIn>> plainData, Class<TOut> targetType)
                {
                   return
                      plainData
@@ -93,7 +93,7 @@ class ProtobufCodecGenerator
                      .collect(«collectors».toList());
                }
                
-               private static<TOut, TIn> TOut encodeFailableWrapper(«completable_future»<TIn> failableData, Class<TOut> targetType)
+               private static<TOut, TIn> TOut encodeFailableWrapper(«completableFuture»<TIn> failableData, Class<TOut> targetType)
                {
                   try { return encodeFailable(failableData, targetType); }
                   catch (Exception e) { throw new RuntimeException(e); }
@@ -104,22 +104,22 @@ class ProtobufCodecGenerator
                   return
                      encodedData
                      .stream()
-                     .map(item -> (item instanceof «byte_string») ? (TOut) decode( («byte_string») item) : (TOut) decode(item))
+                     .map(item -> (item instanceof «byteString») ? (TOut) decode( («byteString») item) : (TOut) decode(item))
                      .collect(«collectors».toList());
                }
                
-               public static «byte_string» encode(«java_uuid» plainData) {
+               public static «byteString» encode(«javaUuid» plainData) {
                   
-                  byte[] rawBytes = «byte_buffer».allocate(16)
+                  byte[] rawBytes = «byteBuffer».allocate(16)
                      .putLong(plainData.getMostSignificantBits())
                      .putLong(plainData.getLeastSignificantBits())
                      .array();
             
-                  return «byte_string».copyFrom( switchByteOrder(rawBytes) );
+                  return «byteString».copyFrom( switchByteOrder(rawBytes) );
                }
                
                @SuppressWarnings( {"boxing", "unchecked"} )
-               private static<TOut, TIn> TOut encodeFailable(«completable_future»<TIn> failableData, Class<TOut> targetType) throws Exception
+               private static<TOut, TIn> TOut encodeFailable(«completableFuture»<TIn> failableData, Class<TOut> targetType) throws Exception
                {
                   if (failableData == null)
                      throw new NullPointerException();
@@ -161,28 +161,28 @@ class ProtobufCodecGenerator
                }
                
                @SuppressWarnings("unchecked")
-               public static<TOut, TIn> «collection»<«completable_future»<TOut>> decodeFailable(«collection»<TIn> encodedData)
+               public static<TOut, TIn> «collection»<«completableFuture»<TOut>> decodeFailable(«collection»<TIn> encodedData)
                {
                   return
                      encodedData
                      .stream()
-                     .map( item -> («completable_future»<TOut>) decodeFailableWrapper(item) )
+                     .map( item -> («completableFuture»<TOut>) decodeFailableWrapper(item) )
                      .collect(«collectors».toList());
                }
                
-               private static<TOut, TIn> «completable_future»<TOut> decodeFailableWrapper(TIn encodedData)
+               private static<TOut, TIn> «completableFuture»<TOut> decodeFailableWrapper(TIn encodedData)
                {
                   try { return decodeFailable(encodedData); }
                   catch (Exception e) { throw new RuntimeException(e); }
                }
                
                @SuppressWarnings( {"boxing", "unchecked"} )
-               public static<TOut, TIn> «completable_future»<TOut> decodeFailable(TIn encodedData) throws Exception
+               public static<TOut, TIn> «completableFuture»<TOut> decodeFailable(TIn encodedData) throws Exception
                {
                   if (encodedData == null)
                      throw new NullPointerException();
             
-                  «completable_future»<TOut> result = new «completable_future»<TOut>();
+                  «completableFuture»<TOut> result = new «completableFuture»<TOut>();
                   
                   «method» hasValueMethod = encodedData.getClass().getDeclaredMethod("hasValue");
                   Boolean hasValue = (Boolean) hasValueMethod.invoke(encodedData);
@@ -191,7 +191,7 @@ class ProtobufCodecGenerator
                      «method» getValueMethod = encodedData.getClass().getDeclaredMethod("getValue");
                      Object value = getValueMethod.invoke(encodedData);
                      if (encodedData.getClass().getSimpleName().toLowerCase().endsWith("_uuid")) // it's a failable UUID: explicit handling
-                        result.complete( (TOut) decode( («byte_string») value) );
+                        result.complete( (TOut) decode( («byteString») value) );
                      else
                         result.complete( (TOut) decode(value) );
                      return result;
@@ -216,9 +216,9 @@ class ProtobufCodecGenerator
                   throw new IllegalArgumentException("Failed to decode the type: " + encodedData.getClass().getCanonicalName());
                }
                
-               public static «java_uuid» decode(«byte_string» encodedData) {
-                  «byte_buffer» byteBuffer = «byte_buffer».wrap(switchByteOrder(encodedData.toByteArray()));
-                  return new «java_uuid»(byteBuffer.getLong(), byteBuffer.getLong());
+               public static «javaUuid» decode(«byteString» encodedData) {
+                  «byteBuffer» byteBuffer = «byteBuffer».wrap(switchByteOrder(encodedData.toByteArray()));
+                  return new «javaUuid»(byteBuffer.getLong(), byteBuffer.getLong());
                }
                
                /**
@@ -256,13 +256,13 @@ class ProtobufCodecGenerator
                   if (plainData == null)
                      throw new NullPointerException();
                
-                  if (plainData instanceof «java_uuid»)
-                     return encode( («java_uuid») plainData );
+                  if (plainData instanceof «javaUuid»)
+                     return encode( («javaUuid») plainData );
             
-                  «FOR data_type : data_types»
-                      if (plainData instanceof «typeResolver.resolve(data_type)»)
+                  «FOR dataType : dataTypes»
+                      if (plainData instanceof «typeResolver.resolve(dataType)»)
                       {
-                         «makeEncode(data_type)»
+                         «makeEncode(dataType)»
                       }
                       
                   «ENDFOR»
@@ -275,10 +275,10 @@ class ProtobufCodecGenerator
                   if (encodedData == null)
                      throw new NullPointerException();
                
-                  «FOR data_type : data_types»
-                      if (encodedData instanceof «ProtobufUtil.resolveProtobuf(typeResolver, data_type, Optional.empty)»)
+                  «FOR dataType : dataTypes»
+                      if (encodedData instanceof «ProtobufUtil.resolveProtobuf(typeResolver, dataType, Optional.empty)»)
                       {
-                         «makeDecode(data_type)»
+                         «makeDecode(dataType)»
                       }
                   «ENDFOR»
                   
@@ -296,14 +296,14 @@ class ProtobufCodecGenerator
 
     private def dispatch String makeDecode(EnumDeclaration element)
     {
-        val api_type_name = typeResolver.resolve(element)
-        val protobuf_type_name = resolveProtobuf(element, Optional.empty)
+        val apiTypeName = typeResolver.resolve(element)
+        val protobufTypeName = resolveProtobuf(element, Optional.empty)
 
         '''
-            «protobuf_type_name» typedData = («protobuf_type_name») encodedData;
+            «protobufTypeName» typedData = («protobufTypeName») encodedData;
             «FOR item : element.containedIdentifiers»
-                «IF item != element.containedIdentifiers.head»else «ENDIF»if (typedData == «protobuf_type_name».«item»)
-                   return «api_type_name».«item»;
+                «IF item != element.containedIdentifiers.head»else «ENDIF»if (typedData == «protobufTypeName».«item»)
+                   return «apiTypeName».«item»;
             «ENDFOR»
             else
                throw new «typeResolver.resolve("java.util.NoSuchElementException")»("Unknown value " + typedData.toString() + " for enumeration «element.name»");
@@ -321,36 +321,36 @@ class ProtobufCodecGenerator
     }
 
     private def String makeDecodeStructOrException(AbstractTypeReference element, Iterable<MemberElementWrapper> members,
-        Optional<Collection<AbstractTypeDeclaration>> type_declarations)
+        Optional<Collection<AbstractTypeDeclaration>> typeDeclarations)
     {
-        val api_type_name = typeResolver.resolve(element)
-        val protobuf_type_name = resolveProtobuf(element, Optional.empty)
+        val apiTypeName = typeResolver.resolve(element)
+        val protobufTypeName = resolveProtobuf(element, Optional.empty)
 
-        val all_types = new ArrayList<MemberElementWrapper>
-        all_types.addAll(members)
+        val allTypes = new ArrayList<MemberElementWrapper>
+        allTypes.addAll(members)
 
-        if (type_declarations.present)
-            type_declarations.get.filter(StructDeclaration).filter[declarator !== null].forEach [
-                all_types.add(new MemberElementWrapper(it))
+        if (typeDeclarations.present)
+            typeDeclarations.get.filter(StructDeclaration).filter[declarator !== null].forEach [
+                allTypes.add(new MemberElementWrapper(it))
             ]
 
         '''
-            «protobuf_type_name» typedData = («protobuf_type_name») encodedData;
+            «protobufTypeName» typedData = («protobufTypeName») encodedData;
             «FOR member : members»
                 «val codec = resolveCodec(member.type, typeResolver)»
-                «val is_sequence = member.type.isSequenceType»
-                «val is_failable = is_sequence && member.type.isFailable»
-                «val is_byte = member.type.isByte»
-                «val is_short = member.type.isInt16»
-                «val is_char = member.type.isChar»
-                «val use_codec = GeneratorUtil.useCodec(member.type, ArtifactNature.JAVA)»
-                «val is_optional = member.optional»
-                «val api_type = basicJavaSourceGenerator.toText(member.type)»
+                «val isSequence = member.type.isSequenceType»
+                «val isFailable = isSequence && member.type.isFailable»
+                «val isByte = member.type.isByte»
+                «val isShort = member.type.isInt16»
+                «val isChar = member.type.isChar»
+                «val useCodec = GeneratorUtil.useCodec(member.type, ArtifactNature.JAVA)»
+                «val isOptional = member.optional»
+                «val apiType = basicJavaSourceGenerator.toText(member.type)»
                 «val parameterName = member.name.asParameter»
-                «basicJavaSourceGenerator.formatMaybeOptional(is_optional, api_type)» «parameterName» = «IF is_optional»(typedData.«IF is_sequence»get«ELSE»has«ENDIF»«member.name.asJavaProtobufName»«IF is_sequence»Count«ENDIF»()«IF is_sequence» > 0«ENDIF») ? «ENDIF»«IF is_optional»Optional.of(«ENDIF»«IF use_codec»«IF !is_sequence»(«api_type») «ENDIF»«codec».decode«IF is_failable»Failable«ENDIF»(«ENDIF»«IF is_short || is_byte || is_char»(«IF is_byte»byte«ELSEIF is_char»char«ELSE»short«ENDIF») «ENDIF»typedData.get«member.name.asJavaProtobufName»«IF is_sequence»List«ENDIF»()«IF use_codec»)«ENDIF»«IF is_optional»)«ENDIF»«IF is_optional» : Optional.empty()«ENDIF»;
+                «basicJavaSourceGenerator.formatMaybeOptional(isOptional, apiType)» «parameterName» = «IF isOptional»(typedData.«IF isSequence»get«ELSE»has«ENDIF»«member.name.asJavaProtobufName»«IF isSequence»Count«ENDIF»()«IF isSequence» > 0«ENDIF») ? «ENDIF»«IF isOptional»Optional.of(«ENDIF»«IF useCodec»«IF !isSequence»(«apiType») «ENDIF»«codec».decode«IF isFailable»Failable«ENDIF»(«ENDIF»«IF isShort || isByte || isChar»(«IF isByte»byte«ELSEIF isChar»char«ELSE»short«ENDIF») «ENDIF»typedData.get«member.name.asJavaProtobufName»«IF isSequence»List«ENDIF»()«IF useCodec»)«ENDIF»«IF isOptional»)«ENDIF»«IF isOptional» : Optional.empty()«ENDIF»;
             «ENDFOR»
             
-            return new «api_type_name» (
+            return new «apiTypeName» (
                «FOR member : members SEPARATOR ","»
                    «member.name.asParameter»
                «ENDFOR»
@@ -366,14 +366,14 @@ class ProtobufCodecGenerator
 
     private def dispatch String makeEncode(EnumDeclaration element)
     {
-        val api_type_name = typeResolver.resolve(element)
-        val protobuf_type_name = resolveProtobuf(element, Optional.empty)
+        val apiTypeName = typeResolver.resolve(element)
+        val protobufTypeName = resolveProtobuf(element, Optional.empty)
 
         '''
-            «api_type_name» typedData = («api_type_name») plainData;
+            «apiTypeName» typedData = («apiTypeName») plainData;
             «FOR item : element.containedIdentifiers»
-                «IF item != element.containedIdentifiers.head»else «ENDIF»if (typedData == «api_type_name».«item»)
-                   return «protobuf_type_name».«item»;
+                «IF item != element.containedIdentifiers.head»else «ENDIF»if (typedData == «apiTypeName».«item»)
+                   return «protobufTypeName».«item»;
             «ENDFOR»
             else
                throw new «typeResolver.resolve("java.util.NoSuchElementException")»("Unknown value " + typedData.toString() + " for enumeration «element.name»");
@@ -391,29 +391,29 @@ class ProtobufCodecGenerator
     }
 
     private def String makeEncodeStructOrException(AbstractTypeReference element, Iterable<MemberElementWrapper> members,
-        Optional<Collection<AbstractTypeDeclaration>> type_declarations)
+        Optional<Collection<AbstractTypeDeclaration>> typeDeclarations)
     {
-        val protobuf_type = resolveProtobuf(element, Optional.empty)
-        val plain_type = typeResolver.resolve(element)
+        val protobufType = resolveProtobuf(element, Optional.empty)
+        val plainType = typeResolver.resolve(element)
 
         '''
-            «IF !members.empty»«plain_type» typedData = («plain_type») plainData;«ENDIF»
-            «protobuf_type».Builder builder
-               = «protobuf_type».newBuilder();
+            «IF !members.empty»«plainType» typedData = («plainType») plainData;«ENDIF»
+            «protobufType».Builder builder
+               = «protobufType».newBuilder();
             «FOR member : members»
-                «val use_codec = GeneratorUtil.useCodec(member.type, ArtifactNature.JAVA)»
-                «val is_sequence = member.type.isSequenceType»
-                «val is_failable = is_sequence && member.type.isFailable»
+                «val useCodec = GeneratorUtil.useCodec(member.type, ArtifactNature.JAVA)»
+                «val isSequence = member.type.isSequenceType»
+                «val isFailable = isSequence && member.type.isFailable»
                 «val protobufName = member.name.asJavaProtobufName»
                 «val commonName = member.commonName»
-                «val method_name = '''«IF is_sequence»addAll«ELSE»set«ENDIF»«protobufName»'''»
+                «val methodName = '''«IF isSequence»addAll«ELSE»set«ENDIF»«protobufName»'''»
                 «IF member.optional»
                     if (typedData.get«typeResolver.resolve(JavaClassNames.OPTIONAL).alias(commonName)»().isPresent())
                     {
-                        builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«protobufName»().get()«IF is_failable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualified_name_provider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF use_codec»)«ENDIF»);
+                        builder.«methodName»(«IF useCodec»«IF !isSequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF isFailable»Failable«ENDIF»(«ENDIF»typedData.get«protobufName»().get()«IF isFailable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualifiedNameProvider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF useCodec»)«ENDIF»);
                     }
                 «ELSE»
-                builder.«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF is_failable»Failable«ENDIF»(«ENDIF»typedData.get«commonName»()«IF is_failable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualified_name_provider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF use_codec»)«ENDIF»);
+                builder.«methodName»(«IF useCodec»«IF !isSequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF isFailable»Failable«ENDIF»(«ENDIF»typedData.get«commonName»()«IF isFailable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualifiedNameProvider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF useCodec»)«ENDIF»);
                «ENDIF»
             «ENDFOR»
             return builder.build();

@@ -65,8 +65,8 @@ abstract class BasicProjectGenerator
 
     protected def void generatePOM(AbstractContainerDeclaration container, ProjectType projectType)
     {
-        val pom_path = makeProjectRootPath(container, projectType).append("pom".xml)
-        fileSystemAccess.generateFile(pom_path.toPortableString, ArtifactNature.JAVA.label,
+        val pomPath = makeProjectRootPath(container, projectType).append("pom".xml)
+        fileSystemAccess.generateFile(pomPath.toPortableString, ArtifactNature.JAVA.label,
             new POMGenerator(generationSettings, mavenResolver).generatePOMContents(container, projectType,
                 dependencies, if (projectType == ProjectType.PROTOBUF) protobufArtifacts?.get(container) else null))
     }
@@ -148,7 +148,7 @@ abstract class BasicProjectGenerator
       '''
       package «mavenResolver.registerPackage(container, projectType)»;
       
-      «FOR reference : typeResolver.referenced_types.sort AFTER System.lineSeparator»
+      «FOR reference : typeResolver.referencedTypes.sort AFTER System.lineSeparator»
          import «reference»;
       «ENDFOR»
       «mainContents»

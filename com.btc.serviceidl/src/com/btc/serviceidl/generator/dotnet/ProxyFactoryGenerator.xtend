@@ -20,14 +20,14 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 class ProxyFactoryGenerator extends GeneratorBase
 {
 
-    def generate(InterfaceDeclaration interface_declaration, String class_name)
+    def generate(InterfaceDeclaration interfaceDeclaration, String className)
     {
         '''
-            public class «class_name»
+            public class «className»
             {
-               public static «resolve(interface_declaration).shortName» CreateProtobufProxy(«resolve("BTC.CAB.ServiceComm.NET.API.IClientEndpoint")» endpoint)
+               public static «resolve(interfaceDeclaration).shortName» CreateProtobufProxy(«resolve("BTC.CAB.ServiceComm.NET.API.IClientEndpoint")» endpoint)
                {
-                  return new «GeneratorUtil.getClassName(ArtifactNature.DOTNET, ProjectType.PROXY, interface_declaration.name)»(endpoint);
+                  return new «GeneratorUtil.getClassName(ArtifactNature.DOTNET, ProjectType.PROXY, interfaceDeclaration.name)»(endpoint);
                }
             }
         '''

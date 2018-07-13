@@ -30,7 +30,7 @@ import org.eclipse.xtend.lib.annotations.Data
 class HeaderResolver
 {
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    static val stl_header_mapper = #{
+    static val stlHeaderMapper = #{
         "assert" -> "cassert",
         "int8_t" -> "cstdint",
         "int16_t" -> "cstdint",
@@ -59,7 +59,7 @@ class HeaderResolver
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    static val cab_header_mapper = #{
+    static val cabHeaderMapper = #{
         "BTC::Commons::Core::AutoPtr" -> "Commons/Core/include/AutoPtr.h",
         "BTC::Commons::Core::BlockStackTraceSettings" -> "Commons/Core/include/Exception.h",
         "BTC::Commons::Core::Context" -> "Commons/Core/include/Context.h",
@@ -178,14 +178,14 @@ class HeaderResolver
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    static val cab_impl_header_mapper = #{
+    static val cabImplHeaderMapper = #{
         "BTC::Commons::CoreExtras::Optional" -> "Commons/CoreExtras/include/OptionalImpl.h",
         "BTC::ServiceComm::Util::CDefaultObservableRegistrationProxy" ->
             "ServiceComm/Util/include/CDefaultObservableRegistrationProxy.impl.h"
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    static val boost_header_mapper = #{
+    static val boostHeaderMapper = #{
         "boost::bimap" -> "boost/bimap.hpp"
     }
 
@@ -244,9 +244,9 @@ class HeaderResolver
 
         static def withBasicGroups(Builder builder)
         {
-            builder.withGroup(stl_header_mapper, TypeResolver.STL_INCLUDE_GROUP).withGroup(boost_header_mapper,
-                TypeResolver.BOOST_INCLUDE_GROUP).withGroup(cab_header_mapper, TypeResolver.CAB_INCLUDE_GROUP).
-                withImplementationGroup(cab_impl_header_mapper, TypeResolver.CAB_INCLUDE_GROUP)
+            builder.withGroup(stlHeaderMapper, TypeResolver.STL_INCLUDE_GROUP).withGroup(boostHeaderMapper,
+                TypeResolver.BOOST_INCLUDE_GROUP).withGroup(cabHeaderMapper, TypeResolver.CAB_INCLUDE_GROUP).
+                withImplementationGroup(cabImplHeaderMapper, TypeResolver.CAB_INCLUDE_GROUP)
         }
 
         def configureGroup(Iterable<TypeResolver.IncludeGroup> includeGroups, int precedence, String prefix,

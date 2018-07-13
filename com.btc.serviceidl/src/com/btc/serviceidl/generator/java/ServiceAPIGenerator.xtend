@@ -68,29 +68,29 @@ class ServiceAPIGenerator
         '''
     }
 
-    def generateMain(InterfaceDeclaration interface_declaration)
+    def generateMain(InterfaceDeclaration interfaceDeclaration)
     {
-        val anonymous_event = interface_declaration.anonymousEvent
+        val anonymousEvent = interfaceDeclaration.anonymousEvent
         '''
-        public interface «ProjectType.SERVICE_API.getClassName(ArtifactNature.JAVA, interface_declaration.name)»«IF anonymous_event !== null» extends «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«basicJavaSourceGenerator.toText(anonymous_event.data)»>«ENDIF» {
+        public interface «ProjectType.SERVICE_API.getClassName(ArtifactNature.JAVA, interfaceDeclaration.name)»«IF anonymousEvent !== null» extends «typeResolver.resolve(JavaClassNames.OBSERVABLE)»<«basicJavaSourceGenerator.toText(anonymousEvent.data)»>«ENDIF» {
         
-           «typeResolver.resolve(JavaClassNames.UUID)» TypeGuid = UUID.fromString("«GuidMapper.get(interface_declaration)»");
+           «typeResolver.resolve(JavaClassNames.UUID)» TypeGuid = UUID.fromString("«GuidMapper.get(interfaceDeclaration)»");
            
-           «FOR function : interface_declaration.functions»
+           «FOR function : interfaceDeclaration.functions»
                «basicJavaSourceGenerator.makeInterfaceMethodSignature(function)»;
                
            «ENDFOR»
            
-           «FOR event : interface_declaration.events.filter[name !== null]»
-               «val observable_name = basicJavaSourceGenerator.toText(event)»
-               «observable_name» get«observable_name»();
+           «FOR event : interfaceDeclaration.events.filter[name !== null]»
+               «val observableName = basicJavaSourceGenerator.toText(event)»
+               «observableName» get«observableName»();
            «ENDFOR»
         }
         '''
     }
     
-    def generateContainedType(AbstractTypeDeclaration abstract_type) {
-        basicJavaSourceGenerator.toDeclaration(abstract_type)
+    def generateContainedType(AbstractTypeDeclaration abstractType) {
+        basicJavaSourceGenerator.toDeclaration(abstractType)
     }
 
 }

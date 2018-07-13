@@ -65,9 +65,9 @@ class ProtobufGeneratorUtil
     }
 
     static def IPath makeProtobufPath(AbstractContainerDeclaration container, String fileName,
-        ArtifactNature artifact_nature, IModuleStructureStrategy moduleStructureStrategy)
+        ArtifactNature artifactNature, IModuleStructureStrategy moduleStructureStrategy)
     {
-        makeProtobufModulePath(container, artifact_nature, moduleStructureStrategy).append(fileName.proto)
+        makeProtobufModulePath(container, artifactNature, moduleStructureStrategy).append(fileName.proto)
     }
 
     static def IPath makeProtobufModulePath(AbstractContainerDeclaration container, ArtifactNature artifactNature,

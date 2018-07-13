@@ -19,11 +19,11 @@ import org.eclipse.xtend.lib.annotations.Accessors
 @Accessors
 class ExportHeaderGenerator
 {
-    val ParameterBundle param_bundle 
+    val ParameterBundle paramBundle 
     
     def generateExportHeader()
     {
-        val prefix = GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP, TransformType.EXPORT_HEADER)
+        val prefix = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.EXPORT_HEADER)
         val prefixUpperCase = prefix.toUpperCase
 
         '''

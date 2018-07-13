@@ -18,16 +18,16 @@ import org.eclipse.xtend.lib.annotations.Accessors
 class ReflectionGenerator extends BasicCppGenerator
 {
 
-    def generateImplFileBody(InterfaceDeclaration interface_declaration)
+    def generateImplFileBody(InterfaceDeclaration interfaceDeclaration)
     {
-        val class_name = resolve(interface_declaration, paramBundle.projectType)
+        val className = resolve(interfaceDeclaration, paramBundle.projectType)
 
         '''
             extern "C" 
             {
-               «makeExportMacro()» void Reflect_«class_name.shortName»( «resolveSymbol("BTC::Commons::CoreExtras::ReflectedClass")» &ci )
+               «makeExportMacro()» void Reflect_«className.shortName»( «resolveSymbol("BTC::Commons::CoreExtras::ReflectedClass")» &ci )
                {  
-                  ci.Set< «class_name» >().AddConstructor
+                  ci.Set< «className» >().AddConstructor
                   (
                       ci.CContextRef()
                      ,ci.CArgRefNotNull< «resolveSymbol("BTC::Logging::API::LoggerFactory")» >( "loggerFactory" )
@@ -36,7 +36,7 @@ class ReflectionGenerator extends BasicCppGenerator
                          ,ci.CArgRefOptional< «resolveSymbol("BTC::Commons::CoreExtras::Optional")»<«resolveSymbol("BTC::Commons::CoreExtras::UUID")»> >( "serverServiceInstanceGuid" )
                      «ELSEIF paramBundle.projectType == ProjectType.DISPATCHER»
                          ,ci.CArgRefNotNull< «resolveSymbol("BTC::ServiceComm::API::IServerEndpoint")» >( "serviceEndpoint" )
-                         ,ci.CArgRef< «resolveSymbol("BTC::Commons::Core::AutoPtr")»<«resolve(interface_declaration, ProjectType.SERVICE_API)»> >( "dispatchee" )
+                         ,ci.CArgRef< «resolveSymbol("BTC::Commons::Core::AutoPtr")»<«resolve(interfaceDeclaration, ProjectType.SERVICE_API)»> >( "dispatchee" )
                      «ENDIF»
                   );
                }

@@ -10,17 +10,17 @@ class TypeResolverExtensions {
         Iterable<StructDeclaration> structs)
     {        
       '''
-      «FOR event_data : structs»
-         «val related_event = com.btc.serviceidl.util.Util.getRelatedEvent(event_data)»
-         «IF related_event !== null»
-            «val event_uuid = GuidMapper.get(related_event)»
-            // {«event_uuid»}
-            static const «resolveSymbol("BTC::Commons::CoreExtras::UUID")» s«event_data.name»TypeGuid = 
-               «resolveSymbol("BTC::Commons::CoreExtras::UUID")»::ParseString("«event_uuid»");
+      «FOR eventData : structs»
+         «val relatedEvent = com.btc.serviceidl.util.Util.getRelatedEvent(eventData)»
+         «IF relatedEvent !== null»
+            «val eventUuid = GuidMapper.get(relatedEvent)»
+            // {«eventUuid»}
+            static const «resolveSymbol("BTC::Commons::CoreExtras::UUID")» s«eventData.name»TypeGuid = 
+               «resolveSymbol("BTC::Commons::CoreExtras::UUID")»::ParseString("«eventUuid»");
 
-            «resolveSymbol("BTC::Commons::CoreExtras::UUID")» «resolve(event_data)»::EVENT_TYPE_GUID()
+            «resolveSymbol("BTC::Commons::CoreExtras::UUID")» «resolve(eventData)»::EVENT_TYPE_GUID()
             {
-               return s«event_data.name»TypeGuid;
+               return s«eventData.name»TypeGuid;
             }
          «ENDIF»
       «ENDFOR»

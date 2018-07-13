@@ -18,7 +18,7 @@ package com.btc.serviceidl.generator.dotnet
 class AssemblyResolver
 {
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    static val assemblies_mapper = #{
+    static val assembliesMapper = #{
         "BTC.CAB.ServiceComm.NET.API.DTO" -> "BTC.CAB.ServiceComm.NET.API",
         "CommandLine.Text" -> "CommandLine",
         "log4net.Config" -> "log4net",
@@ -28,7 +28,7 @@ class AssemblyResolver
 
     static def String resolveReference(String namespace)
     {
-        val assembly = assemblies_mapper.get(namespace)
+        val assembly = assembliesMapper.get(namespace)
 
         return assembly ?: namespace
     }

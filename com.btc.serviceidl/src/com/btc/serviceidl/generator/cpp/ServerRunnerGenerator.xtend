@@ -18,11 +18,11 @@ import org.eclipse.xtend.lib.annotations.Accessors
 @Accessors
 class ServerRunnerGenerator extends BasicCppGenerator
 {
-    def generateImplFileBody(InterfaceDeclaration interface_declaration)
+    def generateImplFileBody(InterfaceDeclaration interfaceDeclaration)
     {
         // explicitly resolve some *.lib dependencies
         resolveSymbol("BTC::Commons::CoreExtras::IObserver") // IObserverBase used indirectly in dispatcher
-        val dispatcher = resolve(interface_declaration, ProjectType.DISPATCHER)
+        val dispatcher = resolve(interfaceDeclaration, ProjectType.DISPATCHER)
 
         '''
             «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder")»> RegisterMessageTypes()
@@ -50,7 +50,7 @@ class ServerRunnerGenerator extends BasicCppGenerator
                {
                   «resolveSymbol("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")»().GetLogger("")->SetLevel(«resolveSymbol("BTC::Logging::API::Logger")»::LWarning);
                   «resolveSymbol("BTC::ServiceComm::PerformanceBase::PerformanceTestServer")» server(context,
-                     «resolveSymbol("BTC::Commons::Core::CreateAuto")»<«resolve(interface_declaration, ProjectType.IMPL)»>(context, «resolveSymbol("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")»()),
+                     «resolveSymbol("BTC::Commons::Core::CreateAuto")»<«resolve(interfaceDeclaration, ProjectType.IMPL)»>(context, «resolveSymbol("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")»()),
                      &RegisterMessageTypes,
                      «resolveSymbol("std::bind")»(&«dispatcher»::CreateDispatcherAutoRegistrationFactory,
                      std::placeholders::_1, std::placeholders::_2,

@@ -23,7 +23,7 @@ class NuGetPackageResolver
     // format used by nuget/paket
     
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    static val version_mapper = #{
+    static val versionMapper = #{
         "BTC.CAB.Commons" -> "1.8.7",
         "BTC.CAB.Logging" -> "1.7.2",
         "BTC.CAB.ServiceComm.NET" -> "0.6.0",
@@ -36,7 +36,7 @@ class NuGetPackageResolver
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    static val package_mapper = #{
+    static val packageMapper = #{
         "BTC.CAB.Commons.Core.NET" -> #["BTC.CAB.Commons"],
         "BTC.CAB.Logging.API.NET" -> #["BTC.CAB.Logging"],
         "BTC.CAB.Logging.Log4NET" -> #["BTC.CAB.Logging"],
@@ -60,12 +60,12 @@ class NuGetPackageResolver
         "Spring.Core" -> #["Spring.Core", "Common.Logging"] // TODO we must specify the dependency to Common.Logging as well, otherwise this yields inconsistent dependencies
     }
 
-    val nuget_packages = new HashSet<NuGetPackage>
+    val nugetPackages = new HashSet<NuGetPackage>
 
     private static def NuGetPackage resolvePackageInternal(String assemblyName)
     {
-        val versions = validOrThrow(package_mapper.get(assemblyName), assemblyName, "package ID").map [
-            new Pair(it, validOrThrow(version_mapper.get(it), it, "package version"))
+        val versions = validOrThrow(packageMapper.get(assemblyName), assemblyName, "package ID").map [
+            new Pair(it, validOrThrow(versionMapper.get(it), it, "package version"))
         ].toList
         // TODO probably, this must be generalized, depending on the .NET version. but is this necessary at all? 
         // isn't the hint path filled by nuget or paket?
@@ -86,12 +86,12 @@ class NuGetPackageResolver
 
     def void resolvePackage(String assemblyName)
     {
-        val nuget_package = resolvePackageInternal(assemblyName)
-        nuget_packages.add(nuget_package)
+        val nugetPackage = resolvePackageInternal(assemblyName)
+        nugetPackages.add(nugetPackage)
     }
 
     def Iterable<NuGetPackage> getResolvedPackages()
     {
-        nuget_packages
+        nugetPackages
     }
 }

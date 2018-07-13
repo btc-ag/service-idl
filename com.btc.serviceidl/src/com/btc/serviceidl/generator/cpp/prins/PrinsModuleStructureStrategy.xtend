@@ -26,10 +26,10 @@ class PrinsModuleStructureStrategy implements IModuleStructureStrategy
     public static val MODULES_HEADER_PATH_PREFIX = "modules"
 
     // TODO it is not correct here to distinguish based on the ProjectType, the Codec is also in the PROTOBUF project!
-    override getIncludeFilePath(Iterable<ModuleDeclaration> module_stack, ProjectType project_type, String baseName,
+    override getIncludeFilePath(Iterable<ModuleDeclaration> moduleStack, ProjectType projectType, String baseName,
         HeaderType headerType)
     {
-        getProjectDir(new ParameterBundle(module_stack, project_type)).append(headerType.includeDirectoryName).append(
+        getProjectDir(new ParameterBundle(moduleStack, projectType)).append(headerType.includeDirectoryName).append(
             baseName).addFileExtension(headerType.fileExtension)
     }
 

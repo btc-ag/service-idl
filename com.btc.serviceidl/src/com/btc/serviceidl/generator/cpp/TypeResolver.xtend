@@ -42,13 +42,13 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors(NONE)
 class TypeResolver
 {
-    @Accessors(PACKAGE_GETTER) val IQualifiedNameProvider qualified_name_provider
+    @Accessors(PACKAGE_GETTER) val IQualifiedNameProvider qualifiedNameProvider
     @Accessors(PACKAGE_GETTER) val IProjectSet projectSet
     @Accessors(PACKAGE_GETTER) val IModuleStructureStrategy moduleStructureStrategy
 
-    val Collection<IProjectReference> project_references
-    val Collection<ExternalDependency> cab_libs
-    val Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map
+    val Collection<IProjectReference> projectReferences
+    val Collection<ExternalDependency> cabLibs
+    val Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap
 
     @Accessors(NONE) val Map<IncludeGroup, Set<IPath>> includes = new HashMap<IncludeGroup, Set<IPath>>
 
@@ -59,18 +59,18 @@ class TypeResolver
 
     def Iterable<IProjectReference> getProject_references()
     {
-        project_references.unmodifiableView
+        projectReferences.unmodifiableView
     }
 
     def Iterable<ExternalDependency> getCab_libs()
     {
-        cab_libs.unmodifiableView
+        cabLibs.unmodifiableView
     }
 
     @Deprecated
     def void addLibraryDependency(ExternalDependency libFile)
     {
-        cab_libs.add(libFile)
+        cabLibs.add(libFile)
     }
 
     def addTargetInclude(IPath path)
@@ -102,20 +102,20 @@ class TypeResolver
     @Accessors(PACKAGE_GETTER) val HeaderResolver headerResolver
 
     new(
-        IQualifiedNameProvider qualified_name_provider,
+        IQualifiedNameProvider qualifiedNameProvider,
         IProjectSet projectSet,
         IModuleStructureStrategy moduleStructureStrategy,
-        Collection<IProjectReference> project_references,
-        Collection<ExternalDependency> cab_libs,
-        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map
+        Collection<IProjectReference> projectReferences,
+        Collection<ExternalDependency> cabLibs,
+        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap
     )
     {
-        this.qualified_name_provider = qualified_name_provider
+        this.qualifiedNameProvider = qualifiedNameProvider
         this.projectSet = projectSet
         this.moduleStructureStrategy = moduleStructureStrategy
-        this.project_references = project_references
-        this.cab_libs = cab_libs
-        this.smart_pointer_map = smart_pointer_map
+        this.projectReferences = projectReferences
+        this.cabLibs = cabLibs
+        this.smartPointerMap = smartPointerMap
         this.headerResolver = moduleStructureStrategy.createHeaderResolver
     }
 
@@ -144,7 +144,7 @@ class TypeResolver
         switch (header.includeGroup)
         {
             case CAB_INCLUDE_GROUP:
-                cab_libs.addAll(LibResolver.getCABLibs(header.path))
+                cabLibs.addAll(LibResolver.getCABLibs(header.path))
             case STL_INCLUDE_GROUP:
             // do nothing
             {
@@ -172,38 +172,38 @@ class TypeResolver
         return resolve(object, object.scopeDeterminant.mainProjectType)
     }
 
-    def ResolvedName resolve(AbstractTypeReference object, ProjectType project_type)
+    def ResolvedName resolve(AbstractTypeReference object, ProjectType projectType)
     {
-        if (project_type == ProjectType.PROTOBUF)
+        if (projectType == ProjectType.PROTOBUF)
             throw new IllegalArgumentException("Use ProtobufUtil.resolveProtobuf instead!")
 
         if (object instanceof PrimitiveType)
             return new ResolvedName(getPrimitiveTypeName(object), TransformType.NAMESPACE)
         else if (object instanceof AbstractType && (object as AbstractType).primitiveType !== null)
-            return resolve((object as AbstractType).primitiveType, project_type)
+            return resolve((object as AbstractType).primitiveType, projectType)
 
-        val qualified_name = qualified_name_provider.getFullyQualifiedName(object)
-        if (qualified_name === null)
+        val qualifiedName = qualifiedNameProvider.getFullyQualifiedName(object)
+        if (qualifiedName === null)
             return new ResolvedName(Names.plain(object), TransformType.NAMESPACE)
 
-        if (tryResolveSymbol(GeneratorUtil.switchPackageSeperator(qualified_name.toString, TransformType.NAMESPACE)))
+        if (tryResolveSymbol(GeneratorUtil.switchPackageSeperator(qualifiedName.toString, TransformType.NAMESPACE)))
         {
-            return new ResolvedName(qualified_name, TransformType.NAMESPACE)
+            return new ResolvedName(qualifiedName, TransformType.NAMESPACE)
         }
         else
         {
-            val result = GeneratorUtil.getFullyQualifiedClassName(object, qualified_name, project_type,
+            val result = GeneratorUtil.getFullyQualifiedClassName(object, qualifiedName, projectType,
                 ArtifactNature.CPP, TransformType.NAMESPACE)
-            addToGroup(TARGET_INCLUDE_GROUP, object.getIncludeFilePath(project_type, moduleStructureStrategy))
-            object.resolveProjectFilePath(project_type)
+            addToGroup(TARGET_INCLUDE_GROUP, object.getIncludeFilePath(projectType, moduleStructureStrategy))
+            object.resolveProjectFilePath(projectType)
             return new ResolvedName(result, TransformType.NAMESPACE)
         }
     }
 
-    def void resolveProjectFilePath(AbstractTypeReference referenced_object, ProjectType project_type)
+    def void resolveProjectFilePath(AbstractTypeReference referencedObject, ProjectType projectType)
     {
-        project_references.add(projectSet.resolve(
-            new ParameterBundle.Builder().with(referenced_object.scopeDeterminant.moduleStack).with(project_type).
+        projectReferences.add(projectSet.resolve(
+            new ParameterBundle.Builder().with(referencedObject.scopeDeterminant.moduleStack).with(projectType).
                 build))
     }
 
@@ -243,15 +243,15 @@ class TypeResolver
      * For a given element, check if another type (as member of this element)
      * must be represented as smart pointer + forward declaration, or as-is.
      */
-    def boolean useSmartPointer(AbstractStructuralDeclaration element, AbstractTypeReference other_type)
+    def boolean useSmartPointer(AbstractStructuralDeclaration element, AbstractTypeReference otherType)
     {
         // sequences use forward-declared types as template parameters
         // and do not need the smart pointer wrapping
-        if (other_type.isSequenceType)
+        if (otherType.isSequenceType)
             return false
 
-        val dependencies = smart_pointer_map.get(element)
-        return dependencies !== null && dependencies.contains(other_type.ultimateType)
+        val dependencies = smartPointerMap.get(element)
+        return dependencies !== null && dependencies.contains(otherType.ultimateType)
     }
 
     def Iterable<AbstractTypeReference> resolveForwardDeclarations(Iterable<TypeWrapper> types)
@@ -259,7 +259,7 @@ class TypeResolver
         // TODO does this really need to iterate twice through types? 
         for (wrapper : types)
         {
-            smart_pointer_map.computeIfAbsent(wrapper.type, [new LinkedHashSet<AbstractTypeReference>]).addAll(
+            smartPointerMap.computeIfAbsent(wrapper.type, [new LinkedHashSet<AbstractTypeReference>]).addAll(
                 wrapper.forwardDeclarations)
         }
 

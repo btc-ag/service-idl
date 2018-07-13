@@ -29,15 +29,15 @@ class CommonsGenerator extends BasicCppGenerator
 
     def generateHeaderFileBody(ModuleDeclaration module, String string)
     {
-        val sorted_types = module.topologicallySortedTypes
-        val forward_declarations = typeResolver.resolveForwardDeclarations(sorted_types)
+        val sortedTypes = module.topologicallySortedTypes
+        val forwardDeclarations = typeResolver.resolveForwardDeclarations(sortedTypes)
       
         '''
-         «FOR type : forward_declarations»
+         «FOR type : forwardDeclarations»
             struct «Names.plain(type)»;
          «ENDFOR»
 
-         «FOR wrapper : sorted_types»
+         «FOR wrapper : sortedTypes»
             «toText(wrapper.type, module)»
 
          «ENDFOR»
@@ -47,7 +47,7 @@ class CommonsGenerator extends BasicCppGenerator
     def generateImplFileBody(ModuleDeclaration module, String string)
     {
       // for optional element, include the impl file!
-      if ( new FeatureProfile(module.moduleComponents).uses_optionals
+      if ( new FeatureProfile(module.moduleComponents).usesOptionals
          || !module.eAllContents.filter(SequenceDeclaration).filter[failable].empty
       )
       {

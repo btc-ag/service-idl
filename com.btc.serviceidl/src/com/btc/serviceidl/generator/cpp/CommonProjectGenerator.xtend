@@ -33,14 +33,14 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 class CommonProjectGenerator extends ProjectGeneratorBaseBase
 {
 
-    new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
-        IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
+    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
+        IScopeProvider scopeProvider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
         IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
         ITargetVersionProvider targetVersionProvider,
-        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map, ModuleDeclaration module)
+        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ModuleDeclaration module)
     {
-        super(file_system_access, qualified_name_provider, scope_provider, idl, projectSetFactory, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, smart_pointer_map,
+        super(fileSystemAccess, qualifiedNameProvider, scopeProvider, idl, projectSetFactory, vsSolution,
+            moduleStructureStrategy, targetVersionProvider, smartPointerMap,
             ProjectType.COMMON, module)
     }
 
@@ -48,46 +48,46 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
     def generate()
     {
         // paths
-        val include_path = projectPath.append("include")
-        val source_path = projectPath.append("source")
+        val includePath = projectPath.append("include")
+        val sourcePath = projectPath.append("source")
 
         // file names
-        val export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
+        val exportHeaderFileName = (GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
-        val header_file = Constants.FILE_NAME_TYPES.h
-        val cpp_file = Constants.FILE_NAME_TYPES.cpp
+        val headerFile = Constants.FILE_NAME_TYPES.h
+        val cppFile = Constants.FILE_NAME_TYPES.cpp
 
         // sub-folder "./include"
-        file_system_access.generateFile(include_path.append(export_header_file_name).toString, ArtifactNature.CPP.label,
+        fileSystemAccess.generateFile(includePath.append(exportHeaderFileName).toString, ArtifactNature.CPP.label,
             generateExportHeader())
-        projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
+        projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, exportHeaderFileName)
 
-        file_system_access.generateFile(include_path.append(header_file).toString, ArtifactNature.CPP.label,
-            generateHFileCommons(module, export_header_file_name))
-        projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, header_file)
+        fileSystemAccess.generateFile(includePath.append(headerFile).toString, ArtifactNature.CPP.label,
+            generateHFileCommons(module, exportHeaderFileName))
+        projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, headerFile)
 
         // sub-folder "./source"
-        file_system_access.generateFile(source_path.append(cpp_file).toString, ArtifactNature.CPP.label,
-            generateCppCommons(module, export_header_file_name))
-        projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cpp_file)
+        fileSystemAccess.generateFile(sourcePath.append(cppFile).toString, ArtifactNature.CPP.label,
+            generateCppCommons(module, exportHeaderFileName))
+        projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cppFile)
 
-        generateProjectFiles(ProjectType.COMMON, projectPath, vsSolution.getVcxprojName(param_bundle), projectFileSet)
+        generateProjectFiles(ProjectType.COMMON, projectPath, vsSolution.getVcxprojName(paramBundle), projectFileSet)
     }
 
-    private def String generateHFileCommons(ModuleDeclaration module, String export_header)
+    private def String generateHFileCommons(ModuleDeclaration module, String exportHeader)
     {
         val basicCppGenerator = createBasicCppGenerator
-        val file_content = new CommonsGenerator(basicCppGenerator.typeResolver, targetVersionProvider, param_bundle).
-            generateHeaderFileBody(module, export_header)
-        generateHeader(basicCppGenerator, moduleStructureStrategy, file_content.toString, Optional.of(export_header))
+        val fileContent = new CommonsGenerator(basicCppGenerator.typeResolver, targetVersionProvider, paramBundle).
+            generateHeaderFileBody(module, exportHeader)
+        generateHeader(basicCppGenerator, moduleStructureStrategy, fileContent.toString, Optional.of(exportHeader))
     }
 
-    private def String generateCppCommons(ModuleDeclaration module, String export_header)
+    private def String generateCppCommons(ModuleDeclaration module, String exportHeader)
     {
         val basicCppGenerator = createBasicCppGenerator
-        val file_content = new CommonsGenerator(basicCppGenerator.typeResolver, targetVersionProvider, param_bundle).
-            generateImplFileBody(module, export_header)
-        generateSource(basicCppGenerator, file_content.toString, Optional.empty)
+        val fileContent = new CommonsGenerator(basicCppGenerator.typeResolver, targetVersionProvider, paramBundle).
+            generateImplFileBody(module, exportHeader)
+        generateSource(basicCppGenerator, fileContent.toString, Optional.empty)
     }
 
 }

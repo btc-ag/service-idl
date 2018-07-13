@@ -58,17 +58,17 @@ class OdbGenerator
                      typedef «guidResolved»   query_type;
                      typedef char                             image_type[16];
             
-                     static void set_value (value_type& v, const image_type& i, std::size_t n, bool is_null)
+                     static void set_value (value_type& v, const image_type& i, std::size_t n, bool isNull)
                      {
-                        if (!is_null)
+                        if (!isNull)
                            «resolveSymbol("std::memcpy")» (&v, &i[0], n);
                         else
                            v = «guidResolved»::Null();
                      }
             
-                     static void set_image (image_type i, std::size_t s, std::size_t& n, bool& is_null, const value_type& v)
+                     static void set_image (image_type i, std::size_t s, std::size_t& n, bool& isNull, const value_type& v)
                      {
-                        is_null = false;
+                        isNull = false;
                         «resolveSymbol("std::memcpy")» (&i[0], &v, s);
                         n = s;
                      }
@@ -92,17 +92,17 @@ class OdbGenerator
                      typedef «guidResolved»   query_type;
                      typedef char                             image_type[16];
             
-                     static void set_value (value_type& v, const image_type& i, std::size_t n, bool is_null)
+                     static void set_value (value_type& v, const image_type& i, std::size_t n, bool isNull)
                      {
-                        if (!is_null)
+                        if (!isNull)
                            «resolveSymbol("std::memcpy")» (&v, &i[0], n);
                         else
                            v = «guidResolved»::Null();
                      }
                      
-                     static void set_image (image_type i, std::size_t s, std::size_t& n, bool& is_null, const value_type& v)
+                     static void set_image (image_type i, std::size_t s, std::size_t& n, bool& isNull, const value_type& v)
                      {
-                        is_null = false;
+                        isNull = false;
                         «resolveSymbol("std::memcpy")» (&i[0], &v, s);
                         n = s;
                      }
@@ -170,82 +170,82 @@ class OdbGenerator
         resolveODBType(element.actualType)
     }
 
-    private def String makeODBColumn(MemberElementWrapper member, Set<String> existing_column_names)
+    private def String makeODBColumn(MemberElementWrapper member, Set<String> existingColumnNames)
     {
-        val column_name = member.name.toUpperCase
-        val is_uuid = member.type.ultimateType.isUUIDType
-        val is_optional = member.optional
+        val columnName = member.name.toUpperCase
+        val isUuid = member.type.ultimateType.isUUIDType
+        val isOptional = member.optional
 
-        val is_sequence = member.type.isSequenceType
-        if (is_sequence)
+        val isSequence = member.type.isSequenceType
+        if (isSequence)
             return ""
 
-        val ultimate_type = member.type.ultimateType
-        if (ultimate_type instanceof StructDeclaration)
+        val ultimateType = member.type.ultimateType
+        if (ultimateType instanceof StructDeclaration)
         {
             // no content for a DB column: leave
             // otherwise ODB error "No persistent data members in the class" 
-            if (ultimate_type.members.empty)
+            if (ultimateType.members.empty)
                 return ""
         }
 
         // Oracle does not support column names longer than 30 characters,
         // therefore we need to truncate names which exceeds this limit!
-        var normalized_column_name = member.name.toUpperCase
+        var normalizedColumnName = member.name.toUpperCase
         val size = member.calculateMaximalNameLength
         if (size > 30)
         {
-            normalized_column_name = member.name.replaceAll("[a-z]", "").toUpperCase
-            var temp_name = normalized_column_name
+            normalizedColumnName = member.name.replaceAll("[a-z]", "").toUpperCase
+            var tempName = normalizedColumnName
             var index = new AtomicInteger(1); // TODO why should this be atomic? we only use a single thread
-            while (existing_column_names.contains(temp_name))
+            while (existingColumnNames.contains(tempName))
             {
-                temp_name = normalized_column_name + (index.addAndGet(1) ).toString
+                tempName = normalizedColumnName + (index.addAndGet(1) ).toString
             }
-            normalized_column_name = temp_name
+            normalizedColumnName = tempName
         }
 
-        existing_column_names.add(normalized_column_name)
+        existingColumnNames.add(normalizedColumnName)
 
         '''
-            #pragma db «IF is_uuid && column_name == "ID"»id «ENDIF»column("«normalized_column_name»")«IF is_uuid» oracle:type("RAW(16)") mssql:type("BINARY(16)")«ENDIF»
-            «IF is_optional»«resolveSymbol("odb::nullable")»<«ENDIF»«resolveODBType(member.type)»«IF is_optional»>«ENDIF» «column_name»;
+            #pragma db «IF isUuid && columnName == "ID"»id «ENDIF»column("«normalizedColumnName»")«IF isUuid» oracle:type("RAW(16)") mssql:type("BINARY(16)")«ENDIF»
+            «IF isOptional»«resolveSymbol("odb::nullable")»<«ENDIF»«resolveODBType(member.type)»«IF isOptional»>«ENDIF» «columnName»;
         '''
     }
 
     def generateHxx(StructDeclaration struct)
     {
-        val table_name = struct.name.toUpperCase
-        val class_name = struct.name.toLowerCase
+        val tableName = struct.name.toUpperCase
+        val className = struct.name.toLowerCase
 
-        val existing_column_names = new HashSet<String>
+        val existingColumnNames = new HashSet<String>
 
         '''
-            #pragma db object table("«table_name»")
-            class «class_name»
+            #pragma db object table("«tableName»")
+            class «className»
             {
             public:
-               «class_name» () {}
+               «className» () {}
                
                «FOR member : struct.allMembers»
-                   «makeODBColumn(member, existing_column_names)»
+                   «makeODBColumn(member, existingColumnNames)»
                «ENDFOR»
             };
         '''
     }
 
-    def generateCommonHxx(Iterable<StructDeclaration> common_types)
+    def generateCommonHxx(Iterable<StructDeclaration> commonTypes)
     {
-        val existing_column_names = new HashSet<String>
+        val existingColumnNames = new HashSet<String>
 
         '''
-            «FOR type : common_types»
+            «FOR type : commonTypes»
                 «IF !type.members.empty»
                     #pragma db value
                     struct «type.name»
                     {
                        «FOR member : type.allMembers»
-                           «makeODBColumn(member, existing_column_names)»
+                           «makeODBColumn(member, existingColumnNames)»
                        «ENDFOR»
                     };
                 «ENDIF»

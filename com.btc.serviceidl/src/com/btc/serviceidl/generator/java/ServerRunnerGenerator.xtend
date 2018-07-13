@@ -24,19 +24,19 @@ class ServerRunnerGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def generateServerRunnerImplementation(String class_name, InterfaceDeclaration interface_declaration)
+    def generateServerRunnerImplementation(String className, InterfaceDeclaration interfaceDeclaration)
     {
-        val api_name = typeResolver.resolve(interface_declaration)
-        val impl_name = typeResolver.resolve(interface_declaration, ProjectType.IMPL)
-        val dispatcher_name = typeResolver.resolve(interface_declaration, ProjectType.DISPATCHER)
+        val apiName = typeResolver.resolve(interfaceDeclaration)
+        val implName = typeResolver.resolve(interfaceDeclaration, ProjectType.IMPL)
+        val dispatcherName = typeResolver.resolve(interfaceDeclaration, ProjectType.DISPATCHER)
 
         '''
-            public class «class_name» implements «typeResolver.resolve("java.lang.AutoCloseable")» {
+            public class «className» implements «typeResolver.resolve("java.lang.AutoCloseable")» {
             
                private final «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
                private «typeResolver.resolve("com.btc.cab.servicecomm.api.IServiceRegistration")» _serviceRegistration;
             
-               public «class_name»(IServerEndpoint serverEndpoint) {
+               public «className»(IServerEndpoint serverEndpoint) {
                   _serverEndpoint = serverEndpoint;
                }
             
@@ -45,15 +45,15 @@ class ServerRunnerGenerator
                   // Create ServiceDescriptor for the service
                   «typeResolver.resolve("com.btc.cab.servicecomm.api.dto.ServiceDescriptor")» serviceDescriptor = new ServiceDescriptor();
             
-                  serviceDescriptor.setServiceTypeUuid(«api_name».TypeGuid);
-                  serviceDescriptor.setServiceTypeName("«api_name.fullyQualifiedName»");
-                  serviceDescriptor.setServiceInstanceName("«interface_declaration.name»TestService");
+                  serviceDescriptor.setServiceTypeUuid(«apiName».TypeGuid);
+                  serviceDescriptor.setServiceTypeName("«apiName.fullyQualifiedName»");
+                  serviceDescriptor.setServiceInstanceName("«interfaceDeclaration.name»TestService");
                   serviceDescriptor
-               .setServiceInstanceDescription("«api_name.fullyQualifiedName» instance for integration tests");
+               .setServiceInstanceDescription("«apiName.fullyQualifiedName» instance for integration tests");
             
                   // Create dispatcher and dispatchee instances                  
-                  «impl_name» dispatchee = new «impl_name»();
-                  «dispatcher_name» dispatcher = new «dispatcher_name»(dispatchee, 
+                  «implName» dispatchee = new «implName»();
+                  «dispatcherName» dispatcher = new «dispatcherName»(dispatchee, 
                       new «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
                               «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")»
                            «ELSE»
@@ -80,25 +80,25 @@ class ServerRunnerGenerator
         '''
     }
 
-    def generateServerRunnerProgram(String class_name, String server_runner_class_name, String beans_name,
-        String log4j_name, InterfaceDeclaration interface_declaration)
+    def generateServerRunnerProgram(String className, String serverRunnerClassName, String beansName,
+        String log4j_name, InterfaceDeclaration interfaceDeclaration)
     {
-        val resources_location = MavenArtifactType.TEST_RESOURCES.directoryLayout
+        val resourcesLocation = MavenArtifactType.TEST_RESOURCES.directoryLayout
 
         val loggerFactoryType = basicJavaSourceGenerator.resolveLoggerFactory
         val loggerType = basicJavaSourceGenerator.resolveLogger 
         '''
-            public class «class_name» {
+            public class «className» {
                
                private static String _connectionString;
                private static «typeResolver.resolve(JavaClassNames.SERVER_ENDPOINT)» _serverEndpoint;
-               private static «server_runner_class_name» _serverRunner;
-               private static final «loggerType» logger = «loggerFactoryType».getLogger(«class_name».class);
+               private static «serverRunnerClassName» _serverRunner;
+               private static final «loggerType» logger = «loggerFactoryType».getLogger(«className».class);
                private static String _file;
                
                public static void main(String[] args) {                  
                   «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
-                  «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resources_location»/«log4j_name»", 60 * 1000);
+                  «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resourcesLocation»/«log4j_name»", 60 * 1000);
                   «ENDIF»
                   // Parse Parameters
                   int i = 0;
@@ -111,7 +111,7 @@ class ServerRunnerGenerator
                   }
                   
                   if (_file == null)
-                     _file = "«resources_location»/«beans_name»";
+                     _file = "«resourcesLocation»/«beansName»";
                   
                   //no parameters; help the user...
                   if (i == 0) {
@@ -145,7 +145,7 @@ class ServerRunnerGenerator
                          «ENDIF»
                          _serverConnectionFactory).create(_connectionString);
                      
-                     _serverRunner = new «server_runner_class_name»(_serverEndpoint);
+                     _serverRunner = new «serverRunnerClassName»(_serverEndpoint);
                      _serverRunner.registerService();
                      
                      System.out.println("Server listening at " + _connectionString);

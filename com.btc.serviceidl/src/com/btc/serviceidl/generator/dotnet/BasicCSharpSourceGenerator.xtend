@@ -45,17 +45,17 @@ import static extension com.btc.serviceidl.util.Extensions.*
 class BasicCSharpSourceGenerator {
     val extension TypeResolver typeResolver 
     @Accessors(NONE) val ITargetVersionProvider targetVersionProvider
-    val Map<String, String> typedef_table    
+    val Map<String, String> typedefTable    
     val IDLSpecification idl
     
    def dispatch String toText(AliasDeclaration element, EObject context)
    {
-      val type_name = typedef_table.computeIfAbsent(element.name, [toText(element.type, element)])
+      val typeName = typedefTable.computeIfAbsent(element.name, [toText(element.type, element)])
 
       if (context instanceof AbstractStructuralDeclaration)
          return "" // in this context, we only denote the substitute type without any output
       else
-         return type_name
+         return typeName
    }
    
    def dispatch String toText(AbstractType element, EObject context)
@@ -84,8 +84,8 @@ class BasicCSharpSourceGenerator {
       '''
       public enum «element.name»
       {
-         «FOR enum_value : element.containedIdentifiers SEPARATOR ","»
-            «enum_value»
+         «FOR enumValue : element.containedIdentifiers SEPARATOR ","»
+            «enumValue»
          «ENDFOR»
       }
       '''
@@ -102,31 +102,31 @@ class BasicCSharpSourceGenerator {
    {
       if (context instanceof AbstractStructuralDeclaration)
       {
-         val class_members = new ArrayList<Triple<String, String, String>>
-         for (member : element.effectiveMembers) class_members.add(Tuples.create(member.name.asProperty, toText(member, element), maybeOptional(member)))
+         val classMembers = new ArrayList<Triple<String, String, String>>
+         for (member : element.effectiveMembers) classMembers.add(Tuples.create(member.name.asProperty, toText(member, element), maybeOptional(member)))
          
-         val all_class_members = new ArrayList<Triple<String, String, String>>
-         element.allMembers.forEach[e | all_class_members.add(Tuples.create(e.name.asProperty, toText(e, element), maybeOptional(e)))]
+         val allClassMembers = new ArrayList<Triple<String, String, String>>
+         element.allMembers.forEach[e | allClassMembers.add(Tuples.create(e.name.asProperty, toText(e, element), maybeOptional(e)))]
 
-         val related_event =  com.btc.serviceidl.util.Util.getRelatedEvent(element)
+         val relatedEvent =  com.btc.serviceidl.util.Util.getRelatedEvent(element)
          
          '''
          public class «element.name»«IF element.supertype !== null» : «resolve(element.supertype)»«ENDIF»
          {
-            «IF related_event !== null»
+            «IF relatedEvent !== null»
                
-               public static readonly «resolve("System.Guid")» «eventTypeGuidProperty» = new Guid("«GuidMapper.get(related_event)»");
+               public static readonly «resolve("System.Guid")» «eventTypeGuidProperty» = new Guid("«GuidMapper.get(relatedEvent)»");
             «ENDIF»
-            «FOR class_member : class_members BEFORE System.lineSeparator»
-               public «class_member.second»«class_member.third» «class_member.first» { get; private set; }
+            «FOR classMember : classMembers BEFORE System.lineSeparator»
+               public «classMember.second»«classMember.third» «classMember.first» { get; private set; }
             «ENDFOR»
             
-            «IF !class_members.empty»
-               public «element.name»(«FOR class_member : all_class_members SEPARATOR ", "»«class_member.second»«class_member.third» «class_member.first.asParameter»«ENDFOR»)
+            «IF !classMembers.empty»
+               public «element.name»(«FOR classMember : allClassMembers SEPARATOR ", "»«classMember.second»«classMember.third» «classMember.first.asParameter»«ENDFOR»)
                «IF element.supertype !== null» : base(«element.supertype.allMembers.map[name.asParameter].join(", ")»)«ENDIF»
                {
-                  «FOR class_member : class_members»
-                     this.«class_member.first» = «class_member.first.asParameter»;
+                  «FOR classMember : classMembers»
+                     this.«classMember.first» = «classMember.first.asParameter»;
                   «ENDFOR»
                }
             «ENDIF»
@@ -155,22 +155,22 @@ class BasicCSharpSourceGenerator {
    {
       if (context instanceof AbstractStructuralDeclaration)
       {
-         val class_members = new ArrayList<Pair<MemberElementWrapper, String>>
-         for (member : element.effectiveMembers) class_members.add(Tuples.create(member, toText(member, element)))
+         val classMembers = new ArrayList<Pair<MemberElementWrapper, String>>
+         for (member : element.effectiveMembers) classMembers.add(Tuples.create(member, toText(member, element)))
 
          '''
          public class «element.name» : «IF element.supertype === null»«resolve("System.Exception")»«ELSE»«toText(element.supertype, element)»«ENDIF»
          {
             
-            public «element.name»(«FOR class_member : class_members SEPARATOR ", "»«class_member.second»«maybeOptional(class_member.first)» «class_member.first.name.asParameter»«ENDFOR»)
+            public «element.name»(«FOR classMember : classMembers SEPARATOR ", "»«classMember.second»«maybeOptional(classMember.first)» «classMember.first.name.asParameter»«ENDFOR»)
             «IF element.supertype !== null && (element.supertype instanceof ExceptionDeclaration)» : base(«»)«ENDIF»
             {
-               «FOR class_member : class_members»
-                  this.«class_member.first.name.asProperty» = «class_member.first.name.asParameter»;
+               «FOR classMember : classMembers»
+                  this.«classMember.first.name.asProperty» = «classMember.first.name.asParameter»;
                «ENDFOR»
             }
             
-            «IF !(class_members.size == 1 && class_members.head.second.equalsIgnoreCase("string"))»
+            «IF !(classMembers.size == 1 && classMembers.head.second.equalsIgnoreCase("string"))»
             public «element.name»(«resolve("System.string")» msg) : base(msg)
             {
                // this dummy constructor is necessary because otherwise
@@ -178,8 +178,8 @@ class BasicCSharpSourceGenerator {
             }
             «ENDIF»
             
-            «FOR class_member : class_members SEPARATOR System.lineSeparator»
-               public «class_member.second»«maybeOptional(class_member.first)» «class_member.first.name.asProperty» { get; private set; }
+            «FOR classMember : classMembers SEPARATOR System.lineSeparator»
+               public «classMember.second»«maybeOptional(classMember.first)» «classMember.first.name.asProperty» { get; private set; }
             «ENDFOR»
          }
          '''

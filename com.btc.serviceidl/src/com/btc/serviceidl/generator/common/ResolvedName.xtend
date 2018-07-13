@@ -21,18 +21,18 @@ import java.util.regex.Pattern
 
 class ResolvedName
 {
-    val QualifiedName qualified_name
-    val TransformType transform_type
-    val boolean fully_qualified
+    val QualifiedName qualifiedName
+    val TransformType transformType
+    val boolean fullyQualified
 
     new(String name, TransformType tp)
     {
         this(QualifiedName.create(name.split(Pattern.quote(tp.separator))), tp, true)
     }
 
-    new(String name, TransformType tp, boolean fully_qualified)
+    new(String name, TransformType tp, boolean fullyQualified)
     {
-        this(QualifiedName.create(name.split(Pattern.quote(tp.separator))), tp, fully_qualified)
+        this(QualifiedName.create(name.split(Pattern.quote(tp.separator))), tp, fullyQualified)
     }
 
     new(QualifiedName qn, TransformType tp)
@@ -40,26 +40,26 @@ class ResolvedName
         this(qn, tp, true)
     }
 
-    new(QualifiedName qn, TransformType tp, boolean fully_qualified)
+    new(QualifiedName qn, TransformType tp, boolean fullyQualified)
     {
-        transform_type = tp
-        qualified_name = qn
-        this.fully_qualified = fully_qualified
+        transformType = tp
+        qualifiedName = qn
+        this.fullyQualified = fullyQualified
     }
 
     def String getFullyQualifiedName()
     {
-        GeneratorUtil.switchPackageSeperator(qualified_name.toString, transform_type)
+        GeneratorUtil.switchPackageSeperator(qualifiedName.toString, transformType)
     }
 
     def String getShortName()
     {
-        qualified_name.lastSegment
+        qualifiedName.lastSegment
     }
 
     def String getNamespace()
     {
-        qualified_name.skipLast(1).toString
+        qualifiedName.skipLast(1).toString
     }
 
     /**
@@ -67,9 +67,9 @@ class ResolvedName
      */
     override String toString()
     {
-        if (fully_qualified)
+        if (fullyQualified)
             fullyQualifiedName
         else
-            return qualified_name.lastSegment
+            return qualifiedName.lastSegment
     }
 }

@@ -35,7 +35,7 @@ import static extension com.btc.serviceidl.util.Util.*
 class ProtobufUtil
 {
     static def ResolvedName resolveProtobuf(extension TypeResolver typeResolver, AbstractTypeReference object,
-        ProtobufType protobuf_type)
+        ProtobufType protobufType)
     {
         if (object.isUUIDType)
             return new ResolvedName(resolveSymbol("std::string"), TransformType.NAMESPACE)
@@ -44,26 +44,26 @@ class ProtobufUtil
         else if (object instanceof PrimitiveType)
             return new ResolvedName(getPrimitiveTypeName(object), TransformType.NAMESPACE)
         else if (object instanceof AbstractType && (object as AbstractType).primitiveType !== null)
-            return resolveProtobuf(typeResolver, (object as AbstractType).primitiveType, protobuf_type)
+            return resolveProtobuf(typeResolver, (object as AbstractType).primitiveType, protobufType)
 
-        val scope_determinant = object.scopeDeterminant
+        val scopeDeterminant = object.scopeDeterminant
 
-        val paramBundle = ParameterBundle.createBuilder(scope_determinant.moduleStack).with(ProjectType.PROTOBUF).build
+        val paramBundle = ParameterBundle.createBuilder(scopeDeterminant.moduleStack).with(ProjectType.PROTOBUF).build
 
         // TODO this is cloned by java.ProtobufUtil(.getLocalName?) 
         val result = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.NAMESPACE) +
             Constants.SEPARATOR_NAMESPACE + if (object instanceof InterfaceDeclaration)
-                Names.plain(object) + protobuf_type.getName
+                Names.plain(object) + protobufType.getName
             else if (object instanceof FunctionDeclaration)
-                Names.plain(scope_determinant) + "_" + protobuf_type.getName + "_" + Names.plain(object) +
-                    protobuf_type.getName
+                Names.plain(scopeDeterminant) + "_" + protobufType.getName + "_" + Names.plain(object) +
+                    protobufType.getName
             else
                 Names.plain(object)
 
         addTargetInclude(typeResolver.moduleStructureStrategy.getIncludeFilePath(
-            scope_determinant.moduleStack,
+            scopeDeterminant.moduleStack,
             ProjectType.PROTOBUF,
-            GeneratorUtil.getPbFileName(scope_determinant),
+            GeneratorUtil.getPbFileName(scopeDeterminant),
             HeaderType.PROTOBUF_HEADER
         ))
 
@@ -78,23 +78,23 @@ class ProtobufUtil
     }
 
     static def String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle,
-        AbstractTypeReference element, AbstractContainerDeclaration container, boolean use_codec_ns)
+        AbstractTypeReference element, AbstractContainerDeclaration container, boolean useCodecNs)
     {
         // handle sequence first, because it may include UUIDs and other types from below
         if (element.isSequenceType)
         {
-            val is_failable = element.isFailable
-            val ultimate_type = element.ultimateType
+            val isFailable = element.isFailable
+            val ultimateType = element.ultimateType
 
             // TODO remove ProtobufType argument
-            var protobuf_type = typeResolver.resolveProtobuf(ultimate_type, ProtobufType.REQUEST).fullyQualifiedName
-            if (is_failable)
-                protobuf_type = typeResolver.resolveFailableProtobufType(element, container)
-            else if (ultimate_type.isByte || ultimate_type.isInt16 || ultimate_type.isChar)
-                protobuf_type = "google::protobuf::int32"
+            var protobufType = typeResolver.resolveProtobuf(ultimateType, ProtobufType.REQUEST).fullyQualifiedName
+            if (isFailable)
+                protobufType = typeResolver.resolveFailableProtobufType(element, container)
+            else if (ultimateType.isByte || ultimateType.isInt16 || ultimateType.isChar)
+                protobufType = "google::protobuf::int32"
 
-            val isUUIDType = ultimate_type.isUUIDType
-            val decodeMethodName = (if (is_failable)
+            val isUUIDType = ultimateType.isUUIDType
+            val decodeMethodName = (if (isFailable)
                 "DecodeFailable"
             else if (isUUIDType) "DecodeUUID" else "Decode") +
                 if (element.eContainer instanceof AbstractType &&
@@ -104,7 +104,7 @@ class ProtobufUtil
                 else
                     ""
 
-            return '''«IF use_codec_ns»«typeResolver.resolveCodecNS(paramBundle, ultimate_type, is_failable, Optional.of(container))»::«ENDIF»«decodeMethodName»«IF is_failable || !isUUIDType»< «protobuf_type», «resolve(ultimate_type)» >«ENDIF»'''
+            return '''«IF useCodecNs»«typeResolver.resolveCodecNS(paramBundle, ultimateType, isFailable, Optional.of(container))»::«ENDIF»«decodeMethodName»«IF isFailable || !isUUIDType»< «protobufType», «resolve(ultimateType)» >«ENDIF»'''
         }
 
         if (element.isUUIDType)
@@ -129,24 +129,24 @@ class ProtobufUtil
     }
 
     static def String resolveCodecNS(extension TypeResolver typeResolver, ParameterBundle paramBundle,
-        AbstractTypeReference object, boolean is_failable, Optional<AbstractContainerDeclaration> container)
+        AbstractTypeReference object, boolean isFailable, Optional<AbstractContainerDeclaration> container)
     {
-        val ultimate_type = object.ultimateType
+        val ultimateType = object.ultimateType
 
         // failable wrappers always local!
-        val moduleStack = if (is_failable) paramBundle.moduleStack else ultimate_type.scopeDeterminant.moduleStack
+        val moduleStack = if (isFailable) paramBundle.moduleStack else ultimateType.scopeDeterminant.moduleStack
 
-        val codec_name = GeneratorUtil.getCodecName(if (is_failable) container.get else ultimate_type.scopeDeterminant)
+        val codecName = GeneratorUtil.getCodecName(if (isFailable) container.get else ultimateType.scopeDeterminant)
 
         addTargetInclude(
-            typeResolver.moduleStructureStrategy.getIncludeFilePath(moduleStack, ProjectType.PROTOBUF, codec_name,
+            typeResolver.moduleStructureStrategy.getIncludeFilePath(moduleStack, ProjectType.PROTOBUF, codecName,
                 HeaderType.REGULAR_HEADER))
 
-        resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
+        resolveProjectFilePath(ultimateType, ProjectType.PROTOBUF)
 
         GeneratorUtil.getTransformedModuleName(
             new ParameterBundle.Builder().with(moduleStack).with(ProjectType.PROTOBUF).build, ArtifactNature.CPP,
-            TransformType.NAMESPACE) + TransformType.NAMESPACE.separator + codec_name
+            TransformType.NAMESPACE) + TransformType.NAMESPACE.separator + codecName
     }
 
     static def String resolveFailableProtobufType(extension TypeResolver typeResolver, AbstractTypeReference element,
@@ -160,7 +160,7 @@ class ProtobufUtil
             ParameterBundle.createBuilder(container.scopeDeterminant.moduleStack).with(ProjectType.PROTOBUF).build,
             ArtifactNature.CPP,
             TransformType.NAMESPACE
-        ) + Constants.SEPARATOR_NAMESPACE + GeneratorUtil.asFailable(element, container, qualified_name_provider)
+        ) + Constants.SEPARATOR_NAMESPACE + GeneratorUtil.asFailable(element, container, qualifiedNameProvider)
     }
 
     static def asCppProtobufName(String name)

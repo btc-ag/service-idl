@@ -26,54 +26,54 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 @Accessors
 class VSProjectFileGenerator
 {
-    val IFileSystemAccess file_system_access
-    val ParameterBundle param_bundle
+    val IFileSystemAccess fileSystemAccess
+    val ParameterBundle paramBundle
     val IProjectSet projectSet
-    val Iterable<IProjectReference> project_references
+    val Iterable<IProjectReference> projectReferences
 
     val ProjectFileSet projectFileSet
 
-    val ProjectType project_type
-    val IPath project_path
-    val String project_name
+    val ProjectType projectType
+    val IPath projectPath
+    val String projectName
 
     def generate()
     {
         // root folder of the project
-        file_system_access.generateFile(
-            project_path + Constants.SEPARATOR_FILE + project_name.vcxproj,
+        fileSystemAccess.generateFile(
+            projectPath + Constants.SEPARATOR_FILE + projectName.vcxproj,
             ArtifactNature.CPP.label,
-            generateVcxproj(project_name)
+            generateVcxproj(projectName)
         )
-        file_system_access.generateFile(
-            project_path + Constants.SEPARATOR_FILE + project_name.vcxproj.filters,
+        fileSystemAccess.generateFile(
+            projectPath + Constants.SEPARATOR_FILE + projectName.vcxproj.filters,
             ArtifactNature.CPP.label,
             generateVcxprojFilters()
         )
         // *.vcxproj.user file for executable projects
-        if (project_type == ProjectType.TEST || project_type == ProjectType.SERVER_RUNNER)
+        if (projectType == ProjectType.TEST || projectType == ProjectType.SERVER_RUNNER)
         {
-            file_system_access.generateFile(
-                project_path + Constants.SEPARATOR_FILE + project_name.vcxproj.user,
+            fileSystemAccess.generateFile(
+                projectPath + Constants.SEPARATOR_FILE + projectName.vcxproj.user,
                 ArtifactNature.CPP.label,
-                generateVcxprojUser(project_type)
+                generateVcxprojUser(projectType)
             )
         }
     }
 
-    private def generateVcxprojUser(ProjectType project_type)
+    private def generateVcxprojUser(ProjectType projectType)
     {
         new VcxProjGenerator(
-            param_bundle,
+            paramBundle,
             vsSolution,
             myProjectReferences,
             projectFileSet.unmodifiableView
-        ).generateVcxprojUser(project_type)
+        ).generateVcxprojUser(projectType)
     }
 
     def getMyProjectReferences()
     {
-        project_references.downcast
+        projectReferences.downcast
     }
 
     static def private downcast(extension Iterable<IProjectReference> set)
@@ -90,21 +90,21 @@ class VSProjectFileGenerator
     private def generateVcxprojFilters()
     {
         new VcxProjGenerator(
-            param_bundle,
+            paramBundle,
             vsSolution,
             myProjectReferences,
             projectFileSet.unmodifiableView
         ).generateVcxprojFilters()
     }
 
-    private def String generateVcxproj(String project_name)
+    private def String generateVcxproj(String projectName)
     {
         new VcxProjGenerator(
-            param_bundle,
+            paramBundle,
             vsSolution,
             myProjectReferences,
             projectFileSet.unmodifiableView
-        ).generate(project_name, project_path).toString
+        ).generate(projectName, projectPath).toString
     }
 
 }

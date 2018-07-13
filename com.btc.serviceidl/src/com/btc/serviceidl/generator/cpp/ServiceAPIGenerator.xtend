@@ -36,64 +36,64 @@ import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors
 class ServiceAPIGenerator extends BasicCppGenerator {
-   def String generateHeaderFileBody(InterfaceDeclaration interface_declaration)
+   def String generateHeaderFileBody(InterfaceDeclaration interfaceDeclaration)
    {
       // TODO this file should only contain the service API functionality, generic functionality should be extracted, 
       // and functionality specific to other project types should be moved elsewhere
       
       // API requires some specific conditions (GUID, pure virtual functions, etc.)
       // non-API also (e.g. override keyword etc.)
-      val is_api = paramBundle.projectType == ProjectType.SERVICE_API
-      val is_proxy = paramBundle.projectType == ProjectType.PROXY
-      val is_impl = paramBundle.projectType == ProjectType.IMPL
-      val anonymous_event = com.btc.serviceidl.util.Util.getAnonymousEvent(interface_declaration)
-      val export_macro = makeExportMacro
+      val isApi = paramBundle.projectType == ProjectType.SERVICE_API
+      val isProxy = paramBundle.projectType == ProjectType.PROXY
+      val isImpl = paramBundle.projectType == ProjectType.IMPL
+      val anonymousEvent = com.btc.serviceidl.util.Util.getAnonymousEvent(interfaceDeclaration)
+      val exportMacro = makeExportMacro
       
-      val sorted_types = interface_declaration.topologicallySortedTypes
-      val forward_declarations = resolveForwardDeclarations(sorted_types)
+      val sortedTypes = interfaceDeclaration.topologicallySortedTypes
+      val forwardDeclarations = resolveForwardDeclarations(sortedTypes)
       
       '''
-      «IF is_api»
-         «FOR type : forward_declarations»
+      «IF isApi»
+         «FOR type : forwardDeclarations»
             struct «Names.plain(type)»;
          «ENDFOR»
 
-         «FOR wrapper : sorted_types»
-            «toText(wrapper.type, interface_declaration)»
+         «FOR wrapper : sortedTypes»
+            «toText(wrapper.type, interfaceDeclaration)»
             
          «ENDFOR»
       «ENDIF»
-      «IF is_proxy»
+      «IF isProxy»
          // anonymous namespace for internally used typedef
          namespace
          {
             typedef «resolveSymbol("BTC::ServiceComm::ProtobufBase::AProtobufServiceProxyBaseTemplate")»<
-               «typeResolver.resolveProtobuf(interface_declaration, ProtobufType.REQUEST)»
-               ,«typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)» > «interface_declaration.asBaseName»;
+               «typeResolver.resolveProtobuf(interfaceDeclaration, ProtobufType.REQUEST)»
+               ,«typeResolver.resolveProtobuf(interfaceDeclaration, ProtobufType.RESPONSE)» > «interfaceDeclaration.asBaseName»;
          }
       «ENDIF»
-      «IF !interface_declaration.docComments.empty»
+      «IF !interfaceDeclaration.docComments.empty»
       /**
-         «FOR comment : interface_declaration.docComments»«toText(comment, interface_declaration)»«ENDFOR»
+         «FOR comment : interfaceDeclaration.docComments»«toText(comment, interfaceDeclaration)»«ENDFOR»
       */
       «ENDIF»
-      class «export_macro»
-      «generateHClassSignature(interface_declaration)»
+      class «exportMacro»
+      «generateHClassSignature(interfaceDeclaration)»
       {
       public:
-         «IF is_api»
-            /** \return {«GuidMapper.get(interface_declaration)»} */
+         «IF isApi»
+            /** \return {«GuidMapper.get(interfaceDeclaration)»} */
             static «resolveSymbol("BTC::Commons::CoreExtras::UUID")» TYPE_GUID();
          «ELSE»
-            «generateHConstructor(interface_declaration)»
+            «generateHConstructor(interfaceDeclaration)»
             
-            «generateHDestructor(interface_declaration)»
+            «generateHDestructor(interfaceDeclaration)»
          «ENDIF»
-         «FOR function : interface_declaration.functions»
+         «FOR function : interfaceDeclaration.functions»
          
          /**
-            «IF is_api»
-               «FOR comment : function.docComments»«toText(comment, interface_declaration)»«ENDFOR»
+            «IF isApi»
+               «FOR comment : function.docComments»«toText(comment, interfaceDeclaration)»«ENDFOR»
                «com.btc.serviceidl.util.Util.addNewLine(!function.docComments.empty)»
                «FOR parameter : function.parameters»
                \param[«parameter.direction»] «parameter.paramName» 
@@ -105,39 +105,39 @@ class ServiceAPIGenerator extends BasicCppGenerator {
                «com.btc.serviceidl.util.Util.addNewLine(!function.raisedExceptions.empty)»
                «IF !(function.returnedType instanceof VoidType)»\return «ENDIF»
             «ELSE»
-               \see «resolve(interface_declaration, ProjectType.SERVICE_API)»::«function.name»
+               \see «resolve(interfaceDeclaration, ProjectType.SERVICE_API)»::«function.name»
             «ENDIF»
          */
-         virtual «IF !function.isSync»«resolveSymbol("BTC::Commons::CoreExtras::Future")»<«ENDIF»«toText(function.returnedType, interface_declaration)»«IF !function.isSync»>«ENDIF» «function.name»(«generateParameters(function)»)«IF function.isQuery» const«ENDIF»«IF is_api» = 0«ELSE» override«ENDIF»;
+         virtual «IF !function.isSync»«resolveSymbol("BTC::Commons::CoreExtras::Future")»<«ENDIF»«toText(function.returnedType, interfaceDeclaration)»«IF !function.isSync»>«ENDIF» «function.name»(«generateParameters(function)»)«IF function.isQuery» const«ENDIF»«IF isApi» = 0«ELSE» override«ENDIF»;
          «ENDFOR»
-         «IF is_proxy»
+         «IF isProxy»
             
-            using «interface_declaration.asBaseName»::InitiateShutdown;
+            using «interfaceDeclaration.asBaseName»::InitiateShutdown;
             
-            using «interface_declaration.asBaseName»::Wait;
+            using «interfaceDeclaration.asBaseName»::Wait;
             
          «ENDIF»
-         «FOR event : interface_declaration.events.filter[name !== null]»
-            «val event_type = toText(event.data, event)»
+         «FOR event : interfaceDeclaration.events.filter[name !== null]»
+            «val eventType = toText(event.data, event)»
             /**
-               \brief Subscribe for event of type «event_type»
+               \brief Subscribe for event of type «eventType»
             */
-            virtual «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«event_type»> &observer )«IF is_api» = 0«ENDIF»;
+            virtual «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«eventType»> &observer )«IF isApi» = 0«ENDIF»;
          «ENDFOR»
          
-         «IF !is_api»
-            «IF anonymous_event !== null»
+         «IF !isApi»
+            «IF anonymousEvent !== null»
                /**
                   \see BTC::Commons::CoreExtras::IObservableRegistration::Subscribe
                */
-               virtual «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«toText(anonymous_event.data, anonymous_event)»> &observer ) override;
+               virtual «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«toText(anonymousEvent.data, anonymousEvent)»> &observer ) override;
             «ENDIF»
             private:
                «resolveSymbol("BTC::Commons::Core::Context")» &m_context;
-            «IF is_proxy»
-               «FOR event : interface_declaration.events»
-                  «val event_params_name = event.eventParamsName»
-                  struct «event_params_name»
+            «IF isProxy»
+               «FOR event : interfaceDeclaration.events»
+                  «val eventParamsName = event.eventParamsName»
+                  struct «eventParamsName»
                   {
                      typedef «resolve(event.data)» EventDataType;
                      
@@ -146,97 +146,97 @@ class ServiceAPIGenerator extends BasicCppGenerator {
                      static «resolveSymbol("BTC::Commons::Core::String")» GetEventTypeDescription();
                      static «resolveSymbol("std::function")»<EventDataType const ( «resolveSymbol("BTC::ServiceComm::API::IEventSubscriberManager::ObserverType::OnNextParamType")» )> GetUnmarshalFunction();
                   };
-                  «resolveSymbol("BTC::ServiceComm::Util::CDefaultObservableRegistrationProxy")»<«event_params_name»> «event.observableRegistrationName»;
+                  «resolveSymbol("BTC::ServiceComm::Util::CDefaultObservableRegistrationProxy")»<«eventParamsName»> «event.observableRegistrationName»;
                «ENDFOR»
             «ENDIF»
-            «IF is_impl»
-               «FOR event : interface_declaration.events»
+            «IF isImpl»
+               «FOR event : interfaceDeclaration.events»
                   «resolveSymbol("BTC::Commons::CoreExtras::CDefaultObservable")»<«resolve(event.data)»> «event.observableName»;
                «ENDFOR»
             «ENDIF»
          «ENDIF»
       };
-      «IF is_api»
-         void «export_macro»
-         «getRegisterServerFaults(interface_declaration, Optional.empty)»(«resolveSymbol("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager);
+      «IF isApi»
+         void «exportMacro»
+         «getRegisterServerFaults(interfaceDeclaration, Optional.empty)»(«resolveSymbol("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager);
       «ENDIF»
       '''
    }
    
-   private def String generateHClassSignature(InterfaceDeclaration interface_declaration)
+   private def String generateHClassSignature(InterfaceDeclaration interfaceDeclaration)
    {
-      val anonymous_event = interface_declaration.anonymousEvent
+      val anonymousEvent = interfaceDeclaration.anonymousEvent
       
-      '''«GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType, interface_declaration.name)» : 
+      '''«GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType, interfaceDeclaration.name)» : 
       «IF paramBundle.projectType == ProjectType.SERVICE_API»
          virtual public «resolveSymbol("BTC::Commons::Core::Object")»
-         «IF anonymous_event !== null», public «resolveSymbol("BTC::Commons::CoreExtras::IObservableRegistration")»<«resolve(anonymous_event.data)»>«ENDIF»
+         «IF anonymousEvent !== null», public «resolveSymbol("BTC::Commons::CoreExtras::IObservableRegistration")»<«resolve(anonymousEvent.data)»>«ENDIF»
       «ELSE»
-         virtual public «resolve(interface_declaration, ProjectType.SERVICE_API)»
+         virtual public «resolve(interfaceDeclaration, ProjectType.SERVICE_API)»
          , private «resolveSymbol("BTC::Logging::API::LoggerAware")»
       «ENDIF»
       «IF paramBundle.projectType == ProjectType.PROXY»
-         , private «interface_declaration.asBaseName»
+         , private «interfaceDeclaration.asBaseName»
       «ENDIF»
       '''
    }
     
-    def generateImplFileBody(InterfaceDeclaration interface_declaration) {
-      val class_name = resolve(interface_declaration, paramBundle.projectType)
+    def generateImplFileBody(InterfaceDeclaration interfaceDeclaration) {
+      val className = resolve(interfaceDeclaration, paramBundle.projectType)
       
       // prepare for re-use
-      val register_service_fault = resolveSymbol("BTC::ServiceComm::Base::RegisterServiceFault")
-      val cab_string = resolveSymbol("BTC::Commons::Core::String")
+      val registerServiceFault = resolveSymbol("BTC::ServiceComm::Base::RegisterServiceFault")
+      val cabString = resolveSymbol("BTC::Commons::Core::String")
       
       // collect exceptions thrown by interface methods
-      val thrown_exceptions = new HashSet<AbstractException>
-      interface_declaration
+      val thrownExceptions = new HashSet<AbstractException>
+      interfaceDeclaration
          .functions
          .filter[!raisedExceptions.empty]
          .map[raisedExceptions]
          .flatten
-         .forEach[ thrown_exceptions.add(it) ]
+         .forEach[ thrownExceptions.add(it) ]
       
       // for optional element, include the impl file!
       if
       (
-         !interface_declaration.eAllContents.filter(MemberElement).filter[optional].empty
-         || !interface_declaration.eAllContents.filter(SequenceDeclaration).filter[failable].empty
+         !interfaceDeclaration.eAllContents.filter(MemberElement).filter[optional].empty
+         || !interfaceDeclaration.eAllContents.filter(SequenceDeclaration).filter[failable].empty
       )
       {
          resolveSymbolWithImplementation("BTC::Commons::CoreExtras::Optional")
       }
       
       '''
-      «FOR exception : interface_declaration.contains.filter(ExceptionDeclaration).sortBy[name]»
+      «FOR exception : interfaceDeclaration.contains.filter(ExceptionDeclaration).sortBy[name]»
          «makeExceptionImplementation(exception)»
       «ENDFOR»
       
-      // {«GuidMapper.get(interface_declaration)»}
-      static const «resolveSymbol("BTC::Commons::CoreExtras::UUID")» s«interface_declaration.name»TypeGuid = 
-         «resolveSymbol("BTC::Commons::CoreExtras::UUID")»::ParseString("«GuidMapper.get(interface_declaration)»");
+      // {«GuidMapper.get(interfaceDeclaration)»}
+      static const «resolveSymbol("BTC::Commons::CoreExtras::UUID")» s«interfaceDeclaration.name»TypeGuid = 
+         «resolveSymbol("BTC::Commons::CoreExtras::UUID")»::ParseString("«GuidMapper.get(interfaceDeclaration)»");
 
-      «resolveSymbol("BTC::Commons::CoreExtras::UUID")» «class_name.shortName»::TYPE_GUID()
+      «resolveSymbol("BTC::Commons::CoreExtras::UUID")» «className.shortName»::TYPE_GUID()
       {
-         return s«interface_declaration.name»TypeGuid;
+         return s«interfaceDeclaration.name»TypeGuid;
       }
 
-      «makeEventGUIDImplementations(typeResolver, interface_declaration.contains.filter(StructDeclaration))»
+      «makeEventGUIDImplementations(typeResolver, interfaceDeclaration.contains.filter(StructDeclaration))»
       
-      void «getRegisterServerFaults(interface_declaration, Optional.empty)»(«resolveSymbol("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager)
+      void «getRegisterServerFaults(interfaceDeclaration, Optional.empty)»(«resolveSymbol("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager)
       {
-         «IF !thrown_exceptions.empty»// register exceptions thrown by service methods«ENDIF»
-         «FOR exception : thrown_exceptions.sortBy[name]»
-            «val resolve_exc_name = resolve(exception)»
-            «register_service_fault»<«resolve_exc_name»>(
-               serviceFaultHandlerManager, «cab_string»("«exception.getCommonExceptionName(qualified_name_provider)»"));
+         «IF !thrownExceptions.empty»// register exceptions thrown by service methods«ENDIF»
+         «FOR exception : thrownExceptions.sortBy[name]»
+            «val resolveExcName = resolve(exception)»
+            «registerServiceFault»<«resolveExcName»>(
+               serviceFaultHandlerManager, «cabString»("«exception.getCommonExceptionName(qualifiedNameProvider)»"));
          «ENDFOR»
          
          // most commonly used exception types
-         «val default_exceptions = typeResolver.defaultExceptionRegistration»
-         «FOR exception : default_exceptions.keySet.sort»
-            «register_service_fault»<«default_exceptions.get(exception)»>(
-               serviceFaultHandlerManager, «cab_string»("«exception»"));
+         «val defaultExceptions = typeResolver.defaultExceptionRegistration»
+         «FOR exception : defaultExceptions.keySet.sort»
+            «registerServiceFault»<«defaultExceptions.get(exception)»>(
+               serviceFaultHandlerManager, «cabString»("«exception»"));
          «ENDFOR»
       }
       '''

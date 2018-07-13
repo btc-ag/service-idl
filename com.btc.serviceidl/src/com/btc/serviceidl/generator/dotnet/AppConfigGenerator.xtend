@@ -57,9 +57,9 @@ class AppConfigGenerator {
             <object id="BTC.CAB.Logging.API.NET.LoggerFactory" type="«typeResolver.resolve("BTC.CAB.Logging.Log4NET.Log4NETLoggerFactory").fullyQualifiedName», BTC.CAB.Logging.Log4NET"/>
             
             «IF parameterBundle.projectType == ProjectType.SERVER_RUNNER»
-               «val protobuf_server_helper = typeResolver.resolve("BTC.CAB.ServiceComm.NET.ProtobufUtil.ProtoBufServerHelper").fullyQualifiedName»
-               «val service_descriptor = '''«typeResolver.resolve("BTC.CAB.ServiceComm.NET.API.DTO.ServiceDescriptor").fullyQualifiedName»'''»
-               «val service_dispatcher = typeResolver.resolve("BTC.CAB.ServiceComm.NET.API.IServiceDispatcher").fullyQualifiedName»
+               «val protobufServerHelper = typeResolver.resolve("BTC.CAB.ServiceComm.NET.ProtobufUtil.ProtoBufServerHelper").fullyQualifiedName»
+               «val serviceDescriptor = '''«typeResolver.resolve("BTC.CAB.ServiceComm.NET.API.DTO.ServiceDescriptor").fullyQualifiedName»'''»
+               «val serviceDispatcher = typeResolver.resolve("BTC.CAB.ServiceComm.NET.API.IServiceDispatcher").fullyQualifiedName»
                <!--ZeroMQ server factory-->
                <object id="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ">
                  <constructor-arg name="connectionOptions" expression="T(BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory, BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ).DefaultServerConnectionOptions" />
@@ -71,16 +71,16 @@ class AppConfigGenerator {
                  <constructor-arg index="2" value="tcp://127.0.0.1:«Constants.DEFAULT_PORT»"/>
                </object>
 
-               <object id="«protobuf_server_helper»" type="«protobuf_server_helper», BTC.CAB.ServiceComm.NET.ProtobufUtil"/>
+               <object id="«protobufServerHelper»" type="«protobufServerHelper», BTC.CAB.ServiceComm.NET.ProtobufUtil"/>
 
-               «FOR interface_declaration : module.moduleComponents.filter(InterfaceDeclaration)»
-                  «val api = typeResolver.resolve(interface_declaration)»
-                  «val impl = typeResolver.resolve(interface_declaration, ProjectType.IMPL)»
-                  «val dispatcher = typeResolver.resolve(interface_declaration, ProjectType.DISPATCHER)»
-                  <!-- «interface_declaration.name» Service -->
-                  <object id="«dispatcher».ServiceDescriptor" type="«service_descriptor», BTC.CAB.ServiceComm.NET.API">
-                    <constructor-arg name="typeGuid" expression="T(«api.namespace».«getConstName(interface_declaration)», «api.namespace»).«typeGuidProperty»"/>
-                    <constructor-arg name="typeName" expression="T(«api.namespace».«getConstName(interface_declaration)», «api.namespace»).«typeNameProperty»"/>
+               «FOR interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration)»
+                  «val api = typeResolver.resolve(interfaceDeclaration)»
+                  «val impl = typeResolver.resolve(interfaceDeclaration, ProjectType.IMPL)»
+                  «val dispatcher = typeResolver.resolve(interfaceDeclaration, ProjectType.DISPATCHER)»
+                  <!-- «interfaceDeclaration.name» Service -->
+                  <object id="«dispatcher».ServiceDescriptor" type="«serviceDescriptor», BTC.CAB.ServiceComm.NET.API">
+                    <constructor-arg name="typeGuid" expression="T(«api.namespace».«getConstName(interfaceDeclaration)», «api.namespace»).«typeGuidProperty»"/>
+                    <constructor-arg name="typeName" expression="T(«api.namespace».«getConstName(interfaceDeclaration)», «api.namespace»).«typeNameProperty»"/>
                     <constructor-arg name="instanceGuid" expression="T(System.Guid, mscorlib).NewGuid()"/>
                     <constructor-arg name="instanceName" value="PerformanceTestService"/>
                     <constructor-arg name="instanceDescription" value="«api» instance for performance tests"/>
@@ -88,16 +88,16 @@ class AppConfigGenerator {
                   <object id="«impl»" type="«impl», «impl.namespace»"/>
                   <object id="«dispatcher»" type="«dispatcher», «dispatcher.namespace»">
                     <constructor-arg index="0" ref="«impl»" />
-                    <constructor-arg index="1" ref="«protobuf_server_helper»" />
+                    <constructor-arg index="1" ref="«protobufServerHelper»" />
                   </object>
                «ENDFOR»
                
                <!-- Service Dictionary -->
-               <object id="BTC.CAB.ServiceComm.NET.ServerRunner.SpringServerRunner.Services" type="«typeResolver.resolve("System.Collections.Generic.Dictionary").fullyQualifiedName»&lt;«service_descriptor», «service_dispatcher»>">
+               <object id="BTC.CAB.ServiceComm.NET.ServerRunner.SpringServerRunner.Services" type="«typeResolver.resolve("System.Collections.Generic.Dictionary").fullyQualifiedName»&lt;«serviceDescriptor», «serviceDispatcher»>">
                  <constructor-arg>
-                   <dictionary key-type="«service_descriptor»" value-type="«service_dispatcher»">
-                     «FOR interface_declaration : module.moduleComponents.filter(InterfaceDeclaration)»
-                        «val dispatcher = typeResolver.resolve(interface_declaration, ProjectType.DISPATCHER)»
+                   <dictionary key-type="«serviceDescriptor»" value-type="«serviceDispatcher»">
+                     «FOR interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration)»
+                        «val dispatcher = typeResolver.resolve(interfaceDeclaration, ProjectType.DISPATCHER)»
                         <entry key-ref="«dispatcher».ServiceDescriptor" value-ref="«dispatcher»" />
                      «ENDFOR»
                    </dictionary>

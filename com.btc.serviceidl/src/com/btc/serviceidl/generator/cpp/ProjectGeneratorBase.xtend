@@ -30,11 +30,11 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
     interface ISourceGenerationStrategy
     {
         def String generateProjectSource(BasicCppGenerator basicCppGenerator,
-            InterfaceDeclaration interface_declaration)
+            InterfaceDeclaration interfaceDeclaration)
 
         def String generateProjectHeader(BasicCppGenerator basicCppGenerator,
-            IModuleStructureStrategy moduleStructureStrategy, InterfaceDeclaration interface_declaration,
-            String export_header)
+            IModuleStructureStrategy moduleStructureStrategy, InterfaceDeclaration interfaceDeclaration,
+            String exportHeader)
     }
 
     val ISourceGenerationStrategy sourceGenerationStrategy
@@ -42,74 +42,74 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
     protected def void generate()
     {
         // TODO check how to reflect this special handling of EXTERNAL_DB_IMPL
-//        if (project_type != ProjectType.EXTERNAL_DB_IMPL) // for ExternalDBImpl, keep both C++ and ODB artifacts
-//            reinitializeProject(project_type)
-        val export_header_file_name = (GeneratorUtil.getTransformedModuleName(param_bundle, ArtifactNature.CPP,
+//        if (projectType != ProjectType.EXTERNAL_DB_IMPL) // for ExternalDBImpl, keep both C++ and ODB artifacts
+//            reinitializeProject(projectType)
+        val exportHeaderFileName = (GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
-        file_system_access.generateFile(projectPath.append("include").append(export_header_file_name).toString,
+        fileSystemAccess.generateFile(projectPath.append("include").append(exportHeaderFileName).toString,
             ArtifactNature.CPP.label, generateExportHeader())
-        projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, export_header_file_name)
+        projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, exportHeaderFileName)
 
-        for (interface_declaration : module.moduleComponents.filter(InterfaceDeclaration))
+        for (interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
         {
-            generateProject(param_bundle.projectType, interface_declaration, projectPath, export_header_file_name)
+            generateProject(paramBundle.projectType, interfaceDeclaration, projectPath, exportHeaderFileName)
         }
 
-        if (param_bundle.projectType != ProjectType.EXTERNAL_DB_IMPL) // done separately for ExternalDBImpl to include ODB files also
+        if (paramBundle.projectType != ProjectType.EXTERNAL_DB_IMPL) // done separately for ExternalDBImpl to include ODB files also
         {
-            generateProjectFiles(param_bundle.projectType, projectPath, vsSolution.getVcxprojName(param_bundle),
+            generateProjectFiles(paramBundle.projectType, projectPath, vsSolution.getVcxprojName(paramBundle),
                 projectFileSet)
         }
     }
 
-    private def void generateProject(ProjectType pt, InterfaceDeclaration interface_declaration, IPath project_path,
-        String export_header_file_name)
+    private def void generateProject(ProjectType pt, InterfaceDeclaration interfaceDeclaration, IPath projectPath,
+        String exportHeaderFileName)
     {
-        val builder = new ParameterBundle.Builder(param_bundle)
-        builder.with(interface_declaration.moduleStack)
+        val builder = new ParameterBundle.Builder(paramBundle)
+        builder.with(interfaceDeclaration.moduleStack)
         val localParamBundle = builder.build
 
         // paths
-        val include_path = project_path.append("include")
-        val source_path = project_path.append("source")
+        val includePath = projectPath.append("include")
+        val sourcePath = projectPath.append("source")
 
         // file names
-        val main_header_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, localParamBundle.projectType,
-            interface_declaration.name).h
-        val main_cpp_file_name = GeneratorUtil.getClassName(ArtifactNature.CPP, localParamBundle.projectType,
-            interface_declaration.name).cpp
+        val mainHeaderFileName = GeneratorUtil.getClassName(ArtifactNature.CPP, localParamBundle.projectType,
+            interfaceDeclaration.name).h
+        val mainCppFileName = GeneratorUtil.getClassName(ArtifactNature.CPP, localParamBundle.projectType,
+            interfaceDeclaration.name).cpp
 
         // sub-folder "./include"
         if (pt != ProjectType.TEST)
         {
-            file_system_access.generateFile(include_path.append(main_header_file_name).toString,
+            fileSystemAccess.generateFile(includePath.append(mainHeaderFileName).toString,
                 ArtifactNature.CPP.label,
                 sourceGenerationStrategy.generateProjectHeader(createBasicCppGenerator(localParamBundle),
-                    moduleStructureStrategy, interface_declaration, export_header_file_name))
-            projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, main_header_file_name)
+                    moduleStructureStrategy, interfaceDeclaration, exportHeaderFileName))
+            projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, mainHeaderFileName)
         }
 
         // sub-folder "./source"
-        file_system_access.generateFile(source_path.append(main_cpp_file_name).toString, ArtifactNature.CPP.label,
+        fileSystemAccess.generateFile(sourcePath.append(mainCppFileName).toString, ArtifactNature.CPP.label,
             sourceGenerationStrategy.generateProjectSource(createBasicCppGenerator(localParamBundle),
-                interface_declaration))
-        projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, main_cpp_file_name)
+                interfaceDeclaration))
+        projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, mainCppFileName)
     }
 
     // TODO move this somewhere else
     protected static def generateCppImpl(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
-        ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
+        ParameterBundle paramBundle, InterfaceDeclaration interfaceDeclaration)
     {
         new ImplementationStubGenerator(typeResolver, targetVersionProvider, paramBundle).generateCppImpl(
-            interface_declaration)
+            interfaceDeclaration)
     }
 
     // TODO move this somewhere else
     protected static def generateInterface(TypeResolver typeResolver, ITargetVersionProvider targetVersionProvider,
-        ParameterBundle paramBundle, InterfaceDeclaration interface_declaration)
+        ParameterBundle paramBundle, InterfaceDeclaration interfaceDeclaration)
     {
         new ServiceAPIGenerator(typeResolver, targetVersionProvider, paramBundle).
-            generateHeaderFileBody(interface_declaration)
+            generateHeaderFileBody(interfaceDeclaration)
     }
 
 }

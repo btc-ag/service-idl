@@ -41,14 +41,14 @@ class TypeResolver
     // code is not intended to be read, at least user-defined types could never be imported, 
     // which avoids problems with conflicts. Apart from that, this seems like a recurring 
     // problem when generating Java code using Xtext. Perhaps there is some reusable solution? 
-    @Accessors(PUBLIC_GETTER) val referenced_types = new HashSet<String>
+    @Accessors(PUBLIC_GETTER) val referencedTypes = new HashSet<String>
 
-    val IQualifiedNameProvider qualified_name_provider
+    val IQualifiedNameProvider qualifiedNameProvider
     val Set<MavenDependency> dependencies
 
     val MavenResolver mavenResolver
 
-    val fully_qualified = false // we want the toString method show short names by default!
+    val fullyQualified = false // we want the toString method show short names by default!
 
     def addDependency(MavenDependency dependency)
     {
@@ -57,11 +57,11 @@ class TypeResolver
 
     def ResolvedName resolve(String name)
     {
-        val fully_qualified_name = QualifiedName.create(name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
-        referenced_types.add(name)
+        val fullyQualifiedName = QualifiedName.create(name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
+        referencedTypes.add(name)
         val dependency = MavenResolver.resolveExternalDependency(name)
         if (dependency.present) dependencies.add(dependency.get)
-        return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, false)
+        return new ResolvedName(fullyQualifiedName, TransformType.PACKAGE, false)
     }
 
     def ResolvedName resolve(PrimitiveType element)
@@ -101,16 +101,16 @@ class TypeResolver
         return resolve(element, element.scopeDeterminant.mainProjectType)
     }
 
-    def ResolvedName resolve(EObject element, ProjectType project_type)
+    def ResolvedName resolve(EObject element, ProjectType projectType)
     {
-        var name = qualified_name_provider.getFullyQualifiedName(element)
+        var name = qualifiedNameProvider.getFullyQualifiedName(element)
 
         // try to resolve CAB-related pseudo-exceptions
         if (element.isException)
         {
-            val exception_name = resolveException(name.toString)
-            if (exception_name !== null)
-                return new ResolvedName(exception_name, TransformType.PACKAGE, fully_qualified)
+            val exceptionName = resolveException(name.toString)
+            if (exceptionName !== null)
+                return new ResolvedName(exceptionName, TransformType.PACKAGE, fullyQualified)
         }
 
         if (name === null)
@@ -119,14 +119,14 @@ class TypeResolver
             {
                 if (element.primitiveType !== null)
                 {
-                    return resolve(element.primitiveType, project_type)
+                    return resolve(element.primitiveType, projectType)
                 }
                 else if (element.referenceType !== null)
                 {
-                    return resolve(element.referenceType.ultimateType, if (project_type != ProjectType.PROTOBUF)
+                    return resolve(element.referenceType.ultimateType, if (projectType != ProjectType.PROTOBUF)
                         element.referenceType.scopeDeterminant.mainProjectType
                     else
-                        project_type)
+                        projectType)
                 }
             // TODO really fall through in case of collectionType?
             }
@@ -134,7 +134,7 @@ class TypeResolver
             {
                 if (element.uuidType !== null)
                 {
-                    if (project_type == ProjectType.PROTOBUF)
+                    if (projectType == ProjectType.PROTOBUF)
                         return resolve("com.google.protobuf.ByteString")
                     else
                         return resolve(JavaClassNames.UUID)
@@ -142,19 +142,19 @@ class TypeResolver
                 else
                     return resolve(element as PrimitiveType)
             }
-            return new ResolvedName(Names.plain(element), TransformType.PACKAGE, fully_qualified)
+            return new ResolvedName(Names.plain(element), TransformType.PACKAGE, fullyQualified)
         }
 
-        val effective_name = resolvePackage(element.scopeDeterminant, project_type) + TransformType.PACKAGE.separator +
+        val effectiveName = resolvePackage(element.scopeDeterminant, projectType) + TransformType.PACKAGE.separator +
             if (element instanceof InterfaceDeclaration)
-                project_type.getClassName(ArtifactNature.JAVA, name.lastSegment)
+                projectType.getClassName(ArtifactNature.JAVA, name.lastSegment)
             else if (element instanceof EventDeclaration) getObservableName(element) else name.lastSegment
-        val fully_qualified_name = QualifiedName.create(
-            effective_name.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
+        val fullyQualifiedName = QualifiedName.create(
+            effectiveName.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
 
-        referenced_types.add(fully_qualified_name.toString)
+        referencedTypes.add(fullyQualifiedName.toString)
 
-        return new ResolvedName(fully_qualified_name, TransformType.PACKAGE, fully_qualified)
+        return new ResolvedName(fullyQualifiedName, TransformType.PACKAGE, fullyQualified)
     }
 
     def String resolveException(String name)

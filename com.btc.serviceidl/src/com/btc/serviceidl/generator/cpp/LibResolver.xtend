@@ -20,7 +20,7 @@ import org.eclipse.core.runtime.IPath
 class LibResolver
 {
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    static val cab_lib_mapper = #{
+    static val cabLibMapper = #{
         "Commons/Core" -> "BTC.CAB.Commons.Core",
         "Commons/CoreExtras" -> "BTC.CAB.Commons.CoreExtras",
         "Commons/CoreStd" -> "BTC.CAB.Commons.CoreStd",
@@ -45,7 +45,7 @@ class LibResolver
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    static val cab_additional_dependencies = #{
+    static val cabAdditionalDependencies = #{
         "Performance/CommonsTestSupport/include/TestLoggerFactory.h" -> #["BTC.CAB.Logging.API"],
         "ServiceComm/API/include/IClientEndpoint.h" ->
             #["BTC.CAB.ServiceComm.ProtobufUtil", "BTC.CAB.ServiceComm.Commons", "BTC.CAB.ServiceComm.CommonsUtil",
@@ -69,19 +69,19 @@ class LibResolver
                 "BTC.CAB.ServiceComm.SQ.ImportAPI"]
     }
 
-    static def Iterable<ExternalDependency> getCABLibs(IPath header_file)
+    static def Iterable<ExternalDependency> getCABLibs(IPath headerFile)
     {
         // remove last 2 component (which are the "include" directory name and the *.h file name)
-        val key = header_file.removeLastSegments(2).toPortableString
+        val key = headerFile.removeLastSegments(2).toPortableString
 
-        if (cab_lib_mapper.containsKey(key))
+        if (cabLibMapper.containsKey(key))
         {
-            return #[#[cab_lib_mapper.get(key)],
-                cab_additional_dependencies.getOrDefault(header_file.toPortableString, #[])].flatten.map [
+            return #[#[cabLibMapper.get(key)],
+                cabAdditionalDependencies.getOrDefault(headerFile.toPortableString, #[])].flatten.map [
                 new ExternalDependency(it)
             ]
         }
 
-        throw new IllegalArgumentException("Could not find CAB library mapping: " + header_file)
+        throw new IllegalArgumentException("Could not find CAB library mapping: " + headerFile)
     }
 }

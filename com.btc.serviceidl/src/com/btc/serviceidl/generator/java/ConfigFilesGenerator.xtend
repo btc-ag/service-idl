@@ -28,7 +28,7 @@ class ConfigFilesGenerator
     }
 
     // TODO what is the purpose of this? probably it can be removed
-    def static String generateSpringBeans(String package_name, String program_name)
+    def static String generateSpringBeans(String packageName, String programName)
     {
         '''
             <?xml version="1.0" encoding="UTF-8"?>
@@ -41,7 +41,7 @@ class ConfigFilesGenerator
                </bean>
             
                <bean id="logger" class="org.apache.log4j.Logger" factory-method="getLogger">
-                  <constructor-arg type="java.lang.String" value="«package_name».«program_name»" />
+                  <constructor-arg type="java.lang.String" value="«packageName».«programName»" />
                </bean>
             </beans>
         '''

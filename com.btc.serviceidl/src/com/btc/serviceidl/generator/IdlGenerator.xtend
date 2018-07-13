@@ -33,25 +33,25 @@ import org.eclipse.xtext.scoping.IScopeProvider
 class IdlGenerator implements IGenerator2
 {
 
-    @Inject extension IQualifiedNameProvider qualified_name_provider
-    @Inject extension IScopeProvider scope_provider
-    @Inject IGenerationSettingsProvider generation_settings_provider
+    @Inject extension IQualifiedNameProvider qualifiedNameProvider
+    @Inject extension IScopeProvider scopeProvider
+    @Inject IGenerationSettingsProvider generationSettingsProvider
 
     override doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext gc)
     {
         // generate GUIDs: common among C++, Java and .NET!
         var boolean resourceChanged = false;
-        for (interface_declaration : resource.allContents.toIterable.filter(InterfaceDeclaration))
+        for (interfaceDeclaration : resource.allContents.toIterable.filter(InterfaceDeclaration))
         {
-            if (interface_declaration.guid === null)
+            if (interfaceDeclaration.guid === null)
             {
                 val uuid = UUID.randomUUID.toString.toUpperCase
-                GuidMapper.put(interface_declaration, uuid)
-                interface_declaration.guid = uuid
+                GuidMapper.put(interfaceDeclaration, uuid)
+                interfaceDeclaration.guid = uuid
                 resourceChanged = true
             }
             else
-                GuidMapper.put(interface_declaration, interface_declaration.guid.toUpperCase)
+                GuidMapper.put(interfaceDeclaration, interfaceDeclaration.guid.toUpperCase)
         }
         for (event : resource.allContents.toIterable.filter(EventDeclaration))
         {
@@ -75,46 +75,46 @@ class IdlGenerator implements IGenerator2
             return
         }
 
-        val generationSettings = generation_settings_provider.getSettings(resource)
+        val generationSettings = generationSettingsProvider.getSettings(resource)
         val projectTypes = generationSettings.projectTypes
         val languages = generationSettings.languages
 
 // TODO REFACTOR invert these dependencies
-        var ProtobufGenerator protobuf_generator
-        var Map<AbstractContainerDeclaration, String> protobuf_artifacts
+        var ProtobufGenerator protobufGenerator
+        var Map<AbstractContainerDeclaration, String> protobufArtifacts
         if (projectTypes.contains(ProjectType.PROTOBUF))
         {
-            protobuf_generator = new ProtobufGenerator(resource, fsa, qualified_name_provider,
+            protobufGenerator = new ProtobufGenerator(resource, fsa, qualifiedNameProvider,
                 generationSettings.moduleStructureStrategy)
-            protobuf_generator.doGenerate(languages)
-            protobuf_artifacts = protobuf_generator.generatedArtifacts
+            protobufGenerator.doGenerate(languages)
+            protobufArtifacts = protobufGenerator.generatedArtifacts
         }
 
         if (languages.contains(ArtifactNature.CPP))
         {
-            val cpp_generator = new CppGenerator(idl, fsa, qualified_name_provider, scope_provider, generationSettings,
-                protobuf_generator?.getProjectReferences(ArtifactNature.CPP))
-            cpp_generator.doGenerate
+            val cppGenerator = new CppGenerator(idl, fsa, qualifiedNameProvider, scopeProvider, generationSettings,
+                protobufGenerator?.getProjectReferences(ArtifactNature.CPP))
+            cppGenerator.doGenerate
         }
 
         if (languages.contains(ArtifactNature.JAVA))
         {
-            val java_generator = new JavaGenerator(idl, fsa, qualified_name_provider, generationSettings,
-                protobuf_artifacts)
-            java_generator.doGenerate
+            val javaGenerator = new JavaGenerator(idl, fsa, qualifiedNameProvider, generationSettings,
+                protobufArtifacts)
+            javaGenerator.doGenerate
         }
 
         if (languages.contains(ArtifactNature.DOTNET))
         {
-            val dotnet_generator = new DotNetGenerator(
+            val dotnetGenerator = new DotNetGenerator(
                 idl,
                 fsa,
-                qualified_name_provider,
+                qualifiedNameProvider,
                 generationSettings,
                 projectTypes,
-                protobuf_generator?.getProjectReferences(ArtifactNature.DOTNET)
+                protobufGenerator?.getProjectReferences(ArtifactNature.DOTNET)
             )
-            dotnet_generator.doGenerate
+            dotnetGenerator.doGenerate
         }
     }
 

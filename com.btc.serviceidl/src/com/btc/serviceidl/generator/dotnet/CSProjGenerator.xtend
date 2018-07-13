@@ -21,30 +21,30 @@ import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 
 class CSProjGenerator {
-  static def String generateCSProj(String project_name, VSSolution vsSolution, ParameterBundle param_bundle,
-        Iterable<String> referenced_assemblies, Iterable<NuGetPackage> nuget_packages,
-        Iterable<ParameterBundle> project_references, Iterable<String> cs_files, Iterable<String> protobuf_files)
+  static def String generateCSProj(String projectName, VSSolution vsSolution, ParameterBundle paramBundle,
+        Iterable<String> referencedAssemblies, Iterable<NuGetPackage> nugetPackages,
+        Iterable<ParameterBundle> projectReferences, Iterable<String> csFiles, Iterable<String> protobufFiles)
   {
       // Please do NOT edit line indents in the code below (even though they
       // may look misplaced) unless you are fully aware of what you are doing!!!
       // Those indents (2 whitespaces) follow the Visual Studio 2012 standard formatting!!!
       
-      val project_guid = vsSolution.getCsprojGUID(param_bundle)
-      val is_exe = isExecutable(param_bundle.projectType)
+      val projectGuid = vsSolution.getCsprojGUID(paramBundle)
+      val isExe = isExecutable(paramBundle.projectType)
       val prins = false
       '''
       <?xml version="1.0" encoding="utf-8"?>
       <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-        «IF is_exe && prins»<Import Project="$(SolutionDir)Net.ProjectSettings" />«ENDIF»
+        «IF isExe && prins»<Import Project="$(SolutionDir)Net.ProjectSettings" />«ENDIF»
         <PropertyGroup>
-          <ProjectGuid>{«project_guid»}</ProjectGuid>
-          <OutputType>«IF is_exe»Exe«ELSE»Library«ENDIF»</OutputType>
-          <RootNamespace>«project_name»</RootNamespace>
-          <AssemblyName>«project_name»</AssemblyName>
+          <ProjectGuid>{«projectGuid»}</ProjectGuid>
+          <OutputType>«IF isExe»Exe«ELSE»Library«ENDIF»</OutputType>
+          <RootNamespace>«projectName»</RootNamespace>
+          <AssemblyName>«projectName»</AssemblyName>
           <TargetFrameworkVersion>v«DotNetGenerator.DOTNET_FRAMEWORK_VERSION.toString»</TargetFrameworkVersion>
           <TargetFrameworkProfile />
         </PropertyGroup>
-        «IF !is_exe || !prins»
+        «IF !isExe || !prins»
         <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
           <DebugSymbols>true</DebugSymbols>
           <DebugType>full</DebugType>
@@ -103,12 +103,12 @@ class CSProjGenerator {
           <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         </PropertyGroup>
         «ENDIF»
-        «IF is_exe»
+        «IF isExe»
            <ItemGroup>
              <None Include="App.config">
                <SubType>Designer</SubType>
              </None>
-             <None Include="«param_bundle.log4NetConfigFile»">
+             <None Include="«paramBundle.log4NetConfigFile»">
                <CopyToOutputDirectory>Always</CopyToOutputDirectory>
              </None>
              <None Include="packages.config">
@@ -117,28 +117,28 @@ class CSProjGenerator {
            </ItemGroup>
         «ENDIF»
         <ItemGroup>
-          «FOR assembly : referenced_assemblies»
+          «FOR assembly : referencedAssemblies»
             <Reference Include="«assembly»">
               <SpecificVersion>False</SpecificVersion>
               <HintPath>$(SolutionDir)..\lib\AnyCPU\Release\«assembly».«getReferenceExtension(assembly)»</HintPath>
             </Reference>
           «ENDFOR»
-          «FOR nuget_package : nuget_packages»
-            <Reference Include="«nuget_package.assemblyName»">
-              <HintPath>$(SolutionDir)packages\«nuget_package.assemblyPath»</HintPath>
+          «FOR nugetPackage : nugetPackages»
+            <Reference Include="«nugetPackage.assemblyName»">
+              <HintPath>$(SolutionDir)packages\«nugetPackage.assemblyPath»</HintPath>
             </Reference>
           «ENDFOR»
         </ItemGroup>
         <ItemGroup>
-        «FOR protobuf_file : protobuf_files»
-          <Compile Include="«protobuf_file».cs" />
+        «FOR protobufFile : protobufFiles»
+          <Compile Include="«protobufFile».cs" />
         «ENDFOR»
-        «FOR cs_file : cs_files»
-          <Compile Include="«cs_file».cs" />
+        «FOR csFile : csFiles»
+          <Compile Include="«csFile».cs" />
         «ENDFOR»
           <Compile Include="Properties\AssemblyInfo.cs" />
         </ItemGroup>
-          «FOR projectReference : project_references.filter[it != param_bundle] BEFORE "  <ItemGroup>" AFTER "  </ItemGroup>"»
+          «FOR projectReference : projectReferences.filter[it != paramBundle] BEFORE "  <ItemGroup>" AFTER "  </ItemGroup>"»
              <ProjectReference Include="$(SolutionDir)«projectReference.asPath(ArtifactNature.DOTNET).append(projectReference.getTransformedModuleName(ArtifactNature.DOTNET, TransformType.PACKAGE).csproj).toWindowsString»">
                <Project>{«vsSolution.getCsprojGUID(projectReference)»}</Project>
                <Name>«projectReference.getTransformedModuleName(ArtifactNature.DOTNET, TransformType.PACKAGE)»</Name>
@@ -148,11 +148,11 @@ class CSProjGenerator {
         <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
         «/** TODO protobufBaseDir was "$(SolutionDir)..", this must be generalized */»
         «val protobufBaseDir = "$(SolutionDir)"»
-        «IF !protobuf_files.empty»
+        «IF !protobufFiles.empty»
           <PropertyGroup>
             <PreBuildEvent>
-            «FOR protobufFileBasename : protobuf_files»
-                «val protobufFile = makeProtobufFilePath(param_bundle, protobufFileBasename)»
+            «FOR protobufFileBasename : protobufFiles»
+                «val protobufFile = makeProtobufFilePath(paramBundle, protobufFileBasename)»
                 «val protobinFile = '''$(ProjectDir)gen\«protobufFileBasename».protobin'''»
                 «protobufBaseDir»\\packages\\Google.ProtocolBuffers\\tools\\protoc.exe --include_imports --proto_path=«protobufBaseDir» --descriptor_set_out=«protobinFile» «protobufFile»
                 «protobufBaseDir»\\packages\\Google.ProtocolBuffers\\tools\\Protogen.exe -output_directory=$(ProjectDir) «protobinFile»

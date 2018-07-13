@@ -60,33 +60,33 @@ class BasicCppGenerator
     @Accessors(PUBLIC_GETTER) val ITargetVersionProvider targetVersionProvider
     @Accessors(PUBLIC_GETTER) val ParameterBundle paramBundle
 
-    def String generateCppDestructor(InterfaceDeclaration interface_declaration)
+    def String generateCppDestructor(InterfaceDeclaration interfaceDeclaration)
     {
-        val class_name = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType,
-            interface_declaration.name)
+        val className = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType,
+            interfaceDeclaration.name)
 
         '''
-            «class_name»::~«class_name»()
+            «className»::~«className»()
             {}
         '''
     }
 
-    def String generateInheritedInterfaceMethods(InterfaceDeclaration interface_declaration)
+    def String generateInheritedInterfaceMethods(InterfaceDeclaration interfaceDeclaration)
     {
-        val class_name = resolve(interface_declaration, paramBundle.projectType)
+        val className = resolve(interfaceDeclaration, paramBundle.projectType)
 
         '''
-            «FOR function : interface_declaration.functions»
-                «IF !function.isSync»«resolveSymbol("BTC::Commons::CoreExtras::Future")»<«ENDIF»«toText(function.returnedType, interface_declaration)»«IF !function.isSync»>«ENDIF» «class_name.shortName»::«function.name»(«generateParameters(function)»)«IF function.isQuery» const«ENDIF»
+            «FOR function : interfaceDeclaration.functions»
+                «IF !function.isSync»«resolveSymbol("BTC::Commons::CoreExtras::Future")»<«ENDIF»«toText(function.returnedType, interfaceDeclaration)»«IF !function.isSync»>«ENDIF» «className.shortName»::«function.name»(«generateParameters(function)»)«IF function.isQuery» const«ENDIF»
                 {
-                   «generateFunctionBody(interface_declaration, function)»
+                   «generateFunctionBody(interfaceDeclaration, function)»
                 }
                 
             «ENDFOR»
         '''
     }
 
-    def generateFunctionBody(InterfaceDeclaration interface_declaration, FunctionDeclaration function)
+    def generateFunctionBody(InterfaceDeclaration interfaceDeclaration, FunctionDeclaration function)
     {
         // TODO make this function abstract and move implementation to subclass
         '''
@@ -110,7 +110,7 @@ class BasicCppGenerator
             '''«toText(item.paramType, context.eContainer)»«IF item.direction == ParameterDirection.PARAM_IN» const«ENDIF» &«item.paramName»'''
     }
 
-    def dispatch String toText(VoidType return_type, EObject context)
+    def dispatch String toText(VoidType returnType, EObject context)
     {
         "void"
     }
@@ -134,8 +134,8 @@ class BasicCppGenerator
             '''
                 enum class «item.name»
                 {
-                   «FOR enum_value : item.containedIdentifiers»
-                       «enum_value»«IF enum_value != item.containedIdentifiers.last»,«ENDIF»
+                   «FOR enumValue : item.containedIdentifiers»
+                       «enumValue»«IF enumValue != item.containedIdentifiers.last»,«ENDIF»
                    «ENDFOR»
                 }«IF item.declarator !== null» «item.declarator»«ENDIF»;
             '''
@@ -148,23 +148,23 @@ class BasicCppGenerator
 
         if (context instanceof AbstractStructuralDeclaration)
         {
-            val related_event = item.relatedEvent
+            val relatedEvent = item.relatedEvent
             val makeCompareOperator = item.needsCompareOperator
 
             '''
                 struct «makeExportMacro()» «item.name»«IF item.supertype !== null» : «resolve(item.supertype)»«ENDIF»
                 {
-                   «FOR type_declaration : item.typeDecls»
-                       «toText(type_declaration, item)»
+                   «FOR typeDeclaration : item.typeDecls»
+                       «toText(typeDeclaration, item)»
                    «ENDFOR»
                    «FOR member : item.members»
-                       «val is_pointer = useSmartPointer(item, member.type.actualType)»
-                       «val is_optional = member.isOptional»
-                       «IF is_optional && !is_pointer»«resolveSymbol("BTC::Commons::CoreExtras::Optional")»< «ENDIF»«IF is_pointer»«resolveSymbol("std::shared_ptr")»< «ENDIF»«toText(member.type, item)»«IF is_pointer» >«ENDIF»«IF is_optional && !is_pointer» >«ENDIF» «member.name.asMember»;
+                       «val isPointer = useSmartPointer(item, member.type.actualType)»
+                       «val isOptional = member.isOptional»
+                       «IF isOptional && !isPointer»«resolveSymbol("BTC::Commons::CoreExtras::Optional")»< «ENDIF»«IF isPointer»«resolveSymbol("std::shared_ptr")»< «ENDIF»«toText(member.type, item)»«IF isPointer» >«ENDIF»«IF isOptional && !isPointer» >«ENDIF» «member.name.asMember»;
                    «ENDFOR»
                    
-                   «IF related_event !== null»
-                       /** \return {«GuidMapper.get(related_event)»} */
+                   «IF relatedEvent !== null»
+                       /** \return {«GuidMapper.get(relatedEvent)»} */
                        static «resolveSymbol("BTC::Commons::CoreExtras::UUID")» EVENT_TYPE_GUID();
                        
                    «ENDIF»
@@ -201,19 +201,19 @@ class BasicCppGenerator
                 '''
             else
             {
-                val class_name = item.name
-                val base_class_name = makeBaseExceptionType(item)
+                val className = item.name
+                val baseClassName = makeBaseExceptionType(item)
                 '''                    
                     // based on CAB macro CAB_SIMPLE_EXCEPTION_DEFINITION_EX from Exception.h
-                    struct «makeExportMacro» «class_name» : public virtual «base_class_name»
+                    struct «makeExportMacro» «className» : public virtual «baseClassName»
                     {
-                       typedef «base_class_name» BASE;
+                       typedef «baseClassName» BASE;
                        
-                       «class_name»();
-                       explicit «class_name»(«resolveSymbol("BTC::Commons::Core::String")» const &msg);
-                       «class_name»( «FOR member : item.members SEPARATOR ", "»«toText(member.type, item)» const& «member.name.asMember»«ENDFOR» );
+                       «className»();
+                       explicit «className»(«resolveSymbol("BTC::Commons::Core::String")» const &msg);
+                       «className»( «FOR member : item.members SEPARATOR ", "»«toText(member.type, item)» const& «member.name.asMember»«ENDFOR» );
                        
-                       virtual ~«class_name»() = default;
+                       virtual ~«className»() = default;
                        
                        virtual void Throw() const override;
                        
@@ -246,16 +246,16 @@ class BasicCppGenerator
 
     def dispatch String toText(SequenceDeclaration item, EObject context)
     {
-        val inner_type = '''«IF item.failable»«
+        val innerType = '''«IF item.failable»«
 
         resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»< «ENDIF»«toText(item.type, item)»«IF item.failable» >«ENDIF»'''
 
         if (item.isOutputParameter)
-            '''«resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «inner_type» >::Type'''
+            '''«resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «innerType» >::Type'''
         else if (context.eContainer instanceof MemberElement)
-            '''«resolveSymbol("std::vector")»< «inner_type» >'''
+            '''«resolveSymbol("std::vector")»< «innerType» >'''
         else
-            '''«resolveSymbol("BTC::Commons::Core::ForwardConstIterator")»< «inner_type» >'''
+            '''«resolveSymbol("BTC::Commons::Core::ForwardConstIterator")»< «innerType» >'''
     }
 
     def dispatch String toText(TupleDeclaration item, EObject context)
@@ -294,15 +294,15 @@ class BasicCppGenerator
         '''«IF exception.supertype === null»«resolveSymbol("BTC::Commons::Core::Exception")»«ELSE»«resolve(exception.supertype)»«ENDIF»'''
     }
 
-    def String generateHConstructor(InterfaceDeclaration interface_declaration)
+    def String generateHConstructor(InterfaceDeclaration interfaceDeclaration)
     {
-        val class_name = resolve(interface_declaration, paramBundle.projectType)
+        val className = resolve(interfaceDeclaration, paramBundle.projectType)
 
         '''
             /**
                \brief Object constructor
             */
-            «class_name.shortName»
+            «className.shortName»
             (
                «resolveSymbol("BTC::Commons::Core::Context")» &context
                ,«resolveSymbol("BTC::Logging::API::LoggerFactory")» &loggerFactory
@@ -312,22 +312,22 @@ class BasicCppGenerator
                       = «resolveSymbol("BTC::Commons::CoreExtras::Optional")»<«resolveSymbol("BTC::Commons::CoreExtras::UUID")»>()
                «ELSEIF paramBundle.projectType == ProjectType.DISPATCHER»
                    ,«resolveSymbol("BTC::ServiceComm::API::IServerEndpoint")»& serviceEndpoint
-                   ,«resolveSymbol("BTC::Commons::Core::AutoPtr")»< «resolve(interface_declaration, ProjectType.SERVICE_API)» > dispatchee
+                   ,«resolveSymbol("BTC::Commons::Core::AutoPtr")»< «resolve(interfaceDeclaration, ProjectType.SERVICE_API)» > dispatchee
                «ENDIF»
             );
         '''
     }
 
-    def String generateHDestructor(InterfaceDeclaration interface_declaration)
+    def String generateHDestructor(InterfaceDeclaration interfaceDeclaration)
     {
-        val class_name = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType,
-            interface_declaration.name)
+        val className = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType,
+            interfaceDeclaration.name)
 
         '''
             /**
                \brief Object destructor
             */
-            virtual ~«class_name»();
+            virtual ~«className»();
         '''
     }
 
@@ -413,44 +413,44 @@ class BasicCppGenerator
             «IF exception.members.empty»
                 «resolveSymbol("CAB_SIMPLE_EXCEPTION_IMPLEMENTATION")»( «resolve(exception).shortName» )
             «ELSE»
-                «val class_name = exception.name»
+                «val className = exception.name»
                 // based on CAB macro CAB_SIMPLE_EXCEPTION_IMPLEMENTATION_DEFAULT_MSG from Exception.h
-                «class_name»::«class_name»() : BASE("")
+                «className»::«className»() : BASE("")
                 {}
                 
-                «class_name»::«class_name»(«resolveSymbol("BTC::Commons::Core::String")» const &msg) : BASE("")
+                «className»::«className»(«resolveSymbol("BTC::Commons::Core::String")» const &msg) : BASE("")
                 {}
                 
-                «class_name»::«class_name»(
+                «className»::«className»(
                    «FOR member : exception.members SEPARATOR ", "»«toText(member.type, exception)» const& «member.name.asMember»«ENDFOR»
                 ) : BASE("")
                    «FOR member : exception.members», «member.name.asMember»( «member.name.asMember» )«ENDFOR»
                 {}
                 
                 «IF targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11»
-                    void «class_name»::Throw() const
+                    void «className»::Throw() const
                     {
                        throw this;
                     }
                     
-                    void «class_name»::Throw()
+                    void «className»::Throw()
                     {
                        throw this;
                     }
                     
-                    «resolveSymbol("BTC::Commons::Core::Exception")» *«class_name»::IntClone() const
+                    «resolveSymbol("BTC::Commons::Core::Exception")» *«className»::IntClone() const
                     {
-                        return new «class_name»(*this);
+                        return new «className»(*this);
                     }
                 «ELSE»
-                    void «class_name»::Throw() const
+                    void «className»::Throw() const
                     {
                        throw *this;
                     }
                     
-                    «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Exception")»> «class_name»::IntClone() const
+                    «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Exception")»> «className»::IntClone() const
                     {
-                       return «resolveSymbol("BTC::Commons::Core::CreateUnique")»<«class_name»>(*this);
+                       return «resolveSymbol("BTC::Commons::Core::CreateUnique")»<«className»>(*this);
                     }
                 «ENDIF»
                 

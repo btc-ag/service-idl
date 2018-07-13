@@ -14,15 +14,15 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 @Accessors(NONE)
 class CMakeTopLevelProjectFileGenerator
 {
-    val IFileSystemAccess file_system_access
+    val IFileSystemAccess fileSystemAccess
     val IGenerationSettings generationSettings
     val CMakeProjectSet projectSet
     val ModuleDeclaration module
 
-    new(IFileSystemAccess file_system_access, IGenerationSettings generationSettings, IProjectSet projectSet,
+    new(IFileSystemAccess fileSystemAccess, IGenerationSettings generationSettings, IProjectSet projectSet,
         ModuleDeclaration module)
     {
-        this.file_system_access = file_system_access
+        this.fileSystemAccess = fileSystemAccess
         this.generationSettings = generationSettings
         this.projectSet = projectSet as CMakeProjectSet
         this.module = module
@@ -32,13 +32,13 @@ class CMakeTopLevelProjectFileGenerator
     {
         // TODO this depends on the implementation of ProjectGeneratorBaseBase.getProjectPath
         val topLevelPath = modulePath
-        file_system_access.generateFile(
+        fileSystemAccess.generateFile(
             topLevelPath.append("conanfile.py").toString,
             ArtifactNature.CPP.label,
             generateConanfile().toString
         )
 
-        file_system_access.generateFile(
+        fileSystemAccess.generateFile(
             topLevelPath.append("CMakeLists.txt").toString,
             ArtifactNature.CPP.label,
             generateCMakeLists().toString

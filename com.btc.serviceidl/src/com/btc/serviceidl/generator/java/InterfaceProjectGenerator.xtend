@@ -148,11 +148,11 @@ class InterfaceProjectGenerator extends BasicProjectGenerator
       generateJavaFile(projectSourceRootPath.append(testName.java), paramBundle, interfaceDeclaration, 
           [basicJavaSourceGenerator|new TestGenerator(basicJavaSourceGenerator).generateTestStub(testName, projectSourceRootPath, interfaceDeclaration)])
       
-      val impl_test_name = interfaceDeclaration.name + "ImplTest"
-      generateJavaFile(projectSourceRootPath.append(impl_test_name.java),
+      val implTestName = interfaceDeclaration.name + "ImplTest"
+      generateJavaFile(projectSourceRootPath.append(implTestName.java),
           paramBundle, 
          interfaceDeclaration, 
-          [basicJavaSourceGenerator|new TestGenerator(basicJavaSourceGenerator).generateFileImplTest(impl_test_name, testName, interfaceDeclaration)]
+          [basicJavaSourceGenerator|new TestGenerator(basicJavaSourceGenerator).generateFileImplTest(implTestName, testName, interfaceDeclaration)]
       )
       
       val zmqTestName = interfaceDeclaration.name + "ZeroMQIntegrationTest"
