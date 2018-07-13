@@ -23,6 +23,7 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
@@ -34,6 +35,7 @@ import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import com.google.common.collect.Sets
 import java.util.Arrays
@@ -348,7 +350,7 @@ class DotNetGenerator
       generateVSProjectFiles(projectRootPath)
    }
    
-   private def void generateProtobufProjectContent(EObject owner, IPath projectRootPath)
+   private def void generateProtobufProjectContent(AbstractContainerDeclaration owner, IPath projectRootPath)
    {
       val faultHandlerFileName = Util.resolveServiceFaultHandling(typeResolver, owner).shortName
       generateProjectSourceFile(
@@ -359,14 +361,8 @@ class DotNetGenerator
        
       val codecName = GeneratorUtil.getCodecName(owner)
       generateProjectSourceFile(projectRootPath, codecName, generateProtobufCodec(owner, codecName))
-      if (owner instanceof ModuleDeclaration)
-      {
-         protobufFiles.add(Constants.FILE_NAME_TYPES)
-      }
-      else if (owner instanceof InterfaceDeclaration)
-      {
-         protobufFiles.add(owner.name)
-      }
+      
+      protobufFiles.add(if (owner instanceof ModuleDeclaration) Constants.FILE_NAME_TYPES else owner.name)
       
       // resolve dependencies across interfaces
       for (element : owner.eAllContents.toIterable)
@@ -375,10 +371,10 @@ class DotNetGenerator
       }
    }
    
-   private def dispatch void resolveProtobufDependencies(EObject element, EObject owner)
+   private def dispatch void resolveProtobufDependencies(EObject element, AbstractContainerDeclaration owner)
    { /* no-operation dispatch method to match all non-handled cases */ }
    
-   private def dispatch void resolveProtobufDependencies(StructDeclaration element, EObject owner)
+   private def dispatch void resolveProtobufDependencies(StructDeclaration element, AbstractContainerDeclaration owner)
    {
       typeResolver.resolve(element, ProjectType.PROTOBUF)
       
@@ -388,12 +384,12 @@ class DotNetGenerator
       }
    }
    
-   private def dispatch void resolveProtobufDependencies(EnumDeclaration element, EObject owner)
+   private def dispatch void resolveProtobufDependencies(EnumDeclaration element, AbstractContainerDeclaration owner)
    {
       typeResolver.resolve(element, ProjectType.PROTOBUF)
    }
    
-   private def dispatch void resolveProtobufDependencies(ExceptionDeclaration element, EObject owner)
+   private def dispatch void resolveProtobufDependencies(ExceptionDeclaration element, AbstractContainerDeclaration owner)
    {
       typeResolver.resolve(element, ProjectType.PROTOBUF)
       
@@ -401,24 +397,24 @@ class DotNetGenerator
          resolveProtobufDependencies(element.supertype, owner)
    }
    
-   private def dispatch void resolveProtobufDependencies(FunctionDeclaration element, EObject owner)
+   private def dispatch void resolveProtobufDependencies(FunctionDeclaration element, AbstractContainerDeclaration owner)
    {
       for (param : element.parameters)
       {
          resolveProtobufDependencies(param.paramType, owner)
       }
       
-      if (!element.returnedType.isVoid)
+      if (!(element.returnedType instanceof VoidType))
          resolveProtobufDependencies(element.returnedType, owner)
    }
    
-   private def dispatch void resolveProtobufDependencies(AbstractType element, EObject owner)
+   private def dispatch void resolveProtobufDependencies(AbstractType element, AbstractContainerDeclaration owner)
    {
       if (element.referenceType !== null)
          resolveProtobufDependencies(element.referenceType, owner)
    }
    
-   private def generateProtobufCodec(EObject owner, String className)
+   private def generateProtobufCodec(AbstractContainerDeclaration owner, String className)
    {
       reinitializeFile
       

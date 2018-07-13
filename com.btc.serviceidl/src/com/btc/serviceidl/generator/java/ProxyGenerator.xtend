@@ -21,6 +21,7 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -135,7 +136,7 @@ class ProxyGenerator
     {
         val protobuf_request = resolveProtobuf(typeResolver, interface_declaration, Optional.of(ProtobufType.REQUEST))
         val protobuf_response = resolveProtobuf(typeResolver, interface_declaration, Optional.of(ProtobufType.RESPONSE))
-        val is_void = function.returnedType.isVoid
+        val is_void = function.returnedType instanceof VoidType
         val is_sync = function.sync
         val return_type = (if (is_void) "Void" else basicJavaSourceGenerator.toText(function.returnedType) )
         val out_params = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]
@@ -153,12 +154,12 @@ class ProxyGenerator
                «request_message» request«function.name» = 
                   «request_message».newBuilder()
                   «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
-                      «val use_codec = GeneratorUtil.useCodec(param.paramType, ArtifactNature.JAVA)»
-                      «var codec = resolveCodec(param.paramType, typeResolver)»
+                      «val use_codec = GeneratorUtil.useCodec(param.paramType.actualType, ArtifactNature.JAVA)»
+                      «var codec = resolveCodec(param.paramType.actualType, typeResolver)»
                       «val is_sequence = param.paramType.isSequenceType»
                       «val is_failable = is_sequence && param.paramType.isFailable»
                       «val method_name = '''«IF is_sequence»addAll«ELSE»set«ENDIF»«param.paramName.asJavaProtobufName»'''»
-                  .«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(typeResolver, param.paramType, Optional.empty)») «ENDIF»«codec».encode«IF is_failable»Failable«ENDIF»(«ENDIF»«param.paramName»«IF is_failable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualified_name_provider, param.paramType, interface_declaration)».class«ENDIF»«IF use_codec»)«ENDIF»)
+                  .«method_name»(«IF use_codec»«IF !is_sequence»(«resolveProtobuf(typeResolver, param.paramType.actualType, Optional.empty)») «ENDIF»«codec».encode«IF is_failable»Failable«ENDIF»(«ENDIF»«param.paramName»«IF is_failable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualified_name_provider, param.paramType.actualType, interface_declaration)».class«ENDIF»«IF use_codec»)«ENDIF»)
                «ENDFOR»
                .build();
                
@@ -178,7 +179,7 @@ class ProxyGenerator
                          
                          // handle [out] parameters
                          «FOR out_param : out_params»
-                             «val codec = resolveCodec(out_param.paramType, typeResolver)»
+                             «val codec = resolveCodec(out_param.paramType.actualType, typeResolver)»
                              «val temp_param_name = '''_«out_param.paramName.toFirstLower»'''»
                              «val param_name = out_param.paramName.asParameter»
                              «IF !out_param.paramType.isSequenceType»
@@ -193,11 +194,11 @@ class ProxyGenerator
                              
                          «ENDFOR»
                      «ENDIF»
-                     «val codec = resolveCodec(function.returnedType, typeResolver)»
                      «val is_byte = function.returnedType.isByte»
                      «val is_short = function.returnedType.isInt16»
                      «val is_char = function.returnedType.isChar»
-                     «val use_codec = GeneratorUtil.useCodec(function.returnedType, ArtifactNature.JAVA)»
+                     «val use_codec = GeneratorUtil.useCodec(function.returnedType.actualType, ArtifactNature.JAVA)»
+                     «val codec = if (use_codec) resolveCodec(function.returnedType.actualType, typeResolver) else null»
                      «val is_sequence = function.returnedType.isSequenceType»
                      «val is_failable = is_sequence && function.returnedType.isFailable»
                      «IF is_sequence»

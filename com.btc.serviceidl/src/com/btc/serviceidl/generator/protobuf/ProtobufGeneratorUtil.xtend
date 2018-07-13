@@ -17,6 +17,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.java.MavenResolver
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.util.Constants
@@ -24,7 +25,6 @@ import com.btc.serviceidl.util.MemberElementWrapper
 import com.google.common.base.CaseFormat
 import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
-import org.eclipse.emf.ecore.EObject
 
 import static com.btc.serviceidl.generator.common.GeneratorUtil.*
 
@@ -33,7 +33,7 @@ import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufGeneratorUtil
 {
-    static def getModuleName(EObject objectRoot, ArtifactNature artifactNature)
+    static def getModuleName(AbstractContainerDeclaration objectRoot, ArtifactNature artifactNature)
     {
         if (artifactNature != ArtifactNature.JAVA)
             GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(objectRoot.moduleStack).with(
@@ -64,13 +64,13 @@ class ProtobufGeneratorUtil
         asProtoFileAttributeName(element.name).toLowerCase
     }
 
-    static def IPath makeProtobufPath(EObject container, String fileName, ArtifactNature artifact_nature,
-        IModuleStructureStrategy moduleStructureStrategy)
+    static def IPath makeProtobufPath(AbstractContainerDeclaration container, String fileName,
+        ArtifactNature artifact_nature, IModuleStructureStrategy moduleStructureStrategy)
     {
         makeProtobufModulePath(container, artifact_nature, moduleStructureStrategy).append(fileName.proto)
     }
 
-    static def IPath makeProtobufModulePath(EObject container, ArtifactNature artifactNature,
+    static def IPath makeProtobufModulePath(AbstractContainerDeclaration container, ArtifactNature artifactNature,
         IModuleStructureStrategy moduleStructureStrategy)
     {
         // TODO unify this across target technologies

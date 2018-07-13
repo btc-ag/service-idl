@@ -167,14 +167,7 @@ class OdbGenerator
 
     private def dispatch String resolveODBType(AbstractType element)
     {
-        if (element.primitiveType !== null)
-            return resolveODBType(element.primitiveType)
-        else if (element.referenceType !== null)
-            return resolveODBType(element.referenceType)
-        else if (element.collectionType !== null)
-            return resolveODBType(element.collectionType)
-
-        throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
+        resolveODBType(element.actualType)
     }
 
     private def String makeODBColumn(MemberElementWrapper member, Set<String> existing_column_names)

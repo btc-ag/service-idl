@@ -20,9 +20,9 @@ import com.btc.serviceidl.idl.AbstractException
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.MemberElement
-import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.idl.VoidType
 import java.util.HashSet
 import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -103,7 +103,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
                \throw «toText(exception, function)»
                «ENDFOR»
                «com.btc.serviceidl.util.Util.addNewLine(!function.raisedExceptions.empty)»
-               «IF !(function.returnedType as ReturnTypeElement).isVoid»\return «ENDIF»
+               «IF !(function.returnedType instanceof VoidType)»\return «ENDIF»
             «ELSE»
                \see «resolve(interface_declaration, ProjectType.SERVICE_API)»::«function.name»
             «ENDIF»

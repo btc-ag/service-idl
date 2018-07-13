@@ -12,7 +12,7 @@ package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ProjectType
-import org.eclipse.emf.ecore.EObject
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors(NONE)
@@ -26,8 +26,8 @@ class POMGenerator
         targetVersionProvider.getTargetVersion(JavaConstants.SERVICECOMM_VERSION_KIND)
     }
 
-    def String generatePOMContents(EObject container, ProjectType projectType, Iterable<MavenDependency> dependencies,
-        String optProtobufFile)
+    def String generatePOMContents(AbstractContainerDeclaration container, ProjectType projectType,
+        Iterable<MavenDependency> dependencies, String optProtobufFile)
     {
         val artifactId = MavenResolver.makePackageId(container, projectType)
         val groupId = mavenResolver.groupId

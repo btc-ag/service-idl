@@ -24,6 +24,8 @@ import java.net.URL
 
 class TestData
 {
+    static String GOOD_TESTCASE_BASEDIR = "com/btc/serviceidl/tests/testdata/good/"
+
     static def CharSequence getBasic()
     {
         return '''
@@ -147,7 +149,7 @@ class TestData
     static def Iterable<Map.Entry<String, CharSequence>> getGoodTestCases()
     {
         val testCaseFiles = #[
-            getFilenamesForDirnameFromClassPath("com/btc/serviceidl/tests/testdata/good/"),
+            getFilenamesForDirnameFromClassPath(GOOD_TESTCASE_BASEDIR),
             getFilenamesForDirnameFromClassPath("com/btc/serviceidl/tests/testdata/good_ext/")
         ].flatten
 
@@ -155,10 +157,20 @@ class TestData
         for (testCaseFile : testCaseFiles)
         {
             val path = Paths.get(testCaseFile.toURI)
-            resultMap.put(path.getName(path.nameCount - 1).toString,
-                Resources.toString(testCaseFile, Charset.defaultCharset))
+            resultMap.put(path.getName(path.nameCount - 1).toString, testCaseFile.testCaseFromURL)
         }
 
         return resultMap.entrySet
+    }
+
+    private static def getTestCaseFromURL(URL testCaseFile)
+    {
+        Resources.toString(testCaseFile, Charset.defaultCharset)
+    }
+
+    static def getGoodTestCase(String name)
+    {
+        Thread.currentThread().getContextClassLoader().getResource(GOOD_TESTCASE_BASEDIR + name + ".idl").
+            testCaseFromURL
     }
 }

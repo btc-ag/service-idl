@@ -15,14 +15,14 @@
  */
 package com.btc.serviceidl.generator.common
 
-import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
-import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
@@ -91,27 +91,30 @@ class GeneratorUtil
         name.replaceAll(Pattern.quote(sourceTransformType.separator), targetTransformType.separator)
     }
 
-    static def Iterable<EObject> getFailableTypes(EObject container)
+    static def Iterable<AbstractTypeReference> getFailableTypes(AbstractContainerDeclaration container)
     {
-        var objects = new ArrayList<Iterable<EObject>>
+        var objects = new ArrayList<Iterable<AbstractTypeReference>>
 
         // interfaces: special handling due to inheritance
         if (container instanceof InterfaceDeclaration)
         {
-            objects.add(container.functions.map[parameters].flatten.filter[isFailable(paramType)].filter(EObject))
-            objects.add(container.functions.map[returnedType].filter[isFailable].filter(EObject))
+            objects.add(
+                container.functions.map[parameters].flatten.map[paramType].filter[isFailable].map[actualType].filter(
+                    AbstractTypeReference))
+            objects.add(
+                container.functions.map[returnedType].filter[isFailable].map[actualType].filter(AbstractTypeReference))
         }
 
         val contents = container.eAllContents.toList
 
         // typedefs
         objects.add(
-            contents.filter(AliasDeclaration).filter[isFailable(type)].map[type]
+            contents.filter(AliasDeclaration).filter[isFailable(type)].map[type.actualType]
         )
 
         // structs
         objects.add(
-            contents.filter(StructDeclaration).map[members].flatten.filter[isFailable(type)].map[type]
+            contents.filter(StructDeclaration).map[members].flatten.filter[isFailable(type)].map[type.actualType]
         )
 
         // filter out duplicates (especially primitive types) before delivering the result!
@@ -120,13 +123,14 @@ class GeneratorUtil
 
     static val FAILABLE_SEPARATOR = "_"
 
-    static def String asFailable(EObject element, EObject container, IQualifiedNameProvider qualifiedNameProvider)
+    static def String asFailable(AbstractTypeReference element, AbstractContainerDeclaration container,
+        IQualifiedNameProvider qualifiedNameProvider)
     {
         #[#["Failable"], qualifiedNameProvider.getFullyQualifiedName(container).segments, getTypeName(
             Util.getUltimateType(element), qualifiedNameProvider).map[toFirstUpper]].flatten.join(FAILABLE_SEPARATOR)
     }
 
-    private static def Iterable<String> getTypeName(EObject type, IQualifiedNameProvider qualifiedNameProvider)
+    private static def Iterable<String> getTypeName(AbstractTypeReference type, IQualifiedNameProvider qualifiedNameProvider)
     {
         if (type.isPrimitive)
             #[Names.plain(type)]
@@ -134,9 +138,9 @@ class GeneratorUtil
             qualifiedNameProvider.getFullyQualifiedName(type).segments
     }
 
-    static def Iterable<EObject> getEncodableTypes(EObject owner)
+    static def Iterable<AbstractTypeReference> getEncodableTypes(AbstractContainerDeclaration owner)
     {
-        val nestedTypes = new TreeSet<EObject>[e1, e2|Names.plain(e1).compareTo(Names.plain(e2))]
+        val nestedTypes = new TreeSet<AbstractTypeReference>[e1, e2|Names.plain(e1).compareTo(Names.plain(e2))]
         nestedTypes.addAll(owner.eContents.filter(StructDeclaration))
         nestedTypes.addAll(owner.eContents.filter(ExceptionDeclaration))
         nestedTypes.addAll(owner.eContents.filter(EnumDeclaration))
@@ -148,9 +152,9 @@ class GeneratorUtil
         projectType.getClassName(artifactNature, basicName)
     }
 
-    static def dispatch boolean useCodec(EObject element, ArtifactNature artifactNature)
+    static def dispatch boolean useCodec(AbstractTypeReference element, ArtifactNature artifactNature)
     {
-        true
+        element !== null
     }
 
     static def dispatch boolean useCodec(PrimitiveType element, ArtifactNature artifactNature)
@@ -159,46 +163,27 @@ class GeneratorUtil
     // all other primitive types map directly to built-in types!
     }
 
-    static def dispatch boolean useCodec(ParameterElement element, ArtifactNature artifactNature)
-    {
-        useCodec(element.paramType, artifactNature)
-    }
-
     static def dispatch boolean useCodec(AliasDeclaration element, ArtifactNature artifactNature)
     {
-        useCodec(element.type, artifactNature)
+        useCodec(element.type.actualType, artifactNature)
     }
 
     static def dispatch boolean useCodec(SequenceDeclaration element, ArtifactNature artifactNature)
     {
-        artifactNature == ArtifactNature.CPP || useCodec(element.type, artifactNature) // check type of containing elements
+        artifactNature == ArtifactNature.CPP || useCodec(element.type.actualType, artifactNature) // check type of containing elements
     }
 
-    static def dispatch boolean useCodec(AbstractType element, ArtifactNature artifactNature)
-    {
-        if (element.primitiveType !== null)
-            useCodec(element.primitiveType, artifactNature)
-        else if (element.collectionType !== null)
-            useCodec(element.collectionType, artifactNature)
-        else if (element.referenceType !== null)
-            useCodec(element.referenceType, artifactNature)
-        else
-            true
-    }
-
-    static def String getCodecName(EObject object)
+    static def String getCodecName(AbstractContainerDeclaration object)
     {
         '''«getPbFileName(object)»«Constants.FILE_NAME_CODEC»'''
     }
 
-    static def String getPbFileName(EObject object)
+    static def String getPbFileName(AbstractContainerDeclaration object)
     {
         if (object instanceof ModuleDeclaration)
             Constants.FILE_NAME_TYPES
-        else if (object instanceof InterfaceDeclaration)
-            Names.plain(object)
         else
-            getPbFileName(Util.getScopeDeterminant(object))
+            Names.plain(object)
     }
 
     static def asPath(ParameterBundle bundle, ArtifactNature nature)

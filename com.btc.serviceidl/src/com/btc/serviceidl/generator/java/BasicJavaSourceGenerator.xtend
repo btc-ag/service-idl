@@ -13,6 +13,7 @@ package com.btc.serviceidl.generator.java
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.generator.common.ResolvedName
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
@@ -25,9 +26,9 @@ import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
 import com.btc.serviceidl.util.Util
@@ -90,24 +91,14 @@ class BasicJavaSourceGenerator
         '''«IF isOptional»«typeResolver.resolve(JavaClassNames.OPTIONAL)»<«ENDIF»«typeName»«IF isOptional»>«ENDIF»'''
     }
 
-    def dispatch String toText(ReturnTypeElement element)
+    def dispatch String toText(VoidType element)
     {
-        if (element.isVoid)
-            return "void"
-
-        throw new IllegalArgumentException("Unknown ReturnTypeElement: " + element.class.toString)
+        "void"
     }
 
     def dispatch String toText(AbstractType element)
     {
-        if (element.primitiveType !== null)
-            return toText(element.primitiveType)
-        else if (element.referenceType !== null)
-            return toText(element.referenceType)
-        else if (element.collectionType !== null)
-            return toText(element.collectionType)
-
-        throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
+        toText(element.actualType)
     }
 
     def dispatch String toText(PrimitiveType element)
@@ -245,7 +236,7 @@ class BasicJavaSourceGenerator
     def String makeInterfaceMethodSignature(FunctionDeclaration function)
     {
         val is_sync = function.isSync
-        val is_void = function.returnedType.isVoid
+        val is_void = function.returnedType instanceof VoidType
 
         '''
         «IF !is_sync»«typeResolver.resolve("java.util.concurrent.Future")»<«ENDIF»«IF !is_sync && is_void»Void«ELSE»«toText(function.returnedType)»«ENDIF»«IF !function.isSync»>«ENDIF» «function.name.toFirstLower»(
@@ -286,7 +277,7 @@ class BasicJavaSourceGenerator
 
     def dispatch String makeDefaultValue(AbstractType element)
     {
-        makeDefaultValue(element.referenceType ?: element.primitiveType ?: element.collectionType)
+        makeDefaultValue(element.actualType)
     }
 
     def dispatch String makeDefaultValue(SequenceDeclaration element)
@@ -357,10 +348,14 @@ class BasicJavaSourceGenerator
         name.toFirstLower
     }
 
-    def static String asServiceFaultHandlerFactory(EObject container)
+    static def getPrefix(AbstractContainerDeclaration container)
     {
-        val name = if (container instanceof InterfaceDeclaration) container.name else ""
-        '''«name»ServiceFaultHandlerFactory'''
+        if (container instanceof InterfaceDeclaration) container.name else ""
+    }
+
+    def static String asServiceFaultHandlerFactory(AbstractContainerDeclaration container)
+    {
+        '''«container.prefix»ServiceFaultHandlerFactory'''
     }
 
     def static String makeDefaultMethodStub()

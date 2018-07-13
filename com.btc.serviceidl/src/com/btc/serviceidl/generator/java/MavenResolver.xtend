@@ -20,11 +20,11 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.util.Constants
 import java.util.HashSet
 import java.util.Optional
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.util.Util.*
@@ -38,10 +38,10 @@ class MavenResolver
     // constants
     public static val DEFAULT_VERSION = "0.0.1"
 
-    def MavenDependency resolveDependency(EObject element, ProjectType projectType)
+    def MavenDependency resolveDependency(AbstractContainerDeclaration element, ProjectType projectType)
     {
         val name = registerPackage(element, projectType)
-        val version = resolveVersion(element.scopeDeterminant)
+        val version = resolveVersion(element)
 
         // TODO if the dependency is from another IDL, a different groupId must be used 
         return new MavenDependency.Builder().groupId(groupId).artifactId(name).version(version).build
@@ -121,7 +121,7 @@ class MavenResolver
      * For a given element, which is expected to be either module or interface,
      * returns the appropriate version string (default is 0.0.1)
      */
-    def String resolveVersion(EObject element)
+    def String resolveVersion(AbstractContainerDeclaration element)
     {
         // TODO the version must be parametrizable
         if (element instanceof InterfaceDeclaration)
@@ -133,20 +133,20 @@ class MavenResolver
     }
 
     // TODO consider making this private, I am not sure if the external uses are correct
-    static def makePackageId(EObject element, ProjectType projectType)
+    static def makePackageId(AbstractContainerDeclaration scopeDeterminant, ProjectType projectType)
     {
-        val scopeDeterminant = element.scopeDeterminant
         String.join(Constants.SEPARATOR_PACKAGE, #[
             GeneratorUtil.getTransformedModuleName(ParameterBundle.createBuilder(scopeDeterminant.moduleStack).build,
                 ArtifactNature.JAVA, TransformType.PACKAGE)
         ] + (if (scopeDeterminant instanceof InterfaceDeclaration) #[scopeDeterminant.name.toLowerCase] else #[]) +
             #[projectType.getName.toLowerCase])
     }
-    
-    def registerPackage(EObject element, ProjectType projectType) {
-        val packageId = makePackageId(element, projectType)
+
+    def registerPackage(AbstractContainerDeclaration scopeDeterminant, ProjectType projectType)
+    {
+        val packageId = makePackageId(scopeDeterminant, projectType)
         this.registeredPackages.add(packageId)
         packageId
     }
-    
+
 }

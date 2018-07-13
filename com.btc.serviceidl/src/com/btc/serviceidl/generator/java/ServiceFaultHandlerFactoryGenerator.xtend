@@ -11,11 +11,11 @@
 package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.common.ResolvedName
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractException
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.Util
 import java.util.HashSet
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.util.Util.*
@@ -30,7 +30,7 @@ class ServiceFaultHandlerFactoryGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
-    def generateServiceFaultHandlerFactory(String class_name, EObject container)
+    def generateServiceFaultHandlerFactory(String class_name, AbstractContainerDeclaration container)
     {
         val service_fault_handler = typeResolver.resolve(JavaClassNames.DEFAULT_SERVICE_FAULT_HANDLER)
         val i_error = typeResolver.resolve(JavaClassNames.ERROR)

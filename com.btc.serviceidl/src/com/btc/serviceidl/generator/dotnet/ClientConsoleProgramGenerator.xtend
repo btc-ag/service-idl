@@ -14,6 +14,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.VoidType
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
@@ -80,14 +81,14 @@ class ClientConsoleProgramGenerator
                       var errorCount = 0;
                       var callCount = 0;
                       «FOR function : interface_declaration.functions»
-                          «val is_void = function.returnedType.isVoid»
+                          «val is_void = function.returnedType instanceof VoidType»
                           try
                           {
                              callCount++;
                              «FOR param : function.parameters»
                                  var «param.paramName.asParameter» = «makeDefaultValue(basicCSharpSourceGenerator, param.paramType)»;
                              «ENDFOR»
-                      «IF !is_void»var «typeResolver.resolve(function.returnedType.ultimateType).alias("result")» = «ENDIF»proxy.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !function.sync».«IF is_void»Wait()«ELSE»Result«ENDIF»«ENDIF»;
+                      «IF !is_void»var «typeResolver.resolve(function.returnedType.actualType.ultimateType).alias("result")» = «ENDIF»proxy.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !function.sync».«IF is_void»Wait()«ELSE»Result«ENDIF»«ENDIF»;
                       «console».WriteLine("Result of «api_name».«function.name»: «IF is_void»Void"«ELSE»" + result.ToString()«ENDIF»);
                       }
                       catch («exception» e)

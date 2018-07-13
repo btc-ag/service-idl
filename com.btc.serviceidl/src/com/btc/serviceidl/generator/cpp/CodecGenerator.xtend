@@ -14,12 +14,13 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.MemberElementWrapper
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
@@ -31,7 +32,7 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors
 class CodecGenerator extends BasicCppGenerator
 {
-    private def generateHCodecInline(EObject owner, Iterable<EObject> nested_types)
+    private def generateHCodecInline(AbstractContainerDeclaration owner, Iterable<AbstractTypeReference> nested_types)
     {
         val failable_types = GeneratorUtil.getFailableTypes(owner)
 
@@ -52,7 +53,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
     
-    def generateEnsureFailableHandlers(EObject owner)
+    def generateEnsureFailableHandlers(AbstractContainerDeclaration owner)
     {
         val cab_string = resolveSymbol("BTC::Commons::Core::String")
         val cab_create_unique = resolveSymbol("BTC::Commons::Core::CreateUnique")
@@ -481,7 +482,7 @@ class CodecGenerator extends BasicCppGenerator
 
     }
     
-    def generateCodec(EObject type, EObject owner)
+    def generateCodec(AbstractTypeReference type, AbstractContainerDeclaration owner)
     {
         val api_type_name = resolve(type)
         /* TODO change such that ProtobufType does not need to be passed, it is irrelevant here */
@@ -504,7 +505,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
     
-    def generateFailableCodec(EObject type, EObject owner)
+    def generateFailableCodec(AbstractTypeReference type, AbstractContainerDeclaration owner)
     {
         val api_type_name = resolve(type)
         val proto_failable_type_name = typeResolver.resolveFailableProtobufType(type, owner)
@@ -554,7 +555,7 @@ class CodecGenerator extends BasicCppGenerator
             name
     }
 
-    private def dispatch String makeDecode(StructDeclaration element, EObject container)
+    private def dispatch String makeDecode(StructDeclaration element, AbstractContainerDeclaration container)
     {
         '''
             «resolve(element)» api_output;
@@ -565,7 +566,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    private def dispatch String makeDecode(ExceptionDeclaration element, EObject container)
+    private def dispatch String makeDecode(ExceptionDeclaration element, AbstractContainerDeclaration container)
     {
         throw new UnsupportedOperationException("Decode for exception types with custom attributes is unsupported right now")
 
@@ -579,7 +580,7 @@ class CodecGenerator extends BasicCppGenerator
 //        '''
     }
 
-    private def dispatch String makeDecode(EnumDeclaration element, EObject container)
+    private def dispatch String makeDecode(EnumDeclaration element, AbstractContainerDeclaration container)
     {
         '''
             «FOR enum_value : element.containedIdentifiers»
@@ -591,7 +592,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    private def String makeDecodeMember(MemberElementWrapper element, EObject container)
+    private def String makeDecodeMember(MemberElementWrapper element, AbstractContainerDeclaration container)
     {
         val use_codec = GeneratorUtil.useCodec(element.type, ArtifactNature.CPP)
         val is_pointer = useSmartPointer(element.container, element.type)
@@ -607,7 +608,7 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
 
-    private def dispatch String makeDecode(AbstractType element, EObject container)
+    private def dispatch String makeDecode(AbstractType element, AbstractContainerDeclaration container)
     {
         if (element.referenceType !== null)
             return makeDecode(element.referenceType, container)
@@ -665,7 +666,7 @@ class CodecGenerator extends BasicCppGenerator
             return makeEncode(element.referenceType)
     }
 
-    private def String resolveEncode(EObject element)
+    private def String resolveEncode(AbstractTypeReference element)
     {
         if (element.isFailable)
             "EncodeFailable"
@@ -675,7 +676,7 @@ class CodecGenerator extends BasicCppGenerator
             '''«typeResolver.resolveCodecNS(paramBundle, element)»::Encode'''
     }
 
-    private static def boolean isMutableField(EObject type)
+    private static def boolean isMutableField(AbstractTypeReference type)
     {
         val ultimate_type = type.ultimateType
 
@@ -683,7 +684,7 @@ class CodecGenerator extends BasicCppGenerator
             !(ultimate_type.isByte || ultimate_type.isInt16 || ultimate_type.isChar || ultimate_type.isEnumType)
     }
 
-    def generateHeaderFileBody(EObject owner)
+    def generateHeaderFileBody(AbstractContainerDeclaration owner)
     {
         // collect all contained distinct types which need conversion
         val nested_types = GeneratorUtil.getEncodableTypes(owner)

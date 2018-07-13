@@ -19,13 +19,13 @@ package com.btc.serviceidl.generator.protobuf
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.util.Constants
 import java.util.HashMap
 import java.util.Map
 import java.util.Set
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -41,7 +41,7 @@ final class ProtobufGenerator
    val IQualifiedNameProvider qualifiedNameProvider
    val IModuleStructureStrategy moduleStructureStrategy
       
-   val generatedArtifacts = new HashMap<EObject, String>
+   val generatedArtifacts = new HashMap<AbstractContainerDeclaration, String>
    val typedefTable = new HashMap<String, String>
    val allProjectReferences = new HashMap<ArtifactNature, Map<ParameterBundle, Set<ParameterBundle>>>
    
@@ -50,7 +50,7 @@ final class ProtobufGenerator
         allProjectReferences.computeIfAbsent(artifactNature, [new HashMap<ParameterBundle, Set<ParameterBundle>>])
     }
    
-   def Map<EObject, String> getGeneratedArtifacts()
+   def Map<AbstractContainerDeclaration, String> getGeneratedArtifacts()
    {
       return generatedArtifacts
    }
@@ -69,7 +69,7 @@ final class ProtobufGenerator
       // handle all module contents (excluding interfaces)
       for (module : resource.allContents.filter(ModuleDeclaration).filter[!isVirtual].toIterable)
       {
-         val moduleContents = module.eContents.filter[!(it instanceof ModuleDeclaration || it instanceof InterfaceDeclaration)]
+         val moduleContents = module.eContents.reject[it instanceof AbstractContainerDeclaration]
          if ( !moduleContents.empty )
          {
              generateProtobufFileForEachLanguage(languages, module, Constants.FILE_NAME_TYPES, 
@@ -80,7 +80,7 @@ final class ProtobufGenerator
       }
    }
    
-   private def void generateProtobufFileForEachLanguage(Iterable<ArtifactNature> languages, EObject object,
+   private def void generateProtobufFileForEachLanguage(Iterable<ArtifactNature> languages, AbstractContainerDeclaration object,
         String artifactName, (ArtifactNature)=>CharSequence generateContent)
     {
          // TODO why is the proto file generated for each language?
@@ -90,7 +90,7 @@ final class ProtobufGenerator
         generatedArtifacts.put(object, artifactName)
     }
    
-   private def void generateProtobufFile(ArtifactNature artifactNature, EObject container, String artifactName,
+   private def void generateProtobufFile(ArtifactNature artifactNature, AbstractContainerDeclaration container, String artifactName,
         CharSequence fileContent)
     {
         fileSystemAccess.generateFile(

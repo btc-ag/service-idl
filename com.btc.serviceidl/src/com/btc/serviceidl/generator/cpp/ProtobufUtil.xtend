@@ -18,7 +18,9 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.MemberElement
@@ -26,14 +28,13 @@ import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
 import com.google.common.base.CaseFormat
 import java.util.Optional
-import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufUtil
 {
-    static def ResolvedName resolveProtobuf(extension TypeResolver typeResolver, EObject object,
+    static def ResolvedName resolveProtobuf(extension TypeResolver typeResolver, AbstractTypeReference object,
         ProtobufType protobuf_type)
     {
         if (object.isUUIDType)
@@ -62,7 +63,7 @@ class ProtobufUtil
         addTargetInclude(typeResolver.moduleStructureStrategy.getIncludeFilePath(
             scope_determinant.moduleStack,
             ProjectType.PROTOBUF,
-            GeneratorUtil.getPbFileName(object),
+            GeneratorUtil.getPbFileName(scope_determinant),
             HeaderType.PROTOBUF_HEADER
         ))
 
@@ -70,14 +71,14 @@ class ProtobufUtil
         return new ResolvedName(result, TransformType.NAMESPACE)
     }
 
-    static def String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject element,
-        EObject container)
+    static def String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle,
+        AbstractTypeReference element, AbstractContainerDeclaration container)
     {
         resolveDecode(typeResolver, paramBundle, element, container, true)
     }
 
-    static def String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject element,
-        EObject container, boolean use_codec_ns)
+    static def String resolveDecode(extension TypeResolver typeResolver, ParameterBundle paramBundle,
+        AbstractTypeReference element, AbstractContainerDeclaration container, boolean use_codec_ns)
     {
         // handle sequence first, because it may include UUIDs and other types from below
         if (element.isSequenceType)
@@ -95,10 +96,13 @@ class ProtobufUtil
             val isUUIDType = ultimate_type.isUUIDType
             val decodeMethodName = (if (is_failable)
                 "DecodeFailable"
-            else if (isUUIDType) "DecodeUUID" else "Decode") + if (element.eContainer instanceof MemberElement)
-                "ToVector"
-            else
-                ""
+            else if (isUUIDType) "DecodeUUID" else "Decode") +
+                if (element.eContainer instanceof AbstractType &&
+                    (element.eContainer as AbstractType).collectionType !== null &&
+                    element.eContainer.eContainer instanceof MemberElement)
+                    "ToVector"
+                else
+                    ""
 
             return '''«IF use_codec_ns»«typeResolver.resolveCodecNS(paramBundle, ultimate_type, is_failable, Optional.of(container))»::«ENDIF»«decodeMethodName»«IF is_failable || !isUUIDType»< «protobuf_type», «resolve(ultimate_type)» >«ENDIF»'''
         }
@@ -118,20 +122,21 @@ class ProtobufUtil
         return '''«typeResolver.resolveCodecNS(paramBundle, element)»::Decode'''
     }
 
-    static def String resolveCodecNS(TypeResolver typeResolver, ParameterBundle paramBundle, EObject object)
+    static def String resolveCodecNS(TypeResolver typeResolver, ParameterBundle paramBundle,
+        AbstractTypeReference object)
     {
         resolveCodecNS(typeResolver, paramBundle, object, false, Optional.empty)
     }
 
-    static def String resolveCodecNS(extension TypeResolver typeResolver, ParameterBundle paramBundle, EObject object,
-        boolean is_failable, Optional<EObject> container)
+    static def String resolveCodecNS(extension TypeResolver typeResolver, ParameterBundle paramBundle,
+        AbstractTypeReference object, boolean is_failable, Optional<AbstractContainerDeclaration> container)
     {
         val ultimate_type = object.ultimateType
 
         // failable wrappers always local!
-        val moduleStack = if (is_failable) paramBundle.moduleStack else ultimate_type.moduleStack
+        val moduleStack = if (is_failable) paramBundle.moduleStack else ultimate_type.scopeDeterminant.moduleStack
 
-        val codec_name = GeneratorUtil.getCodecName(if (is_failable) container.get else ultimate_type)
+        val codec_name = GeneratorUtil.getCodecName(if (is_failable) container.get else ultimate_type.scopeDeterminant)
 
         addTargetInclude(
             typeResolver.moduleStructureStrategy.getIncludeFilePath(moduleStack, ProjectType.PROTOBUF, codec_name,
@@ -144,8 +149,8 @@ class ProtobufUtil
             TransformType.NAMESPACE) + TransformType.NAMESPACE.separator + codec_name
     }
 
-    static def String resolveFailableProtobufType(extension TypeResolver typeResolver, EObject element,
-        EObject container)
+    static def String resolveFailableProtobufType(extension TypeResolver typeResolver, AbstractTypeReference element,
+        AbstractContainerDeclaration container)
     {
         // TODO isn't there a specific type that is used from that library? Is it really required?
         // explicitly include some essential dependencies

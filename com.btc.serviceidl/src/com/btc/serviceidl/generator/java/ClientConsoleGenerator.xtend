@@ -12,6 +12,7 @@ package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -100,7 +101,7 @@ class ClientConsoleGenerator
               int callCount = 0;
               «FOR function : interface_declaration.functions»
                   «val function_name = function.name.asMethod»
-                  «val is_void = function.returnedType.isVoid»
+                  «val is_void = function.returnedType instanceof VoidType»
                   try
                   {
                      callCount++;

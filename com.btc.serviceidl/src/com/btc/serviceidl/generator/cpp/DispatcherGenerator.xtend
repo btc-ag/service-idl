@@ -16,18 +16,20 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
+import com.btc.serviceidl.idl.AbstractTypeReference
+import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.VoidType
 import java.util.Optional
 import org.eclipse.core.runtime.Path
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.cpp.ProtobufUtil.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.FunctionDeclaration
 
 @Accessors
 class DispatcherGenerator extends BasicCppGenerator
@@ -152,7 +154,7 @@ class DispatcherGenerator extends BasicCppGenerator
     {
         val protobuf_request_method = function.name.asRequest.asCppProtobufName
         val is_sync = function.isSync
-        val is_void = function.returnedType.isVoid
+        val is_void = function.returnedType instanceof VoidType
         val protobuf_response_method = function.name.asResponse.asCppProtobufName
         val output_parameters = function.parameters.filter[direction == ParameterDirection.PARAM_OUT]
         val protobuf_response_message = typeResolver.resolveProtobuf(interface_declaration, ProtobufType.RESPONSE)
@@ -162,7 +164,7 @@ class DispatcherGenerator extends BasicCppGenerator
            // decode request -->
            auto const& concreteRequest( protoBufRequest->«protobuf_request_method»() );
            «FOR param : function.parameters.filter[direction == ParameterDirection.PARAM_IN]»
-               «IF GeneratorUtil.useCodec(param.paramType, ArtifactNature.CPP)»
+               «IF GeneratorUtil.useCodec(param.paramType.actualType, ArtifactNature.CPP)»
                    «IF param.paramType.isSequenceType»
                        «val ulimate_type = param.paramType.ultimateType»
                        «val is_uuid = ulimate_type.isUUIDType»
@@ -170,11 +172,11 @@ class DispatcherGenerator extends BasicCppGenerator
                        auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, ulimate_type, is_failable, Optional.of(interface_declaration))»::Decode«IF is_failable»Failable«ELSEIF is_uuid»UUID«ENDIF»
                           «IF !is_uuid || is_failable»
                               «val protobuf_type = typeResolver.resolveProtobuf(ulimate_type, ProtobufType.REQUEST).fullyQualifiedName»
-                              < «IF is_failable»«typeResolver.resolveFailableProtobufType(param.paramType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF», «resolve(ulimate_type)» >
+                              < «IF is_failable»«typeResolver.resolveFailableProtobufType(param.paramType.actualType, interface_declaration)»«ELSE»«protobuf_type»«ENDIF», «resolve(ulimate_type)» >
                           «ENDIF»
                           (concreteRequest.«param.paramName.asCppProtobufName»()) );
                    «ELSE»
-                       auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, param.paramType)»::Decode«IF param.paramType.isUUIDType»UUID«ENDIF»(concreteRequest.«param.paramName.asCppProtobufName»()) );
+                       auto «param.paramName»( «typeResolver.resolveCodecNS(paramBundle, param.paramType.actualType)»::Decode«IF param.paramType.isUUIDType»UUID«ENDIF»(concreteRequest.«param.paramName.asCppProtobufName»()) );
                    «ENDIF»
                «ELSE»
                    auto «param.paramName»( concreteRequest.«param.paramName.asCppProtobufName»() );
@@ -215,11 +217,11 @@ class DispatcherGenerator extends BasicCppGenerator
         «IF !is_void || !output_parameters.empty»
             // encode response -->
             auto * const concreteResponse( response->mutable_«protobuf_response_method»() );
-            «IF !is_void»«makeEncodeResponse(function.returnedType, interface_declaration, function.name.asCppProtobufName, Optional.empty)»«ENDIF»
+            «IF !is_void»«makeEncodeResponse(function.returnedType.actualType, interface_declaration, function.name.asCppProtobufName, Optional.empty)»«ENDIF»
             «IF !output_parameters.empty»
                 // handle [out] parameters
                 «FOR param : output_parameters»
-                    «makeEncodeResponse(param.paramType, interface_declaration, param.paramName.asCppProtobufName, Optional.of(param.paramName))»
+                    «makeEncodeResponse(param.paramType.actualType, interface_declaration, param.paramName.asCppProtobufName, Optional.of(param.paramName))»
                 «ENDFOR»
             «ENDIF»
             // encode response <--
@@ -244,7 +246,7 @@ class DispatcherGenerator extends BasicCppGenerator
             messagePart
     }
 
-    private def String makeEncodeResponse(EObject type, EObject container, String protobuf_name,
+    private def String makeEncodeResponse(AbstractTypeReference type, AbstractContainerDeclaration container, String protobuf_name,
         Optional<String> output_param)
     {
         val api_input = if (output_param.present) output_param.get else "result"

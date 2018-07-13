@@ -14,6 +14,7 @@ import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.prins.OdbConstants
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.google.common.collect.Sets
@@ -23,7 +24,6 @@ import java.util.HashSet
 import java.util.Map
 import java.util.Optional
 import org.eclipse.core.runtime.IPath
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -43,7 +43,7 @@ class ProjectGeneratorBaseBase
     val extension IProjectSet vsSolution
     val IModuleStructureStrategy moduleStructureStrategy
     val ITargetVersionProvider targetVersionProvider
-    val Map<EObject, Collection<EObject>> smart_pointer_map
+    val Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map
 
     val ParameterBundle param_bundle
     val ModuleDeclaration module
@@ -56,7 +56,7 @@ class ProjectGeneratorBaseBase
     new(IFileSystemAccess file_system_access, IQualifiedNameProvider qualified_name_provider,
         IScopeProvider scope_provider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
         IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
-        ITargetVersionProvider targetVersionProvider, Map<EObject, Collection<EObject>> smart_pointer_map,
+        ITargetVersionProvider targetVersionProvider, Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map,
         ProjectType type, ModuleDeclaration module)
     {
         this.file_system_access = file_system_access

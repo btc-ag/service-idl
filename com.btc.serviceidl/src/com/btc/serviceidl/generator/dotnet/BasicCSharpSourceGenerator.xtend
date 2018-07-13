@@ -12,6 +12,7 @@ package com.btc.serviceidl.generator.dotnet
 
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.GuidMapper
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.DocCommentElement
@@ -21,14 +22,12 @@ import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.ExceptionReferenceDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
-import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.idl.TupleDeclaration
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.MemberElementWrapper
 import java.util.ArrayList
 import java.util.Map
@@ -53,35 +52,25 @@ class BasicCSharpSourceGenerator {
    {
       val type_name = typedef_table.computeIfAbsent(element.name, [toText(element.type, element)])
 
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
+      if (context instanceof AbstractStructuralDeclaration)
          return "" // in this context, we only denote the substitute type without any output
       else
          return type_name
    }
    
    def dispatch String toText(AbstractType element, EObject context)
-   {
-      if (element.primitiveType !== null)
-         return toText(element.primitiveType, element)
-      else if (element.referenceType !== null)
-         return toText(element.referenceType, element)
-      else if (element.collectionType !== null)
-         return toText(element.collectionType, element)
-      
-      throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
-   }
+    {
+        toText(element.actualType, element)
+    }
    
    def dispatch String toText(ParameterElement element, EObject context)
    {
       '''«element.paramName.asParameter»'''
    }
    
-   def dispatch String toText(ReturnTypeElement element, EObject context)
+   def dispatch String toText(VoidType element, EObject context)
    {
-      if (element.isVoid)
-         return "void"
-
-      throw new IllegalArgumentException("Unknown ReturnTypeElement: " + element.class.toString)
+      "void"
    }
    
    def dispatch String toText(PrimitiveType element, EObject context)
@@ -91,7 +80,7 @@ class BasicCSharpSourceGenerator {
    
    def dispatch String toText(EnumDeclaration element, EObject context)
    {
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
+      if (context instanceof AbstractStructuralDeclaration)
       '''
       public enum «element.name»
       {
@@ -111,7 +100,7 @@ class BasicCSharpSourceGenerator {
    
    def dispatch String toText(StructDeclaration element, EObject context)
    {
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
+      if (context instanceof AbstractStructuralDeclaration)
       {
          val class_members = new ArrayList<Triple<String, String, String>>
          for (member : element.effectiveMembers) class_members.add(Tuples.create(member.name.asProperty, toText(member, element), maybeOptional(member)))
@@ -126,7 +115,7 @@ class BasicCSharpSourceGenerator {
          {
             «IF related_event !== null»
                
-               public static readonly «resolve("System.Guid")» «eventTypeGuidProperty» = new Guid("«GuidMapper.get(related_event.data)»");
+               public static readonly «resolve("System.Guid")» «eventTypeGuidProperty» = new Guid("«GuidMapper.get(related_event)»");
             «ENDIF»
             «FOR class_member : class_members BEFORE System.lineSeparator»
                public «class_member.second»«class_member.third» «class_member.first» { get; private set; }
@@ -164,7 +153,7 @@ class BasicCSharpSourceGenerator {
    
    def dispatch String toText(ExceptionDeclaration element, EObject context)
    {
-      if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration || context instanceof StructDeclaration)
+      if (context instanceof AbstractStructuralDeclaration)
       {
          val class_members = new ArrayList<Pair<MemberElementWrapper, String>>
          for (member : element.effectiveMembers) class_members.add(Tuples.create(member, toText(member, element)))

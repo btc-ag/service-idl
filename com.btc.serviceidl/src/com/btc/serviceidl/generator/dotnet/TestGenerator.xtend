@@ -13,6 +13,7 @@ package com.btc.serviceidl.generator.dotnet
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import org.eclipse.xtend.lib.annotations.Accessors
 
@@ -136,7 +137,7 @@ class TestGenerator extends GeneratorBase
             
                «FOR function : interface_declaration.functions»
                    «val is_sync = function.sync»
-                   «val is_void = function.returnedType.isVoid»
+                   «val is_void = function.returnedType instanceof VoidType»
                    [«resolve("NUnit.Framework.Test")»]
                    public void «function.name»Test()
                    {
@@ -145,7 +146,7 @@ class TestGenerator extends GeneratorBase
                          «FOR param : function.parameters»
                              var «param.paramName.asParameter» = «basicCSharpSourceGenerator.makeDefaultValue(param.paramType)»;
                          «ENDFOR»
-                   «IF !is_void»var «resolve(com.btc.serviceidl.util.Util.getUltimateType(function.returnedType)).alias("result")» = «ENDIF»TestSubject.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !is_sync».«IF is_void»Wait()«ELSE»Result«ENDIF»«ENDIF»;
+                   «IF !is_void»var «resolve(com.btc.serviceidl.util.Util.getUltimateType(function.returnedType.actualType)).alias("result")» = «ENDIF»TestSubject.«function.name»(«function.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT) "out " else "") + paramName.asParameter].join(", ")»)«IF !is_sync».«IF is_void»Wait()«ELSE»Result«ENDIF»«ENDIF»;
                    });
                    
                    var realException = (e is «aggregate_exception») ? (e as «aggregate_exception»).Flatten().InnerException : e;

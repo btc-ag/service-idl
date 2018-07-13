@@ -11,9 +11,11 @@
 
 package com.btc.serviceidl.generator.protobuf
 
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Util
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -44,7 +46,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
                           «IF Util.isSequenceType(param.paramType)»
                               «makeSequence(Util.getUltimateType(param.paramType), Util.isFailable(param.paramType), param, interfaceDeclaration, param.protoFileAttributeName, fieldId)»
                           «ELSE»
-                              required «resolve(param.paramType, interfaceDeclaration, interfaceDeclaration)» «param.protoFileAttributeName» = «fieldId.incrementAndGet»;
+                              required «resolve(param.paramType.actualType, interfaceDeclaration, interfaceDeclaration)» «param.protoFileAttributeName» = «fieldId.incrementAndGet»;
                           «ENDIF»
                       «ENDFOR»
                    }
@@ -67,7 +69,7 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
                               «val sequence = Util.tryGetSequence(param.paramType).get»
                               «toText(sequence, param, interfaceDeclaration, fieldId)»
                           «ELSE»
-                              required «resolve(param.paramType, interfaceDeclaration, interfaceDeclaration)» «param.protoFileAttributeName» = «fieldId.incrementAndGet»;
+                              required «resolve(param.paramType.actualType, interfaceDeclaration, interfaceDeclaration)» «param.protoFileAttributeName» = «fieldId.incrementAndGet»;
                           «ENDIF»
                       «ENDFOR»
                       «generateReturnType(function, interfaceDeclaration, interfaceDeclaration, fieldId)»
@@ -89,18 +91,18 @@ final class InterfaceProtobufFileGenerator extends ProtobufFileGeneratorBase
         return file_header + fileBody
     }
 
-    private def String generateReturnType(FunctionDeclaration function, EObject context, EObject container, Counter id)
+    private def String generateReturnType(FunctionDeclaration function, EObject context, AbstractContainerDeclaration container, Counter id)
     {
         val element = function.returnedType
         '''
-            «IF !element.isVoid»
-                «IF requiresNewMessageType(element)»
+            «IF !(element instanceof VoidType)»
+                «IF requiresNewMessageType(element.actualType)»
                     «toText(element, function, container, id)»
                 «ELSE»
                     «IF Util.isSequenceType(element)»
                         «toText(element, function, container, id)»
                     «ELSE»
-                        required «resolve(element, context, container)» «function.protoFileAttributeName» = «id.incrementAndGet»;
+                        required «resolve(element.actualType, context, container)» «function.protoFileAttributeName» = «id.incrementAndGet»;
                     «ENDIF»
                 «ENDIF»
             «ENDIF»

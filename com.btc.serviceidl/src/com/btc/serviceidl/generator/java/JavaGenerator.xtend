@@ -16,11 +16,11 @@
 package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.IGenerationSettings
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import java.util.Map
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
@@ -31,14 +31,14 @@ class JavaGenerator
     // parameters
     val IFileSystemAccess fileSystemAccess
     val IQualifiedNameProvider qualifiedNameProvider
-    val Map<EObject, String> protobufArtifacts
+    val Map<AbstractContainerDeclaration, String> protobufArtifacts
     val IGenerationSettings generationSettings
     val IDLSpecification idl
     val String groupId
     val MavenResolver mavenResolver
 
     new(IDLSpecification idl, IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
-        IGenerationSettings generationSettings, Map<EObject, String> protobufArtifacts)
+        IGenerationSettings generationSettings, Map<AbstractContainerDeclaration, String> protobufArtifacts)
     {
         this.idl = idl
         this.fileSystemAccess = fileSystemAccess

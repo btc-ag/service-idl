@@ -29,6 +29,18 @@ ImportDeclaration:
    'import' importedNamespace = QualifiedNameWithWildcard
 ;
 
+AbstractStructuralDeclaration:
+    AbstractContainerDeclaration | StructDeclaration
+;
+
+NamedDeclaration:
+    AbstractContainerDeclaration | AbstractInterfaceComponent 
+;
+
+AbstractContainerDeclaration:
+    ModuleDeclaration | InterfaceDeclaration 
+;
+
 /* regular module */
 ModuleDeclaration:
    (virtual ?= 'virtual')? (main ?= 'main')? 'module' name = ID '{' (moduleComponents += AbstractModuleComponent)* (nestedModules += ModuleDeclaration)* '}'
@@ -36,11 +48,8 @@ ModuleDeclaration:
 
 /* nested components which may occur within a regular module */
 AbstractModuleComponent:
-   EnumDeclaration ';'
-   | StructDeclaration ';'
-   | AbstractException ';'
+   AbstractTypeDeclaration ';'
    | InterfaceDeclaration ';'
-   | AliasDeclaration ';'
 ;
 
 /* generic exception */
@@ -67,14 +76,16 @@ AbstractTypeDeclaration:
 
 /* previously declared types which can be used in a cross-reference */
 AbstractCrossReference:
-   AliasDeclaration
-   | EnumDeclaration
-   | StructDeclaration
-   | AbstractCollection
-   | AbstractException
+   AbstractTypeDeclaration
+   | AbstractCollection   
+;
+
+AbstractTypeReference:
+    PrimitiveType | AbstractCrossReference | InterfaceDeclaration | VoidType
 ;
 
 /* meta type for any usable type */
+/* TODO consider renaming since it is not abstract contrary to its name */
 AbstractType:
    primitiveType = PrimitiveType 
    | referenceType = [AbstractCrossReference|QualifiedName]
@@ -138,6 +149,10 @@ MemberElement: (optional ?= 'optional')?
 /* key for event subscription */
 KeyElement: type = AbstractType keyName = ID;
 
+UniquelyIdentifiedDeclaration:
+    InterfaceDeclaration | EventDeclaration
+;
+
 /* interface */
 InterfaceDeclaration:
    ( docComments += DocCommentElement )*
@@ -167,7 +182,7 @@ FunctionDeclaration:
 
 /* event */
 EventDeclaration:
-   'event' (name = ID)? ('[' ('guid' '=' guid = UUID_LITERAL) ']' )? '(' data = [StructDeclaration|QualifiedName] ')'
+   'event' (name = ID)? ('[' 'guid' '=' guid = UUID_LITERAL ']' )? '(' data = [StructDeclaration|QualifiedName] ')'
    (
       ('subscribe' 'with' '(' ( keys += KeyElement (',' keys += KeyElement)* )? ')')?
       ('raises' raisedExceptions += [AbstractException|QualifiedName] (',' raisedExceptions += [AbstractException|QualifiedName] )* )?
@@ -175,7 +190,11 @@ EventDeclaration:
 ;
 
 /* returned result of a function */
-ReturnTypeElement: ( AbstractType | void ?= 'void');
+ReturnTypeElement: ( AbstractType | VoidType );
+
+VoidType:
+    'void' {VoidType}
+;
 
 /* parameter for a function */
 ParameterElement:

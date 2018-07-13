@@ -17,6 +17,7 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
@@ -29,7 +30,6 @@ import java.util.HashSet
 import java.util.Map
 import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -51,7 +51,7 @@ abstract class BasicProjectGenerator
     val IFileSystemAccess fileSystemAccess
     val IQualifiedNameProvider qualifiedNameProvider
     val IGenerationSettings generationSettings
-    val Map<EObject, String> protobufArtifacts
+    val Map<AbstractContainerDeclaration, String> protobufArtifacts
     val IDLSpecification idl
     val MavenResolver mavenResolver
 
@@ -63,7 +63,7 @@ abstract class BasicProjectGenerator
         new TypeResolver(qualifiedNameProvider, dependencies, mavenResolver)
     }
 
-    protected def void generatePOM(EObject container, ProjectType projectType)
+    protected def void generatePOM(AbstractContainerDeclaration container, ProjectType projectType)
     {
         val pom_path = makeProjectRootPath(container, projectType).append("pom".xml)
         fileSystemAccess.generateFile(pom_path.toPortableString, ArtifactNature.JAVA.label,
@@ -71,12 +71,13 @@ abstract class BasicProjectGenerator
                 dependencies, if (projectType == ProjectType.PROTOBUF) protobufArtifacts?.get(container) else null))
     }
 
-    private def IPath makeProjectRootPath(EObject container, ProjectType projectType)
+    private def IPath makeProjectRootPath(AbstractContainerDeclaration container, ProjectType projectType)
     {
         Path.fromPortableString(MavenResolver.makePackageId(container, projectType))
     }
 
-   protected def IPath makeProjectSourcePath(EObject container, ProjectType projectType, MavenArtifactType mavenType, PathType pathType)
+   protected def IPath makeProjectSourcePath(AbstractContainerDeclaration container, ProjectType projectType,
+        MavenArtifactType mavenType, PathType pathType)
    {      
       var result = makeProjectRootPath(container, projectType).append(mavenType.directoryLayout)
       
@@ -96,7 +97,7 @@ abstract class BasicProjectGenerator
    {
       val paramBundle = ParameterBundle.createBuilder(module.moduleStack).with(ProjectType.COMMON).build
       
-      for ( element : module.moduleComponents.filter(AbstractTypeDeclaration).filter[e | !(e instanceof AliasDeclaration)] )
+      for ( element : module.moduleComponents.filter(AbstractTypeDeclaration).reject[it instanceof AliasDeclaration] )
       {
          generateJavaFile(projectSourceRootPath.append(Names.plain(element).java), paramBundle, module, 
              [basicJavaSourceGenerator|basicJavaSourceGenerator.toDeclaration(element)]
@@ -112,7 +113,7 @@ abstract class BasicProjectGenerator
       )
    }
    
-   protected def void generateProtobuf(IPath projectSourceRootPath, EObject container)
+   protected def void generateProtobuf(IPath projectSourceRootPath, AbstractContainerDeclaration container)
    {
       val paramBundle = ParameterBundle.createBuilder(container.moduleStack).with(ProjectType.PROTOBUF).build
        
@@ -129,9 +130,8 @@ abstract class BasicProjectGenerator
        generationSettings.projectTypes
    }
 
-   protected def <T extends EObject> void generateJavaFile(IPath fileName, ParameterBundle paramBundle, T declarator, (BasicJavaSourceGenerator)=>CharSequence generateBody)
+   protected def void generateJavaFile(IPath fileName, ParameterBundle paramBundle, AbstractContainerDeclaration declarator, (BasicJavaSourceGenerator)=>CharSequence generateBody)
    {
-       // TODO T can be InterfaceDeclaration or ModuleDeclaration, the metamodel should be changed to introduce a common base type of these
       val basicJavaSourceGenerator = createBasicJavaSourceGenerator(paramBundle)
       fileSystemAccess.generateFile(fileName.toPortableString, ArtifactNature.JAVA.label, 
          generateSourceFile(
@@ -143,7 +143,7 @@ abstract class BasicProjectGenerator
       )
    }
 
-   private def generateSourceFile(EObject container, ProjectType projectType, TypeResolver typeResolver, CharSequence mainContents)
+   private def generateSourceFile(AbstractContainerDeclaration container, ProjectType projectType, TypeResolver typeResolver, CharSequence mainContents)
    {
       '''
       package «mavenResolver.registerPackage(container, projectType)»;

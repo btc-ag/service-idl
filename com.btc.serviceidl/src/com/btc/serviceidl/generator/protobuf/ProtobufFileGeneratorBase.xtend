@@ -17,12 +17,14 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
-import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.SequenceDeclaration
@@ -55,7 +57,7 @@ class ProtobufFileGeneratorBase
 
     static val WRAPPER_SUFFIX = "Wrapper"
 
-    protected def String generateFailable(EObject container)
+    protected def String generateFailable(AbstractContainerDeclaration container)
     {
         val failableTypes = GeneratorUtil.getFailableTypes(container)
         if (!failableTypes.empty)
@@ -79,10 +81,10 @@ class ProtobufFileGeneratorBase
         }
     }
 
-    protected def String generateTypes(EObject container, Collection<? extends EObject> contents)
+    protected def String generateTypes(AbstractContainerDeclaration container, Collection<? extends EObject> contents)
     {
         '''
-            «FOR typedef : contents.filter(AliasDeclaration).filter[requiresNewMessageType(type)] SEPARATOR System.lineSeparator»
+            «FOR typedef : contents.filter(AliasDeclaration).filter[requiresNewMessageType(type.actualType)] SEPARATOR System.lineSeparator»
                 «toText(typedef.type, typedef, container, new Counter)»
             «ENDFOR»
             
@@ -100,7 +102,7 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def String generatePackageName(EObject container)
+    protected def String generatePackageName(AbstractContainerDeclaration container)
     {
         '''
             syntax = "proto2";
@@ -108,7 +110,7 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def String generateImports(EObject container)
+    protected def String generateImports(AbstractContainerDeclaration container)
     {
         '''
             «FOR importFile : referencedFiles»
@@ -117,10 +119,10 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def dispatch String toText(StructDeclaration element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(StructDeclaration element, EObject context,
+        AbstractContainerDeclaration container, Counter id)
     {
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractContainerDeclaration)
             '''
                 message «element.name»
                 {
@@ -141,16 +143,16 @@ class ProtobufFileGeneratorBase
         }
     }
 
-    protected def dispatch String toText(ExceptionDeclaration element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(ExceptionDeclaration element, EObject context,
+        AbstractContainerDeclaration container, Counter id)
     {
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractContainerDeclaration)
             '''
                 message «element.name»
                 {
                    «val fieldId = new Counter»
                    «FOR member : element.allMembers SEPARATOR System.lineSeparator»
-                       «toText(member, container, element, fieldId)»
+                       «toText(member, element, container, fieldId)»
                    «ENDFOR»
                 }
             '''
@@ -158,7 +160,8 @@ class ProtobufFileGeneratorBase
             resolve(element, context, container)
     }
 
-    protected def dispatch String toText(MemberElementWrapper element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(MemberElementWrapper element, EObject context,
+        AbstractContainerDeclaration container, Counter id)
     {
         '''
             «IF element.isOptional && !element.type.isSequenceType»
@@ -173,13 +176,15 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def dispatch String toText(SequenceDeclaration element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(SequenceDeclaration element, EObject context,
+        AbstractContainerDeclaration container, Counter id)
     {
         makeSequence(element.type.ultimateType, element.failable, context, container,
             Names.plain(context).asProtoFileAttributeName, id)
     }
 
-    protected def dispatch String toText(TupleDeclaration element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(TupleDeclaration element, EObject context,
+        AbstractContainerDeclaration container, Counter id)
     {
         val tupleName = ( if (context instanceof TupleDeclaration ||
             context instanceof SequenceDeclaration) "Tuple" else Names.plain(context).toFirstUpper ) + WRAPPER_SUFFIX
@@ -189,7 +194,7 @@ class ProtobufFileGeneratorBase
             {
                «val elementId = new Counter»
                «FOR tupleElement : element.types»
-                   «IF requiresNewMessageType(tupleElement)»
+                   «IF requiresNewMessageType(tupleElement.actualType)»
                        «toText(tupleElement, element, container, new Counter)»
                    «ELSE»
                        required «toText(tupleElement, element, container, elementId)» element«elementId» = «elementId»;
@@ -200,7 +205,8 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def dispatch String toText(ParameterElement element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(ParameterElement element, EObject context,
+        AbstractContainerDeclaration container, Counter id)
     {
         val sequence = element.tryGetSequence
         '''
@@ -212,10 +218,10 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def dispatch String toText(EnumDeclaration element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(EnumDeclaration element, EObject context,
+        AbstractContainerDeclaration container, Counter id)
     {
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractStructuralDeclaration)
         {
             val fieldId = new Counter
             '''
@@ -231,9 +237,10 @@ class ProtobufFileGeneratorBase
             resolve(element, context, container)
     }
 
-    protected def dispatch String toText(AliasDeclaration element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(AliasDeclaration element, EObject context,
+        AbstractContainerDeclaration container, Counter id)
     {
-        if (requiresNewMessageType(element.type))
+        if (requiresNewMessageType(element.type.actualType))
             Names.plain(element).toFirstUpper + WRAPPER_SUFFIX
         else
             typedefTable.computeIfAbsent(element.name, [
@@ -244,19 +251,14 @@ class ProtobufFileGeneratorBase
             ])
     }
 
-    protected def dispatch String toText(AbstractType element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(AbstractType element, EObject context, AbstractContainerDeclaration container,
+        Counter id)
     {
-        if (element.primitiveType !== null)
-            toText(element.primitiveType, context, container, id)
-        else if (element.referenceType !== null)
-            toText(element.referenceType, context, container, id)
-        else if (element.collectionType !== null)
-            toText(element.collectionType, context, container, id)
-        else
-            throw new IllegalArgumentException("Unknown AbstractType: " + element.class.toString)
+        toText(element.actualType, context, container, id)
     }
 
-    protected def dispatch String toText(PrimitiveType element, EObject context, EObject container, Counter id)
+    protected def dispatch String toText(PrimitiveType element, EObject context, AbstractContainerDeclaration container,
+        Counter id)
     {
         id.incrementAndGet
 
@@ -287,16 +289,14 @@ class ProtobufFileGeneratorBase
             throw new IllegalArgumentException("Unknown PrimitiveType: " + element.class.toString)
     }
 
-    protected static def boolean requiresNewMessageType(EObject element)
+    protected static def boolean requiresNewMessageType(AbstractTypeReference element)
     {
         element instanceof TupleDeclaration ||
-            (element instanceof AbstractType && (element as AbstractType).collectionType !== null &&
-                requiresNewMessageType((element as AbstractType).collectionType)) ||
             (element instanceof SequenceDeclaration && (element as SequenceDeclaration).type.collectionType !== null)
     }
 
-    protected def String makeSequence(EObject nestedType, boolean isFailable, EObject context, EObject container,
-        String protobufName, Counter id)
+    protected def String makeSequence(AbstractTypeReference nestedType, boolean isFailable, EObject context,
+        AbstractContainerDeclaration container, String protobufName, Counter id)
     {
         '''
             «IF isFailable»
@@ -308,7 +308,7 @@ class ProtobufFileGeneratorBase
         '''
     }
 
-    protected def String resolve(EObject object, EObject context, EObject container)
+    protected def String resolve(AbstractTypeReference object, EObject context, AbstractContainerDeclaration container)
     {
         if (object.isSequenceType)
             toText(object, context, container, new Counter)
@@ -322,7 +322,7 @@ class ProtobufFileGeneratorBase
         }
     }
 
-    private def resolveNonPrimitiveType(EObject actualType, EObject context)
+    private def resolveNonPrimitiveType(AbstractTypeReference actualType, EObject context)
     {
         val plainName = Names.plain(actualType)
 
@@ -333,11 +333,11 @@ class ProtobufFileGeneratorBase
             plainName
         else
             resolveNonPrimitiveImportedType(objectRoot, plainName,
-                new ParameterBundle.Builder().with(context.moduleStack).with(ProjectType.PROTOBUF).build,
-                artifactNature)
+                new ParameterBundle.Builder().with(context.scopeDeterminant.moduleStack).with(ProjectType.PROTOBUF).
+                    build, artifactNature)
     }
 
-    private def resolveNonPrimitiveImportedType(EObject referencedObjectContainer,
+    private def resolveNonPrimitiveImportedType(AbstractContainerDeclaration referencedObjectContainer,
         String referencedObjectContainerPlainName, ParameterBundle referencingModuleParameterBundle,
         ArtifactNature artifactNature)
     {
@@ -355,7 +355,7 @@ class ProtobufFileGeneratorBase
             referencedObjectContainerPlainName
     }
 
-    def importPath(EObject object)
+    def importPath(AbstractContainerDeclaration object)
     {
         makeProtobufPath(object, if (object instanceof InterfaceDeclaration)
             Names.plain(object)

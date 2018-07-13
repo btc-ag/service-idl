@@ -18,8 +18,11 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.common.TypeWrapper
+import com.btc.serviceidl.generator.cpp.HeaderResolver.GroupedHeader
 import com.btc.serviceidl.generator.cpp.prins.PrinsHeaderResolver
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.PrimitiveType
 import java.util.Collection
 import java.util.HashMap
@@ -28,7 +31,6 @@ import java.util.LinkedHashSet
 import java.util.Map
 import java.util.Set
 import org.eclipse.core.runtime.IPath
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -36,7 +38,6 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.generator.cpp.HeaderResolver.GroupedHeader
 
 @Accessors(NONE)
 class TypeResolver
@@ -47,7 +48,7 @@ class TypeResolver
 
     val Collection<IProjectReference> project_references
     val Collection<ExternalDependency> cab_libs
-    val Map<EObject, Collection<EObject>> smart_pointer_map
+    val Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map
 
     @Accessors(NONE) val Map<IncludeGroup, Set<IPath>> includes = new HashMap<IncludeGroup, Set<IPath>>
 
@@ -106,7 +107,7 @@ class TypeResolver
         IModuleStructureStrategy moduleStructureStrategy,
         Collection<IProjectReference> project_references,
         Collection<ExternalDependency> cab_libs,
-        Map<EObject, Collection<EObject>> smart_pointer_map
+        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smart_pointer_map
     )
     {
         this.qualified_name_provider = qualified_name_provider
@@ -166,12 +167,12 @@ class TypeResolver
         return symbolName
     }
 
-    def ResolvedName resolve(EObject object)
+    def ResolvedName resolve(AbstractTypeReference object)
     {
-        return resolve(object, object.mainProjectType)
+        return resolve(object, object.scopeDeterminant.mainProjectType)
     }
 
-    def ResolvedName resolve(EObject object, ProjectType project_type)
+    def ResolvedName resolve(AbstractTypeReference object, ProjectType project_type)
     {
         if (project_type == ProjectType.PROTOBUF)
             throw new IllegalArgumentException("Use ProtobufUtil.resolveProtobuf instead!")
@@ -199,10 +200,11 @@ class TypeResolver
         }
     }
 
-    def void resolveProjectFilePath(EObject referenced_object, ProjectType project_type)
+    def void resolveProjectFilePath(AbstractTypeReference referenced_object, ProjectType project_type)
     {
         project_references.add(projectSet.resolve(
-            new ParameterBundle.Builder().with(referenced_object.moduleStack).with(project_type).build))
+            new ParameterBundle.Builder().with(referenced_object.scopeDeterminant.moduleStack).with(project_type).
+                build))
     }
 
     def getPrimitiveTypeName(PrimitiveType item)
@@ -241,7 +243,7 @@ class TypeResolver
      * For a given element, check if another type (as member of this element)
      * must be represented as smart pointer + forward declaration, or as-is.
      */
-    def boolean useSmartPointer(EObject element, EObject other_type)
+    def boolean useSmartPointer(AbstractStructuralDeclaration element, AbstractTypeReference other_type)
     {
         // sequences use forward-declared types as template parameters
         // and do not need the smart pointer wrapping
@@ -252,12 +254,12 @@ class TypeResolver
         return dependencies !== null && dependencies.contains(other_type.ultimateType)
     }
 
-    def Iterable<EObject> resolveForwardDeclarations(Iterable<TypeWrapper> types)
+    def Iterable<AbstractTypeReference> resolveForwardDeclarations(Iterable<TypeWrapper> types)
     {
         // TODO does this really need to iterate twice through types? 
         for (wrapper : types)
         {
-            smart_pointer_map.computeIfAbsent(wrapper.type, [new LinkedHashSet<EObject>]).addAll(
+            smart_pointer_map.computeIfAbsent(wrapper.type, [new LinkedHashSet<AbstractTypeReference>]).addAll(
                 wrapper.forwardDeclarations)
         }
 

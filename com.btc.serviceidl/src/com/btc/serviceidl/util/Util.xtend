@@ -15,9 +15,11 @@
  */
 package com.btc.serviceidl.util
 
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractCrossReference
 import com.btc.serviceidl.idl.AbstractException
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.DocCommentElement
 import com.btc.serviceidl.idl.EnumDeclaration
@@ -33,7 +35,6 @@ import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import java.util.ArrayDeque
-import java.util.Deque
 import java.util.HashSet
 import java.util.Optional
 import java.util.function.Function
@@ -41,7 +42,6 @@ import java.util.regex.Pattern
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
@@ -81,10 +81,10 @@ class Util
         makeBasicMessageName(name, Constants.PROTOBUF_RESPONSE)
     }
 
-    def static Deque<ModuleDeclaration> getModuleStack(EObject element)
+    def static Iterable<ModuleDeclaration> getModuleStack(AbstractContainerDeclaration element)
     {
-        var module_stack = new ArrayDeque<ModuleDeclaration>
-        var current_container = if (element instanceof ModuleDeclaration) element else element.eContainer
+        val module_stack = new ArrayDeque<ModuleDeclaration>
+        var EObject current_container = element
 
         while (current_container !== null && !(current_container instanceof IDLSpecification))
         {
@@ -101,18 +101,17 @@ class Util
         if (t.isAssignableFrom(element.class)) element as T else getParent(element.eContainer, t)
     }
 
-    def static EObject getScopeDeterminant(EObject element)
+    def static AbstractContainerDeclaration getScopeDeterminant(EObject element)
     {
         var container = element
         while (container !== null)
         {
-            if (container instanceof InterfaceDeclaration || container instanceof ModuleDeclaration)
+            if (container instanceof AbstractContainerDeclaration)
                 return container
             else
                 container = container.eContainer
         }
-
-        return EcoreUtil.getRootContainer(element)
+        throw new IllegalArgumentException
     }
 
     def static EventDeclaration getRelatedEvent(StructDeclaration object)
@@ -140,7 +139,7 @@ class Util
         return event_structs
     }
 
-    def static Iterable<AbstractException> getRaisedExceptions(EObject container)
+    def static Iterable<AbstractException> getRaisedExceptions(AbstractContainerDeclaration container)
     {
         val exceptions = new HashSet<AbstractException>
         for (function : container.eContents.filter(FunctionDeclaration))
@@ -324,6 +323,24 @@ class Util
         return false
     }
 
+    def static AbstractTypeReference getStructType(EObject element)
+    {
+        if (element instanceof StructDeclaration)
+        {
+            return element
+        }
+        else if (element instanceof AbstractType)
+        {
+            return element.actualType
+        }
+        else if (element instanceof AliasDeclaration)
+        {
+            return element.type.actualType
+        }
+
+        throw new IllegalArgumentException
+    }
+
     /**
      * Does the given element represents an exception type? 
      */
@@ -397,9 +414,14 @@ class Util
      * If given element is a sequence (of sequence of sequence... of type T),
      * go deep to retrieve T; otherwise return element immediately. 
      */
-    def static EObject getUltimateType(EObject element)
+    def static AbstractTypeReference getUltimateType(AbstractTypeReference element)
     {
         return getUltimateType(element, true)
+    }
+
+    def static AbstractTypeReference getUltimateType(AbstractType element)
+    {
+        element.actualType.ultimateType
     }
 
     def static boolean isFailable(EObject element)
@@ -432,22 +454,16 @@ class Util
      * Core logic for getUltimateType; the flag "decompose_typedef" allows us either
      * to get the basic type defined by this typedef (true) or the typedef itself (false).
      */
-    def static EObject getUltimateType(EObject element, boolean decompose_typedef)
+    def static AbstractTypeReference getUltimateType(AbstractTypeReference element, boolean decompose_typedef)
     {
         if (element instanceof SequenceDeclaration)
-            return getUltimateType(element.type, decompose_typedef)
-        else if (element instanceof AbstractType && ((element as AbstractType).collectionType !== null))
-            return getUltimateType((element as AbstractType).collectionType, decompose_typedef)
-        else if (element instanceof AbstractType && ((element as AbstractType).referenceType !== null))
-            return getUltimateType((element as AbstractType).referenceType, decompose_typedef)
-        else if (element instanceof AbstractType && ((element as AbstractType).primitiveType !== null))
-            return (element as AbstractType).primitiveType
+            return getUltimateType(element.type.actualType, decompose_typedef)
         else if (element instanceof ParameterElement)
-            return getUltimateType(element.paramType, decompose_typedef)
+            return getUltimateType(element.paramType.actualType, decompose_typedef)
         else if (element instanceof AliasDeclaration)
         {
             if (decompose_typedef)
-                return getUltimateType((element as AliasDeclaration).type, decompose_typedef)
+                return getUltimateType((element as AliasDeclaration).type.actualType, decompose_typedef)
             else
                 return element
         }
@@ -481,7 +497,7 @@ class Util
         return true
     }
 
-    static def Iterable<AbstractException> getFailableExceptions(EObject container)
+    static def Iterable<AbstractException> getFailableExceptions(AbstractContainerDeclaration container)
     {
         var exceptions = new HashSet<AbstractException>
 

@@ -13,7 +13,7 @@ class TypeResolverExtensions {
       «FOR event_data : structs»
          «val related_event = com.btc.serviceidl.util.Util.getRelatedEvent(event_data)»
          «IF related_event !== null»
-            «val event_uuid = GuidMapper.get(event_data)»
+            «val event_uuid = GuidMapper.get(related_event)»
             // {«event_uuid»}
             static const «resolveSymbol("BTC::Commons::CoreExtras::UUID")» s«event_data.name»TypeGuid = 
                «resolveSymbol("BTC::Commons::CoreExtras::UUID")»::ParseString("«event_uuid»");

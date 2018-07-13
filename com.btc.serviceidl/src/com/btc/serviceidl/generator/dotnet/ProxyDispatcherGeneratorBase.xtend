@@ -10,20 +10,21 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.dotnet
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.util.Constants
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.generator.common.ArtifactNature
 
 @Accessors(NONE)
 class ProxyDispatcherGeneratorBase extends GeneratorBase
@@ -44,7 +45,7 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
             com.btc.serviceidl.util.Util.asResponse(interface_declaration.name)
     }
 
-    protected def String getEncodeMethod(EObject type, EObject container)
+    protected def String getEncodeMethod(AbstractTypeReference type, AbstractContainerDeclaration container)
     {
         val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(type)
         val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(type)
@@ -69,7 +70,7 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
             "encode"
     }
 
-    protected def String resolveEncode(EObject element)
+    protected def String resolveEncode(AbstractTypeReference element)
     {
         if (element.isUUIDType)
             resolve(TypeResolver.PROTOBUF_UUID_TYPE).toString
@@ -82,7 +83,7 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
             resolve(element, ProjectType.PROTOBUF).toString
     }
 
-    protected def String getDecodeMethod(EObject type, EObject container)
+    protected def String getDecodeMethod(AbstractTypeReference type, AbstractContainerDeclaration container)
     {
         val is_sequence = com.btc.serviceidl.util.Util.isSequenceType(type)
         if (is_sequence)
@@ -118,7 +119,7 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
             "decode"
     }
 
-    protected def String resolveDecode(EObject element)
+    protected def String resolveDecode(AbstractTypeReference element)
     {
         if (com.btc.serviceidl.util.Util.isUUIDType(element))
             resolve("System.Guid").fullyQualifiedName
@@ -135,7 +136,7 @@ class ProxyDispatcherGeneratorBase extends GeneratorBase
             return resolve(element).toString
     }
 
-    protected def ResolvedName resolveProtobuf(EObject element)
+    protected def ResolvedName resolveProtobuf(AbstractTypeReference element)
     {
         resolve(element, ProjectType.PROTOBUF)
     }

@@ -15,31 +15,33 @@
  */
 package com.btc.serviceidl.generator.common
 
-import org.eclipse.emf.ecore.EObject
-import com.btc.serviceidl.idl.TupleDeclaration
-import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.FunctionDeclaration
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
-import com.btc.serviceidl.idl.SequenceDeclaration
-import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.ExceptionDeclaration
+import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.idl.MemberElement
+import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.idl.SequenceDeclaration
+import com.btc.serviceidl.idl.TupleDeclaration
+import org.eclipse.emf.ecore.EObject
+import com.btc.serviceidl.idl.AbstractModuleComponent
 
-class FeatureProfile<T extends EObject>
+class FeatureProfile
 {
 
-    new(T element)
+    new(AbstractContainerDeclaration element)
     {
         evaluate(element)
     }
 
-    new(Iterable<T> contents)
+    new(Iterable<AbstractModuleComponent> contents)
     {
         for (c : contents)
             evaluate(c)
     }
 
-    private def void evaluate(T element)
+    private def void evaluate(EObject element)
     {
         var contents = element.eAllContents.toList
         contents.add(element)

@@ -22,20 +22,20 @@
  */
 package com.btc.serviceidl.generator.common
 
-import org.eclipse.xtend.lib.annotations.Accessors
-import org.eclipse.emf.ecore.EObject
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.PrimitiveType
+import org.eclipse.xtend.lib.annotations.Accessors
 
 class UniqueWrapper
 {
-    @Accessors(PUBLIC_GETTER) private EObject type
+    @Accessors(PUBLIC_GETTER) private AbstractTypeReference type
 
-    new(EObject t)
+    new(AbstractTypeReference t)
     {
         type = t
     }
 
-    static def UniqueWrapper from(EObject e)
+    static def UniqueWrapper from(AbstractTypeReference e)
     {
         new UniqueWrapper(e)
     }

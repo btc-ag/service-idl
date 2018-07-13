@@ -20,6 +20,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.HeaderResolver.OutputConfigurationItem
 import com.btc.serviceidl.generator.cpp.TypeResolver.IncludeGroup
+import com.btc.serviceidl.idl.AbstractStructuralDeclaration
 import com.btc.serviceidl.idl.AbstractType
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.DocCommentElement
@@ -34,10 +35,10 @@ import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
-import com.btc.serviceidl.idl.ReturnTypeElement
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.idl.TupleDeclaration
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import java.util.ArrayList
 import java.util.Comparator
@@ -109,30 +110,19 @@ class BasicCppGenerator
             '''«toText(item.paramType, context.eContainer)»«IF item.direction == ParameterDirection.PARAM_IN» const«ENDIF» &«item.paramName»'''
     }
 
-    def dispatch String toText(ReturnTypeElement return_type, EObject context)
+    def dispatch String toText(VoidType return_type, EObject context)
     {
-        if (return_type.isVoid)
-            return "void"
-
-        throw new IllegalArgumentException("Unknown ReturnTypeElement: " + return_type.class.toString)
+        "void"
     }
 
     def dispatch String toText(AbstractType item, EObject context)
     {
-        if (item.primitiveType !== null)
-            return toText(item.primitiveType, item)
-        else if (item.referenceType !== null)
-            return toText(item.referenceType, item)
-        else if (item.collectionType !== null)
-            return toText(item.collectionType, item)
-
-        throw new IllegalArgumentException("Unknown AbstractType: " + item.class.toString)
+        return toText(item.actualType, item)
     }
 
     def dispatch String toText(AliasDeclaration item, EObject context)
     {
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractStructuralDeclaration)
             '''typedef «toText(item.type, context)» «item.name»;'''
         else
             '''«resolve(item)»'''
@@ -140,8 +130,7 @@ class BasicCppGenerator
 
     def dispatch String toText(EnumDeclaration item, EObject context)
     {
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractStructuralDeclaration)
             '''
                 enum class «item.name»
                 {
@@ -157,8 +146,7 @@ class BasicCppGenerator
     def dispatch String toText(StructDeclaration item, EObject context)
     {
 
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractStructuralDeclaration)
         {
             val related_event = item.relatedEvent
             val makeCompareOperator = item.needsCompareOperator
@@ -170,7 +158,7 @@ class BasicCppGenerator
                        «toText(type_declaration, item)»
                    «ENDFOR»
                    «FOR member : item.members»
-                       «val is_pointer = useSmartPointer(item, member.type)»
+                       «val is_pointer = useSmartPointer(item, member.type.actualType)»
                        «val is_optional = member.isOptional»
                        «IF is_optional && !is_pointer»«resolveSymbol("BTC::Commons::CoreExtras::Optional")»< «ENDIF»«IF is_pointer»«resolveSymbol("std::shared_ptr")»< «ENDIF»«toText(member.type, item)»«IF is_pointer» >«ENDIF»«IF is_optional && !is_pointer» >«ENDIF» «member.name.asMember»;
                    «ENDFOR»
@@ -205,8 +193,7 @@ class BasicCppGenerator
 
     def dispatch String toText(ExceptionDeclaration item, EObject context)
     {
-        if (context instanceof ModuleDeclaration || context instanceof InterfaceDeclaration ||
-            context instanceof StructDeclaration)
+        if (context instanceof AbstractStructuralDeclaration)
         {
             if (item.members.empty)
                 '''
@@ -231,7 +218,7 @@ class BasicCppGenerator
                        virtual void Throw() const override;
                        
                        «IF targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11»
-                          virtual void Throw() override;
+                           virtual void Throw() override;
                        «ENDIF»
                        
                        «FOR member : item.members»
@@ -240,9 +227,9 @@ class BasicCppGenerator
                        
                        protected:
                           «IF targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11»
-                             virtual «resolveSymbol("BTC::Commons::Core::Exception")» *IntClone() const;
+                              virtual «resolveSymbol("BTC::Commons::Core::Exception")» *IntClone() const;
                           «ELSE»
-                             virtual «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Exception")»> IntClone() const override;
+                              virtual «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Exception")»> IntClone() const override;
                           «ENDIF»
                     };
                 '''
@@ -386,7 +373,7 @@ class BasicCppGenerator
 
         return result
     }
-    
+
     def generateIncludesSection(boolean isHeader, OutputConfigurationItem outputConfigurationItem,
         Map<IncludeGroup, Set<IPath>> includes, StringBuilder result)
     {

@@ -20,39 +20,38 @@ import com.btc.serviceidl.generator.common.Names
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TypeWrapper
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.util.Constants
 import java.util.ArrayList
 import java.util.HashSet
 import java.util.LinkedHashSet
 import java.util.List
 import org.eclipse.core.runtime.IPath
-import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.MemberElement
 
 class CppExtensions
 {
-    static def IPath getIncludeFilePath(EObject referenced_object, ProjectType project_type,
+    static def IPath getIncludeFilePath(AbstractTypeReference referenced_object, ProjectType project_type,
         IModuleStructureStrategy moduleStructureStrategy)
     {
-        val scope_determinant = if (referenced_object instanceof InterfaceDeclaration)
-                referenced_object
-            else
-                referenced_object.scopeDeterminant
+        val scope_determinant = referenced_object.scopeDeterminant
 
         val baseName = if (scope_determinant instanceof InterfaceDeclaration)
                 project_type.getClassName(ArtifactNature.CPP, Names.plain(scope_determinant))
             else
-                "Types"
+                Constants.FILE_NAME_TYPES
 
-        moduleStructureStrategy.getIncludeFilePath(referenced_object.moduleStack, project_type, baseName,
+        moduleStructureStrategy.getIncludeFilePath(referenced_object.scopeDeterminant.moduleStack, project_type, baseName,
             HeaderType.REGULAR_HEADER)
     }
 
@@ -62,11 +61,10 @@ class CppExtensions
      * forwardDeclarations collection, so that they can be handled in a specific
      * way.
      */
-    static def Iterable<TypeWrapper> getTopologicallySortedTypes(EObject owner)
+    static def Iterable<TypeWrapper> getTopologicallySortedTypes(AbstractContainerDeclaration owner)
     {
         // aggregate enums, typedefs, structs and exceptions into the same collection
-        // TODO change metamodel such that these types have a common supertype (besides EObject)
-        val all_elements = new HashSet<EObject>
+        val all_elements = new HashSet<AbstractTypeReference>
         all_elements.addAll(owner.eContents.filter(EnumDeclaration))
         all_elements.addAll(owner.eContents.filter(AliasDeclaration))
         all_elements.addAll(owner.eContents.filter(StructDeclaration))
@@ -74,12 +72,11 @@ class CppExtensions
 
         // construct a directed graph representation; a dependency relation between two
         // elements is represented as a pair X -> Y (meaning: X depends on Y)
-        val graph = new HashSet<Pair<EObject, EObject>>
-        all_elements.forEach[it.predecessors.forEach[EObject dependency|graph.add(it -> dependency)]]
+        val graph = new HashSet<Pair<AbstractTypeReference, AbstractTypeReference>>
+        all_elements.forEach[it.predecessors.forEach[dependency|graph.add(it -> dependency)]]
 
         // sort out all independent elements
-        val independent_elements = new ArrayList<EObject>
-        independent_elements.addAll(all_elements.filter[it.predecessors.empty])
+        val independent_elements = all_elements.filter[it.predecessors.empty].toList
 
         return applyKahnsAlgorithm(graph, independent_elements)
     }
@@ -90,28 +87,29 @@ class CppExtensions
      * generation of ODB files to resolve dependencies by sorting the types in
      * the topological order.
      */
-    static def Iterable<TypeWrapper> resolveAllDependencies(Iterable<? extends EObject> elements)
+    static def Iterable<TypeWrapper> resolveAllDependencies(Iterable<AbstractTypeReference> elements)
     {
         // construct a directed graph representation; a dependency relation between two
         // elements is represented as a pair X -> Y (meaning: X depends on Y)
-        val graph = new HashSet<Pair<EObject, EObject>>
+        val graph = new HashSet<Pair<AbstractTypeReference, AbstractTypeReference>>
 
-        val all_types = new HashSet<EObject>
+        val all_types = new HashSet<AbstractTypeReference>
         all_types.addAll(elements)
         for (e : elements)
         {
             getUnderlyingTypes(e, all_types)
         }
-        all_types.forEach[it.requirements.forEach[EObject dependency|graph.add(it -> dependency)]]
+        all_types.forEach[it.requirements.forEach[dependency|graph.add(it -> dependency)]]
 
-        return applyKahnsAlgorithm(graph, all_types.filter[it.requirements.empty].map(e|e as EObject).toList)
+        return applyKahnsAlgorithm(graph, all_types.filter[it.requirements.empty].toList)
     }
 
     /**
      * Execute topological sorting based on Kahn's algorithm
      */
-    private static def Iterable<TypeWrapper> applyKahnsAlgorithm(HashSet<Pair<EObject, EObject>> graph,
-        List<EObject> independent_elements)
+    private static def Iterable<TypeWrapper> applyKahnsAlgorithm(
+        HashSet<Pair<AbstractTypeReference, AbstractTypeReference>> graph,
+        List<AbstractTypeReference> independent_elements)
     {
         // list finally containing the sorted elements
         val result = new LinkedHashSet<TypeWrapper>
@@ -180,27 +178,28 @@ class CppExtensions
      * headers are NOT among the predecessors, since they are resolved based
      * on the #include directive. 
      */
-    static def dispatch Iterable<EObject> predecessors(StructDeclaration element)
+    static def dispatch Iterable<AbstractTypeReference> predecessors(StructDeclaration element)
     {
         predecessors(element.supertype, element.members)
     }
 
-    static def dispatch Iterable<EObject> predecessors(AliasDeclaration element)
+    static def dispatch Iterable<AbstractTypeReference> predecessors(AliasDeclaration element)
     {
-        resolvePredecessor(element.type)
+        resolvePredecessor(element.type.actualType)
     }
 
-    static def dispatch Iterable<EObject> predecessors(ExceptionDeclaration element)
+    static def dispatch Iterable<AbstractTypeReference> predecessors(ExceptionDeclaration element)
     {
         predecessors(element.supertype, element.members)
     }
-    
-    static def Iterable<EObject> predecessors(EObject supertype, Iterable<MemberElement> members)
+
+    static def Iterable<AbstractTypeReference> predecessors(AbstractTypeReference supertype,
+        Iterable<MemberElement> members)
     {
-        #[members.map[type], #[supertype].reject[it === null]].flatten.flatMap[resolvePredecessor]        
+        #[members.map[type.actualType], #[supertype].reject[it === null]].flatten.flatMap[resolvePredecessor]
     }
 
-    private static def Iterable<EObject> resolvePredecessor(EObject element)
+    private static def Iterable<AbstractTypeReference> resolvePredecessor(AbstractTypeReference element)
     {
         val type = element.getUltimateType(false)
         if (declaredInternally(element, type))
@@ -209,17 +208,18 @@ class CppExtensions
             #[]
     }
 
-    static def dispatch Iterable<EObject> predecessors(EObject element)
+    static def dispatch Iterable<AbstractTypeReference> predecessors(AbstractTypeReference element)
     {
-        new ArrayList<EObject> // by default, never need an external include
+        #[] // by default, never need an external include
     }
 
-    static def private boolean declaredInternally(EObject element, EObject type)
+    static def private boolean declaredInternally(AbstractTypeReference element, AbstractTypeReference type)
     {
         !(type instanceof PrimitiveType) && type.scopeDeterminant == element.scopeDeterminant
     }
 
-    private static def dispatch void getUnderlyingTypes(StructDeclaration struct, HashSet<EObject> all_types)
+    private static def dispatch void getUnderlyingTypes(StructDeclaration struct,
+        HashSet<AbstractTypeReference> all_types)
     {
         val contained_types = struct.members.map[type.ultimateType].filter(StructDeclaration)
 
@@ -232,7 +232,8 @@ class CppExtensions
         all_types.addAll(contained_types)
     }
 
-    private static def dispatch void getUnderlyingTypes(ExceptionDeclaration element, HashSet<EObject> all_types)
+    private static def dispatch void getUnderlyingTypes(ExceptionDeclaration element,
+        HashSet<AbstractTypeReference> all_types)
     {
         val contained_types = element.members.map[type.ultimateType].filter(ExceptionDeclaration)
 
@@ -245,7 +246,8 @@ class CppExtensions
         all_types.addAll(contained_types)
     }
 
-    private static def dispatch void getUnderlyingTypes(EObject element, HashSet<EObject> all_types)
+    private static def dispatch void getUnderlyingTypes(AbstractTypeReference element,
+        HashSet<AbstractTypeReference> all_types)
     {
         // default: no operation
     }

@@ -10,16 +10,16 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.dotnet
 
-import org.eclipse.xtend.lib.annotations.Accessors
-import org.eclipse.emf.ecore.EObject
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.util.Constants
+import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(NONE)
 class ServiceFaultHandlingGenerator extends GeneratorBase
 {
-   def String generate(String className, EObject owner)
+   def String generate(String className, AbstractContainerDeclaration owner)
    {
       val dictionary = resolve("System.Collections.Generic.Dictionary")
       val exception = resolve("System.Exception")

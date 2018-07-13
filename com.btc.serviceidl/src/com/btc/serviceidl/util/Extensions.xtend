@@ -15,8 +15,10 @@
  */
 package com.btc.serviceidl.util
 
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractException
-import com.btc.serviceidl.idl.AliasDeclaration
+import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
@@ -27,11 +29,13 @@ import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
 import com.btc.serviceidl.idl.ParameterElement
 import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.idl.ReturnTypeElement
+import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.idl.VoidType
 import java.util.ArrayList
 import java.util.Collection
 import java.util.HashSet
-import org.eclipse.emf.ecore.EObject
 
 class Extensions
 {
@@ -90,7 +94,7 @@ class Extensions
 
     static def boolean containsTypes(ModuleDeclaration module)
     {
-        module.moduleComponents.exists[o|!(o instanceof ModuleDeclaration) && !(o instanceof InterfaceDeclaration)]
+        module.moduleComponents.exists[o|!(o instanceof AbstractContainerDeclaration)]
     }
 
     static def boolean containsInterfaces(ModuleDeclaration module)
@@ -104,7 +108,7 @@ class Extensions
      * 
      * \return true, if yes, false otherwise (also e.g. if such an owner could not be found at all)
      */
-    static def boolean isOutputParameter(EObject element)
+    static def boolean isOutputParameter(SequenceDeclaration element)
     {
         var container = element.eContainer
 
@@ -168,9 +172,9 @@ class Extensions
      * Requirements are all elements, which are essentially needed by the given
      * element, no matter if defined externally or internally.
      */
-    static def dispatch Collection<EObject> requirements(StructDeclaration element)
+    static def dispatch Collection<AbstractTypeReference> requirements(StructDeclaration element)
     {
-        val result = new HashSet<EObject>(element.members.size)
+        val result = new HashSet<AbstractTypeReference>(element.members.size)
         for (member : element.members)
         {
             if (Util.isStruct(member.type))
@@ -179,9 +183,9 @@ class Extensions
         return result
     }
 
-    static def dispatch Collection<EObject> requirements(ExceptionDeclaration element)
+    static def dispatch Collection<AbstractTypeReference> requirements(ExceptionDeclaration element)
     {
-        val result = new HashSet<EObject>(element.members.size)
+        val result = new HashSet<AbstractTypeReference>(element.members.size)
         for (member : element.members)
         {
             if (Util.isException(member.type))
@@ -190,43 +194,9 @@ class Extensions
         return result
     }
 
-    static def dispatch Collection<EObject> requirements(EObject element)
+    static def dispatch Collection<AbstractTypeReference> requirements(AbstractTypeReference element)
     {
         return #[] // default: none
-    }
-
-    private static def dispatch void getUnderlyingTypes(StructDeclaration element, HashSet<EObject> all_types)
-    {
-        for (type : element.members)
-        {
-            if (!all_types.contains(type))
-                getUnderlyingTypes(type, all_types)
-        }
-    }
-
-    private static def dispatch void getUnderlyingTypes(AliasDeclaration element, HashSet<EObject> all_types)
-    {
-        val type = Util.getUltimateType(element)
-
-        if (!all_types.contains(type))
-            getUnderlyingTypes(type, all_types)
-
-        if (!Util.isPrimitive(type))
-            all_types.add(type)
-    }
-
-    private static def dispatch void getUnderlyingTypes(ExceptionDeclaration element, HashSet<EObject> all_types)
-    {
-        for (type : element.members)
-        {
-            if (!all_types.contains(type))
-                getUnderlyingTypes(type, all_types)
-        }
-    }
-
-    private static def dispatch void getUnderlyingTypes(EObject element, HashSet<EObject> all_types)
-    {
-        // do nothing by default
     }
 
     static def boolean isAllUpperCase(String text)
@@ -345,7 +315,7 @@ class Extensions
         return element.members.map[e|e.wrapMember]
     }
 
-    static def dispatch Iterable<MemberElementWrapper> effectiveMembers(EObject element)
+    static def dispatch Iterable<MemberElementWrapper> effectiveMembers(AbstractTypeReference element)
     {
         return #[] // default case: no members
     }
@@ -370,5 +340,19 @@ class Extensions
         // TODO the events function also includes inherited events, check whether these 
         // should be included here as well. Adjust naming of the methods. 
         interfaceDeclaration.contains.filter(EventDeclaration).filter[name !== null]
+    }
+
+    static def getActualType(AbstractType abstractType)
+    {
+        JavaUtil.checkConsistency(abstractType);
+        abstractType.primitiveType ?: abstractType.referenceType ?: abstractType.collectionType
+    }
+
+    static def AbstractTypeReference getActualType(ReturnTypeElement returnTypeElement)
+    {
+        if (returnTypeElement instanceof AbstractType)
+            returnTypeElement.actualType
+        else
+            returnTypeElement as VoidType
     }
 }

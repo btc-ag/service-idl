@@ -16,7 +16,9 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -33,7 +35,7 @@ import static extension com.btc.serviceidl.util.Util.*
 
 class ProtobufUtil
 {
-    def static ResolvedName resolveProtobuf(TypeResolver typeResolver, EObject object,
+    def static ResolvedName resolveProtobuf(TypeResolver typeResolver, AbstractTypeReference object,
         Optional<ProtobufType> optProtobufType)
     {
         if (object.isUUIDType)
@@ -48,19 +50,21 @@ class ProtobufUtil
                 resolveProtobuf(typeResolver, object.primitiveType, optProtobufType)
             else if (object.referenceType !== null)
                 resolveProtobuf(typeResolver, object.referenceType, optProtobufType)
+        // TODO really do nothing in case of collectionType?
         }
         else
         {
-            typeResolver.resolvePackage(object, ProjectType.PROTOBUF)
-            new ResolvedName(typeResolver.resolvePackage(object, ProjectType.PROTOBUF) + Constants.SEPARATOR_PACKAGE +
-                getLocalName(object, optProtobufType), TransformType.PACKAGE)
+            new ResolvedName(
+                typeResolver.resolvePackage(object.scopeDeterminant, ProjectType.PROTOBUF) +
+                    Constants.SEPARATOR_PACKAGE + getLocalName(object, optProtobufType), TransformType.PACKAGE)
         }
     }
 
     private static def String getLocalName(EObject object, Optional<ProtobufType> optProtobufType)
     {
         if (object instanceof InterfaceDeclaration && Util.ensurePresentOrThrow(optProtobufType))
-            getOuterClassName(object) + Constants.SEPARATOR_PACKAGE + Names.plain(object) + optProtobufType.get.getName
+            getOuterClassName(object as InterfaceDeclaration) + Constants.SEPARATOR_PACKAGE + Names.plain(object) +
+                optProtobufType.get.getName
         else
         {
             val scopeDeterminant = object.scopeDeterminant
@@ -68,19 +72,20 @@ class ProtobufUtil
             if (object instanceof FunctionDeclaration && Util.ensurePresentOrThrow(optProtobufType))
                 Names.plain(scopeDeterminant) + "_" + optProtobufType.get.getName + "_" + Names.plain(object) +
                     optProtobufType.get.getName
-            else if (scopeDeterminant instanceof ModuleDeclaration)
-                Constants.FILE_NAME_TYPES + Constants.SEPARATOR_PACKAGE + Names.plain(object)
             else
-                getOuterClassName(scopeDeterminant) + Constants.SEPARATOR_PACKAGE + Names.plain(object)
+                (if (scopeDeterminant instanceof ModuleDeclaration)
+                    Constants.FILE_NAME_TYPES
+                else
+                    getOuterClassName(scopeDeterminant)) + Constants.SEPARATOR_PACKAGE + Names.plain(object)
         }
     }
 
-    private static def String getOuterClassName(EObject scopeDeterminant)
+    private static def String getOuterClassName(AbstractContainerDeclaration scopeDeterminant)
     {
         Names.plain(scopeDeterminant) + (if (scopeDeterminant.interfaceWithElementWithSameName) "OuterClass" else "")
     }
 
-    def static boolean interfaceWithElementWithSameName(EObject scopeDeterminant)
+    def static boolean interfaceWithElementWithSameName(AbstractContainerDeclaration scopeDeterminant)
     {
         if (scopeDeterminant instanceof InterfaceDeclaration)
         {
@@ -100,29 +105,26 @@ class ProtobufUtil
     }
 
     // TODO reconsider placement of this method
-    def static String resolveCodec(EObject object, TypeResolver typeResolver)
+    def static String resolveCodec(AbstractTypeReference object, TypeResolver typeResolver)
     {
         val ultimateType = object.ultimateType
 
         String.join(Constants.SEPARATOR_PACKAGE,
-            #[typeResolver.resolvePackage(ultimateType, ProjectType.PROTOBUF), ultimateType.codecName])
+            #[typeResolver.resolvePackage(ultimateType.scopeDeterminant, ProjectType.PROTOBUF),
+                ultimateType.scopeDeterminant.codecName])
     }
 
     def static String resolveFailableProtobufType(TypeResolver typeResolver,
-        IQualifiedNameProvider qualifiedNameProvider, EObject element, EObject container)
+        IQualifiedNameProvider qualifiedNameProvider, AbstractTypeReference element,
+        AbstractContainerDeclaration container)
     {
         return String.join(Constants.SEPARATOR_PACKAGE,
-            #[typeResolver.resolvePackage(container, ProjectType.PROTOBUF)] + container.containerName +
-                #[GeneratorUtil.asFailable(element, container, qualifiedNameProvider)])
+            #[typeResolver.resolvePackage(container, ProjectType.PROTOBUF), container.containerName,
+                GeneratorUtil.asFailable(element, container, qualifiedNameProvider)])
     }
 
-    private static def Iterable<String> getContainerName(EObject container)
+    private static def String getContainerName(AbstractContainerDeclaration container)
     {
-        if (container instanceof ModuleDeclaration)
-            #[Constants.FILE_NAME_TYPES]
-        else if (container instanceof InterfaceDeclaration)
-            #[container.name]
-        else
-            #[]
+        if (container instanceof ModuleDeclaration) Constants.FILE_NAME_TYPES else container.name
     }
 }

@@ -16,7 +16,9 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.ResolvedName
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractType
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
@@ -24,12 +26,13 @@ import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
 import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
 import com.btc.serviceidl.util.MemberElementWrapper
-import org.eclipse.emf.ecore.EObject
 
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 // TODO reorganize this according to logical aspects
 class Util
@@ -55,7 +58,7 @@ class Util
     /**
      * Is the given type a C# value type (suitable for Nullable)?
      */
-    def static boolean isValueType(EObject element)
+    def static boolean isValueType(AbstractTypeReference element)
     {
         if (element instanceof PrimitiveType)
         {
@@ -66,16 +69,7 @@ class Util
         }
         else if (element instanceof AliasDeclaration)
         {
-            return isValueType(element.type)
-        }
-        else if (element instanceof AbstractType)
-        {
-            if (element.referenceType !== null)
-                return isValueType(element.referenceType)
-            else if (element.primitiveType !== null)
-                return isValueType(element.primitiveType)
-            else if (element.collectionType !== null)
-                return isValueType(element.collectionType)
+            return isValueType(element.type.actualType)
         }
 
         return false
@@ -164,7 +158,7 @@ class Util
         interface_declaration.name + "Const"
     }
 
-    def static dispatch boolean isNullable(EObject element)
+    def static dispatch boolean isNullable(AbstractTypeReference element)
     {
         false
     }
@@ -192,7 +186,13 @@ class Util
 
     }
 
-    static def String makeDefaultValue(BasicCSharpSourceGenerator basicCSharpSourceGenerator, EObject element)
+    static def String makeDefaultValue(BasicCSharpSourceGenerator basicCSharpSourceGenerator, AbstractType element)
+    {
+        makeDefaultValue(basicCSharpSourceGenerator, element.actualType)
+    }
+
+    static def String makeDefaultValue(BasicCSharpSourceGenerator basicCSharpSourceGenerator,
+        AbstractTypeReference element)
     {
         val typeResolver = basicCSharpSourceGenerator.typeResolver
         if (element instanceof PrimitiveType)
@@ -203,15 +203,6 @@ class Util
         else if (element instanceof AliasDeclaration)
         {
             return makeDefaultValue(basicCSharpSourceGenerator, element.type)
-        }
-        else if (element instanceof AbstractType)
-        {
-            if (element.referenceType !== null)
-                return makeDefaultValue(basicCSharpSourceGenerator, element.referenceType)
-            else if (element.primitiveType !== null)
-                return makeDefaultValue(basicCSharpSourceGenerator, element.primitiveType)
-            else if (element.collectionType !== null)
-                return makeDefaultValue(basicCSharpSourceGenerator, element.collectionType)
         }
         else if (element instanceof SequenceDeclaration)
         {
@@ -232,31 +223,39 @@ class Util
 
     static def String makeReturnType(TypeResolver typeResolver, FunctionDeclaration function)
     {
-        val is_void = function.returnedType.isVoid
+        val is_void = function.returnedType instanceof VoidType
         val is_sync = function.isSync
-        val isSequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)
-        val isFailable = isSequence && com.btc.serviceidl.util.Util.isFailable(function.returnedType)
-        val basicType = typeResolver.resolve(com.btc.serviceidl.util.Util.getUltimateType(function.returnedType))
-        var effectiveType = basicType.toString
 
-        if (isSequence)
+        if (is_void)
+            '''«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»'''
+        else
         {
-            effectiveType = '''«typeResolver.resolve("System.Collections.Generic.IEnumerable")»<«IF isFailable»«typeResolver.resolveFailableType(basicType.fullyQualifiedName)»«ELSE»«basicType»«ENDIF»>'''
-        }
+            val isSequence = com.btc.serviceidl.util.Util.isSequenceType(function.returnedType)
+            val isFailable = isSequence && com.btc.serviceidl.util.Util.isFailable(function.returnedType)
+            val basicType = typeResolver.resolve(
+                com.btc.serviceidl.util.Util.getUltimateType(function.returnedType.actualType))
+            var effectiveType = if (isSequence)
+                {
+                    '''«typeResolver.resolve("System.Collections.Generic.IEnumerable")»<«IF isFailable»«typeResolver.resolveFailableType(basicType.fullyQualifiedName)»«ELSE»«basicType»«ENDIF»>'''
+                }
+                else
+                    basicType.toString
 
-        '''«IF is_void»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»«ELSE»void«ENDIF»«ELSE»«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»<«ENDIF»«effectiveType»«IF !is_sync»>«ENDIF»«ENDIF»'''
+            '''«IF !is_sync»«typeResolver.resolve("System.Threading.Tasks.Task")»<«ENDIF»«effectiveType»«IF !is_sync»>«ENDIF»'''
+        }
     }
 
-    static def String resolveCodec(TypeResolver typeResolver, ParameterBundle param_bundle, EObject object)
+    static def String resolveCodec(TypeResolver typeResolver, ParameterBundle param_bundle,
+        AbstractTypeReference object)
     {
-        val ultimate_type = com.btc.serviceidl.util.Util.getUltimateType(object)
+        val ultimate_type = object.ultimateType
 
-        val codec_name = GeneratorUtil.getCodecName(ultimate_type)
+        val codec_name = GeneratorUtil.getCodecName(ultimate_type.scopeDeterminant)
 
-        typeResolver.resolveProjectFilePath(ultimate_type, ProjectType.PROTOBUF)
+        typeResolver.resolveProjectFilePath(ultimate_type.scopeDeterminant, ProjectType.PROTOBUF)
 
         GeneratorUtil.getTransformedModuleName(
-            new ParameterBundle.Builder().with(com.btc.serviceidl.util.Util.getModuleStack(ultimate_type)).with(
+            new ParameterBundle.Builder().with(ultimate_type.scopeDeterminant.moduleStack).with(
                 ProjectType.PROTOBUF).build, ArtifactNature.DOTNET, TransformType.PACKAGE) +
             TransformType.PACKAGE.separator + codec_name
     }
@@ -269,15 +268,15 @@ class Util
         '''
     }
 
-    static def ResolvedName resolveServiceFaultHandling(TypeResolver typeResolver, EObject owner)
+    static def getPrefix(AbstractContainerDeclaration container)
     {
-        var prefix = ""
-        if (owner instanceof InterfaceDeclaration)
-        {
-            prefix = owner.name
-        }
-        val namespace = typeResolver.resolve(owner, ProjectType.PROTOBUF).namespace
-        return new ResolvedName('''«namespace».«prefix»ServiceFaultHandling''', TransformType.PACKAGE)
+        if (container instanceof InterfaceDeclaration) container.name else ""
+    }
+
+    static def ResolvedName resolveServiceFaultHandling(TypeResolver typeResolver, AbstractContainerDeclaration owner)
+    {
+        val namespace = typeResolver.resolveNamedDeclaration(owner, ProjectType.PROTOBUF).namespace
+        return new ResolvedName('''«namespace».«owner.prefix»ServiceFaultHandling''', TransformType.PACKAGE)
     }
 
     static def String asEnumerable(TypeResolver typeResolver)
