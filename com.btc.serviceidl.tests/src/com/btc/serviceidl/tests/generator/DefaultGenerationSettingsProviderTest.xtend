@@ -12,9 +12,13 @@ package com.btc.serviceidl.tests.generator
 
 import com.btc.serviceidl.generator.DefaultGenerationSettings
 import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
+import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider.OptionalGenerationSettings
+import com.btc.serviceidl.generator.Main
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
+import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
+import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.tests.testdata.TestData
@@ -22,6 +26,7 @@ import com.google.common.collect.ImmutableSet
 import com.google.inject.Inject
 import java.io.InputStream
 import java.util.Map
+import org.eclipse.core.runtime.Path
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.impl.ExtensibleURIConverterImpl
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
@@ -30,14 +35,11 @@ import org.eclipse.xtext.generator.InMemoryFileSystemAccess
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.eclipse.xtext.testing.util.ParseHelper
+import org.eclipse.xtext.util.StringInputStream
 import org.junit.Test
 import org.junit.runner.RunWith
 
 import static org.junit.Assert.*
-import org.eclipse.core.runtime.Path
-import org.eclipse.xtext.util.StringInputStream
-import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider.OptionalGenerationSettings
-import com.btc.serviceidl.generator.Main
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -160,6 +162,22 @@ class DefaultGenerationSettingsProviderTest
         assertEquals(expected, generationSettings)
     }
 
+    @Test
+    def void testGetSettingsEmpty()
+    {
+        val generationSettings = new DefaultGenerationSettingsProvider().getSettings(#[])
+        val defaults = OptionalGenerationSettings.defaults
+
+        assertEquals(defaults.languages, generationSettings.languages)
+        assertTrue(generationSettings.moduleStructureStrategy instanceof PrinsModuleStructureStrategy)
+        assertTrue(generationSettings.projectSetFactory instanceof VSSolutionFactory)
+        for (versionEntry : defaults.versions)
+        {
+            assertEquals(versionEntry.value, generationSettings.getTargetVersion(versionEntry.key))
+        }
+
+        assertEquals(defaults.projectTypes, generationSettings.projectTypes)
+    }
 }
 
 @Accessors(NONE)

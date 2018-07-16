@@ -43,7 +43,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 
     var OptionalGenerationSettings overrides = null
 
-    @Accessors(PUBLIC_SETTER)
+    @Accessors(PUBLIC_SETTER, PUBLIC_GETTER)
     static class OptionalGenerationSettings
     {
         var Set<ArtifactNature> languages = null
@@ -124,8 +124,13 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
     override getSettings(Resource resource)
     {
         val settingsFromFile = resource.findConfigurationFiles.map[readConfigurationFile]
-        #[if (settingsFromFile.size > 0) settingsFromFile else #[OptionalGenerationSettings.defaults],
-            if (overrides !== null) #[overrides] else #[]].flatten.reduce[a, b|merge(a, b)].buildGenerationSettings
+        getSettings(settingsFromFile)
+    }
+    
+    def getSettings(Iterable<OptionalGenerationSettings> settingsFromFile)
+    {
+        #[#[OptionalGenerationSettings.defaults], settingsFromFile,
+            if (overrides !== null) #[overrides] else #[]].flatten.reduce[a, b|merge(a, b)].buildGenerationSettings        
     }
 
     static def OptionalGenerationSettings readConfigurationFile(InputStream configurationFile)
