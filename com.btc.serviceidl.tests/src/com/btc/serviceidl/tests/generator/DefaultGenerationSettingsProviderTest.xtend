@@ -134,7 +134,29 @@ class DefaultGenerationSettingsProviderTest
         expected.cppProjectSystem = Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE
         expected.projectTypes = DefaultGenerationSettingsProvider.FULL_PROJECT_SET
         expected.versions = #{"cpp.servicecomm" -> "0.10"}.entrySet
-            
+
+        assertEquals(expected, generationSettings)
+    }
+
+    @Test
+    def void testReadPartialConfigurationFile()
+    {
+        val generationSettings = DefaultGenerationSettingsProvider.readConfigurationFile(new StringInputStream('''languages = java,cpp
+            cppProjectSystem = cmake
+            '''))
+        val expected = new OptionalGenerationSettings
+        expected.languages = #{ArtifactNature.JAVA, ArtifactNature.CPP}
+        expected.cppProjectSystem = Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE
+
+        assertEquals(expected, generationSettings)
+    }
+
+    @Test
+    def void testReadEmptyConfigurationFile()
+    {
+        val generationSettings = DefaultGenerationSettingsProvider.readConfigurationFile(new StringInputStream(""))
+        val expected = new OptionalGenerationSettings
+
         assertEquals(expected, generationSettings)
     }
 
