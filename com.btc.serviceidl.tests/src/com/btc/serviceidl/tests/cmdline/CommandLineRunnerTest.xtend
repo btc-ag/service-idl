@@ -96,6 +96,12 @@ class CommandLineRunnerTest
     }
 
     @Test
+    def void testFailWithoutIdlArgsInProcess()
+    {
+        assertEquals(1, Main.mainBackend(#["-languages", "cpp"]))
+    }
+
+    @Test
     def void testWithValidInputInProcess()
     {
         val file = new File(TEST_DATA_DIR + "base.idl")
