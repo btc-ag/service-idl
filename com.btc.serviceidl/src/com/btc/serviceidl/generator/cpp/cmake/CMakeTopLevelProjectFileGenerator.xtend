@@ -68,6 +68,9 @@ class CMakeTopLevelProjectFileGenerator
                 serviceCommTargetVersion == ServiceCommVersion.V0_11) "1.7" else "1.8"
         val loggingTargetVersion = if (serviceCommTargetVersion == ServiceCommVersion.V0_10 ||
                 serviceCommTargetVersion == ServiceCommVersion.V0_11) "1.7" else "1.8"
+                
+        // TODO the transitive dependencies do not need to be specified here
+        
         '''
             from conan_template import *
             
@@ -88,8 +91,27 @@ class CMakeTopLevelProjectFileGenerator
                             )
                 generators = "cmake"
                 short_paths = True
+
+                def generateProtoFiles(self):
+                    protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)
+                    outdir = self.source_folder
+                    
+                    self.run('bin\\protoc.exe --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
+
+                def build(self):
+                    self.generateProtoFiles()
+                    ConanTemplate.build(self)
+
+                def package(self):
+                    ConanTemplate.package(self)
+                    self.copy("**/*.proto", dst="proto", keep_path=True)
+            
+                def imports(self):
+                    self.copy("protoc.exe", "bin", "bin")
         '''
     }
+    
+    // TODO generate sharedVersion.h
 
     def generateCMakeLists()
     {
