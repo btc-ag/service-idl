@@ -76,6 +76,11 @@ public class Main {
         CommandLine commandLine = parseCommandLine(args);
         if (commandLine == null) return 1;
 
+        if (commandLine.getArgs().length == 0) {
+            System.err.println("No input files specified.");
+            return 1;
+        }
+
         final boolean genericOutputPath = commandLine.hasOption(OPTION_OUTPUT_PATH);
         final boolean specificOutputPath = commandLine.hasOption(OPTION_CPP_OUTPUT_PATH)
                 || commandLine.hasOption(OPTION_JAVA_OUTPUT_PATH) || commandLine.hasOption(OPTION_DOTNET_OUTPUT_PATH);
@@ -156,8 +161,8 @@ public class Main {
     @Inject
     private IGenerationSettingsProvider generationSettingsProvider;
 
-    private boolean tryRunGenerator(String[] inputFiles, Map<ArtifactNature, IPath> outputPaths, String cppProjectSystem,
-            String versions, String projectSet) {
+    private boolean tryRunGenerator(String[] inputFiles, Map<ArtifactNature, IPath> outputPaths,
+            String cppProjectSystem, String versions, String projectSet) {
         // Load the resource
         ResourceSet set = resourceSetProvider.get();
         for (String inputFile : inputFiles) {
@@ -209,11 +214,12 @@ public class Main {
         return true;
     }
 
-    private void configureGenerationSettings(String cppProjectSystem, String versions, Iterable<ArtifactNature> languages,
-            String projectSet) {
+    private void configureGenerationSettings(String cppProjectSystem, String versions,
+            Iterable<ArtifactNature> languages, String projectSet) {
         DefaultGenerationSettingsProvider defaultGenerationSettingsProvider = (DefaultGenerationSettingsProvider) generationSettingsProvider;
 
-        defaultGenerationSettingsProvider.configureGenerationSettings(cppProjectSystem, versions, languages, projectSet);
+        defaultGenerationSettingsProvider.configureGenerationSettings(cppProjectSystem, versions, languages,
+                projectSet);
     }
 
 }
