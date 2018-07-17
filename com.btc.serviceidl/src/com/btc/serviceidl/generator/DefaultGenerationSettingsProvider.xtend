@@ -43,7 +43,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 
     var OptionalGenerationSettings overrides = null
 
-    @Accessors(PUBLIC_SETTER)
+    @Accessors(PUBLIC_SETTER, PUBLIC_GETTER)
     static class OptionalGenerationSettings
     {
         var Set<ArtifactNature> languages = null
@@ -56,10 +56,13 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             if (other !== null)
                 if (other instanceof OptionalGenerationSettings)
                 {
-                    return Objects.equal(languages.toSet, other.languages.toSet) &&
-                        Objects.equal(projectTypes.toSet, other.projectTypes.toSet) &&
+                    return ((languages === null && other.languages === null) ||
+                        Objects.equal(languages.toSet, other.languages.toSet)) &&
+                        ((projectTypes === null && other.projectTypes === null) ||
+                            Objects.equal(projectTypes.toSet, other.projectTypes.toSet)) &&
                         Objects.equal(cppProjectSystem, other.cppProjectSystem) &&
-                        Objects.equal(versions.toSet, other.versions.toSet)
+                        ((versions === null && other.versions === null) ||
+                            Objects.equal(versions.toSet, other.versions.toSet))
                 }
 
             false
@@ -121,8 +124,13 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
     override getSettings(Resource resource)
     {
         val settingsFromFile = resource.findConfigurationFiles.map[readConfigurationFile]
-        #[if (settingsFromFile.size > 0) settingsFromFile else #[OptionalGenerationSettings.defaults],
-            if (overrides !== null) #[overrides] else #[]].flatten.reduce[a, b|merge(a, b)].buildGenerationSettings
+        getSettings(settingsFromFile)
+    }
+    
+    def getSettings(Iterable<OptionalGenerationSettings> settingsFromFile)
+    {
+        #[#[OptionalGenerationSettings.defaults], settingsFromFile,
+            if (overrides !== null) #[overrides] else #[]].flatten.reduce[a, b|merge(a, b)].buildGenerationSettings        
     }
 
     static def OptionalGenerationSettings readConfigurationFile(InputStream configurationFile)
@@ -131,10 +139,11 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         val properties = new Properties
         properties.load(configurationFile)
         
+        val languages = (properties.get("languages") as String)
         OptionalGenerationSettings.create(
             properties.get("cppProjectSystem") as String,            
             properties.get("versions") as String,
-            ((properties.get("languages") as String).split(",").map[str|ArtifactNature.values.filter[it.label == str].single].toSet),
+            (languages?.split(",")?.map[str|ArtifactNature.values.filter[it.label == str].single]?.toSet),
             properties.get("projectSet") as String)
     }
     
