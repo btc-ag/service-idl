@@ -1,0 +1,4 @@
+module Test {
+    exception FooException {};
+    exception BarException : FooException {};
+}

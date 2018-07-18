@@ -1,0 +1,7 @@
+module foo {
+
+interface Test[guid=384E277A-C343-4F37-B910-C2CE6B37FC8E] { 
+    DoSomething(in int64 inputInt) returns void;
+};
+
+}

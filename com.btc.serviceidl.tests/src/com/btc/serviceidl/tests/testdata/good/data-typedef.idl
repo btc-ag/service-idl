@@ -1,4 +1,22 @@
 module Test {
-    typedef string KeyType;
-    typedef string ValueType;
+    typedef string TypeA;
+    typedef int64 TypeB;
+    // typedef sequence<string> TypeC;
+    struct Bar
+    {
+      string A;
+    };
+    typedef Bar TypeD;
+    // typedef sequence<failable string> TypeE;
+    
+    struct Foo 
+    {
+      TypeA a;
+      TypeB b;
+      // TypeC c;
+      TypeD d;
+      // TypeE e;
+    };
+    
+    
 }

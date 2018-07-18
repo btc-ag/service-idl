@@ -1,0 +1,7 @@
+module Test {
+
+    struct A { 
+        sequence<int64> a;
+    };
+
+}
