@@ -52,19 +52,15 @@ AbstractModuleComponent:
    | InterfaceDeclaration ';'
 ;
 
-/* generic exception */
-AbstractException: ( ExceptionReferenceDeclaration | ExceptionDeclaration );
-
-/* exception reference = explicitly provide its origin as file path */
-ExceptionReferenceDeclaration:
-   'exception' name = ID 'ref' location = STRING
-;
-
-/* exception */
-ExceptionDeclaration:
-   'exception' name = ID (':' (supertype = [AbstractException|QualifiedName]) )?
-   '{' ( members += MemberElement ';' )* '}'
-;
+AbstractException:
+    'exception'
+    (
+    /* exception reference = explicitly provide its origin as file path */
+    {ExceptionReferenceDeclaration} 'ref' name=ID location=STRING |
+    /* exception */
+    {ExceptionDeclaration} name=ID
+    (':' (supertype=[AbstractException|QualifiedName]))?
+    '{' (members+=MemberElement ';')* '}');
 
 /* generic declaration of new types */
 AbstractTypeDeclaration:
