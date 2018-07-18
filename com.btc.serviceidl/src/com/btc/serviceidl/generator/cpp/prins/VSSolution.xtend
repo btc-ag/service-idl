@@ -23,10 +23,7 @@ import org.eclipse.xtend.lib.annotations.Data
 
 class VSSolution implements IProjectSet
 {
-// it is important for this container to be static! if an *.IDL file contains
-// "import" references to external *.IDL files, each file will be generated separately
-// but we need consistent project GUIDs in order to create valid project references!
-    static val vsProjects = new HashMap<String, Entry>
+    val vsProjects = new HashMap<String, Entry>
 
     @Data
     private static class Entry
