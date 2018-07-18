@@ -578,7 +578,7 @@ class IdlValidator extends AbstractIdlValidator
     {
         if (Util.isSequenceType(element.type))
         {
-            error(Messages.NESTED_SEQUENCES_NOT_SUPPORTED, element, IdlPackage.Literals.ALIAS_DECLARATION__TYPE)
+            error(Messages.ALIAS_SEQUENCES_NOT_SUPPORTED, element, IdlPackage.Literals.ALIAS_DECLARATION__TYPE)
         }
     }
 
