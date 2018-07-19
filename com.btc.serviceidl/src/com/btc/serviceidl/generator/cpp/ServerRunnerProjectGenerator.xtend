@@ -15,12 +15,10 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.generator.cpp.prins.OdbConstants
 import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
-import java.util.Arrays
 import java.util.Collection
 import java.util.Map
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -33,15 +31,13 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 @Accessors(PROTECTED_GETTER)
 class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
 {
-    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
-        IScopeProvider scopeProvider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
-        IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
-        ITargetVersionProvider targetVersionProvider,
+    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
+        IDLSpecification idl, IProjectSetFactory projectSetFactory, IProjectSet vsSolution,
+        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
         Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ModuleDeclaration module)
     {
         super(fileSystemAccess, qualifiedNameProvider, scopeProvider, idl, projectSetFactory, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, smartPointerMap,
-            ProjectType.SERVER_RUNNER, module)
+            moduleStructureStrategy, targetVersionProvider, smartPointerMap, ProjectType.SERVER_RUNNER, module)
     }
 
     def generate()
@@ -59,36 +55,14 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, exportHeaderFileName)
 
         // sub-folder "./source"
-        for (interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
-        {
-            val cppFile = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType,
-                interfaceDeclaration.name).cpp
-            fileSystemAccess.generateFile(sourcePath.append(cppFile).toString, ArtifactNature.CPP.label,
-                generateCppServerRunner(interfaceDeclaration))
-            projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cppFile)
-        }
+        val cppFile = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType, "").cpp
+        fileSystemAccess.generateFile(sourcePath.append(cppFile).toString, ArtifactNature.CPP.label,
+            generateCppServerRunner(module.moduleComponents.filter(InterfaceDeclaration)))
+        projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cppFile)
 
-        // individual project files for every interface
-        for (interfaceDeclaration : module.moduleComponents.filter(InterfaceDeclaration))
-        {
-            // TODO remove reference to OdbConstants here, it is PRINS-specific
-            val localProjectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP))
-            val projectName = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP,
-                TransformType.PACKAGE) + TransformType.PACKAGE.separator + interfaceDeclaration.name
-            val cppFile = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType,
-                interfaceDeclaration.name).cpp
-            localProjectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cppFile)
+        val projectName = GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP, TransformType.PACKAGE)
 
-            // TODO this is wrong somehow... all files must be generated separately for each interface if they are separate projects
-            projectFileSet.getGroup(ProjectFileSet.HEADER_FILE_GROUP).forEach [
-                localProjectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, it)
-            ]
-            projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP).forEach [
-                localProjectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, it)
-            ]
-
-            generateProjectFiles(ProjectType.SERVER_RUNNER, projectPath, projectName, localProjectFileSet)
-        }
+        generateProjectFiles(ProjectType.SERVER_RUNNER, projectPath, projectName, projectFileSet)
 
         // sub-folder "./etc"
         val iocFileName = "ServerFactory".xml
@@ -96,12 +70,12 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
             generateIoCServerRunner())
     }
 
-    private def String generateCppServerRunner(InterfaceDeclaration interfaceDeclaration)
+    private def String generateCppServerRunner(Iterable<InterfaceDeclaration> interfaceDeclaration)
     {
         val basicCppGenerator = createBasicCppGenerator
 
-        val fileContent = new ServerRunnerGenerator(basicCppGenerator.typeResolver, targetVersionProvider,
-            paramBundle).generateImplFileBody(interfaceDeclaration)
+        val fileContent = new ServerRunnerGenerator(basicCppGenerator.typeResolver, targetVersionProvider, paramBundle).
+            generateImplFileBody(interfaceDeclaration)
 
         '''
             «basicCppGenerator.generateIncludes(false)»
