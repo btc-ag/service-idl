@@ -307,10 +307,7 @@ class CommandLineRunnerTest
                 "java/com.btc.commons.core.foo.test/src/test/java/com/btc/commons/core/foo/test/FooImplTest.java",
                 "java/com.btc.commons.core.foo.test/src/test/java/com/btc/commons/core/foo/test/FooTest.java",
                 "java/com.btc.commons.core.foo.test/src/test/java/com/btc/commons/core/foo/test/FooZeroMQIntegrationTest.java",
-                "java/com.btc.commons.core.foo.serverrunner/src/test/resources/ServerRunnerBeans.xml",
-                "java/com.btc.commons.core.foo.clientconsole/src/test/resources/log4j.ClientConsole.properties",
-                "java/com.btc.commons.core.foo.serverrunner/src/test/resources/log4j.ServerRunner.properties",
-                "java/com.btc.commons.core.foo.test/src/test/resources/log4j.Test.properties"], path)
+                "java/com.btc.commons.core.foo.serverrunner/src/test/resources/ServerRunnerBeans.xml"], path)
     }
 
     @Test
