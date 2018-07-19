@@ -108,7 +108,7 @@ class TypeResolver
         // use the underlying type for typedefs
         if (element instanceof AliasDeclaration)
         {
-            return resolve(element.ultimateType)
+            return resolve(element.ultimateType, projectType)
         }
 
         if (element instanceof NamedDeclaration)
