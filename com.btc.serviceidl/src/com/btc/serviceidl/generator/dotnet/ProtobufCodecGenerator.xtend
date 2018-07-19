@@ -305,7 +305,7 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
         val useCast = useCodec && !isFailable
         val encodeMethod = getEncodeMethod(member.type, container)
         val methodName = (if (member.type.isSequenceType) "AddRange" else "Set") + member.name.asDotNetProtobufName
-        if (member.type.isAbstractCrossReferenceType && !member.type.isEnumType)
+        if (member.type.isAbstractCrossReferenceType && !member.type.isEnumType && !member.type.isPrimitive)
         {
             '''if (typedData.«member.name.asProperty» != null)
                {
