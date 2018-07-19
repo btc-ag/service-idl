@@ -347,35 +347,53 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
     {
         val apiTypeName = resolve(element)
         val protobufTypeName = resolve(element, ProjectType.PROTOBUF)
-        val container = com.btc.serviceidl.util.Util.getScopeDeterminant(element)
+        val container = element.scopeDeterminant
 
         '''
             «protobufTypeName» typedData = («protobufTypeName») encodedData;
             return new «apiTypeName» (
                «FOR member : members SEPARATOR ","»
-                   «val codec = resolveCodec(typeResolver, parameterBundle, member.type)»
-                   «val isFailable = com.btc.serviceidl.util.Util.isFailable(member.type)»
-                   «val useCodec = isFailable || GeneratorUtil.useCodec(member.type, ArtifactNature.DOTNET)»
-                   «val isSequence = com.btc.serviceidl.util.Util.isSequenceType(member.type)»
-                   «val isOptional = member.optional && !isSequence»
-                   «val useCast = useCodec && !isFailable»
-                   «IF com.btc.serviceidl.util.Util.isByte(member.type) || com.btc.serviceidl.util.Util.isInt16(member.type) || com.btc.serviceidl.util.Util.isChar(member.type)»
-                       «member.name.asParameter»: «IF isOptional»(typedData.«hasField(member)») ? «ENDIF»(«resolve(member.type)») typedData.«member.protobufName»«IF isOptional» : («toText(member.type, null)»?) null«ENDIF»
-                   «ELSE»
-                       «val decodeMethod = getDecodeMethod(member.type, container)»
-                   «member.name.asParameter»: «IF isOptional»(typedData.«hasField(member)») ? «ENDIF»«IF useCodec»«IF useCast»(«resolveDecode(member.type)») «ENDIF»«codec».«decodeMethod»(«ENDIF»typedData.«member.protobufName»«IF isSequence»List«ENDIF»«IF useCodec»)«ENDIF»«IF isOptional» : «IF member.type.isNullable»(«toText(member.type, null)»?) «ENDIF»null«ENDIF»
-               «ENDIF»
+                   «makeDecodeMember(member, container)»
                «ENDFOR»
-                «FOR structDecl : typeDeclarations.filter(StructDeclaration).filter[declarator !== null] SEPARATOR ","»
-                «val codec = resolveCodec(typeResolver, parameterBundle, structDecl)»
-                «structDecl.declarator.asParameter»: («resolve(structDecl)») «codec».decode(typedData.«new MemberElementWrapper(structDecl).protobufName»)
-                «ENDFOR»
-                «FOR enumDecl : typeDeclarations.filter(EnumDeclaration).filter[declarator !== null] SEPARATOR ","»
-                «val codec = resolveCodec(typeResolver, parameterBundle, enumDecl)»
-                «enumDecl.declarator.asParameter»: («apiTypeName + Constants.SEPARATOR_PACKAGE + enumDecl.name») «codec».decode(typedData.«new MemberElementWrapper(enumDecl).protobufName»)
-                «ENDFOR»
+               «FOR structDecl : typeDeclarations.filter(StructDeclaration).filter[declarator !== null] SEPARATOR ","»
+                   «val codec = resolveCodec(typeResolver, parameterBundle, structDecl)»
+                   «structDecl.declarator.asParameter»: («resolve(structDecl)») «codec».decode(typedData.«new MemberElementWrapper(structDecl).protobufName»)
+               «ENDFOR»
+               «FOR enumDecl : typeDeclarations.filter(EnumDeclaration).filter[declarator !== null] SEPARATOR ","»
+                   «val codec = resolveCodec(typeResolver, parameterBundle, enumDecl)»
+                   «enumDecl.declarator.asParameter»: («apiTypeName + Constants.SEPARATOR_PACKAGE + enumDecl.name») «codec».decode(typedData.«new MemberElementWrapper(enumDecl).protobufName»)
+               «ENDFOR»
                );
         '''
+    }
+
+    def makeDecodeMember(MemberElementWrapper member, AbstractContainerDeclaration container)
+    {
+        val memberType = member.type
+        val isSequence = memberType.isSequenceType
+        val isOptional = member.optional && !isSequence
+        if (memberType.isByte || memberType.isInt16 || memberType.isChar)
+        {
+            '''«member.name.asParameter»: 
+               «IF isOptional»(typedData.«hasField(member)») ? «ENDIF»
+               («resolve(member.type)») typedData.«member.protobufName»
+               «IF isOptional» : («toText(member.type, null)»?) null«ENDIF»'''
+
+        }
+        else
+        {
+            val decodeMethod = getDecodeMethod(member.type, container)
+            val isFailable = memberType.isFailable
+            val useCodec = isFailable || GeneratorUtil.useCodec(member.type, ArtifactNature.DOTNET)
+            val codec = if (useCodec) resolveCodec(typeResolver, parameterBundle, memberType)
+            val useCast = useCodec && !isFailable
+
+            '''«member.name.asParameter»: 
+               «IF isOptional»(typedData.«hasField(member)») ? «ENDIF»
+               «IF useCodec»«IF useCast»(«resolveDecode(member.type)») «ENDIF»«codec».«decodeMethod»(«ENDIF»
+               typedData.«member.protobufName»«IF isSequence»List«ENDIF»«IF useCodec»)«ENDIF»
+               «IF isOptional» : «IF member.type.isNullable»(«toText(member.type, null)»?) «ENDIF»null«ENDIF»'''
+        }
     }
 
     private def dispatch String makeDecode(AbstractTypeReference element, AbstractContainerDeclaration owner)
