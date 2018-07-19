@@ -10,17 +10,18 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.testdata
 
-import java.util.Map
-import java.util.HashMap
-import java.util.Collections
-import java.nio.file.Paths
 import com.google.common.io.Resources
-import java.nio.charset.Charset
-import java.util.jar.JarFile
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
-import java.util.ArrayList
+import java.io.IOException
 import java.net.URL
+import java.net.URLDecoder
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
+import java.nio.file.Paths
+import java.util.ArrayList
+import java.util.HashMap
+import java.util.Map
+import java.util.jar.JarFile
+import org.eclipse.core.runtime.FileLocator
 
 class TestData
 {
@@ -102,44 +103,54 @@ class TestData
     {
         val filenames = new ArrayList<URL>();
 
-        val url = Thread.currentThread().getContextClassLoader().getResource(directoryName);
-        if (url !== null)
+        var url = Thread.currentThread().getContextClassLoader().getResource(directoryName);
+        if (url === null)
+            throw new IOException(
+                "Thread.currentThread().getContextClassLoader().getResource(directoryName) returned null for directoryName == " +
+                    directoryName)
+
+        if (url.getProtocol().equals("bundleresource"))
         {
-            if (url.getProtocol().equals("file"))
+            url = FileLocator.toFileURL(url)
+        }
+
+        if (url.getProtocol().equals("file"))
+        {
+            val file = Paths.get(url.toURI()).toFile();
+            if (file !== null)
             {
-                val file = Paths.get(url.toURI()).toFile();
-                if (file !== null)
+                val files = file.listFiles();
+                if (files !== null)
                 {
-                    val files = file.listFiles();
-                    if (files !== null)
+                    for (filename : files)
                     {
-                        for (filename : files)
-                        {
-                            filenames.add(filename.toURI.toURL);
-                        }
-                    }
-                }
-            }
-            else if (url.getProtocol().equals("jar"))
-            {
-                val dirname = directoryName + "/";
-                val path = url.getPath();
-                val jarPath = path.substring(5, path.indexOf("!"));
-                // TODO this should use try-with-resources
-                val jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name()))
-                val entries = jar.entries();
-                while (entries.hasMoreElements())
-                {
-                    val entry = entries.nextElement();
-                    val name = entry.getName();
-                    if (name.startsWith(dirname) && !dirname.equals(name))
-                    {
-                        val resource = Thread.currentThread().getContextClassLoader().getResource(name);
-                        filenames.add(resource);
+                        filenames.add(filename.toURI.toURL);
                     }
                 }
             }
         }
+        else if (url.getProtocol().equals("jar"))
+        {
+            val dirname = directoryName + "/";
+            val path = url.getPath();
+            val jarPath = path.substring(5, path.indexOf("!"));
+            // TODO this should use try-with-resources
+            val jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name()))
+            val entries = jar.entries();
+            while (entries.hasMoreElements())
+            {
+                val entry = entries.nextElement();
+                val name = entry.getName();
+                if (name.startsWith(dirname) && !dirname.equals(name))
+                {
+                    val resource = Thread.currentThread().getContextClassLoader().getResource(name);
+                    filenames.add(resource);
+                }
+            }
+        }
+        else
+            throw new IOException("Unknown protocol in URL: " + url)
+
         return filenames;
     }
 
@@ -152,6 +163,9 @@ class TestData
             getFilenamesForDirnameFromClassPath(GOOD_TESTCASE_BASEDIR),
             getFilenamesForDirnameFromClassPath("com/btc/serviceidl/tests/testdata/good_ext/")
         ].flatten
+
+        if (testCaseFiles.empty)
+            throw new Exception("No good test cases found, something is wrong!")
 
         val resultMap = new HashMap<String, CharSequence>
         for (testCaseFile : testCaseFiles)

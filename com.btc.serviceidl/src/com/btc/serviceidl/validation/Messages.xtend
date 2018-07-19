@@ -35,6 +35,8 @@ class Messages
 
     public static val EXTERNAL_CIRCULAR_DEPENDENCIES = "External circular dependencies are currently not supported! Awaiting C++17..."
 
+    public static val ALIAS_SEQUENCES_NOT_SUPPORTED = "It's not trivial to represent alias sequences in Protobuf in a stable way, therefore they are currently not supported by the generator! You can easily wrap a sequences in an extra struct, if you want to alias them."
+
     public static val NESTED_SEQUENCES_NOT_SUPPORTED = "It's not trivial to represent nested sequences in Protobuf in a stable way, therefore they are currently not supported by the generator! You can easily wrap a sequences in an extra struct, if you want to nest them."
 
     public static val EXCEPTION_REFERENCE_NOT_SUPPORTED = "There is currently no concept how to use exception references in practice, therefore they are turned off"

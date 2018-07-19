@@ -28,4 +28,9 @@ class ProtobufUtil
         asDotNetProtobufName(element.name)
     }
 
+    def static String hasField(MemberElementWrapper member)
+    {
+        return '''Has«member.protobufName»'''
+    }
+
 }

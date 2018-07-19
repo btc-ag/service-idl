@@ -18,10 +18,13 @@ import org.eclipse.xtend.lib.annotations.Accessors
 @Accessors
 class ServerRunnerGenerator extends BasicCppGenerator
 {
-    def generateImplFileBody(InterfaceDeclaration interfaceDeclaration)
+    def generateImplFileBody(Iterable<InterfaceDeclaration> interfaceDeclarations)
     {
         // explicitly resolve some *.lib dependencies
         resolveSymbol("BTC::Commons::CoreExtras::IObserver") // IObserverBase used indirectly in dispatcher
+  
+        // TODO currently this ignores all interface declarations but the first; the PerformanceTestServer must be extended to support multiple services
+        val interfaceDeclaration = interfaceDeclarations.head
         val dispatcher = resolve(interfaceDeclaration, ProjectType.DISPATCHER)
 
         '''

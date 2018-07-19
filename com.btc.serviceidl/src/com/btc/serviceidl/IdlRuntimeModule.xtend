@@ -93,7 +93,8 @@ class FileSystemAccessWrapper implements IFileSystemAccess2
     {
         val slot = generated.get(outputConfigurationName)
         if (slot.contains(fileName))
-            wrapped.generateFile(fileName, outputConfigurationName, contents)
+            throw new UnsupportedOperationException("File already generated: " + fileName)
+        wrapped.generateFile(fileName, outputConfigurationName, contents)
         slot.add(fileName)
     }
 
