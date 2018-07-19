@@ -38,6 +38,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
+import static extension com.btc.serviceidl.generator.java.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
@@ -50,11 +51,6 @@ class BasicJavaSourceGenerator
     val IDLSpecification idl
     val Map<String, ResolvedName> typedefTable
     val MavenResolver mavenResolver
-
-    def getTargetVersion()
-    {
-        ServiceCommVersion.get(targetVersionProvider.getTargetVersion(JavaConstants.SERVICECOMM_VERSION_KIND))
-    }
 
     def dispatch String toText(ExceptionDeclaration element)
     {
@@ -109,7 +105,7 @@ class BasicJavaSourceGenerator
     def dispatch String toText(AliasDeclaration element)
     {
         val ultimateType = element.type.ultimateType
-        val typeName = typedefTable.computeIfAbsent(element.name, [typeResolver.resolve(ultimateType)]) 
+        val typeName = typedefTable.computeIfAbsent(element.name, [typeResolver.resolve(ultimateType)])
 
         if (!Util.isPrimitive(ultimateType))
             typeResolver.resolve(typeName.fullyQualifiedName)
@@ -368,7 +364,7 @@ class BasicJavaSourceGenerator
 
     def resolveZeroMqServerConnectionFactory()
     {
-        if (targetVersion == ServiceCommVersion.V0_3)
+        if (javaTargetVersion == ServiceCommVersion.V0_3)
             typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqServerConnectionFactory")
         else
             // typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.jzmq.JzmqServerConnectionFactory")
@@ -377,7 +373,7 @@ class BasicJavaSourceGenerator
 
     def resolveZeroMqClientConnectionFactory()
     {
-        if (targetVersion == ServiceCommVersion.V0_3)
+        if (javaTargetVersion == ServiceCommVersion.V0_3)
             typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.ZeroMqClientConnectionFactory")
         else
             // typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.zeromq.jzmq.JzmqClientConnectionFactory")
@@ -386,7 +382,7 @@ class BasicJavaSourceGenerator
 
     def resolveLoggerFactory()
     {
-        if (targetVersion == ServiceCommVersion.V0_3)
+        if (javaTargetVersion == ServiceCommVersion.V0_3)
             typeResolver.resolve("org.apache.log4j.Logger")
         else
             typeResolver.resolve("org.slf4j.LoggerFactory")
@@ -394,10 +390,14 @@ class BasicJavaSourceGenerator
 
     def resolveLogger()
     {
-        if (targetVersion == ServiceCommVersion.V0_3)
+        if (javaTargetVersion == ServiceCommVersion.V0_3)
             typeResolver.resolve("org.apache.log4j.Logger")
         else
             typeResolver.resolve("org.slf4j.Logger")
     }
 
+    protected def getJavaTargetVersion()
+    {
+        targetVersionProvider.javaTargetVersion
+    }
 }

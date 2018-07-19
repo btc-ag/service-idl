@@ -43,7 +43,7 @@ class ServiceFaultHandlerFactoryGenerator
         exceptions.addAll(raisedExceptions)
         exceptions.addAll(failableExceptions)
         
-        val errorMapValueType = if (basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3) "Exception" else "Class"
+        val errorMapValueType = if (basicJavaSourceGenerator.javaTargetVersion == ServiceCommVersion.V0_3) "Exception" else "Class"
 
         // TODO except for the static initializer, this can be extracted into a reusable class, which can be provided 
         // from com.btc.cab.servicecomm
@@ -82,11 +82,11 @@ class ServiceFaultHandlerFactoryGenerator
                  «errorMapValueType» exception = errorMap.get(errorType);
                  try
                  {
-                    «typeResolver.resolve("java.lang.reflect.Constructor")»<?> constructor = exception.«IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»getClass().«ENDIF»getConstructor(String.class);
+                    «typeResolver.resolve("java.lang.reflect.Constructor")»<?> constructor = exception.«IF basicJavaSourceGenerator.javaTargetVersion == ServiceCommVersion.V0_3»getClass().«ENDIF»getConstructor(String.class);
                     return (Exception) constructor.newInstance( new Object[] {message} );
                  } catch (Exception ex)
                  {
-                    «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
+                    «IF basicJavaSourceGenerator.javaTargetVersion == ServiceCommVersion.V0_3»
                     «// TODO this looks strange. What kind of Exception is intended to be caught here? Any exception is swallowed here.
                      // one typical case might be that the exception type has no constructor accepting a String message. In that case
                      // the element from the map is returned. However, this is certainly not thread-safe.
@@ -106,7 +106,7 @@ class ServiceFaultHandlerFactoryGenerator
               «optional»<String> errorType = «optional».empty();
               for («errorMapValueType» e : errorMap.values())
               {
-                 if (e.«IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»getClass().«ENDIF»equals(exception.getClass()))
+                 if (e.«IF basicJavaSourceGenerator.javaTargetVersion == ServiceCommVersion.V0_3»getClass().«ENDIF»equals(exception.getClass()))
                  {
                     errorType = «optional».of(errorMap.inverseBidiMap().get(e));
                     break;
@@ -123,7 +123,7 @@ class ServiceFaultHandlerFactoryGenerator
     }
     
     def getClassOrObject(ResolvedName name) {
-        if (basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3)
+        if (basicJavaSourceGenerator.javaTargetVersion == ServiceCommVersion.V0_3)
             '''new «name»()'''
         else
             name + ".class"
