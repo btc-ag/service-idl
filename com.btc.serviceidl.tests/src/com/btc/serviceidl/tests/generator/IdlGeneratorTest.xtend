@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator
 
+import com.btc.serviceidl.FileSystemAccessWrapper
 import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
 import com.btc.serviceidl.generator.IGenerationSettingsProvider
 import com.btc.serviceidl.idl.IDLSpecification
@@ -41,11 +42,12 @@ class IdlGeneratorTest
         val defaultGenerationSettingsProvider = generationSettingsProvider as DefaultGenerationSettingsProvider
         defaultGenerationSettingsProvider.reset() // TODO remove this, it is necessary because the dependencies are reused across test cases        
         val spec = input.parse
-        val fsa = new InMemoryFileSystemAccess()
+        val baseFsa = new InMemoryFileSystemAccess()
+        val fsa = new FileSystemAccessWrapper[baseFsa]
         val generatorContext = new GeneratorContext()
         underTest.doGenerate(spec.eResource, fsa, generatorContext)
-        println(fsa.textFiles.keySet.join("\n"))
-        fsa
+        println(baseFsa.textFiles.keySet.join("\n"))
+        baseFsa
     }
 
     @Test
