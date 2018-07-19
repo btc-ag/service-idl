@@ -32,11 +32,11 @@ import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.StructDeclaration
-import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtend.lib.annotations.Data
 
 import static extension com.btc.serviceidl.util.Extensions.*
 
-@Accessors(PUBLIC_GETTER)
+@Data
 class MemberElementWrapper
 {
     val AbstractTypeReference type
