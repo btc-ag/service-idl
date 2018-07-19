@@ -283,37 +283,54 @@ class ProtobufCodecGenerator extends ProxyDispatcherGeneratorBase
             «apiTypeName» typedData = («apiTypeName») plainData;
             var builder = «protobufTypeName».CreateBuilder();
             «FOR member : members»
-                «val codec = resolveCodec(typeResolver, parameterBundle, member.type)»
-                «val isFailable = member.type.isFailable»
-                «val useCodec = isFailable || GeneratorUtil.useCodec(member.type, ArtifactNature.DOTNET)»
-                «val useCast = useCodec && !isFailable»
-                «val encodeMethod = getEncodeMethod(member.type, container)»
-                «val methodName = if (com.btc.serviceidl.util.Util.isSequenceType(member.type)) "AddRange" + member.name.asDotNetProtobufName else "Set" + member.name.asDotNetProtobufName»
-                «IF com.btc.serviceidl.util.Util.isAbstractCrossReferenceType(member.type) && !(com.btc.serviceidl.util.Util.isEnumType(member.type))»
-                    if (typedData.«member.name.asProperty» != null)
-                    {
-                builder.«methodName»(«IF useCodec»«IF useCast»(«resolveEncode(member.type)») «ENDIF»«codec».«encodeMethod»(«ENDIF»typedData.«member.name.asProperty»«IF useCodec»)«ENDIF»);
-                }
-                «ELSE»
-                «val isNullable = (member.optional && member.type.valueType)»
-                «val isOptionalReference = (member.optional && !member.type.valueType)»
-                «IF com.btc.serviceidl.util.Util.isByte(member.type) || com.btc.serviceidl.util.Util.isInt16(member.type) || com.btc.serviceidl.util.Util.isChar(member.type)»
-                    «IF isNullable»if (typedData.«member.name.asProperty».HasValue) «ENDIF»builder.«methodName»(typedData.«member.name.asProperty»«IF isNullable».Value«ENDIF»);
-                «ELSE»
-                «IF isNullable»if (typedData.«member.name.asProperty».HasValue) «ENDIF»«IF isOptionalReference»if (typedData.«member.name.asProperty» != null) «ENDIF»builder.«methodName»(«IF useCodec»«IF useCast»(«resolveEncode(member.type)») «ENDIF»«codec».«encodeMethod»(«ENDIF»typedData.«member.name.asProperty»«IF isNullable».Value«ENDIF»«IF useCodec»)«ENDIF»);
-                «ENDIF»
-                «ENDIF»
+                «makeEncodeMember(member, container)»
             «ENDFOR»
-                «FOR structDecl : typeDeclarations.filter(StructDeclaration).filter[declarator !== null]»
+            «FOR structDecl : typeDeclarations.filter(StructDeclaration).filter[declarator !== null]»
                 «val codec = resolveCodec(typeResolver, parameterBundle, structDecl)»
                 builder.Set«new MemberElementWrapper(structDecl).protobufName»((«protobufTypeName».Types.«structDecl.name») «codec».encode(typedData.«structDecl.declarator.asProperty»));
-                «ENDFOR»
-                «FOR enumDecl : typeDeclarations.filter(EnumDeclaration).filter[declarator !== null]»
+            «ENDFOR»
+            «FOR enumDecl : typeDeclarations.filter(EnumDeclaration).filter[declarator !== null]»
                 «val codec = resolveCodec(typeResolver, parameterBundle, enumDecl)»
                 builder.Set«new MemberElementWrapper(enumDecl).protobufName»((«protobufTypeName».Types.«enumDecl.name») «codec».encode(typedData.«enumDecl.declarator»));
-                «ENDFOR»
+            «ENDFOR»
             return builder.BuildPartial();
         '''
+    }
+    
+    def makeEncodeMember(MemberElementWrapper member, AbstractContainerDeclaration container)
+    {
+        val codec = resolveCodec(typeResolver, parameterBundle, member.type)
+        val isFailable = member.type.isFailable
+        val useCodec = isFailable || GeneratorUtil.useCodec(member.type, ArtifactNature.DOTNET)
+        val useCast = useCodec && !isFailable
+        val encodeMethod = getEncodeMethod(member.type, container)
+        val methodName = (if (member.type.isSequenceType) "AddRange" else "Set") + member.name.asDotNetProtobufName
+        if (member.type.isAbstractCrossReferenceType && !member.type.isEnumType)
+        {
+            '''if (typedData.«member.name.asProperty» != null)
+               {
+                   builder.«methodName»(«IF useCodec»«IF useCast»(«resolveEncode(member.type)») «ENDIF»«codec».«encodeMethod»(«ENDIF»typedData.«member.name.asProperty»«IF useCodec»)«ENDIF»);
+               }
+            '''
+        }
+        else
+        {
+            val isNullable = (member.optional && member.type.valueType)
+            val isOptionalReference = (member.optional && !member.type.valueType)
+            if (member.type.isByte || member.type.isInt16 || member.type.isChar)
+                '''«IF isNullable»if (typedData.«member.name.asProperty».HasValue) «ENDIF»
+                   builder.«methodName»(typedData.«member.name.asProperty»
+                   «IF isNullable».Value«ENDIF»
+                   );
+                '''
+            else
+                '''«IF isNullable»if (typedData.«member.name.asProperty».HasValue) «ENDIF»
+                   «IF isOptionalReference»if (typedData.«member.name.asProperty» != null) «ENDIF»
+                   builder.«methodName»(«IF useCodec»«IF useCast»(«resolveEncode(member.type)») «ENDIF»«codec».«encodeMethod»(«ENDIF»typedData.«member.name.asProperty»
+                   «IF isNullable».Value«ENDIF»«IF useCodec»)«ENDIF»
+                   );
+                '''
+        }
     }
 
     private def dispatch String makeDecode(EnumDeclaration element, AbstractContainerDeclaration owner)
