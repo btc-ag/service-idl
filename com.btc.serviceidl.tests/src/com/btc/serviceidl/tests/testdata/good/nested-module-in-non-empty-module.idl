@@ -8,7 +8,7 @@ module bar
     };
 }
 
-interface Bar[guid=384E277A-C343-4F37-B910-C2CE6B37FC8E] { 
+interface Bar2[guid=384E277A-C343-4F37-B910-C2CE6B37FC8E] { 
     DoSomething() returns bar.A;
 };
 }
