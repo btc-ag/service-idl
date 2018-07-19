@@ -1,7 +1,7 @@
 module Test {
 
     struct A { 
-        int64 a;
+        int64 aValue;
     };
 
 }
