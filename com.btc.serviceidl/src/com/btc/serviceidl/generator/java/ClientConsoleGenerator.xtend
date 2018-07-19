@@ -50,20 +50,20 @@ class ClientConsoleGenerator
               
               «typeResolver.resolve(JavaClassNames.CLIENT_ENDPOINT)» client = null;
               «apiName» proxy = null;
-              «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
+              «IF basicJavaSourceGenerator.javaTargetVersion == ServiceCommVersion.V0_3»
               «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resourcesLocation»/«log4j_name»", 60 * 1000);
               «ENDIF»
         
               logger.info("Client trying to connect to " + connectionString);
               «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» connectionFactory = new «basicJavaSourceGenerator.resolveZeroMqClientConnectionFactory»(
-                 «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
+                 «IF basicJavaSourceGenerator.javaTargetVersion == ServiceCommVersion.V0_3»
                      logger
                  «ENDIF» 
                         );
               
               try {
                 client = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ClientEndpointFactory")»(
-                     «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
+                     «IF basicJavaSourceGenerator.javaTargetVersion == ServiceCommVersion.V0_3»
                          logger,
                      «ENDIF» 
                      connectionFactory).create(connectionString);

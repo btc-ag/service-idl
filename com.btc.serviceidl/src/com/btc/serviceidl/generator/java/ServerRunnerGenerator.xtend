@@ -54,7 +54,7 @@ class ServerRunnerGenerator
                   // Create dispatcher and dispatchee instances                  
                   «implName» dispatchee = new «implName»();
                   «dispatcherName» dispatcher = new «dispatcherName»(dispatchee, 
-                      new «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
+                      new «IF basicJavaSourceGenerator.javaTargetVersion == ServiceCommVersion.V0_3»
                               «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtoBufServerHelper")»
                            «ELSE»
                               «typeResolver.resolve("com.btc.cab.servicecomm.protobuf.ProtobufSerializer")»
@@ -97,7 +97,7 @@ class ServerRunnerGenerator
                private static String _file;
                
                public static void main(String[] args) {                  
-                  «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
+                  «IF basicJavaSourceGenerator.javaTargetVersion == ServiceCommVersion.V0_3»
                   «typeResolver.resolve("org.apache.log4j.PropertyConfigurator")».configureAndWatch("«resourcesLocation»/«log4j_name»", 60 * 1000);
                   «ENDIF»
                   // Parse Parameters
@@ -133,14 +133,14 @@ class ServerRunnerGenerator
                   
                   «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.api.IConnectionFactory")» _serverConnectionFactory = (IConnectionFactory) ctx
                         .getBean("ServerFactory"
-                        «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
+                        «IF basicJavaSourceGenerator.javaTargetVersion == ServiceCommVersion.V0_3»
                         , logger
                         «ENDIF»
                         );
                   
                   try {
                      _serverEndpoint = new «typeResolver.resolve("com.btc.cab.servicecomm.singlequeue.core.ServerEndpointFactory")»(
-                         «IF basicJavaSourceGenerator.targetVersion == ServiceCommVersion.V0_3»
+                         «IF basicJavaSourceGenerator.javaTargetVersion == ServiceCommVersion.V0_3»
                          logger,
                          «ENDIF»
                          _serverConnectionFactory).create(_connectionString);

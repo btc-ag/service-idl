@@ -12,7 +12,6 @@ package com.btc.serviceidl.generator.java
 
 class ConfigFilesGenerator
 {
-    // TODO this is outdated since log4j is longer used at all
     def static String generateLog4jProperties()
     {
         '''
