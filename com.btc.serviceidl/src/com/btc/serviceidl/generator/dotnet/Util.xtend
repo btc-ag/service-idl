@@ -37,11 +37,6 @@ import static extension com.btc.serviceidl.util.Util.*
 // TODO reorganize this according to logical aspects
 class Util
 {
-    def static String hasField(MemberElementWrapper member)
-    {
-        return '''Has«member.name.toLowerCase.toFirstUpper»'''
-    }
-
     /**
      * For optional struct members, this generates an "?" to produce a C# Nullable
      * type; if the type if already Nullable (e.g. string), an empty string is returned.
