@@ -144,6 +144,23 @@ class CppGeneratorTest extends AbstractGeneratorTest
                             )
                 generators = "cmake"
                 short_paths = True
+                
+                def generateProtoFiles(self):
+                    protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)
+                    outdir = self.source_folder
+                    
+                    self.run('bin\\protoc.exe --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
+
+                def build(self):
+                    self.generateProtoFiles()
+                    ConanTemplate.build(self)
+
+                def package(self):
+                    ConanTemplate.package(self)
+                    self.copy("**/*.proto", dst="proto", keep_path=True)
+            
+                def imports(self):
+                    self.copy("protoc.exe", "bin", "bin")
         ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.4)
             
@@ -239,6 +256,23 @@ class CppGeneratorTest extends AbstractGeneratorTest
                             )
                 generators = "cmake"
                 short_paths = True
+                
+                def generateProtoFiles(self):
+                    protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)
+                    outdir = self.source_folder
+                    
+                    self.run('bin\\protoc.exe --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
+
+                def build(self):
+                    self.generateProtoFiles()
+                    ConanTemplate.build(self)
+
+                def package(self):
+                    ConanTemplate.package(self)
+                    self.copy("**/*.proto", dst="proto", keep_path=True)
+            
+                def imports(self):
+                    self.copy("protoc.exe", "bin", "bin")
         ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.4)
             
