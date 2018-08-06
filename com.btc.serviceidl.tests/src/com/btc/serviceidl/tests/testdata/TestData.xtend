@@ -37,7 +37,7 @@ class TestData
             module Demo { 
             module API {
             
-            interface KeyValueStore[version=1.0.0 guid=384E277A-C343-4F37-B910-C2CE6B37FC8E] { 
+            interface KeyValueStore[guid=384E277A-C343-4F37-B910-C2CE6B37FC8E] { 
             };
             }
             }
@@ -68,7 +68,7 @@ class TestData
                 string name;
             };
             
-            interface DemoX[version=1.0.0 guid=384E277A-C343-4F37-B910-C2CE6B37FC8E] {
+            interface DemoX[guid=384E277A-C343-4F37-B910-C2CE6B37FC8E] {
                  AddEntries(in sequence<EntryType> entries) returns void raises MyException;
             };
             }
@@ -86,7 +86,7 @@ class TestData
         return '''
             module foo {
                 
-            interface Test[version=1.0.0 guid=384E277A-C343-4F37-B910-C2CE6B37FC8E] {
+            interface Test[guid=384E277A-C343-4F37-B910-C2CE6B37FC8E] {
                 event TestEvent [guid = 9BFE9AB7-3AA6-441F-82D7-D1A27F6321CE] (TestEventArgs);
                 
                 struct TestEventArgs{

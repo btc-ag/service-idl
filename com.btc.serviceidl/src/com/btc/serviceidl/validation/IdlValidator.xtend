@@ -60,6 +60,7 @@ class IdlValidator extends AbstractIdlValidator
 //	}
     // unique identification codes for quickfixes
     public static final String INTERFACE_GUID = "com.btc.serviceidl.validation.ensureInterfaceGUID";
+    public static final String DEPRECATED_INTERFACE_VERSION = "com.btc.serviceidl.validation.deprecatedInterfaceVersion";
 
     /**
      * Verify, that at most 1 anonymous event exists per interface.
@@ -203,8 +204,7 @@ class IdlValidator extends AbstractIdlValidator
     {
         for (eventData : idlSpecification.eAllContents.filter(StructDeclaration).toIterable)
         {
-            val relatedEvents = idlSpecification.eAllContents.filter(EventDeclaration).filter[data === eventData].
-                toList
+            val relatedEvents = idlSpecification.eAllContents.filter(EventDeclaration).filter[data === eventData].toList
             if (relatedEvents.size > 1)
             {
                 for (event : relatedEvents.drop(1))
@@ -608,5 +608,13 @@ class IdlValidator extends AbstractIdlValidator
     {
         if (element.declarator !== null)
             error(Messages.DEPRECATED_ADHOC_DECLARATION, element, IdlPackage.Literals.ENUM_DECLARATION__DECLARATOR)
+    }
+
+    @Check
+    def deprecatedVersionDeclaration(InterfaceDeclaration element)
+    {
+        if (element.version !== null)
+            error(Messages.DEPRECATED_VERSION_DECLARATION, element, IdlPackage.Literals.INTERFACE_DECLARATION__VERSION,
+                DEPRECATED_INTERFACE_VERSION)
     }
 }

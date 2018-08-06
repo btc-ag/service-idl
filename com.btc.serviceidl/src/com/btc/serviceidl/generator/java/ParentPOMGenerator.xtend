@@ -13,11 +13,15 @@ package com.btc.serviceidl.generator.java
 import com.btc.serviceidl.generator.common.ArtifactNature
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
+import com.btc.serviceidl.idl.IDLSpecification
+
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(NONE)
 class ParentPOMGenerator
 {
     val IFileSystemAccess fileSystemAccess
+    val IDLSpecification idlSpecification
     val MavenResolver mavenResolver
     val String groupId    
 
@@ -34,7 +38,7 @@ class ParentPOMGenerator
                 <modelVersion>4.0.0</modelVersion>
                 <groupId>«groupId»</groupId>
                 <artifactId>«groupId».parent</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>«idlSpecification.resolveVersion»-SNAPSHOT</version> «««TODO Are there cases where this shouldn't be SNAPSHOT?»»»
                 <packaging>pom</packaging>
             
                 <properties>

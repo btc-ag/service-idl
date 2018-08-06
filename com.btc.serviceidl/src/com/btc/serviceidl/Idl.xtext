@@ -21,6 +21,7 @@ generate idl "http://www.btc-ag.com/ProDiGD/Idl"
 /* general document structure (root) */
 IDLSpecification:
    ( importedEntities += ImportDeclaration )*
+   ( 'version' version = VERSION ';' )?
    ( modules += ModuleDeclaration )*
 ;
 

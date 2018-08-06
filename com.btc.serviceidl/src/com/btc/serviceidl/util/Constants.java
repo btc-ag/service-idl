@@ -19,6 +19,7 @@ package com.btc.serviceidl.util;
 import org.eclipse.core.runtime.IPath;
 
 public interface Constants {
+    public static final String DEFAULT_VERSION = "0.1.0";
 
     // TODO replace these by TransformType.*.separator
     // diverse separators, e.g. for paths, packages, namespaces

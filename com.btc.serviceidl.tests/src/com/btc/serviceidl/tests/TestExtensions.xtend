@@ -38,15 +38,15 @@ class TestExtensions
         assertEquals(expected.toString.normalize, actual.toString.normalize)
     }
 
-    static def void checkFile(InMemoryFileSystemAccess fsa, String headerLocation, String content)
+    static def void checkFile(InMemoryFileSystemAccess fsa, String path, String content)
     {
-        assertTrue(headerLocation, fsa.textFiles.containsKey(headerLocation))
+        assertTrue(path, fsa.textFiles.containsKey(path))
 
-        println(fsa.textFiles.get(headerLocation))
+        println(fsa.textFiles.get(path))
 
         assertEqualsNormalized(
             content,
-            fsa.textFiles.get(headerLocation)
+            fsa.textFiles.get(path)
         )
     }
 

@@ -129,7 +129,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             
             class Conan(ConanTemplate):
                 name = "Test"
-                version= version_name("0.1.0-unreleased")
+                version = version_name("0.1.0-unreleased")
                 url = "TODO"
                 description = """
                 TODO
@@ -241,7 +241,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             
             class Conan(ConanTemplate):
                 name = "Test"
-                version= version_name("0.1.0-unreleased")
+                version = version_name("0.1.0-unreleased")
                 url = "TODO"
                 description = """
                 TODO

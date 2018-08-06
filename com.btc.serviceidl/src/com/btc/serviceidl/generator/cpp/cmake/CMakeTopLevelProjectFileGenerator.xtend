@@ -11,6 +11,8 @@ import org.eclipse.core.runtime.Path
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 
+import static extension com.btc.serviceidl.util.Util.*
+
 @Accessors(NONE)
 class CMakeTopLevelProjectFileGenerator
 {
@@ -71,12 +73,13 @@ class CMakeTopLevelProjectFileGenerator
                 
         // TODO the transitive dependencies do not need to be specified here
         
+        // TODO Are there cases where the version should be not "-unreleased"?
         '''
             from conan_template import *
             
             class Conan(ConanTemplate):
                 name = "«projectName»"
-                version= version_name("0.1.0-unreleased")
+                version = version_name("«module.resolveVersion»-unreleased")
                 url = "TODO"
                 description = """
                 TODO
