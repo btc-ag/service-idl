@@ -20,6 +20,7 @@ import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.AliasDeclaration
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
+import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -255,4 +256,11 @@ class GeneratorUtil
         // (in the generator settings?)
         idl.eResource.URI.lastSegment.replace(".idl", "") + if (artifactNature == ArtifactNature.DOTNET) ".NET" else ""
     }
+
+    static def String getProtobufFunctionName(FunctionDeclaration object, ProtobufType protobufType)
+    {
+        val scopeDeterminant = object.scopeDeterminant
+        #[Names.plain(scopeDeterminant), protobufType.getName, Names.plain(object) + protobufType.getName].join("_")
+    }
+    
 }
