@@ -13,6 +13,12 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
+
+	<scm>
+		<connection>scm:git:https://github.com/btc-ag/service-idl.git</connection>
+		<developerConnection>scm:git:https://github.com/btc-ag/service-idl.git</developerConnection>
+	</scm>
+
 	<modules>
 		<module>com.btc.serviceidl</module>
 		<module>com.btc.serviceidl.plainjava</module>
@@ -130,7 +136,44 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>            
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<tagNameFormat>v@{project.version}</tagNameFormat>
+					<preparationGoals>org.eclipse.tycho:tycho-versions-plugin:${tycho-version}:update-eclipse-metadata
+						org.apache.maven.plugins:maven-scm-plugin:1.9.5:add
+						org.apache.maven.plugins:maven-scm-plugin:1.9.5:checkin</preparationGoals>
+					<completionGoals>org.eclipse.tycho:tycho-versions-plugin:${tycho-version}:update-eclipse-metadata
+						org.apache.maven.plugins:maven-scm-plugin:1.9.5:add
+						org.apache.maven.plugins:maven-scm-plugin:1.9.5:checkin</completionGoals>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-scm-plugin</artifactId>
+				<version>1.9.5</version>
+				<executions>
+					<execution>
+						<id>default-cli</id>
+						<goals>
+							<goal>add</goal>
+							<goal>checkin</goal>
+						</goals>
+						<configuration>
+							<includes>**/META-INF/MANIFEST.MF, **/feature.xml, **/*.product,**/category.xml</includes>
+							<excludes>**/target/**</excludes>
+							<message>[maven-release-plugin] Changing the Eclipse files versions</message>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-versions-plugin</artifactId>
+				<version>${tycho-version}</version>
+			</plugin>
         </plugins>
 		<pluginManagement>
 			<plugins>
@@ -288,6 +331,11 @@
 						<compilerArgument>-err:-forbidden</compilerArgument>
 						<useProjectSettings>false</useProjectSettings>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.5.3</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
