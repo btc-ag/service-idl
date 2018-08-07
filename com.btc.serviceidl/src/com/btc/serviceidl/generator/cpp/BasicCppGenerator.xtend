@@ -347,6 +347,7 @@ class BasicCppGenerator
 
     def CharSequence generateIncludes(boolean isHeader)
     {
+        // TODO filter out self from includes (here, or already in the TypeResolver.resolve call?
         val includes = typeResolver.includes
         val result = new StringBuilder()
 
@@ -360,16 +361,16 @@ class BasicCppGenerator
             throw new IllegalArgumentException("Unconfigured include groups: " + includes.keySet.join(", "))
         }
 
-        result.append(    
-        '''            
-            «IF !isHeader && paramBundle.projectType == ProjectType.SERVER_RUNNER»
+        // TODO remove this (at least from here)
+        if (!isHeader && paramBundle.projectType == ProjectType.SERVER_RUNNER)
+            result.append(    
+            '''            
                 
                 #ifndef NOMINMAX
                 #define NOMINMAX
                 #endif
                 #include <windows.h>
-            «ENDIF»
-        ''')
+            ''')
 
         return result
     }
