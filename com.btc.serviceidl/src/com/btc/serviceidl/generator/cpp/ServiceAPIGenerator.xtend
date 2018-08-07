@@ -231,13 +231,6 @@ class ServiceAPIGenerator extends BasicCppGenerator {
             «registerServiceFault»<«resolveExcName»>(
                serviceFaultHandlerManager, «cabString»("«exception.getCommonExceptionName(qualifiedNameProvider)»"));
          «ENDFOR»
-         
-         // most commonly used exception types
-         «val defaultExceptions = typeResolver.defaultExceptionRegistration»
-         «FOR exception : defaultExceptions.keySet.sort»
-            «registerServiceFault»<«defaultExceptions.get(exception)»>(
-               serviceFaultHandlerManager, «cabString»("«exception»"));
-         «ENDFOR»
       }
       '''
     }

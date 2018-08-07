@@ -68,12 +68,6 @@ class CodecGenerator extends BasicCppGenerator
                       «val exceptionName = exception.getCommonExceptionName(qualifiedNameProvider)»
                       faultHandlers["«exceptionName»"] = [](«cabString» const& msg) { return «cabCreateUnique»<«exceptionType»>(msg); };
                   «ENDFOR»
-                  
-                  // most commonly used exception types
-                  «val defaultExceptions = typeResolver.defaultExceptionRegistration»
-                  «FOR exception : defaultExceptions.keySet.sort»
-                      faultHandlers["«exception»"] = [](«cabString» const& msg) { return «cabCreateUnique»<«defaultExceptions.get(exception)»>(msg); };
-                  «ENDFOR»
                });
             }
             

@@ -54,8 +54,7 @@ class BasicJavaSourceGenerator
 
     def dispatch String toText(ExceptionDeclaration element)
     {
-        typeResolver.resolveException(qualifiedNameProvider.getFullyQualifiedName(element).toString) ?:
-            '''«typeResolver.resolve(element)»'''
+        '''«typeResolver.resolve(element)»'''
     }
 
     def dispatch String toText(SequenceDeclaration item)

@@ -2,8 +2,6 @@ package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.common.GuidMapper
 import com.btc.serviceidl.idl.StructDeclaration
-import com.btc.serviceidl.util.Constants
-import java.util.Map
 
 class TypeResolverExtensions {
     static def String makeEventGUIDImplementations(extension TypeResolver typeResolver,
@@ -27,14 +25,4 @@ class TypeResolverExtensions {
       '''
     }
 
-   static def Map<String, String> getDefaultExceptionRegistration(extension TypeResolver typeResolver)
-   {
-      // TODO these must not be registered, the default must be empty
-      #{
-          Constants.INVALID_ARGUMENT_EXCEPTION_FAULT_HANDLER         -> resolveSymbol("BTC::Commons::Core::InvalidArgumentException")
-         ,Constants.UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER    -> resolveSymbol("BTC::Commons::Core::UnsupportedOperationException")
-      }
-   }
-      
-    
 }

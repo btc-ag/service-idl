@@ -316,8 +316,6 @@ public class TypesCodec {
             import com.btc.cab.servicecomm.api.IServiceFaultHandler;
             import com.btc.cab.servicecomm.faulthandling.DefaultServiceFaultHandler;
             import com.btc.cab.servicecomm.faulthandling.ErrorMessage;
-            import java.lang.IllegalArgumentException;
-            import java.lang.UnsupportedOperationException;
             import java.lang.reflect.Constructor;
             import java.util.Optional;
             import org.apache.commons.collections4.BidiMap;
@@ -330,10 +328,6 @@ public class TypesCodec {
                
                static
                {
-                  
-                  // most commonly used exception types
-                  errorMap.put("BTC.Commons.Core.InvalidArgumentException", IllegalArgumentException.class);
-                  errorMap.put("BTC.Commons.Core.UnsupportedOperationException", UnsupportedOperationException.class);
                }
                
                public static final IServiceFaultHandler createServiceFaultHandler()

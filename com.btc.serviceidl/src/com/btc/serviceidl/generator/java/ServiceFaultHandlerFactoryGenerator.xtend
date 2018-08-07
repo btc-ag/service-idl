@@ -47,8 +47,6 @@ class ServiceFaultHandlerFactoryGenerator
 
         // TODO except for the static initializer, this can be extracted into a reusable class, which can be provided 
         // from com.btc.cab.servicecomm
-        // TODO InvalidArgumentException and UnsupportedOperationException should not be added to the error map, only 
-        // service-specific subtypes 
         '''
         public class «className»
         {
@@ -61,10 +59,6 @@ class ServiceFaultHandlerFactoryGenerator
               «FOR exception : exceptions.sortBy[name]»
                   errorMap.put("«Util.getCommonExceptionName(exception, basicJavaSourceGenerator.qualifiedNameProvider)»", «getClassOrObject(typeResolver.resolve(exception))»);
               «ENDFOR»
-              
-              // most commonly used exception types
-              errorMap.put("«Constants.INVALID_ARGUMENT_EXCEPTION_FAULT_HANDLER»", «getClassOrObject(typeResolver.resolve("java.lang.IllegalArgumentException"))»);
-              errorMap.put("«Constants.UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER»", «getClassOrObject(typeResolver.resolve("java.lang.UnsupportedOperationException"))»);
            }
            
            public static final «typeResolver.resolve(JavaClassNames.SERVICE_FAULT_HANDLER)» createServiceFaultHandler()
