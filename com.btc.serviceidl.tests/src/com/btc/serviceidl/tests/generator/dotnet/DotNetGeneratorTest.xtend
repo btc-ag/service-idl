@@ -19,7 +19,6 @@ import java.util.Arrays
 import java.util.HashSet
 import java.util.Map
 import java.util.Set
-import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.junit.Test
@@ -34,7 +33,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
     @Test
     def void testBasicServiceApi()
     {
-        val fileCount = 5
+        val fileCount = 6
         val baseDirectory = ArtifactNature.DOTNET.label + "Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
         val directory = baseDirectory
         val contents = #{ArtifactNature.DOTNET.label + "__synthetic0.sln" -> '''
@@ -60,6 +59,17 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                     HideSolutionNode = FALSE
                 EndGlobalSection
             EndGlobal
+        ''', ArtifactNature.DOTNET.label + "paket.template" -> '''
+            type file
+            id __synthetic0.NET
+            version 0.1.0
+            authors TODO
+            description
+              TODO
+            
+            files
+              bin/Release/BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI* ==> lib
+            
         ''', directory + "IKeyValueStore.cs" -> '''
             namespace BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI
             {
@@ -199,7 +209,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
     @Test
     def void testBasicProtobufCSProjFile()
     {
-        val fileCount = 19
+        val fileCount = 20
         val baseDirectory = ArtifactNature.DOTNET.label + "Infrastructure/ServiceHost/Demo/API/Protobuf/"
         val contents = #{baseDirectory + "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf.csproj" -> '''
             <?xml version="1.0" encoding="utf-8"?>
