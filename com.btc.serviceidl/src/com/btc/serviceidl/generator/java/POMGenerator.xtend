@@ -15,6 +15,8 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import org.eclipse.xtend.lib.annotations.Accessors
 
+import static extension com.btc.serviceidl.util.Util.*
+
 @Accessors(NONE)
 class POMGenerator
 {
@@ -31,7 +33,7 @@ class POMGenerator
     {
         val artifactId = MavenResolver.makePackageId(container, projectType)
         val groupId = mavenResolver.groupId
-        val version = mavenResolver.resolveVersion(container)
+        val version = container.resolveVersion
         
         val effectiveDependencies = dependencies.filter[it.artifactId != artifactId].sortBy[it.groupId + "/" + it.artifactId] 
 

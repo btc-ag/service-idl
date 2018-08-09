@@ -77,9 +77,7 @@ class IdlFormatter extends AbstractFormatter2
       element.regionFor.feature(IdlPackage.Literals::INTERFACE_DECLARATION__ABSTRACT).prepend[noSpace].append[oneSpace]
       element.regionFor.feature(IdlPackage.Literals::NAMED_DECLARATION__NAME).surround[oneSpace]
       element.regionFor.keyword("guid").surround[oneSpace]
-      element.regionFor.keyword("version").surround[oneSpace]
       element.regionFor.keywords("=").forEach[surround[oneSpace]]
-      element.regionFor.feature(IdlPackage.Literals::INTERFACE_DECLARATION__VERSION).surround[oneSpace]
       element.regionFor.feature(IdlPackage.Literals::INTERFACE_DECLARATION__GUID).surround[oneSpace]
       
       separateByEmptyLines(element.contains, document)

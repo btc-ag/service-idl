@@ -42,6 +42,7 @@ import java.util.regex.Pattern
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
@@ -545,4 +546,23 @@ class Util
             Function.identity
         );
     }
+
+    /**
+     * For a given element, which is expected to be either module or interface,
+     * returns the appropriate version string (default is 0.1.0)
+     */
+    static def String resolveVersion(AbstractContainerDeclaration element)
+    {
+        return EcoreUtil2.getContainerOfType(element, IDLSpecification).resolveVersion
+    }
+
+    /**
+     * For a given element, which is expected to be either module or interface,
+     * returns the appropriate version string (default is 0.1.0)
+     */
+    static def String resolveVersion(IDLSpecification element)
+    {
+        return element.version ?: Constants.DEFAULT_VERSION
+    }
+
 }

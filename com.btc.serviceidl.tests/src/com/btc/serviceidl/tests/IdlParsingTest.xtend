@@ -4,7 +4,9 @@
 package com.btc.serviceidl.tests
 
 import com.btc.serviceidl.idl.IDLSpecification
+import com.btc.serviceidl.idl.IdlPackage
 import com.btc.serviceidl.tests.testdata.TestData
+import com.btc.serviceidl.validation.Messages
 import com.google.inject.Inject
 import com.google.inject.Provider
 import org.eclipse.emf.common.util.URI
@@ -21,8 +23,9 @@ import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 
-import static com.google.common.collect.Iterables.isEmpty
-import static extension com.btc.serviceidl.tests.TestExtensions.*
+import static com.btc.serviceidl.tests.TestExtensions.*
+import static com.google.common.collect.Iterables.*
+import com.btc.serviceidl.validation.IdlValidator
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -31,6 +34,16 @@ class IdlParsingTest
     @Inject extension ParseHelper<IDLSpecification> parseHelper
     @Inject extension ValidationTestHelper
     @Inject Provider<ResourceSet> rsp
+
+    @Test
+    def void testInterfaceVersionError()
+    {
+        val result = parseHelper.parse('''
+            module Test { interface Bar [version = 1.2.3] {}; }
+        ''')
+        result.assertError(IdlPackage.Literals.INTERFACE_DECLARATION, IdlValidator.DEPRECATED_INTERFACE_VERSION,
+            Messages.DEPRECATED_VERSION_DECLARATION)
+    }
 
     @Test
     def void testExceptionDecl()

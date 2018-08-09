@@ -35,9 +35,6 @@ class MavenResolver
     val String groupId
     val registeredPackages = new HashSet<String>
 
-    // constants
-    public static val DEFAULT_VERSION = "0.0.1"
-
     def MavenDependency resolveDependency(AbstractContainerDeclaration element, ProjectType projectType)
     {
         val name = registerPackage(element, projectType)
@@ -115,21 +112,6 @@ class MavenResolver
                 // TODO check this more thoroughly
                 return Optional.empty // no external dependency, e.g. it's Java API
         }
-    }
-
-    /**
-     * For a given element, which is expected to be either module or interface,
-     * returns the appropriate version string (default is 0.0.1)
-     */
-    def String resolveVersion(AbstractContainerDeclaration element)
-    {
-        // TODO the version must be parametrizable
-        if (element instanceof InterfaceDeclaration)
-        {
-            return element.version ?: DEFAULT_VERSION
-        }
-
-        return DEFAULT_VERSION
     }
 
     // TODO consider making this private, I am not sure if the external uses are correct

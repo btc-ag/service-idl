@@ -37,7 +37,7 @@ class IdlFormatterTest
         {
            module Bar
            {
-              interface Demo [ guid = 8B08E141-4DB2-4AD2-BACF-FA4257C42481 version = 0.0.1 ]
+              interface Demo [ guid = 8B08E141-4DB2-4AD2-BACF-FA4257C42481 ]
               {
                  sync DummyMethod(in string param1, in boolean param2) returns sequence<failable uuid>;
               };
@@ -47,7 +47,7 @@ class IdlFormatterTest
 
     // malformed input with arbitrary spaces and line-breaks in-between!
     val testInput = '''virtual     module     Foo {    module    Bar    { 
-        interface    Demo    [    guid   =    8B08E141-4DB2-4AD2-BACF-FA4257C42481    version   =   0.0.1
+        interface    Demo    [    guid   =    8B08E141-4DB2-4AD2-BACF-FA4257C42481    
         ]    {    sync    DummyMethod   (  in   string   param1   ,   in   boolean   param2 )   returns  sequence  <  failable   uuid >   ; };
    } }
    '''

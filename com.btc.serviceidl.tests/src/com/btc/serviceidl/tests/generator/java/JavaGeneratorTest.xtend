@@ -390,7 +390,7 @@ public class TypesCodec {
             
                <groupId>__synthetic0.idl</groupId>
                <artifactId>com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.serviceapi</artifactId>
-               <version>1.0.0</version>
+               <version>0.1.0</version>
             
                <properties>
                   <!-- ServiceComm properties -->
@@ -469,7 +469,7 @@ public class TypesCodec {
             
                <groupId>__synthetic0.idl</groupId>
                <artifactId>com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.protobuf</artifactId>
-               <version>1.0.0</version>
+               <version>0.1.0</version>
             
                <properties>
                   <!-- ServiceComm properties -->
@@ -503,7 +503,7 @@ public class TypesCodec {
                   <dependency>
                      <groupId>__synthetic0.idl</groupId>
                      <artifactId>com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.serviceapi</artifactId>
-                     <version>1.0.0</version>
+                     <version>0.1.0</version>
                   </dependency>
                   <dependency>
                      <groupId>com.btc.cab.servicecomm</groupId>
