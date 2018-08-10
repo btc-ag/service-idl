@@ -103,7 +103,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                 <DebugSymbols>true</DebugSymbols>
                 <DebugType>full</DebugType>
                 <Optimize>false</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <OutputPath>$(SolutionDir)\bin\$(Configuration)\</OutputPath>
                 <DefineConstants>DEBUG;TRACE</DefineConstants>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>
@@ -112,45 +112,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
               <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
                 <DebugType>pdbonly</DebugType>
                 <Optimize>true</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Win32' ">
-                <DebugSymbols>true</DebugSymbols>
-                <DebugType>full</DebugType>
-                <Optimize>false</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>DEBUG;TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Win32' ">
-                <DebugType>pdbonly</DebugType>
-                <Optimize>true</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-                <DebugSymbols>true</DebugSymbols>
-                <DebugType>full</DebugType>
-                <Optimize>false</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>DEBUG;TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-                <DebugType>pdbonly</DebugType>
-                <Optimize>true</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <OutputPath>$(SolutionDir)\bin\$(Configuration)\</OutputPath>
                 <DefineConstants>TRACE</DefineConstants>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>
@@ -226,7 +188,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                 <DebugSymbols>true</DebugSymbols>
                 <DebugType>full</DebugType>
                 <Optimize>false</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <OutputPath>$(SolutionDir)\bin\$(Configuration)\</OutputPath>
                 <DefineConstants>DEBUG;TRACE</DefineConstants>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>
@@ -235,45 +197,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
               <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
                 <DebugType>pdbonly</DebugType>
                 <Optimize>true</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Win32' ">
-                <DebugSymbols>true</DebugSymbols>
-                <DebugType>full</DebugType>
-                <Optimize>false</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>DEBUG;TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Win32' ">
-                <DebugType>pdbonly</DebugType>
-                <Optimize>true</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-                <DebugSymbols>true</DebugSymbols>
-                <DebugType>full</DebugType>
-                <Optimize>false</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>DEBUG;TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-                <DebugType>pdbonly</DebugType>
-                <Optimize>true</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <OutputPath>$(SolutionDir)\bin\$(Configuration)\</OutputPath>
                 <DefineConstants>TRACE</DefineConstants>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>
