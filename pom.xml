@@ -376,5 +376,10 @@
 			<name>JCenter Snapshots</name>
 			<url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
 		</snapshotRepository>
+		<repository>
+			<id>jcenter-release</id>
+			<name>JCenter Release</name>
+			<url>http://oss.jfrog.org/artifactory/oss-release-local</url>
+		</repository>
 	</distributionManagement>
 </project>
