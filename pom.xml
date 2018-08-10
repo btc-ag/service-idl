@@ -7,6 +7,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
+        <project.scm.id>github.com</project.scm.id>
 		<tycho-version>1.1.0</tycho-version>
 		<xtextVersion>2.13.0</xtextVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -141,7 +142,9 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
+				    <pushChanges>false</pushChanges>
 					<tagNameFormat>v@{project.version}</tagNameFormat>
+					<!-- TODO How can I achieve that the result of update-eclipse-metadata is not done in a separate commit, but the commit done by the release plugin is amended? -->
 					<preparationGoals>org.eclipse.tycho:tycho-versions-plugin:${tycho-version}:update-eclipse-metadata
 						org.apache.maven.plugins:maven-scm-plugin:1.9.5:add
 						org.apache.maven.plugins:maven-scm-plugin:1.9.5:checkin</preparationGoals>
@@ -162,9 +165,10 @@
 							<goal>checkin</goal>
 						</goals>
 						<configuration>
+						    <pushChanges>false</pushChanges>
 							<includes>**/META-INF/MANIFEST.MF, **/feature.xml, **/*.product,**/category.xml</includes>
 							<excludes>**/target/**</excludes>
-							<message>[maven-release-plugin] Changing the Eclipse files versions</message>
+							<message>[maven-release-plugin] Updated Eclipse metadata to match POM version</message>
 						</configuration>
 					</execution>
 				</executions>
