@@ -284,7 +284,7 @@ class DotNetGenerator
    private def generatePaketTemplate()
    {
       val version = idl.resolveVersion
-      val releaseUnitName = idl.eResource.URI.lastSegment.replace(".idl", "") + ".NET" // TODO this must be configurable
+      val releaseUnitName = idl.getReleaseUnitName(ArtifactNature.DOTNET)
       val commonPrefix = vsSolution.allProjects.map[key].reduce[a,b|Strings.commonPrefix(a,b)]
       
       '''

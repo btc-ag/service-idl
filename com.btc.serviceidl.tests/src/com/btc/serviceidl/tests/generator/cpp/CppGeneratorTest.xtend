@@ -128,7 +128,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             from conan_template import *
             
             class Conan(ConanTemplate):
-                name = "Test"
+                name = "__synthetic0"
                 version = version_name("0.1.0-unreleased")
                 url = "TODO"
                 description = """
@@ -164,7 +164,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
         ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.4)
             
-            project (Test CXX)
+            project (__synthetic0 CXX)
             
             include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
             conan_basic_setup()
@@ -240,7 +240,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             from conan_template import *
             
             class Conan(ConanTemplate):
-                name = "Test"
+                name = "__synthetic0"
                 version = version_name("0.1.0-unreleased")
                 url = "TODO"
                 description = """
@@ -276,7 +276,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
         ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.4)
             
-            project (Test CXX)
+            project (__synthetic0 CXX)
             
             include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
             conan_basic_setup()

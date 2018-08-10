@@ -248,4 +248,11 @@ class GeneratorUtil
         else
             qualifiedName.lastSegment])
     }
+    
+    static def getReleaseUnitName(IDLSpecification idl, ArtifactNature artifactNature)
+    {
+        // TODO instead of deriving this from the IDL file name, it might be specified explicitly for each target technology 
+        // (in the generator settings?)
+        idl.eResource.URI.lastSegment.replace(".idl", "") + if (artifactNature == ArtifactNature.DOTNET) ".NET" else ""
+    }
 }
