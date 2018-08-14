@@ -3,7 +3,7 @@ Automatic-Module-Name: com.btc.serviceidl.ide
 Bundle-ManifestVersion: 2
 Bundle-Name: com.btc.serviceidl.ide
 Bundle-Vendor: BTC Business Technology Consulting AG
-Bundle-Version: 0.1.0
+Bundle-Version: 0.2.0.qualifier
 Bundle-SymbolicName: com.btc.serviceidl.ide; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.btc.serviceidl,
