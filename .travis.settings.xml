@@ -5,8 +5,18 @@
   <servers>
     <server>
       <id>jcenter</id>
-	  <username>sigiesec</username>
+      <username>sigiesec</username>
       <password>${env.JCENTER_TOKEN}</password>
     </server>
+    <server>
+      <id>jcenter-release</id>
+      <username>sigiesec</username>
+      <password>${env.JCENTER_TOKEN}</password>
+    </server>
+     <server>
+         <id>github.com</id>  
+         <username>sigiesec</username>  
+         <password>${env.GITHUB_TOKEN}</password>  
+      </server>       
   </servers>
 </settings>
