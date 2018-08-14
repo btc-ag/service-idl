@@ -1,18 +1,25 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.btc.serviceidl</groupId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>0.1.1-SNAPSHOT</version>
 	<artifactId>com.btc.serviceidl.parent</artifactId>
 	<packaging>pom</packaging>
 
 	<properties>
+        <project.scm.id>github.com</project.scm.id>
 		<tycho-version>1.1.0</tycho-version>
 		<xtextVersion>2.13.0</xtextVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
+
+	<scm>
+		<connection>scm:git:https://github.com/btc-ag/service-idl.git</connection>
+		<developerConnection>scm:git:https://github.com/btc-ag/service-idl.git</developerConnection>
+	  <tag>HEAD</tag>
+  </scm>
+
 	<modules>
 		<module>com.btc.serviceidl</module>
 		<module>com.btc.serviceidl.plainjava</module>
@@ -130,7 +137,47 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>            
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+				    <pushChanges>false</pushChanges>
+					<tagNameFormat>v@{project.version}</tagNameFormat>
+					<!-- TODO How can I achieve that the result of update-eclipse-metadata is not done in a separate commit, but the commit done by the release plugin is amended? -->
+					<preparationGoals>org.eclipse.tycho:tycho-versions-plugin:${tycho-version}:update-eclipse-metadata
+						org.apache.maven.plugins:maven-scm-plugin:1.9.5:add
+						org.apache.maven.plugins:maven-scm-plugin:1.9.5:checkin</preparationGoals>
+					<completionGoals>org.eclipse.tycho:tycho-versions-plugin:${tycho-version}:update-eclipse-metadata
+						org.apache.maven.plugins:maven-scm-plugin:1.9.5:add
+						org.apache.maven.plugins:maven-scm-plugin:1.9.5:checkin</completionGoals>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-scm-plugin</artifactId>
+				<version>1.9.5</version>
+				<executions>
+					<execution>
+						<id>default-cli</id>
+						<goals>
+							<goal>add</goal>
+							<goal>checkin</goal>
+						</goals>
+						<configuration>
+						    <pushChanges>false</pushChanges>
+							<includes>**/META-INF/MANIFEST.MF, **/feature.xml, **/*.product,**/category.xml</includes>
+							<excludes>**/target/**</excludes>
+							<message>[maven-release-plugin] Updated Eclipse metadata to match POM version</message>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-versions-plugin</artifactId>
+				<version>${tycho-version}</version>
+			</plugin>
         </plugins>
 		<pluginManagement>
 			<plugins>
@@ -206,7 +253,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -228,7 +275,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -247,7 +294,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -269,7 +316,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
@@ -288,6 +335,11 @@
 						<compilerArgument>-err:-forbidden</compilerArgument>
 						<useProjectSettings>false</useProjectSettings>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.5.3</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -328,5 +380,10 @@
 			<name>JCenter Snapshots</name>
 			<url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
 		</snapshotRepository>
+		<repository>
+			<id>jcenter-release</id>
+			<name>JCenter Release</name>
+			<url>http://oss.jfrog.org/artifactory/oss-release-local</url>
+		</repository>
 	</distributionManagement>
 </project>
