@@ -19,7 +19,6 @@ import java.util.Arrays
 import java.util.HashSet
 import java.util.Map
 import java.util.Set
-import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.junit.Test
@@ -34,7 +33,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
     @Test
     def void testBasicServiceApi()
     {
-        val fileCount = 5
+        val fileCount = 6
         val baseDirectory = ArtifactNature.DOTNET.label + "Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
         val directory = baseDirectory
         val contents = #{ArtifactNature.DOTNET.label + "__synthetic0.sln" -> '''
@@ -60,6 +59,17 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                     HideSolutionNode = FALSE
                 EndGlobalSection
             EndGlobal
+        ''', ArtifactNature.DOTNET.label + "paket.template" -> '''
+            type file
+            id __synthetic0.NET
+            version 0.1.0
+            authors TODO
+            description
+              TODO
+            
+            files
+              bin/Release/BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI* ==> lib
+            
         ''', directory + "IKeyValueStore.cs" -> '''
             namespace BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI
             {
@@ -93,7 +103,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                 <DebugSymbols>true</DebugSymbols>
                 <DebugType>full</DebugType>
                 <Optimize>false</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <OutputPath>$(SolutionDir)\bin\$(Configuration)\</OutputPath>
                 <DefineConstants>DEBUG;TRACE</DefineConstants>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>
@@ -102,45 +112,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
               <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
                 <DebugType>pdbonly</DebugType>
                 <Optimize>true</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Win32' ">
-                <DebugSymbols>true</DebugSymbols>
-                <DebugType>full</DebugType>
-                <Optimize>false</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>DEBUG;TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Win32' ">
-                <DebugType>pdbonly</DebugType>
-                <Optimize>true</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-                <DebugSymbols>true</DebugSymbols>
-                <DebugType>full</DebugType>
-                <Optimize>false</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>DEBUG;TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-                <DebugType>pdbonly</DebugType>
-                <Optimize>true</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <OutputPath>$(SolutionDir)\bin\$(Configuration)\</OutputPath>
                 <DefineConstants>TRACE</DefineConstants>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>
@@ -199,7 +171,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
     @Test
     def void testBasicProtobufCSProjFile()
     {
-        val fileCount = 19
+        val fileCount = 20
         val baseDirectory = ArtifactNature.DOTNET.label + "Infrastructure/ServiceHost/Demo/API/Protobuf/"
         val contents = #{baseDirectory + "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf.csproj" -> '''
             <?xml version="1.0" encoding="utf-8"?>
@@ -216,7 +188,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                 <DebugSymbols>true</DebugSymbols>
                 <DebugType>full</DebugType>
                 <Optimize>false</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <OutputPath>$(SolutionDir)\bin\$(Configuration)\</OutputPath>
                 <DefineConstants>DEBUG;TRACE</DefineConstants>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>
@@ -225,45 +197,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
               <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
                 <DebugType>pdbonly</DebugType>
                 <Optimize>true</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Win32' ">
-                <DebugSymbols>true</DebugSymbols>
-                <DebugType>full</DebugType>
-                <Optimize>false</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>DEBUG;TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Win32' ">
-                <DebugType>pdbonly</DebugType>
-                <Optimize>true</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-                <DebugSymbols>true</DebugSymbols>
-                <DebugType>full</DebugType>
-                <Optimize>false</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
-                <DefineConstants>DEBUG;TRACE</DefineConstants>
-                <ErrorReport>prompt</ErrorReport>
-                <WarningLevel>4</WarningLevel>
-                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-              </PropertyGroup>
-              <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-                <DebugType>pdbonly</DebugType>
-                <Optimize>true</Optimize>
-                <OutputPath>$(SolutionDir)\dst\$(Platform)\$(Configuration)\</OutputPath>
+                <OutputPath>$(SolutionDir)\bin\$(Configuration)\</OutputPath>
                 <DefineConstants>TRACE</DefineConstants>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>

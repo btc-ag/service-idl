@@ -50,25 +50,32 @@ class IdlGeneratorTest
         baseFsa
     }
 
+    // the testSmokeAndFileCountRegression* test cases only act a smoke test for the 
+    // generator, and assert that the number of generated files stays the same, to
+    // detect any undesired changes in the number of generated files 
+
     @Test
-    def void testBasic()
+    def void testSmokeAndFileCountRegressionBasic()
     {
         val fsa = doGenerate(TestData.basic)
-        assertEquals(116, fsa.textFiles.size)
+        val regressionFileCount = 117
+        assertEquals(regressionFileCount, fsa.textFiles.size)
     }
 
     @Test
-    def void testFull()
+    def void testSmokeAndFileCountRegressionFull()
     {
         val fsa = doGenerate(TestData.full)
-        assertEquals(145, fsa.textFiles.size)
+        val regressionFileCount = 146
+        assertEquals(regressionFileCount, fsa.textFiles.size)
     }
 
     @Test
-    def void testEvent()
+    def void testSmokeAndFileCountRegressionEvent()
     {
         val fsa = doGenerate(TestData.eventTestCase)
-        assertEquals(121, fsa.textFiles.size)
+        val regressionFileCount = 122
+        assertEquals(regressionFileCount, fsa.textFiles.size)
     }
 
     @Test

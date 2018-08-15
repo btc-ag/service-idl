@@ -16,6 +16,7 @@
 package com.btc.serviceidl.generator.java
 
 import com.btc.serviceidl.generator.IGenerationSettings
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
@@ -24,6 +25,7 @@ import java.util.Map
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
+import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Extensions.*
 
 class JavaGenerator
@@ -45,7 +47,8 @@ class JavaGenerator
         this.qualifiedNameProvider = qualifiedNameProvider
         this.protobufArtifacts = protobufArtifacts
         this.generationSettings = generationSettings
-        this.groupId = this.idl.eResource.URI.lastSegment // TODO this must be customizable
+        this.groupId = idl.getReleaseUnitName(ArtifactNature.JAVA)
+
         mavenResolver = new MavenResolver(groupId)
     }
 

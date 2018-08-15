@@ -6,11 +6,13 @@ import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
+import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import org.eclipse.core.runtime.Path
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 
+import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(NONE)
@@ -49,8 +51,7 @@ class CMakeTopLevelProjectFileGenerator
 
     private def getProjectName()
     {
-        // TODO this should be specified somewhere, maybe on the command line
-        "Test"
+        this.module.getParent(IDLSpecification).getReleaseUnitName(ArtifactNature.CPP)
     }
 
     private def modulePath()

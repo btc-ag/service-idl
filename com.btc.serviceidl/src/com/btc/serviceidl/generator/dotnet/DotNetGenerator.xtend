@@ -53,6 +53,7 @@ import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.google.common.base.Strings
 
 class DotNetGenerator
 {
@@ -107,6 +108,8 @@ class DotNetGenerator
         if (paketDependenciesContent !== null)
             fileSystemAccess.generateFile("paket.dependencies", ArtifactNature.DOTNET.label, paketDependenciesContent)
 
+        val paketTemplateContent = generatePaketTemplate
+        fileSystemAccess.generateFile("paket.template", ArtifactNature.DOTNET.label, paketTemplateContent)
     }
    
    private def void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)
@@ -276,6 +279,41 @@ class DotNetGenerator
           «ENDFOR»      
           '''
       }     
+   }
+   
+   private def generatePaketTemplate()
+   {
+      val version = idl.resolveVersion
+      val releaseUnitName = idl.getReleaseUnitName(ArtifactNature.DOTNET)
+      val commonPrefix = vsSolution.allProjects.map[key].reduce[a,b|Strings.commonPrefix(a,b)]
+      
+      '''
+      type file
+      id «releaseUnitName»
+      version «version»
+      authors TODO
+      description
+        TODO
+      
+      ''' +
+      if (!paketDependencies.empty) {
+          '''
+          dependencies
+              «FOR packageEntry : paketDependencies»
+                  «/** TODO remove this workaround */»
+                  «IF packageEntry.key.equals("Common.Logging")»
+                    «packageEntry.key» == «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
+                  «ELSE»
+                    «packageEntry.key» >= «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
+                  «ENDIF»
+              «ENDFOR»
+                    
+          '''
+      } else '' +  
+      '''
+      files
+        bin/Release/«commonPrefix»* ==> lib
+      '''
    }
    
    private def generateAssemblyInfo(String projectName)
