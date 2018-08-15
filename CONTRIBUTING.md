@@ -96,6 +96,8 @@ Currently, this is not automatically checked and it is hard to check this manual
 
 ### Xtend code style
 
+In general, all conventions under http://wiki.e-konzern.de/display/BTCCABCOM/Conventions apply (not available publicly at the time of writing).
+
 There are some specific conventions regarding Xtend code style:
 * Access and storage class modifiers for members
 ** Order: Always place the access modifier ('public', 'protected', 'private') first (if any), then maybe the storage class modifier 'static', and then 'def', 'override', 'val' or 'var'.
