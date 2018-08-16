@@ -240,8 +240,7 @@ class Util
         }
     }
 
-    static def String resolveCodec(TypeResolver typeResolver, ParameterBundle paramBundle,
-        AbstractTypeReference object)
+    static def String resolveCodec(TypeResolver typeResolver, ParameterBundle paramBundle, AbstractTypeReference object)
     {
         val ultimateType = object.ultimateType
 
@@ -289,4 +288,10 @@ class Util
     {
         interfaceDeclaration.name + "Data"
     }
+
+    static def getFlatPackages(Iterable<NuGetPackage> packages)
+    {
+        packages.map[it.packageVersions].flatten.toSet.sortBy[it.key]
+    }
+
 }
