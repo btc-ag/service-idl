@@ -147,6 +147,7 @@ class CommandLineRunnerTest
             #["cpp/CMakeLists.txt", "cpp/conanfile.py", "cpp/BTC/Commons/Core/Common/build/CMakeLists.txt",
                 "cpp/BTC/Commons/Core/Common/build/make.cmakeset", "cpp/BTC/Commons/Core/Common/include/Types.h",
                 "cpp/BTC/Commons/Core/Common/include/btc_commons_core_common_export.h",
+                "cpp/BTC/Commons/Core/Common/res/resource.h", "cpp/BTC/Commons/Core/Common/res/version.rc",
                 "cpp/BTC/Commons/Core/Common/source/Types.cpp", "cpp/BTC/Commons/Core/Protobuf/build/CMakeLists.txt",
                 "cpp/BTC/Commons/Core/Protobuf/build/make.cmakeset", "cpp/BTC/Commons/Core/Protobuf/gen/Types.proto",
                 "cpp/BTC/Commons/Core/Protobuf/include/TypesCodec.h",

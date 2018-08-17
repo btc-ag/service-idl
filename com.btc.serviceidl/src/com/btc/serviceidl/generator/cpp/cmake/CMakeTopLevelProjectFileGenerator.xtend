@@ -147,7 +147,7 @@ class CMakeTopLevelProjectFileGenerator
             #define STRINGIZE(x) STRINGIZE2(x)
             
             // build file and product version as string
-            #define STR_FILE_VER STRINGIZE(VER_MAJOR) "." STRINGIZE(VER_MINOR) "." STRINGIZE(VER_BUILD) "." STRINGIZE(VER_BUILD_ID) STRINGIZE2(VER_SUFFIX) "+" STRINGIZE2(VER_REVISION_INFO)
+            #define STR_FILE_VER STRINGIZE(VER_MAJOR) "." STRINGIZE(VER_MINOR) "." STRINGIZE(VER_BUILD) "." STRINGIZE(VER_BUILD_ID) VER_SUFFIX "+" VER_REVISION_INFO
             #define STR_PROD_VER STR_FILE_VER
             
             // ==================================
