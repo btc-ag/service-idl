@@ -47,6 +47,12 @@ class CMakeTopLevelProjectFileGenerator
             ArtifactNature.CPP.label,
             generateCMakeLists().toString
         )
+
+        fileSystemAccess.generateFile(
+            topLevelPath.append("res").append("sharedVersion.h").toString,
+            ArtifactNature.CPP.label,
+            generateSharedVersionHeader().toString
+        )
     }
 
     private def getProjectName()
@@ -71,9 +77,8 @@ class CMakeTopLevelProjectFileGenerator
                 serviceCommTargetVersion == ServiceCommVersion.V0_11) "1.7" else "1.8"
         val loggingTargetVersion = if (serviceCommTargetVersion == ServiceCommVersion.V0_10 ||
                 serviceCommTargetVersion == ServiceCommVersion.V0_11) "1.7" else "1.8"
-                
+
         // TODO the transitive dependencies do not need to be specified here
-        
         // TODO Are there cases where the version should be not "-unreleased"?
         '''
             from conan_template import *
@@ -114,8 +119,48 @@ class CMakeTopLevelProjectFileGenerator
                     self.copy("protoc.exe", "bin", "bin")
         '''
     }
-    
-    // TODO generate sharedVersion.h
+
+    def generateSharedVersionHeader()
+    {
+        val versionString = this.module.resolveVersion
+        val versionParts = versionString.split("[.]")
+        
+        '''
+            // ==================================
+            // version information
+            // ==================================
+            // define version numbers
+            #define VER_MAJOR «versionParts.get(0)»
+            #define VER_MINOR «versionParts.get(1)»
+            #define VER_BUILD «versionParts.get(2)»
+            #define VER_BUILD_ID 0
+            #define VER_REVISION_INFO ""
+            #define VER_SUFFIX ""
+            
+            // build default file and product version
+            #define FILE_VER VER_MAJOR,VER_MINOR,VER_BUILD,VER_BUILD_ID
+            #define PROD_VER FILE_VER
+            
+            // special macros that convert numerical version tokens into string tokens
+            // can't use actual int and string types because they won't work in the RC files
+            #define STRINGIZE2(x) #x
+            #define STRINGIZE(x) STRINGIZE2(x)
+            
+            // build file and product version as string
+            #define STR_FILE_VER STRINGIZE(VER_MAJOR) "." STRINGIZE(VER_MINOR) "." STRINGIZE(VER_BUILD) "." STRINGIZE(VER_BUILD_ID) STRINGIZE2(VER_SUFFIX) "+" STRINGIZE2(VER_REVISION_INFO)
+            #define STR_PROD_VER STR_FILE_VER
+            
+            // ==================================
+            // company information
+            // ==================================
+            #define STR_COMPANY             "BTC Business Technology Consulting AG"
+            
+            // ==================================
+            // copyright information
+            // ==================================
+            #define STR_COPYRIGHT_INFO      "Copyright (C) BTC Business Technology Consulting AG 2018"        
+        '''
+    }
 
     def generateCMakeLists()
     {

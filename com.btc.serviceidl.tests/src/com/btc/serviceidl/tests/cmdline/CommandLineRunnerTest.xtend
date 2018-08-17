@@ -150,7 +150,8 @@ class CommandLineRunnerTest
                 "cpp/BTC/Commons/Core/Common/source/Types.cpp", "cpp/BTC/Commons/Core/Protobuf/build/CMakeLists.txt",
                 "cpp/BTC/Commons/Core/Protobuf/build/make.cmakeset", "cpp/BTC/Commons/Core/Protobuf/gen/Types.proto",
                 "cpp/BTC/Commons/Core/Protobuf/include/TypesCodec.h",
-                "cpp/BTC/Commons/Core/Protobuf/include/btc_commons_core_protobuf_export.h"], path)
+                "cpp/BTC/Commons/Core/Protobuf/include/btc_commons_core_protobuf_export.h", "cpp/res/sharedVersion.h"],
+            path)
     }
 
     @Test

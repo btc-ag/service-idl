@@ -120,7 +120,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
     @Test
     def void testBasicServiceApiCmake()
     {
-        val fileCount = 7
+        val fileCount = 8
         val projectTypes = new HashSet<ProjectType>(Arrays.asList(ProjectType.SERVICE_API))
         val directory = ArtifactNature.CPP.label + "Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
 
@@ -231,7 +231,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
     @Test
     def void testBasicDispatcherCmake()
     {
-        val fileCount = 17
+        val fileCount = 18
         val projectTypes = new HashSet<ProjectType>(
             #[ProjectType.SERVICE_API, ProjectType.PROTOBUF, ProjectType.DISPATCHER])
         val directory = ArtifactNature.CPP.label + "Infrastructure/ServiceHost/Demo/API/Dispatcher/"
