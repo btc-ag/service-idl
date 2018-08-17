@@ -257,8 +257,11 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             ProjectType.COMMON)
     public static val Set<ProjectType> CLIENT_PROJECT_SET = Sets.union(API_PROJECT_SET,
             ImmutableSet.of(ProjectType.PROTOBUF, ProjectType.PROXY, ProjectType.CLIENT_CONSOLE))
+            
+    // TODO the SERVER_RUNNER depends on the IMPL project, this must be replaced by using the IoC container
+    // to remove the dependency, then the SERVER_RUNNER can be generated again without IMPL
     public static val Set<ProjectType> SERVER_PROJECT_SET = Sets.union(API_PROJECT_SET,
-            ImmutableSet.of(ProjectType.PROTOBUF, ProjectType.DISPATCHER, ProjectType.SERVER_RUNNER))
+            ImmutableSet.of(ProjectType.PROTOBUF, ProjectType.DISPATCHER/*, ProjectType.SERVER_RUNNER*/))
     public static val Set<ProjectType> FULL_PROJECT_SET   = Sets.union(CLIENT_PROJECT_SET, SERVER_PROJECT_SET)
 
     public static val Map<String, Set<ProjectType>> PROJECT_SET_MAPPING = ImmutableMap.of(
