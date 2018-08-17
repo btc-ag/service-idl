@@ -651,7 +651,7 @@ class CodecGenerator extends BasicCppGenerator
         val isEnum = element.type.isEnumType
         val isPointer = useSmartPointer(element.container, element.type)
         '''
-            «IF optional»if (apiInput.«element.name.asMember»«IF isPointer» !== nullptr«ELSE».GetIsPresent()«ENDIF»)«ENDIF»
+            «IF optional»if (apiInput.«element.name.asMember»«IF isPointer» != nullptr«ELSE».GetIsPresent()«ENDIF»)«ENDIF»
             «IF useCodec && !(element.type.isByte || element.type.isInt16 || element.type.isChar || isEnum)»
                 «IF optional»   «ENDIF»«resolveEncode(element.type)»( «IF optional»*( «ENDIF»apiInput.«element.name.asMember»«IF optional && !isPointer».GetValue()«ENDIF»«IF optional» )«ENDIF», protobufOutput->mutable_«element.name.asCppProtobufName»() );
             «ELSE»
