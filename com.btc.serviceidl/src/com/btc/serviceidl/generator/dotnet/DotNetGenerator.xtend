@@ -296,7 +296,7 @@ class DotNetGenerator
         TODO
       
       ''' +
-      if (!paketDependencies.empty) {
+      (if (!paketDependencies.empty) {
           '''
           dependencies
               «FOR packageEntry : paketDependencies»
@@ -309,7 +309,7 @@ class DotNetGenerator
               «ENDFOR»
                     
           '''
-      } else '' +  
+      } else '') +  
       '''
       files
         bin/Release/«commonPrefix»* ==> lib
