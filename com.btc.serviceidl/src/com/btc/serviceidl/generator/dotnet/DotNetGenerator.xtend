@@ -234,10 +234,10 @@ class DotNetGenerator
         paketDependencies.addAll(flatPackages)
       }
    }
-   
+
    private def getFlatPackages()
    {
-      nugetPackages.resolvedPackages.map[it.packageVersions].flatten
+       nugetPackages.resolvedPackages.flatPackages
    } 
    
    private def String generatePackagesConfig()
