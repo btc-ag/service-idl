@@ -488,7 +488,7 @@ public class TypesCodec {
             
                   <maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
                   <os-maven-plugin.version>1.4.1.Final</os-maven-plugin.version>
-                  <protobuf.version>3.1.0</protobuf.version>
+                  <protobuf.version>3.5.1</protobuf.version>
                </properties>
                
                <distributionManagement>
