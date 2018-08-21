@@ -38,7 +38,7 @@ class CMakeGenerator
 
     def CharSequence generateCMakeLists(String projectName, IPath projectPath, ProjectType projectType)
     {
-        val cmakeTargetType = if (projectType == ProjectType.PROTOBUF) "STATIC_LIB" else "SHARED_LIB"
+        val cmakeTargetType = projectType.cmakeTargetType
         
         // TODO instead of globbing, this could list files from the projectFileSet explicitly
         '''
@@ -88,6 +88,10 @@ class CMakeGenerator
             «/* set linker_language explicitly to allow for modules without source files (headers only) */»
             set_target_properties("${TARGET}" PROPERTIES LINKER_LANGUAGE CXX)
         '''
+    }
+    
+    static def getCmakeTargetType(ProjectType projectType) {
+        if (projectType == ProjectType.PROTOBUF) "STATIC_LIB" else "SHARED_LIB"
     }
 
 }
