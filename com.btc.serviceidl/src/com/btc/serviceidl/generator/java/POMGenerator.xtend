@@ -25,7 +25,7 @@ class POMGenerator
 
     private def getTargetVersion()
     {
-        targetVersionProvider.getTargetVersion(JavaConstants.SERVICECOMM_VERSION_KIND)
+        ServiceCommVersion.get(targetVersionProvider.getTargetVersion(JavaConstants.SERVICECOMM_VERSION_KIND))
     }
 
     def String generatePOMContents(AbstractContainerDeclaration container, ProjectType projectType,
@@ -35,7 +35,9 @@ class POMGenerator
         val groupId = mavenResolver.groupId
         val version = container.resolveVersion
         
-        val effectiveDependencies = dependencies.filter[it.artifactId != artifactId].sortBy[it.groupId + "/" + it.artifactId] 
+        val effectiveDependencies = dependencies.filter[it.artifactId != artifactId].sortBy[it.groupId + "/" + it.artifactId]
+        
+        val protobufVersion = if (targetVersion == ServiceCommVersion.V0_3) "3.1.0" else "3.5.1" 
 
         // TODO depending on the target version, different protoc versions must be used
         // TODO use the https://github.com/xolstice/protobuf-maven-plugin instead
@@ -54,7 +56,7 @@ class POMGenerator
             
                <properties>
                <!-- ServiceComm properties -->
-               <servicecomm.version>«targetVersion».0</servicecomm.version>
+               <servicecomm.version>«targetVersion.label».0</servicecomm.version>
                
                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
                <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -70,7 +72,7 @@ class POMGenerator
 
                <maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
                <os-maven-plugin.version>1.4.1.Final</os-maven-plugin.version>
-               <protobuf.version>3.1.0</protobuf.version>
+               <protobuf.version>«protobufVersion»</protobuf.version>
                «ENDIF»
             
                </properties>
