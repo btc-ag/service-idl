@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator.java
 
+import com.btc.serviceidl.generator.DefaultGenerationSettings
 import com.btc.serviceidl.generator.java.MavenResolver
 import com.btc.serviceidl.generator.java.ParentPOMGenerator
 import com.btc.serviceidl.idl.IDLSpecification
@@ -37,7 +38,8 @@ class ParentPOMGeneratorTest
         val fsa = new InMemoryFileSystemAccess
         val groupId = 'foo'
         val mavenResolver = new MavenResolver(groupId)
-        val generator = new ParentPOMGenerator(fsa, idl, mavenResolver, groupId)
+        val generationSettings = new DefaultGenerationSettings()
+        val generator = new ParentPOMGenerator(generationSettings, fsa, idl, mavenResolver, groupId)
         generator.generate
 
         checkFile(fsa, "java" + "pom.xml", '''<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

@@ -39,7 +39,6 @@ class POMGenerator
         
         val protobufVersion = if (targetVersion == ServiceCommVersion.V0_3) "3.1.0" else "3.5.1" 
 
-        // TODO depending on the target version, different protoc versions must be used
         // TODO use the https://github.com/xolstice/protobuf-maven-plugin instead
         // TODO when making ServiceComm OSS, the internal repository should be removed here entirely
         '''
@@ -56,6 +55,8 @@ class POMGenerator
             
                <properties>
                <!-- ServiceComm properties -->
+               «««TODO shouldn't we use -SNAPSHOT dependencies here if maturity==SNAPSHOT?»»»
+               «««TODO shouldn't we specify a version range here, and rely on mvn versions:resolve-ranges ?»»»
                <servicecomm.version>«targetVersion.label».0</servicecomm.version>
                
                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
