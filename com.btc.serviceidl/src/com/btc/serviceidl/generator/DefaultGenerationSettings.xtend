@@ -29,6 +29,7 @@ class DefaultGenerationSettings implements IGenerationSettings
     public IModuleStructureStrategy moduleStructureStrategy
     static val Map<String, Set<String>> supportedVersionMap = createSupportedVersionMap
     val Map<String, String> versionMap
+    public var Maturity maturity = Maturity.SNAPSHOT
 
     new()
     {
@@ -96,6 +97,10 @@ class DefaultGenerationSettings implements IGenerationSettings
     override getTargetVersion(String versionKind)
     {
         versionMap.get(versionKind)
+    }
+    
+    override getMaturity() {
+        maturity
     }
 
 }
