@@ -14,6 +14,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.generator.Maturity
 
 @Accessors(NONE)
 class CMakeTopLevelProjectFileGenerator
@@ -77,26 +78,31 @@ class CMakeTopLevelProjectFileGenerator
                 serviceCommTargetVersion == ServiceCommVersion.V0_11) "1.7" else "1.8"
         val loggingTargetVersion = if (serviceCommTargetVersion == ServiceCommVersion.V0_10 ||
                 serviceCommTargetVersion == ServiceCommVersion.V0_11) "1.7" else "1.8"
+                
+        val versionSuffix = if (generationSettings.maturity == Maturity.SNAPSHOT) "-unreleased" else ""
+        val dependencyChannel = if (generationSettings.maturity == Maturity.SNAPSHOT) "testing" else "stable"
 
         // TODO the transitive dependencies do not need to be specified here
-        // TODO Are there cases where the version should be not "-unreleased"?
         '''
             from conan_template import *
             
             class Conan(ConanTemplate):
                 name = "«projectName»"
-                version = version_name("«module.resolveVersion»-unreleased")
+                version = version_name("«module.resolveVersion»«versionSuffix»")
                 url = "TODO"
                 description = """
                 TODO
                 """
             
-                build_requires = "CMakeMacros/0.3.latest@cab/testing"
+                build_requires = "CMakeMacros/0.3.latest@cab/«dependencyChannel»"
+                # TODO instead of "latest", for maturity RELEASE, this should be replaced by a 
+                # concrete version at some point (maybe not during generation, but during the build?)
+                # in a similar manner as mvn versions:resolve-ranges                
                 requires = ( 
-                            ("BTC.CAB.Commons/«commonsTargetVersion».latest@cab/testing"),
-                            ("BTC.CAB.IoC/«iocTargetVersion».latest@cab/testing"),
-                            ("BTC.CAB.Logging/«loggingTargetVersion».latest@cab/testing"),
-                            ("BTC.CAB.ServiceComm/«serviceCommTargetVersion.label».latest@cab/testing")
+                            ("BTC.CAB.Commons/«commonsTargetVersion».latest@cab/«dependencyChannel»"),
+                            ("BTC.CAB.IoC/«iocTargetVersion».latest@cab/«dependencyChannel»"),
+                            ("BTC.CAB.Logging/«loggingTargetVersion».latest@cab/«dependencyChannel»"),
+                            ("BTC.CAB.ServiceComm/«serviceCommTargetVersion.label».latest@cab/«dependencyChannel»")
                             )
                 generators = "cmake"
                 short_paths = True
