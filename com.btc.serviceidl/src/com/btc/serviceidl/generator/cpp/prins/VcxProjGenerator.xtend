@@ -106,26 +106,26 @@ class VcxProjGenerator
           <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
             <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
             <Import Project="$(SolutionDir)\vsprops\modules.props" />
-            «IF isProtobuf || isProxy || isDispatcher || isServerRunner»<Import Project="$(SolutionDir)\vsprops\protobufPaths.props" />«ENDIF»
-            «IF isTest»<Import Project="$(SolutionDir)\vsprops\unitTest.props" />«ENDIF»
+            «IF isProtobuf || isProxy || isDispatcher || isServerRunner»<Import Project="$(SolutionDir)\vsprops\protobuf_paths.props" />«ENDIF»
+            «IF isTest»<Import Project="$(SolutionDir)\vsprops\unit_test.props" />«ENDIF»
           </ImportGroup>
           <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
             <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
             <Import Project="$(SolutionDir)\vsprops\modules.props" />
-            «IF isProtobuf || isProxy || isDispatcher || isServerRunner»<Import Project="$(SolutionDir)\vsprops\protobufPaths.props" />«ENDIF»
-            «IF isTest»<Import Project="$(SolutionDir)\vsprops\unitTest.props" />«ENDIF»
+            «IF isProtobuf || isProxy || isDispatcher || isServerRunner»<Import Project="$(SolutionDir)\vsprops\protobuf_paths.props" />«ENDIF»
+            «IF isTest»<Import Project="$(SolutionDir)\vsprops\unit_test.props" />«ENDIF»
           </ImportGroup>
           <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
             <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
             <Import Project="$(SolutionDir)\vsprops\modules.props" />
-            «IF isProtobuf || isProxy || isDispatcher || isServerRunner»<Import Project="$(SolutionDir)\vsprops\protobufPaths.props" />«ENDIF»
-            «IF isTest»<Import Project="$(SolutionDir)\vsprops\unitTest.props" />«ENDIF»
+            «IF isProtobuf || isProxy || isDispatcher || isServerRunner»<Import Project="$(SolutionDir)\vsprops\protobuf_paths.props" />«ENDIF»
+            «IF isTest»<Import Project="$(SolutionDir)\vsprops\unit_test.props" />«ENDIF»
           </ImportGroup>
           <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
             <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
             <Import Project="$(SolutionDir)\vsprops\modules.props" />
-            «IF isProtobuf || isProxy || isDispatcher || isServerRunner»<Import Project="$(SolutionDir)\vsprops\protobufPaths.props" />«ENDIF»
-            «IF isTest»<Import Project="$(SolutionDir)\vsprops\unitTest.props" />«ENDIF»
+            «IF isProtobuf || isProxy || isDispatcher || isServerRunner»<Import Project="$(SolutionDir)\vsprops\protobuf_paths.props" />«ENDIF»
+            «IF isTest»<Import Project="$(SolutionDir)\vsprops\unit_test.props" />«ENDIF»
           </ImportGroup>
           <PropertyGroup Label="UserMacros" />
           <PropertyGroup>
