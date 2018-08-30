@@ -54,6 +54,7 @@ class CSProjGenerator {
           <ErrorReport>prompt</ErrorReport>
           <WarningLevel>4</WarningLevel>
           <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+          <PlatformTarget>AnyCPU</PlatformTarget>
         </PropertyGroup>
         <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
           <DebugType>pdbonly</DebugType>
@@ -63,6 +64,7 @@ class CSProjGenerator {
           <ErrorReport>prompt</ErrorReport>
           <WarningLevel>4</WarningLevel>
           <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+          <PlatformTarget>AnyCPU</PlatformTarget>
         </PropertyGroup>
         «ENDIF»
         «IF isExe»
