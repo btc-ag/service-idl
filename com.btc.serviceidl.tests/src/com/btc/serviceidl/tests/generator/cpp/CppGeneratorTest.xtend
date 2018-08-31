@@ -76,9 +76,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             #include "modules/Infrastructure/ServiceHost/Demo/API/ServiceAPI/include/IKeyValueStore.h"
             
             #include "modules/Commons/include/BeginCabInclude.h"     // CAB -->
-            #include "Commons/Core/include/InvalidArgumentException.h"
             #include "Commons/Core/include/String.h"
-            #include "Commons/Core/include/UnsupportedOperationException.h"
             #include "Commons/CoreExtras/include/UUID.h"
             #include "ServiceComm/API/include/IServiceFaultHandler.h"
             #include "ServiceComm/Base/include/DefaultServiceFaultHandler.h"
@@ -103,12 +101,6 @@ class CppGeneratorTest extends AbstractGeneratorTest
                
                void RegisterKeyValueStoreServiceFaults(BTC::ServiceComm::API::IServiceFaultHandlerManager& serviceFaultHandlerManager)
                {
-                  
-                  // most commonly used exception types
-                  BTC::ServiceComm::Base::RegisterServiceFault<BTC::Commons::Core::InvalidArgumentException>(
-                     serviceFaultHandlerManager, BTC::Commons::Core::String("BTC.Commons.Core.InvalidArgumentException"));
-                  BTC::ServiceComm::Base::RegisterServiceFault<BTC::Commons::Core::UnsupportedOperationException>(
-                     serviceFaultHandlerManager, BTC::Commons::Core::String("BTC.Commons.Core.UnsupportedOperationException"));
                }
             }}}}}}}
         ''')

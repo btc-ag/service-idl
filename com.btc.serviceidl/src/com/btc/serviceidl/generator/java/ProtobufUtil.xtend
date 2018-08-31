@@ -70,8 +70,7 @@ class ProtobufUtil
             val scopeDeterminant = object.scopeDeterminant
 
             if (object instanceof FunctionDeclaration && Util.ensurePresentOrThrow(optProtobufType))
-                Names.plain(scopeDeterminant) + "_" + optProtobufType.get.getName + "_" + Names.plain(object) +
-                    optProtobufType.get.getName
+                getProtobufFunctionName(object as FunctionDeclaration, optProtobufType.get)
             else
                 (if (scopeDeterminant instanceof ModuleDeclaration)
                     Constants.FILE_NAME_TYPES

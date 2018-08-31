@@ -52,9 +52,8 @@ class TypeResolver
 
     def ResolvedName resolve(String name)
     {
-        val effectiveName = resolveException(name) ?: name
-        val fullyQualifiedName = QualifiedName.create(
-            effectiveName.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
+        val effectiveName = name
+        val fullyQualifiedName = QualifiedName.create(effectiveName.split(Pattern.quote(Constants.SEPARATOR_PACKAGE)))
         val namespace = fullyQualifiedName.skipLast(1).toString
 
         if (namespace.startsWith("System"))
@@ -146,19 +145,6 @@ class TypeResolver
         }
 
         return new ResolvedName(result, TransformType.PACKAGE, FULLY_QUALIFIED)
-    }
-
-    private static def String resolveException(String name)
-    {
-        // temporarily some special handling for exceptions, because not all
-        // C++ CAB exceptions are supported by the .NET CAB
-        switch (name)
-        {
-            case "BTC.Commons.Core.InvalidArgumentException":
-                return "System.ArgumentException"
-            default:
-                return null
-        }
     }
 
     private def boolean isSameProject(QualifiedName referencedPackage)

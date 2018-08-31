@@ -39,10 +39,6 @@ class ServiceFaultHandlingGenerator extends GeneratorBase
          
          static «className»()
          {
-            // most commonly used exception types
-            errorMap["«Constants.INVALID_ARGUMENT_EXCEPTION_FAULT_HANDLER»"] = typeof(«resolve("System.ArgumentException").fullyQualifiedName»);
-            errorMap["«Constants.UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER»"] = typeof(«resolve("System.NotSupportedException").fullyQualifiedName»);
-            
             «FOR e : raisedExceptions.sortBy[name] SEPARATOR System.lineSeparator»
                errorMap["«e.getCommonExceptionName(qualifiedNameProvider)»"] = typeof(«resolve(e)»);
             «ENDFOR»

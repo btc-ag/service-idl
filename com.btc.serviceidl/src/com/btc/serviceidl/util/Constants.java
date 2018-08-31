@@ -56,11 +56,6 @@ public interface Constants {
     public static final String FILE_NAME_ODB_COMMON    = "common";
     public static final String FILE_NAME_ODB_TRAITS    = "traits";
 
-    // GUID for default exception registration thrown by not implemented methods
-    public static final String UNSUPPORTED_OPERATION_EXCEPTION_FAULT_HANDLER = "BTC.Commons.Core.UnsupportedOperationException";
-
-    public static final String INVALID_ARGUMENT_EXCEPTION_FAULT_HANDLER = "BTC.Commons.Core.InvalidArgumentException";
-
     public static final int DEFAULT_PORT = 5555;
 
     public static final String AUTO_GENERATED_METHOD_STUB_MESSAGE = "Auto-generated method stub is not implemented!";

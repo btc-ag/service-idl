@@ -105,14 +105,6 @@ class TypeResolver
     {
         var name = qualifiedNameProvider.getFullyQualifiedName(element)
 
-        // try to resolve CAB-related pseudo-exceptions
-        if (element.isException)
-        {
-            val exceptionName = resolveException(name.toString)
-            if (exceptionName !== null)
-                return new ResolvedName(exceptionName, TransformType.PACKAGE, fullyQualified)
-        }
-
         if (name === null)
         {
             if (element instanceof AbstractType)
@@ -155,20 +147,6 @@ class TypeResolver
         referencedTypes.add(fullyQualifiedName.toString)
 
         return new ResolvedName(fullyQualifiedName, TransformType.PACKAGE, fullyQualified)
-    }
-
-    def String resolveException(String name)
-    {
-        // temporarily some special handling for exceptions, because not all
-        // C++ CAB exceptions are supported by the Java CAB
-        switch (name)
-        {
-            case "BTC.Commons.Core.InvalidArgumentException":
-                // TODO shouldn't this use resolve("java.util.IllegalArgumentException")?
-                "IllegalArgumentException"
-            default:
-                null
-        }
     }
 
     private static def String getObservableName(EventDeclaration event)
