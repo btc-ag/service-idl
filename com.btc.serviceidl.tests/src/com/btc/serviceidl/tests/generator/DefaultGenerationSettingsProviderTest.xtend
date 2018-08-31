@@ -82,7 +82,7 @@ class DefaultGenerationSettingsProviderTest
     {
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
         defaultGenerationSettingsProvider.configureGenerationSettings(null,
-            #{CppConstants.SERVICECOMM_VERSION_KIND -> ServiceCommVersion.V0_10.label}.entrySet, null, null)
+            #{CppConstants.SERVICECOMM_VERSION_KIND -> ServiceCommVersion.V0_10.label}.entrySet, null, null, null)
         assertEquals(ServiceCommVersion.V0_10.label,
             defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource).getTargetVersion(
                 CppConstants.SERVICECOMM_VERSION_KIND))
@@ -92,7 +92,7 @@ class DefaultGenerationSettingsProviderTest
     def void testConfigureUnknownProjectSystemFails()
     {
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.configureGenerationSettings("foo", null as String, null, null)
+        defaultGenerationSettingsProvider.configureGenerationSettings("foo", null as String, null, null, null)
         defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource)
     }
 

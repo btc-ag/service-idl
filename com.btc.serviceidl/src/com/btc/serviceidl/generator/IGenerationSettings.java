@@ -25,4 +25,6 @@ public interface IGenerationSettings extends ITargetVersionProvider {
     IProjectSetFactory getProjectSetFactory();
 
     IModuleStructureStrategy getModuleStructureStrategy();
+
+    Maturity getMaturity();
 }

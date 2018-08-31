@@ -136,6 +136,9 @@ class CppGeneratorTest extends AbstractGeneratorTest
                 """
                 
                 build_requires = "CMakeMacros/0.3.latest@cab/testing"
+                # TODO instead of "latest", for maturity RELEASE, this should be replaced by a 
+                # concrete version at some point (maybe not during generation, but during the build?)
+                # in a similar manner as mvn versions:resolve-ranges                
                 requires = ( 
                             ("BTC.CAB.Commons/1.9.latest@cab/testing"),
                             ("BTC.CAB.IoC/1.8.latest@cab/testing"),
@@ -248,6 +251,9 @@ class CppGeneratorTest extends AbstractGeneratorTest
                 """
                 
                 build_requires = "CMakeMacros/0.3.latest@cab/testing"
+                # TODO instead of "latest", for maturity RELEASE, this should be replaced by a 
+                # concrete version at some point (maybe not during generation, but during the build?)
+                # in a similar manner as mvn versions:resolve-ranges                
                 requires = ( 
                             ("BTC.CAB.Commons/1.9.latest@cab/testing"),
                             ("BTC.CAB.IoC/1.8.latest@cab/testing"),

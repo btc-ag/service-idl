@@ -17,6 +17,7 @@
 package com.btc.serviceidl.generator.dotnet
 
 import com.btc.serviceidl.generator.IGenerationSettings
+import com.btc.serviceidl.generator.Maturity
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
@@ -37,6 +38,7 @@ import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.idl.VoidType
 import com.btc.serviceidl.util.Constants
+import com.google.common.base.Strings
 import com.google.common.collect.Sets
 import java.util.Arrays
 import java.util.HashMap
@@ -53,7 +55,6 @@ import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.dotnet.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.google.common.base.Strings
 
 class DotNetGenerator
 {
@@ -263,27 +264,48 @@ class DotNetGenerator
    
    private def generatePaketDependencies()
    {
+      val dependencyChannel = if (generationSettings.maturity == Maturity.SNAPSHOT) "testing" else "stable"
+
       // TODO shouldn't the sources (at least extern) be configured somewhere else?
       if (!paketDependencies.empty) {
           '''
-          source https://artifactory.bop-dev.de/artifactory/api/nuget/cab-nuget-extern
-          source https://artifactory.bop-dev.de/artifactory/api/nuget/cab-nuget-stable
+          frameworks: «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
           
-          «FOR packageEntry : paketDependencies»
-              «/** TODO remove this workaround */»
-              «IF packageEntry.key.equals("Common.Logging")»
-                nuget «packageEntry.key» == «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
-              «ELSE»
-                nuget «packageEntry.key» >= «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
-              «ENDIF»
-          «ENDFOR»      
+          source https://artifactory.bop-dev.de/artifactory/api/nuget/cab-nuget-extern
+          source https://artifactory.bop-dev.de/artifactory/api/nuget/cab-nuget-«dependencyChannel»
+          
+          «generatePaketDependenciesSection(false)»
           '''
       }     
    }
    
+   private def replaceMicroVersionByZero(String versionString)
+   {
+       val parts = versionString.split("[.]")
+       parts.set(2, "0")
+       return parts.join(".")
+   }
+   
+   private def generatePaketDependenciesSection(boolean forTemplate)
+   {
+       val prefix = if (forTemplate) "" else "nuget "  
+       '''
+      «FOR packageEntry : paketDependencies»
+          «/** TODO remove this workaround */»
+          «IF packageEntry.key.equals("Common.Logging")»
+            «prefix»«packageEntry.key» == «packageEntry.value»
+          «ELSEIF packageEntry.key.startsWith("BTC.")»
+            «prefix»«packageEntry.key» ~> «packageEntry.value.replaceMicroVersionByZero» «IF generationSettings.maturity == Maturity.SNAPSHOT»testing«ENDIF»
+          «ELSE»
+            «prefix»«packageEntry.key» ~> «packageEntry.value»
+          «ENDIF»
+      «ENDFOR»   
+       '''
+   }
+   
    private def generatePaketTemplate()
    {
-      val version = idl.resolveVersion
+      val version = idl.resolveVersion // for Paket, there is no difference between "snapshot" and "release" version numbers
       val releaseUnitName = idl.getReleaseUnitName(ArtifactNature.DOTNET)
       val commonPrefix = vsSolution.allProjects.map[key].reduce[a,b|Strings.commonPrefix(a,b)]
       
@@ -299,14 +321,7 @@ class DotNetGenerator
       (if (!paketDependencies.empty) {
           '''
           dependencies
-              «FOR packageEntry : paketDependencies»
-                  «/** TODO remove this workaround */»
-                  «IF packageEntry.key.equals("Common.Logging")»
-                    «packageEntry.key» == «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
-                  «ELSE»
-                    «packageEntry.key» >= «packageEntry.value» restriction: >= «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
-                  «ENDIF»
-              «ENDFOR»
+              «generatePaketDependenciesSection(true)»
                     
           '''
       } else '') +  

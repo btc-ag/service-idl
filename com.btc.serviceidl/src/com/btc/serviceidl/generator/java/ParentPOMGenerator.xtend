@@ -10,20 +10,23 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.java
 
+import com.btc.serviceidl.generator.IGenerationSettings
+import com.btc.serviceidl.generator.Maturity
 import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.idl.IDLSpecification
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
-import com.btc.serviceidl.idl.IDLSpecification
 
 import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(NONE)
 class ParentPOMGenerator
 {
+    val IGenerationSettings generationSettings
     val IFileSystemAccess fileSystemAccess
     val IDLSpecification idlSpecification
     val MavenResolver mavenResolver
-    val String groupId    
+    val String groupId
 
     def generate()
     {
@@ -32,13 +35,15 @@ class ParentPOMGenerator
 
     def CharSequence generateContents()
     {
+        val versionSuffix = if (generationSettings.maturity == Maturity.SNAPSHOT) "-SNAPSHOT" else ""
+
         '''
             <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                 <modelVersion>4.0.0</modelVersion>
                 <groupId>«groupId»</groupId>
                 <artifactId>«groupId».parent</artifactId>
-                <version>«idlSpecification.resolveVersion»-SNAPSHOT</version> «««TODO Are there cases where this shouldn't be SNAPSHOT?»»»
+                <version>«idlSpecification.resolveVersion»«versionSuffix»</version>
                 <packaging>pom</packaging>
             
                 <properties>

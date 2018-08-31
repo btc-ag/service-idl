@@ -54,6 +54,9 @@ public class Main {
     public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ = "prins-vcxproj";
     public static final String OPTION_VERSIONS                               = "versions";
     public static final String OPTION_PROJECT_SET                            = "projectSet";
+    public static final String OPTION_MATURITY                               = "maturity";
+    public static final String OPTION_VALUE_MATURITY_SNAPSHOT                = "snapshot";
+    public static final String OPTION_VALUE_MATURITY_RELEASE                 = "release";
 
     public static final int EXIT_CODE_GOOD              = 0;
     public static final int EXIT_CODE_GENERATION_FAILED = 1;
@@ -116,7 +119,8 @@ public class Main {
                 commandLine.hasOption(OPTION_CPP_PROJECT_SYSTEM) ? commandLine.getOptionValue(OPTION_CPP_PROJECT_SYSTEM)
                         : null,
                 commandLine.hasOption(OPTION_VERSIONS) ? commandLine.getOptionValue(OPTION_VERSIONS) : null,
-                commandLine.hasOption(OPTION_PROJECT_SET) ? commandLine.getOptionValue(OPTION_PROJECT_SET) : null);
+                commandLine.hasOption(OPTION_PROJECT_SET) ? commandLine.getOptionValue(OPTION_PROJECT_SET) : null,
+                commandLine.hasOption(OPTION_MATURITY) ? commandLine.getOptionValue(OPTION_MATURITY) : null);
 
         return res ? EXIT_CODE_GOOD : EXIT_CODE_GENERATION_FAILED;
     }
@@ -133,6 +137,7 @@ public class Main {
         options.addOption(OPTION_PROJECT_SET, true, "set of projects to generate ("
                 + String.join(",", DefaultGenerationSettingsProvider.PROJECT_SET_MAPPING.keySet()) + "), default is "
                 + DefaultGenerationSettingsProvider.OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON);
+        options.addOption(OPTION_MATURITY, true, "maturity (snapshot, release) (default is snapshot)");
         return options;
     }
 
@@ -162,7 +167,7 @@ public class Main {
     private IGenerationSettingsProvider generationSettingsProvider;
 
     private boolean tryRunGenerator(String[] inputFiles, Map<ArtifactNature, IPath> outputPaths,
-            String cppProjectSystem, String versions, String projectSet) {
+            String cppProjectSystem, String versions, String projectSet, String maturityString) {
         // Load the resource
         ResourceSet set = resourceSetProvider.get();
         for (String inputFile : inputFiles) {
@@ -195,8 +200,20 @@ public class Main {
             fileAccess.setOutputPath(artifactNature.getLabel(), outputPath.toOSString());
         }
 
+        Maturity maturity = Maturity.SNAPSHOT;
+        if (maturityString != null) {
+            if (maturityString.equals(OPTION_VALUE_MATURITY_RELEASE))
+                maturity = Maturity.RELEASE;
+            else if (maturityString.equals(OPTION_VALUE_MATURITY_SNAPSHOT))
+                maturity = Maturity.SNAPSHOT;
+            else {
+                throw new IllegalArgumentException(
+                        "Unknown value for option '" + OPTION_MATURITY + "': " + maturityString);
+            }
+        }
+
         try {
-            configureGenerationSettings(cppProjectSystem, versions, outputPaths.keySet(), projectSet);
+            configureGenerationSettings(cppProjectSystem, versions, outputPaths.keySet(), projectSet, maturity);
         } catch (Exception ex) {
             System.err.println("Error when configuring generation settings: " + ex);
             return false;
@@ -215,11 +232,11 @@ public class Main {
     }
 
     private void configureGenerationSettings(String cppProjectSystem, String versions,
-            Iterable<ArtifactNature> languages, String projectSet) {
+            Iterable<ArtifactNature> languages, String projectSet, Maturity maturity) {
         DefaultGenerationSettingsProvider defaultGenerationSettingsProvider = (DefaultGenerationSettingsProvider) generationSettingsProvider;
 
-        defaultGenerationSettingsProvider.configureGenerationSettings(cppProjectSystem, versions, languages,
-                projectSet);
+        defaultGenerationSettingsProvider.configureGenerationSettings(cppProjectSystem, versions, languages, projectSet,
+                maturity);
     }
 
 }

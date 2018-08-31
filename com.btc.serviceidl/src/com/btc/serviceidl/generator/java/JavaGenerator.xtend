@@ -65,7 +65,7 @@ class JavaGenerator
 
     private def void generateParentPOM()
     {
-        new ParentPOMGenerator(fileSystemAccess, idl, mavenResolver, groupId).generate
+        new ParentPOMGenerator(generationSettings, fileSystemAccess, idl, mavenResolver, groupId).generate
     }
 
     private def void processModule(ModuleDeclaration module)
