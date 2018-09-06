@@ -18,6 +18,7 @@ import com.btc.serviceidl.generator.common.ProtobufType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractTypeReference
+import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ParameterDirection
@@ -101,14 +102,16 @@ class DispatcherGenerator extends BasicCppGenerator
             {
                «interfaceDeclaration.asBaseName»::AttachEndpoint( endpoint );
                
-               /** Publisher/Subscriber could be attached here to the endpoint
-               */
+              «FOR event : interfaceDeclaration.events»
+                 «event.publisherName» = Create«resolve(event.data).shortName»RemoteEventPublisher(endpoint);
+              «ENDFOR» 
             }
             
             void «className.shortName»::DetachEndpoint(BTC::ServiceComm::API::IServerEndpoint &endpoint)
             {
-               /** Publisher/Subscriber could be detached here
-               */
+              «FOR event : interfaceDeclaration.events»
+                 «event.publisherName».Clear();
+              «ENDFOR» 
             
                «interfaceDeclaration.asBaseName»::DetachEndpoint(endpoint);
             }
@@ -147,6 +150,33 @@ class DispatcherGenerator extends BasicCppGenerator
                , instanceName.IsNotEmpty() ? instanceName : («resolveSymbol("CABTYPENAME")»(«apiClassName») + " default instance")
                );
             }
+            
+              «FOR event : interfaceDeclaration.events»
+                 «val eventObserverPtrType = event.observerPtrType»
+                «/* TODO remove ProtobufType argument */»
+                «val eventProtobufType = typeResolver.resolveProtobuf(event.data, ProtobufType.REQUEST)»
+                «val eventType = resolve(event.data)»
+               
+                «eventObserverPtrType» «className.shortName»::Create«eventType.shortName»RemoteEventPublisher(«resolveSymbol("BTC::ServiceComm::API::IServerEndpoint")»& endpoint)
+                {
+                    return «resolveSymbol("BTC::ServiceComm::Util::CreateRemoteEventPublisher")»<«eventType»>(
+                        GetDispatchee(),
+                        endpoint.GetEventRegistry(),
+                        [this](const «eventType»& serviceEvent) {
+                          auto eventProtobuf = «eventProtobufType»{};
+                          «typeResolver.resolveCodecNS(paramBundle, event.data)»::Encode(serviceEvent, &eventProtobuf);
+                          «IF targetVersion == ServiceCommVersion.V0_10»
+                             auto message = GetMessagePool().Borrow();
+                             message->PushBack(«resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ProtobufToMessagePart(GetMessagePartPool(), eventProtobuf));
+                             return message;
+                          «ELSE»
+                             return «resolveSymbol("BTC::ServiceComm::ProtobufUtil::ProtobufSupport")»::ProtobufToMessagePart(GetMessagePartPool(), eventProtobuf);
+                          «ENDIF»
+                        },
+                        «eventType»::EVENT_TYPE_GUID());
+                }
+              «ENDFOR»            
+            
         '''
     }
     
@@ -338,8 +368,28 @@ class DispatcherGenerator extends BasicCppGenerator
                   ,«resolveSymbol("BTC::Commons::CoreExtras::UUID")» const &instanceGuid = BTC::Commons::CoreExtras::UUID::Null()
                   ,«resolveSymbol("BTC::Commons::Core::String")» const &instanceName = BTC::Commons::Core::String()
                );
+            private:
+              «FOR event : interfaceDeclaration.events AFTER System.lineSeparator»
+                 «val eventPublisherName = event.publisherName»
+                 «val eventObserverPtrType = event.observerPtrType»
+
+                «eventObserverPtrType» «eventPublisherName»;
+                
+                «eventObserverPtrType» Create«resolve(event.data).shortName»RemoteEventPublisher(«resolveSymbol("BTC::ServiceComm::API::IServerEndpoint")»& endpoint);
+              «ENDFOR»
             };
         '''
+    }
+    
+    def getObserverPtrType(EventDeclaration event)
+    {
+        resolveSymbol("BTC::Commons::Core::UniquePtr") + "<" + resolveSymbol("BTC::Commons::CoreExtras::IObserver") +
+            "<" + resolve(event.data) + ">" + ">"
+    }
+    
+    def getPublisherName(EventDeclaration event) 
+    {
+        resolve(event.data).shortName + "Publisher"
     }
 
     private def String makeDispatcherBaseTemplate(InterfaceDeclaration interfaceDeclaration)

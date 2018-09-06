@@ -46,12 +46,12 @@ class ServiceAPIGenerator extends BasicCppGenerator {
       val isApi = paramBundle.projectType == ProjectType.SERVICE_API
       val isProxy = paramBundle.projectType == ProjectType.PROXY
       val isImpl = paramBundle.projectType == ProjectType.IMPL
-      val anonymousEvent = com.btc.serviceidl.util.Util.getAnonymousEvent(interfaceDeclaration)
+      val anonymousEvent = interfaceDeclaration.anonymousEvent
       val exportMacro = makeExportMacro
       
       val sortedTypes = interfaceDeclaration.topologicallySortedTypes
       val forwardDeclarations = resolveForwardDeclarations(sortedTypes)
-      
+            
       '''
       «IF isApi»
          «FOR type : forwardDeclarations»
@@ -117,21 +117,22 @@ class ServiceAPIGenerator extends BasicCppGenerator {
             using «interfaceDeclaration.asBaseName»::Wait;
             
          «ENDIF»
-         «FOR event : interfaceDeclaration.events.filter[name !== null]»
-            «val eventType = toText(event.data, event)»
-            /**
-               \brief Subscribe for event of type «eventType»
-            */
-            virtual «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«eventType»> &observer )«IF isApi» = 0«ENDIF»;
-         «ENDFOR»
          
          «IF !isApi»
-            «IF anonymousEvent !== null»
+             «FOR event : interfaceDeclaration.events.filter[name !== null]»
+                «val eventType = toText(event.data, event)»
+                /**
+                   \brief Subscribe for event of type «eventType»
+                */
+                «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«eventType»> &observer) override;
+             «ENDFOR»
+             «IF anonymousEvent !== null»
                /**
                   \see BTC::Commons::CoreExtras::IObservableRegistration::Subscribe
                */
-               virtual «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«toText(anonymousEvent.data, anonymousEvent)»> &observer ) override;
-            «ENDIF»
+                «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«toText(anonymousEvent.data, anonymousEvent)»> &observer ) override;
+             «ENDIF»
+            
             private:
                «resolveSymbol("BTC::Commons::Core::Context")» &m_context;
             «IF isProxy»
@@ -166,10 +167,16 @@ class ServiceAPIGenerator extends BasicCppGenerator {
    private def String generateHClassSignature(InterfaceDeclaration interfaceDeclaration)
    {
       val anonymousEvent = interfaceDeclaration.anonymousEvent
+      val eventTypes = #[interfaceDeclaration.events.filter[name !== null].map[toText(it.data, it)],
+                if (anonymousEvent !== null) #[toText(anonymousEvent.data, anonymousEvent)] else #[]].flatten      
       
       '''«GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType, interfaceDeclaration.name)» : 
       «IF paramBundle.projectType == ProjectType.SERVICE_API»
          virtual public «resolveSymbol("BTC::Commons::Core::Object")»
+         «FOR eventType : eventTypes BEFORE "," SEPARATOR ",\n"»
+            public virtual «resolveSymbol("BTC::Commons::CoreExtras::IObservableRegistration")»<«eventType»>
+         «ENDFOR»
+         
          «IF anonymousEvent !== null», public «resolveSymbol("BTC::Commons::CoreExtras::IObservableRegistration")»<«resolve(anonymousEvent.data)»>«ENDIF»
       «ELSE»
          virtual public «resolve(interfaceDeclaration, ProjectType.SERVICE_API)»
