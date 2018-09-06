@@ -290,13 +290,8 @@ class DispatcherGenerator extends BasicCppGenerator
         val className = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType,
             interfaceDeclaration.name)
 
-        // TODO do not use anonymous namespaces in a header file!
         '''
-            // anonymous namespace for internally used typedef
-            namespace
-            {
-               «makeDispatcherBaseTemplate(interfaceDeclaration)»
-            }
+            «makeDispatcherBaseTemplate(interfaceDeclaration)»
             
             class «makeExportMacro()» «className» :
             virtual private «resolveSymbol("BTC::Logging::API::LoggerAware")»
