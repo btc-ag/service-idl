@@ -335,7 +335,7 @@ class DispatcherGenerator extends BasicCppGenerator
                (
                   «resolveSymbol("BTC::Logging::API::LoggerFactory")» &loggerFactory
                   ,«resolveSymbol("BTC::ServiceComm::API::IServerEndpoint")» &serverEndpoint
-                  ,«resolveSymbol("BTC::Commons::CoreExtras::UUID")» const &instanceGuid = BTC::Commons::CoreExtras::UUID()
+                  ,«resolveSymbol("BTC::Commons::CoreExtras::UUID")» const &instanceGuid = BTC::Commons::CoreExtras::UUID::Null()
                   ,«resolveSymbol("BTC::Commons::Core::String")» const &instanceName = BTC::Commons::Core::String()
                );
             };
