@@ -603,7 +603,7 @@ public class TypesCodec {
                                     <mkdir dir="${protobuf.outputDirectory}" />
                                     <exec executable="${protoc.filepath}" failonerror="true">
                                        <arg value="--java_out=${protobuf.outputDirectory}" />
-                                       <arg value="-I=${basedir}\.." />
+                                       <arg value="-I=${basedir}/.." />
                                        <arg value="--proto_path=${protobuf.sourceDirectory}" />
                                        <arg value="${protobuf.sourceDirectory}/KeyValueStore.proto" />
                                     </exec> 
