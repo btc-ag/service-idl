@@ -67,12 +67,12 @@ class DotNetGenerator
    val IGenerationSettings generationSettings
    val IDLSpecification idl
    
+   var NuGetPackageResolver nugetPackages
    var ParameterBundle paramBundle
    
    val typedefTable = new HashMap<String, String>
    val namespaceReferences = new HashSet<String>
    val failableAliases = new HashSet<FailableAlias>
-   var nugetPackages = new NuGetPackageResolver
    val vsSolution = new VSSolution
    val csFiles = new HashSet<String>
    val protobufFiles = new HashSet<String>
@@ -90,6 +90,8 @@ class DotNetGenerator
         this.qualifiedNameProvider = qualifiedNameProvider
         this.generationSettings = generationSettings
         this.protobufProjectReferences = protobufProjectReferences
+        this.nugetPackages = new NuGetPackageResolver(ServiceCommVersion.get(generationSettings.getTargetVersion(
+            DotNetConstants.SERVICECOMM_VERSION_KIND)))
     }
 
     def void doGenerate()
@@ -347,7 +349,8 @@ class DotNetGenerator
       reinitializeFile
       paramBundle = ParameterBundle.createBuilder(paramBundle.moduleStack).with(projectType).build
       protobufFiles.clear
-      nugetPackages = new NuGetPackageResolver
+      nugetPackages = new NuGetPackageResolver(ServiceCommVersion.get(generationSettings.getTargetVersion(
+            DotNetConstants.SERVICECOMM_VERSION_KIND)))
       csFiles.clear
       
       val typeResolver = new TypeResolver(

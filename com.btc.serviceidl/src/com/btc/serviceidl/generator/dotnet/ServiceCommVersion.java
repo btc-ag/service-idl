@@ -11,7 +11,8 @@
 package com.btc.serviceidl.generator.dotnet;
 
 public enum ServiceCommVersion {
-    V0_6("0.6");
+    V0_6("0.6"),
+    V0_7("0.7");
 
     private final String label;
 
