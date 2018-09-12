@@ -15,6 +15,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors
 class ImplementationStubGenerator extends BasicCppGenerator
@@ -22,6 +23,7 @@ class ImplementationStubGenerator extends BasicCppGenerator
     def generateCppImpl(InterfaceDeclaration interfaceDeclaration)
     {
         val className = resolve(interfaceDeclaration, paramBundle.projectType).shortName
+        val anonymousEvent = interfaceDeclaration.anonymousEvent
 
         '''
             «className»::«className»
@@ -46,6 +48,13 @@ class ImplementationStubGenerator extends BasicCppGenerator
                    return «event.observableName».Subscribe(observer);
                 }
             «ENDFOR»
+            
+             «IF anonymousEvent !== null»
+                «resolveSymbol("BTC::Commons::Core::UniquePtr")»<«resolveSymbol("BTC::Commons::Core::Disposable")»> «className»::Subscribe( «resolveSymbol("BTC::Commons::CoreExtras::IObserver")»<«toText(anonymousEvent.data, anonymousEvent)»> &observer )
+                {
+                   return «anonymousEvent.observableName».Subscribe(observer);
+                }                
+             «ENDIF»            
         '''
     }
 

@@ -147,6 +147,8 @@ class HeaderResolver
             "ServiceComm/Util/include/CDefaultObservableRegistrationProxy.h",
         "BTC::ServiceComm::Util::CDispatcherAutoRegistrationFactory" ->
             "ServiceComm/Util/include/DispatcherAutoRegistrationFactory.h",
+        "BTC::ServiceComm::Util::CreateRemoteEventPublisher" ->
+            "ServiceComm/Util/include/RemoteEventPublisher.h",
         "BTC::ServiceComm::Util::DefaultCreateDispatcherWithContext" ->
             "ServiceComm/Util/include/DispatcherAutoRegistration.h",
         "BTC::ServiceComm::Util::DefaultCreateDispatcherWithContextAndEndpoint" ->
