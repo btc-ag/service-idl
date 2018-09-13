@@ -23,6 +23,9 @@ class ModuleProjectGenerator extends BasicProjectGenerator
     {
         if (projectTypes.contains(ProjectType.COMMON))
         {
+            // TODO this looks strange, better remove the state completely
+            dependencies.clear()
+
             generateCommon(
                 makeProjectSourcePath(module, ProjectType.COMMON, MavenArtifactType.MAIN_JAVA, PathType.FULL), module)
 
@@ -31,6 +34,9 @@ class ModuleProjectGenerator extends BasicProjectGenerator
 
         if (projectTypes.contains(ProjectType.PROTOBUF))
         {
+            // TODO this looks strange, better remove the state completely
+            dependencies.clear()
+
             generateProtobuf(
                 makeProjectSourcePath(module, ProjectType.PROTOBUF, MavenArtifactType.MAIN_JAVA, PathType.FULL), module)
 
