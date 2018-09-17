@@ -20,6 +20,9 @@ import com.btc.serviceidl.idl.AbstractTypeDeclaration
 import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
+import com.btc.serviceidl.idl.FunctionDeclaration
+import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.MemberElementWrapper
 import java.util.ArrayList
@@ -44,10 +47,42 @@ class ProtobufCodecGenerator
         basicJavaSourceGenerator.typeResolver
     }
 
+    // TODO resolveAllDependentProtobufTypes should probably be rewritten to use some general 
+    // getAllReferencedTypes utility function which can be called for an AbstractContainerDeclaration, similar to getEncodableTypes
+
+    def dispatch void resolveAllDependentProtobufTypes(EObject container)
+    {}
+    
+    def dispatch void resolveAllDependentProtobufTypes(FunctionDeclaration function)
+    {
+        for (parameter : function.parameters)
+            resolveProtobuf(parameter.paramType.actualType.ultimateType, Optional.empty)
+        resolveProtobuf(function.returnedType.actualType.ultimateType, Optional.empty)
+    }
+
+    def dispatch void resolveAllDependentProtobufTypes(InterfaceDeclaration container)
+    {
+        for (element : container.eContents)
+        {
+            resolveAllDependentProtobufTypes(element)
+        }
+    }
+
+    def dispatch void resolveAllDependentProtobufTypes(ModuleDeclaration container)
+    {
+        for (element : container.eContents)
+        {
+            if (!(element instanceof InterfaceDeclaration))
+                resolveAllDependentProtobufTypes(element)
+        }
+    }
+
     def generateProtobufCodecBody(AbstractContainerDeclaration container, String codecName)
     {
         // collect all used data types to avoid duplicates
         val dataTypes = GeneratorUtil.getEncodableTypes(container)
+
+        resolveAllDependentProtobufTypes(container)
 
         val javaUuid = typeResolver.resolve(JavaClassNames.UUID)
         val byteString = typeResolver.resolve("com.google.protobuf.ByteString")
@@ -320,8 +355,8 @@ class ProtobufCodecGenerator
         makeDecodeStructOrException(element, element.allMembers, Optional.empty)
     }
 
-    private def String makeDecodeStructOrException(AbstractTypeReference element, Iterable<MemberElementWrapper> members,
-        Optional<Collection<AbstractTypeDeclaration>> typeDeclarations)
+    private def String makeDecodeStructOrException(AbstractTypeReference element,
+        Iterable<MemberElementWrapper> members, Optional<Collection<AbstractTypeDeclaration>> typeDeclarations)
     {
         val apiTypeName = typeResolver.resolve(element)
         val protobufTypeName = resolveProtobuf(element, Optional.empty)
@@ -390,8 +425,8 @@ class ProtobufCodecGenerator
         makeEncodeStructOrException(element, element.allMembers, Optional.empty)
     }
 
-    private def String makeEncodeStructOrException(AbstractTypeReference element, Iterable<MemberElementWrapper> members,
-        Optional<Collection<AbstractTypeDeclaration>> typeDeclarations)
+    private def String makeEncodeStructOrException(AbstractTypeReference element,
+        Iterable<MemberElementWrapper> members, Optional<Collection<AbstractTypeDeclaration>> typeDeclarations)
     {
         val protobufType = resolveProtobuf(element, Optional.empty)
         val plainType = typeResolver.resolve(element)
@@ -410,7 +445,7 @@ class ProtobufCodecGenerator
                 «IF member.optional»
                     if (typedData.get«typeResolver.resolve(JavaClassNames.OPTIONAL).alias(commonName)»().isPresent())
                     {
-                        builder.«methodName»(«IF useCodec»«IF !isSequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF isFailable»Failable«ENDIF»(«ENDIF»typedData.get«protobufName»().get()«IF isFailable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualifiedNameProvider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF useCodec»)«ENDIF»);
+                    builder.«methodName»(«IF useCodec»«IF !isSequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF isFailable»Failable«ENDIF»(«ENDIF»typedData.get«protobufName»().get()«IF isFailable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualifiedNameProvider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF useCodec»)«ENDIF»);
                     }
                 «ELSE»
                 builder.«methodName»(«IF useCodec»«IF !isSequence»(«resolveProtobuf(member.type, Optional.empty)») «ENDIF»encode«IF isFailable»Failable«ENDIF»(«ENDIF»typedData.get«commonName»()«IF isFailable», «resolveFailableProtobufType(typeResolver, basicJavaSourceGenerator.qualifiedNameProvider, member.type, member.type.scopeDeterminant)».class«ENDIF»«IF useCodec»)«ENDIF»);
