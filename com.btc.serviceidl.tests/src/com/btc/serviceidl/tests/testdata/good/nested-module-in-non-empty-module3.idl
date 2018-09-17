@@ -1,0 +1,13 @@
+module Foo {
+
+   struct Bar
+   {
+      string field;
+   };
+
+   interface Test [guid=5AA8C2F8-04D6-4DFC-9FFE-7A15BDAE8B45]
+   {
+      Method2(in sequence<Bar> bar) returns boolean;
+   };
+
+}
