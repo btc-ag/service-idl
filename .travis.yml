@@ -12,7 +12,7 @@ before_script:
   
 install: true
 
-script: mvn install -U
+script: mvn install -U -X -e
 
 after_success:
   - find -name '*.zip' #DEBUG
