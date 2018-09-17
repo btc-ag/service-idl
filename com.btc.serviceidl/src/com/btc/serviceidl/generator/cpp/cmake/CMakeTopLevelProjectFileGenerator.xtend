@@ -170,8 +170,6 @@ class CMakeTopLevelProjectFileGenerator
 
     def generateCMakeLists()
     {
-        // TODO defining BTC_CAB_COMMONS_FUTUREUTIL_STATIC_DEFINE is only a temporary addition
-        // which can be removed again when changing this to the new cmake-export style
         val serviceCommTargetVersion = ServiceCommVersion.get(generationSettings.getTargetVersion(
             CppConstants.SERVICECOMM_VERSION_KIND))
 
