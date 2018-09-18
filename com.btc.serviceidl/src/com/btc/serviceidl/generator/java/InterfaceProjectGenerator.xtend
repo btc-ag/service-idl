@@ -49,15 +49,19 @@ class InterfaceProjectGenerator extends BasicProjectGenerator
         {
             val paramBundle = ParameterBundle.createBuilder(interfaceDeclaration.moduleStack).build
 
-            // record type aliases
-            val typeResolver = createTypeResolver(paramBundle)
-            for (typeAlias : interfaceDeclaration.contains.filter(AliasDeclaration))
-            {
-                typedefTable.computeIfAbsent(typeAlias.name, [typeResolver.resolve(typeAlias.type)])
-            }
-
             for (projectType : activeProjectTypes)
             {
+                // TODO this looks strange, better remove the state completely
+                dependencies.clear()
+
+                val typeResolver = createTypeResolver(paramBundle)
+
+                // record type aliases
+                for (typeAlias : interfaceDeclaration.contains.filter(AliasDeclaration))
+                {
+                    typedefTable.computeIfAbsent(typeAlias.name, [typeResolver.resolve(typeAlias.type)])
+                }
+    
                 generateProject(paramBundle, projectType, interfaceDeclaration)
                 generatePOM(interfaceDeclaration, projectType)
             }

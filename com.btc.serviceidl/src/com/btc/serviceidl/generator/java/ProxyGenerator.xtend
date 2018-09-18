@@ -197,9 +197,9 @@ class ProxyGenerator
                      «val isByte = function.returnedType.isByte»
                      «val isShort = function.returnedType.isInt16»
                      «val isChar = function.returnedType.isChar»
-                     «val useCodec = GeneratorUtil.useCodec(function.returnedType.actualType, ArtifactNature.JAVA)»
-                     «val codec = if (useCodec) resolveCodec(function.returnedType.actualType, typeResolver) else null»
                      «val isSequence = function.returnedType.isSequenceType»
+                     «val useCodec = GeneratorUtil.useCodec(function.returnedType.actualType, ArtifactNature.JAVA) || isSequence»
+                     «val codec = if (useCodec) resolveCodec(function.returnedType.actualType, typeResolver) else null»
                      «val isFailable = isSequence && function.returnedType.isFailable»
                      «IF isSequence»
                          «returnType» result = «codec».decode«IF isFailable»Failable«ENDIF»(«responseName».get«protobufFunctionName»List());

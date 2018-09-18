@@ -23,8 +23,8 @@ import com.btc.serviceidl.idl.FunctionDeclaration
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.PrimitiveType
+import com.btc.serviceidl.idl.SequenceDeclaration
 import com.btc.serviceidl.util.Constants
-import com.btc.serviceidl.util.Util
 import com.google.common.base.CaseFormat
 import java.util.Optional
 import org.eclipse.emf.ecore.EObject
@@ -52,6 +52,11 @@ class ProtobufUtil
                 resolveProtobuf(typeResolver, object.referenceType, optProtobufType)
         // TODO really do nothing in case of collectionType?
         }
+        else if (object instanceof SequenceDeclaration)
+        {
+            throw new IllegalArgumentException(
+                "resolveProtobuf cannot be called with a SequenceDeclaration, dereference it at the call site")
+        }
         else
         {
             new ResolvedName(
@@ -62,14 +67,14 @@ class ProtobufUtil
 
     private static def String getLocalName(EObject object, Optional<ProtobufType> optProtobufType)
     {
-        if (object instanceof InterfaceDeclaration && Util.ensurePresentOrThrow(optProtobufType))
+        if (object instanceof InterfaceDeclaration && com.btc.serviceidl.util.Util.ensurePresentOrThrow(optProtobufType))
             getOuterClassName(object as InterfaceDeclaration) + Constants.SEPARATOR_PACKAGE + Names.plain(object) +
                 optProtobufType.get.getName
         else
         {
             val scopeDeterminant = object.scopeDeterminant
 
-            if (object instanceof FunctionDeclaration && Util.ensurePresentOrThrow(optProtobufType))
+            if (object instanceof FunctionDeclaration && com.btc.serviceidl.util.Util.ensurePresentOrThrow(optProtobufType))
                 Names.plain(scopeDeterminant) + "_" + optProtobufType.get.getName + "_" + Names.plain(object) +
                     optProtobufType.get.getName
             else
