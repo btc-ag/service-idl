@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature id="com.btc.serviceidl.feature"
 	label="Idl Feature "
-	version="0.4.1">
+	version="0.5.0.qualifier">
 	<plugin
 			id="com.btc.serviceidl"
 			download-size="0"
