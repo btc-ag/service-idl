@@ -72,7 +72,7 @@ class Util
         '''«interfaceDeclaration.name»Base'''
     }
 
-    static def String getRegisterServerFaults(InterfaceDeclaration interfaceDeclaration, Optional<String> namespace)
+    static def String getRegisterServiceFaults(InterfaceDeclaration interfaceDeclaration, Optional<String> namespace)
     {
         '''«IF namespace.present»«namespace.get»::«ENDIF»Register«interfaceDeclaration.name»ServiceFaults'''
     }

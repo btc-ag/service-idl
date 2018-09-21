@@ -56,7 +56,7 @@ class DispatcherGenerator extends BasicCppGenerator
             ) :
             «resolveSymbol("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
             , «interfaceDeclaration.asBaseName»( serviceEndpoint.GetServiceFaultHandlerManagerFactory(), «resolveSymbol("std::move")»(dispatchee) )
-            { «getRegisterServerFaults(interfaceDeclaration, moduleNamespace)»( GetServiceFaultHandlerManager() ); }
+            { «getRegisterServiceFaults(interfaceDeclaration, moduleNamespace)»( GetServiceFaultHandlerManager() ); }
             
             «className.shortName»::«className.shortName»
             (
@@ -66,7 +66,7 @@ class DispatcherGenerator extends BasicCppGenerator
             ) :
             «resolveSymbol("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
             , «interfaceDeclaration.asBaseName»( serviceFaultHandlerManagerFactory, «resolveSymbol("std::move")»(dispatchee) )
-            { «getRegisterServerFaults(interfaceDeclaration, moduleNamespace)»( GetServiceFaultHandlerManager() ); }
+            { «getRegisterServiceFaults(interfaceDeclaration, moduleNamespace)»( GetServiceFaultHandlerManager() ); }
             
             «generateCppDestructor(interfaceDeclaration)»
             
