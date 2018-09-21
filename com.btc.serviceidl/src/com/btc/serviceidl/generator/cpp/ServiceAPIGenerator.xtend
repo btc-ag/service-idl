@@ -159,7 +159,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
       };
       «IF isApi»
          void «exportMacro»
-         «getRegisterServerFaults(interfaceDeclaration, Optional.empty)»(«resolveSymbol("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager);
+         «getRegisterServiceFaults(interfaceDeclaration, Optional.empty)»(«resolveSymbol("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager);
       «ENDIF»
       '''
    }
@@ -230,7 +230,7 @@ class ServiceAPIGenerator extends BasicCppGenerator {
 
       «makeEventGUIDImplementations(typeResolver, interfaceDeclaration.contains.filter(StructDeclaration))»
       
-      void «getRegisterServerFaults(interfaceDeclaration, Optional.empty)»(«resolveSymbol("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager)
+      void «getRegisterServiceFaults(interfaceDeclaration, Optional.empty)»(«resolveSymbol("BTC::ServiceComm::API::IServiceFaultHandlerManager")»& serviceFaultHandlerManager)
       {
          «IF !thrownExceptions.empty»// register exceptions thrown by service methods«ENDIF»
          «FOR exception : thrownExceptions.sortBy[name]»

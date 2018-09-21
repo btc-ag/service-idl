@@ -181,6 +181,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
             
             add_definitions(-DBTC_CAB_COMMONS_FUTUREUTIL_STATIC_DEFINE)
+            add_definitions(-DBTC_CAB_SERVICECOMM_BASE_STATIC_DEFINE)
 
             include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/ServiceAPI/build/make.cmakeset)           
         ''', directory + "build/CMakeLists.txt", '''
@@ -298,6 +299,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
             
             add_definitions(-DBTC_CAB_COMMONS_FUTUREUTIL_STATIC_DEFINE)
+            add_definitions(-DBTC_CAB_SERVICECOMM_BASE_STATIC_DEFINE)
 
             include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/Dispatcher/build/make.cmakeset)
             include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/Protobuf/build/make.cmakeset)
