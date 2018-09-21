@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.btc.serviceidl</groupId>
 		<artifactId>com.btc.serviceidl.parent</artifactId>
-		<version>0.4.0</version>
+		<version>0.5.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>com.btc.serviceidl.target</artifactId>
 	<packaging>eclipse-target-definition</packaging>
