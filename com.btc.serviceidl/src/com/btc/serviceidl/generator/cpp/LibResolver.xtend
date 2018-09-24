@@ -15,10 +15,15 @@
  */
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import org.eclipse.core.runtime.IPath
+import org.eclipse.xtend.lib.annotations.Accessors
 
+@Accessors(NONE)
 class LibResolver
 {
+    val ITargetVersionProvider targetVersionProvider
+
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
     static val cabLibMapper = #{
         "Commons/Core" -> "BTC.CAB.Commons.Core",
@@ -69,19 +74,32 @@ class LibResolver
                 "BTC.CAB.ServiceComm.SQ.ImportAPI"]
     }
 
-    static def Iterable<ExternalDependency> getCABLibs(IPath headerFile)
+    def Iterable<ExternalDependency> getCABLibs(IPath headerFile)
     {
         // remove last 2 component (which are the "include" directory name and the *.h file name)
         val key = headerFile.removeLastSegments(2).toPortableString
 
         if (cabLibMapper.containsKey(key))
         {
-            return #[#[cabLibMapper.get(key)],
-                cabAdditionalDependencies.getOrDefault(headerFile.toPortableString, #[])].flatten.map [
+            return #[#[cabLibMapper.get(key)], getAdditionalDependencies(headerFile)].flatten.map [
                 new ExternalDependency(it)
             ]
+
         }
 
         throw new IllegalArgumentException("Could not find CAB library mapping: " + headerFile)
     }
+
+    def getAdditionalDependencies(IPath headerFile)
+    {
+        val serviceCommTargetVersion = ServiceCommVersion.get(targetVersionProvider.getTargetVersion(
+            CppConstants.SERVICECOMM_VERSION_KIND))
+
+        if (serviceCommTargetVersion == ServiceCommVersion.V0_10 ||
+            serviceCommTargetVersion == ServiceCommVersion.V0_11)
+            cabAdditionalDependencies.getOrDefault(headerFile.toPortableString, #[])
+        else
+            #[]
+    }
+
 }

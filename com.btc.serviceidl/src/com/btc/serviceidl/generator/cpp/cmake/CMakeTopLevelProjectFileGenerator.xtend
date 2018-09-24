@@ -172,6 +172,10 @@ class CMakeTopLevelProjectFileGenerator
 
     def generateCMakeLists()
     {
+        // TODO why is find_package(Boost COMPONENTS thread REQUIRED) required? probably because 
+        // the BTC.CAB.ServiceComm package BTC.CAB.ServiceCommConfig.cmake file does not properly 
+        // specify its own dependency on it
+        
         val serviceCommTargetVersion = ServiceCommVersion.get(generationSettings.getTargetVersion(
             CppConstants.SERVICECOMM_VERSION_KIND))
 
@@ -202,6 +206,7 @@ class CMakeTopLevelProjectFileGenerator
             
             «IF serviceCommTargetVersion == ServiceCommVersion.V0_12»
                 find_package(Protobuf REQUIRED)
+                find_package(Boost COMPONENTS thread REQUIRED)
                 find_package(BTC.CAB.ServiceComm REQUIRED)
             «ENDIF»
 

@@ -80,8 +80,8 @@ class ProjectGeneratorBaseBase
 
     private def createTypeResolver(ParameterBundle paramBundle)
     {
-        new TypeResolver(qualifiedNameProvider, vsSolution, moduleStructureStrategy, projectReferences, cabLibs,
-            smartPointerMap)
+        new TypeResolver(qualifiedNameProvider, vsSolution, moduleStructureStrategy, targetVersionProvider,
+            projectReferences, cabLibs, smartPointerMap)
     }
 
     protected def createBasicCppGenerator()
