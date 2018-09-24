@@ -53,11 +53,11 @@ class ProjectGeneratorBaseBase
     val projectReferences = new HashSet<IProjectReference>
     val projectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP)) // TODO inject the file groups
 
-    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
-        IScopeProvider scopeProvider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
-        IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
-        ITargetVersionProvider targetVersionProvider, Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap,
-        ProjectType type, ModuleDeclaration module)
+    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
+        IDLSpecification idl, IProjectSetFactory projectSetFactory, IProjectSet vsSolution,
+        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
+        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ProjectType type,
+        ModuleDeclaration module)
     {
         this.fileSystemAccess = fileSystemAccess
         this.qualifiedNameProvider = qualifiedNameProvider
@@ -117,9 +117,9 @@ class ProjectGeneratorBaseBase
             cabLibs.add(new ExternalDependency("libprotobuf"))
         }
 
-        projectSetFactory.generateProjectFiles(fileSystemAccess, paramBundle, cabLibs.unmodifiableView, vsSolution,
-            Sets.union(projectReferences, additionalProjectReferences.toSet), projectFileSet.unmodifiableView,
-            projectType, projectPath, projectName)
+        projectSetFactory.generateProjectFiles(fileSystemAccess, targetVersionProvider, paramBundle,
+            cabLibs.unmodifiableView, vsSolution, Sets.union(projectReferences, additionalProjectReferences.toSet),
+            projectFileSet.unmodifiableView, projectType, projectPath, projectName)
     }
 
     protected def generateExportHeader()
@@ -144,8 +144,7 @@ class ProjectGeneratorBaseBase
         '''
     }
 
-    static def String generateSource(BasicCppGenerator basicCppGenerator, String fileContent,
-        Optional<String> fileTail)
+    static def String generateSource(BasicCppGenerator basicCppGenerator, String fileContent, Optional<String> fileTail)
     {
         '''
             «basicCppGenerator.generateIncludes(false)»

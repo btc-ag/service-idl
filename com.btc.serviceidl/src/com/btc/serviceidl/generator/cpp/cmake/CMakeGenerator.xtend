@@ -10,10 +10,12 @@
  */
 package com.btc.serviceidl.generator.cpp.cmake
 
-import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.ExternalDependency
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
+import com.btc.serviceidl.generator.cpp.ServiceCommVersion
 import java.util.Set
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -21,7 +23,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 @Accessors(NONE)
 class CMakeGenerator
 {
-    val ParameterBundle parameterBundle
+    val ITargetVersionProvider targetVersionProvider
     val Iterable<ExternalDependency> externalDependencies
     val Set<CMakeProjectSet.ProjectReference> projectReferences
 
@@ -38,8 +40,64 @@ class CMakeGenerator
 
     def CharSequence generateCMakeLists(String projectName, IPath projectPath, ProjectType projectType)
     {
+        val serviceCommTargetVersion = ServiceCommVersion.get(targetVersionProvider.getTargetVersion(
+            CppConstants.SERVICECOMM_VERSION_KIND))
+
+        if (serviceCommTargetVersion == ServiceCommVersion.V0_12)
+            generateCMakeListsNewStyle(projectName, projectPath, projectType)
+        else
+            generateCMakeListsOldStyle(projectName, projectPath, projectType)
+    }
+
+    private def CharSequence generateCMakeListsNewStyle(String projectName, IPath projectPath, ProjectType projectType)
+    {
         val cmakeTargetType = projectType.cmakeTargetType
-        
+
+        // TODO properly distinguish between PUBLIC and PRIVATE dependencies
+        '''
+            set(TARGET «projectName»)
+            
+            cab_create_target(«cmakeTargetType» ${TARGET})
+            cab_default_grouped_sources(${TARGET})
+            target_compile_definitions( ${TARGET}
+                PRIVATE -DCAB_NO_LEGACY_EXPORT_MACROS
+            )
+            target_link_libraries(${TARGET}
+                PUBLIC
+                  «FOR lib : externalDependencies.map[libraryName].sort»
+                      «getCmakeTargetName(lib)»
+                  «ENDFOR»
+                  «FOR referencedProjectName : getSortedInternalDependencies(projectName)»
+                      «referencedProjectName»
+                  «ENDFOR»              
+            )
+            
+            «/* set linker_language explicitly to allow for modules without source files (headers only) */»
+            set_target_properties("${TARGET}" PROPERTIES LINKER_LANGUAGE CXX)
+        '''
+    }
+    
+    def getCmakeTargetName(String libName)
+    {
+        if (libName.startsWith("BTC.CAB."))
+            "CAB::" + libName
+        else if (libName == "libprotobuf")
+            "protobuf::libprotobuf"
+        else
+            throw new IllegalArgumentException(
+                "Don't know how to map library to a cmake target: " + libName
+            )
+    }
+    
+    def getSortedInternalDependencies(String projectName) {
+        /* TODO this doesn't seem to be the right place to filter out self-references */
+        projectReferences.map[it.projectName].sort.filter[it != projectName]
+    }
+
+    private def CharSequence generateCMakeListsOldStyle(String projectName, IPath projectPath, ProjectType projectType)
+    {
+        val cmakeTargetType = projectType.cmakeTargetType
+
         // TODO instead of globbing, this could list files from the projectFileSet explicitly
         '''
             # define target name
@@ -64,13 +122,10 @@ class CMakeGenerator
             # define list of targets which have to be linked
             set( LINK_TARGETS
               «FOR lib : externalDependencies.map[libraryName].sort»
-                «lib»
+                  «lib»
               «ENDFOR»
-              «FOR referencedProjectName : projectReferences.map[it.projectName].sort»
-              «/* TODO this doesn't seem to be the right place to filter out self-references */»
-              «IF referencedProjectName != projectName»
-              «referencedProjectName»
-              «ENDIF»
+              «FOR referencedProjectName : getSortedInternalDependencies(projectName)»
+                  «referencedProjectName»
               «ENDFOR»              
             )
             
@@ -89,8 +144,9 @@ class CMakeGenerator
             set_target_properties("${TARGET}" PROPERTIES LINKER_LANGUAGE CXX)
         '''
     }
-    
-    static def getCmakeTargetType(ProjectType projectType) {
+
+    static def getCmakeTargetType(ProjectType projectType)
+    {
         if (projectType == ProjectType.PROTOBUF) "STATIC_LIB" else "SHARED_LIB"
     }
 

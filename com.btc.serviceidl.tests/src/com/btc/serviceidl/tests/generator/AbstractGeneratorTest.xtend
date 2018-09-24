@@ -17,6 +17,7 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.IDLSpecification
 import java.util.HashSet
 import java.util.Map
+import java.util.Map.Entry
 import java.util.Set
 import javax.inject.Inject
 import org.eclipse.xtext.generator.GeneratorContext
@@ -36,6 +37,12 @@ class AbstractGeneratorTest
     def void checkGenerators(CharSequence input, Set<ArtifactNature> artifactNatures, Set<ProjectType> projectTypes,
         String cppProjectSystem, int fileCount, Map<String, String> contents)
     {
+        checkGenerators(input, artifactNatures, projectTypes, cppProjectSystem, null, fileCount, contents)
+    }
+
+    def void checkGenerators(CharSequence input, Set<ArtifactNature> artifactNatures, Set<ProjectType> projectTypes,
+        String cppProjectSystem, Iterable<Entry<String, String>> versions, int fileCount, Map<String, String> contents)
+    {
         val spec = input.parse
         val fsa = new InMemoryFileSystemAccess
 
@@ -44,6 +51,7 @@ class AbstractGeneratorTest
         overrides.projectTypes = new HashSet<ProjectType>(projectTypes)
         overrides.languages = new HashSet<ArtifactNature>(artifactNatures)
         overrides.cppProjectSystem = cppProjectSystem
+        overrides.versions = versions
         defaultGenerationSettingsProvider.configureOverrides(overrides)
 
         underTest.doGenerate(spec.eResource, fsa, new GeneratorContext)

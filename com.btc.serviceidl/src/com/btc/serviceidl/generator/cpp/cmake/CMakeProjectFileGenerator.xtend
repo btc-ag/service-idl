@@ -10,23 +10,22 @@
  */
 package com.btc.serviceidl.generator.cpp.cmake
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
-import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.ExternalDependency
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
+import java.util.Collections
 import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
-import com.google.common.collect.Iterables
-import java.util.Collections
 
 @Accessors(NONE)
 class CMakeProjectFileGenerator
 {
     val IFileSystemAccess fileSystemAccess
-    val ParameterBundle parameterBundle
+    val ITargetVersionProvider targetVersionProvider
     val Iterable<ExternalDependency> externalDependencies
     val Iterable<IProjectReference> projectReferences
 
@@ -76,7 +75,7 @@ class CMakeProjectFileGenerator
     private def generateCMakeLists()
     {
         new CMakeGenerator(
-            parameterBundle,
+            targetVersionProvider,
             externalDependencies,
             myProjectReferences,
             projectFileSet.unmodifiableView
@@ -86,7 +85,7 @@ class CMakeProjectFileGenerator
     private def generateCMakeSet()
     {
         new CMakeGenerator(
-            parameterBundle,
+            targetVersionProvider,
             externalDependencies,
             myProjectReferences,
             projectFileSet.unmodifiableView

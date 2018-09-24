@@ -1,5 +1,6 @@
 package com.btc.serviceidl.generator.cpp.prins
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
@@ -22,8 +23,8 @@ class VSSolutionFactory implements IProjectSetFactory
         new VSSolution
     }
 
-    override generateProjectFiles(IFileSystemAccess fileSystemAccess, ParameterBundle parameterBundle,
-        Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
+    override generateProjectFiles(IFileSystemAccess fileSystemAccess, ITargetVersionProvider targetVersionProvider,
+        ParameterBundle parameterBundle, Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
         Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
         IPath projectPath, String projectName)
     {

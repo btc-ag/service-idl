@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMap
 import java.util.Arrays
 import java.util.HashSet
 import java.util.Map
+import java.util.Map.Entry
 import java.util.Set
 import javax.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
@@ -113,8 +114,8 @@ class CppGeneratorTest extends AbstractGeneratorTest
             }}}}}}}
         ''')
 
-        checkGenerators(TestData.basic, projectTypes, Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ, fileCount,
-            contents)
+        checkGenerators(TestData.basic, projectTypes, Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ, null,
+            fileCount, contents)
     }
 
     @Test
@@ -135,7 +136,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
                 TODO
                 """
                 
-                build_requires = "CMakeMacros/0.3.latest@cab/testing"
+                build_requires = "CMakeMacros/0.4.latest@cab/testing"
                 # TODO instead of "latest", for maturity RELEASE, this should be replaced by a 
                 # concrete version at some point (maybe not during generation, but during the build?)
                 # in a similar manner as mvn versions:resolve-ranges                
@@ -153,11 +154,11 @@ class CppGeneratorTest extends AbstractGeneratorTest
                     outdir = self.source_folder
                     
                     self.run('bin\\protoc.exe --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
-
+            
                 def build(self):
                     self.generateProtoFiles()
                     ConanTemplate.build(self)
-
+            
                 def package(self):
                     ConanTemplate.package(self)
                     self.copy("**/*.proto", dst="proto", keep_path=True)
@@ -165,12 +166,14 @@ class CppGeneratorTest extends AbstractGeneratorTest
                 def imports(self):
                     self.copy("protoc.exe", "bin", "bin")
         ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
-            cmake_minimum_required(VERSION 3.4)
+            cmake_minimum_required(VERSION 3.11)
             
             project (__synthetic0 CXX)
             
             include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-            conan_basic_setup()
+            
+            set(CAB_RELEASE_UNIT __synthetic0)
+            conan_basic_setup(TARGETS)
             
             include(${CONAN_CMAKEMACROS_ROOT}/cmake/cab_globals.cmake)
             
@@ -180,49 +183,28 @@ class CppGeneratorTest extends AbstractGeneratorTest
             set(CAB_INT_SOURCE_DIR ${CMAKE_SOURCE_DIR})
             set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
             
-            add_definitions(-DBTC_CAB_COMMONS_FUTUREUTIL_STATIC_DEFINE)
-            add_definitions(-DBTC_CAB_SERVICECOMM_BASE_STATIC_DEFINE)
-
-            include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/ServiceAPI/build/make.cmakeset)           
+            find_package(Protobuf REQUIRED)
+            find_package(BTC.CAB.ServiceComm REQUIRED)
+                        
+            include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/ServiceAPI/build/make.cmakeset)
+            
+            install(EXPORT ${CAB_RELEASE_UNIT} DESTINATION cmake NAMESPACE CAB::)
         ''', directory + "build/CMakeLists.txt", '''
-            # define target name
-            set( TARGET BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI )
+            set(TARGET BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI)
             
-            # Components include dirs
-            file( GLOB INCS ../include/*.h* ../include/**/*.h* )
-            
-            # Components source files
-            file( GLOB SRCS ../source/*.cpp ../gen/*.cc )
-            
-            if( MSVC )
-                # other resources
-                file( GLOB RESOURCE ../res/*.rc )
-                file( GLOB RESOURCE_H ../res/*.h )
-            endif()
-            
-            # summerize files
-            set( FILES ${INCS} ${SRCS} ${RESOURCE} ${RESOURCE_H} )
-            source_group( "Resources" FILES ${RESOURCE} ${RESOURCE_H} )
-            
-            # define list of targets which have to be linked
-            set( LINK_TARGETS
-                  BTC.CAB.Commons.Core
-                  BTC.CAB.Commons.CoreExtras
-                  BTC.CAB.ServiceComm.API
-                  BTC.CAB.ServiceComm.Base
-              )
-            
-            # define list of dependent targets
-            set( DEP_TARGETS
-              ${LINK_TARGETS}
+            cab_create_target(SHARED_LIB ${TARGET})
+            cab_default_grouped_sources(${TARGET})
+            target_compile_definitions( ${TARGET}
+                PRIVATE -DCAB_NO_LEGACY_EXPORT_MACROS
             )
-            
-            add_definitions( -DCAB_NO_LEGACY_EXPORT_MACROS )
-            
-            # define complete target description
-            MY_TARGET( SHARED_LIB TARGET FILES DEP_TARGETS LINK_TARGETS WARNING_LEVEL_DEFAULT COMPILE_OPTS_DEFAULT )
-            #ENABLE_WARNINGSASERRORS( "${TARGET}" )            
-            
+            target_link_libraries(${TARGET}
+                PUBLIC
+                  CAB::BTC.CAB.Commons.Core
+                  CAB::BTC.CAB.Commons.CoreExtras
+                  CAB::BTC.CAB.ServiceComm.API
+                  CAB::BTC.CAB.ServiceComm.Base
+              )
+
             set_target_properties("${TARGET}" PROPERTIES LINKER_LANGUAGE CXX)
         ''', directory + "build/make.cmakeset", '''
             cab_file_guard()            
@@ -231,11 +213,122 @@ class CppGeneratorTest extends AbstractGeneratorTest
 
         // TODO the dependencies on BTC.CAB.ServiceComm should be removed from the ServiceAPI. 
         // I am not sure where they come from.
-        checkGenerators(TestData.basic, projectTypes, Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE, fileCount, contents)
+        checkGenerators(TestData.basic, projectTypes, Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE, null, fileCount,
+            contents)
     }
 
     @Test
-    def void testBasicDispatcherCmake()
+    def void testBasicDispatcherCmakeNew()
+    {
+        val fileCount = 22
+        val projectTypes = new HashSet<ProjectType>(
+            #[ProjectType.SERVICE_API, ProjectType.PROTOBUF, ProjectType.DISPATCHER])
+        val directory = ArtifactNature.CPP.label + "Infrastructure/ServiceHost/Demo/API/Dispatcher/"
+
+        val contents = ImmutableMap.of(ArtifactNature.CPP.label + "conanfile.py", '''
+            from conan_template import *
+            
+            class Conan(ConanTemplate):
+                name = "__synthetic0"
+                version = version_name("0.1.0-unreleased")
+                url = "TODO"
+                description = """
+                TODO
+                """
+                
+                build_requires = "CMakeMacros/0.4.latest@cab/testing"
+                # TODO instead of "latest", for maturity RELEASE, this should be replaced by a 
+                # concrete version at some point (maybe not during generation, but during the build?)
+                # in a similar manner as mvn versions:resolve-ranges                
+                requires = ( 
+                            ("BTC.CAB.Commons/1.9.latest@cab/testing"),
+                            ("BTC.CAB.IoC/1.8.latest@cab/testing"),
+                            ("BTC.CAB.Logging/1.8.latest@cab/testing"),
+                            ("BTC.CAB.ServiceComm/0.12.latest@cab/testing")
+                            )
+                generators = "cmake"
+                short_paths = True
+                
+                def generateProtoFiles(self):
+                    protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)
+                    outdir = self.source_folder
+                    
+                    self.run('bin\\protoc.exe --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
+            
+                def build(self):
+                    self.generateProtoFiles()
+                    ConanTemplate.build(self)
+            
+                def package(self):
+                    ConanTemplate.package(self)
+                    self.copy("**/*.proto", dst="proto", keep_path=True)
+            
+                def imports(self):
+                    self.copy("protoc.exe", "bin", "bin")
+        ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
+            cmake_minimum_required(VERSION 3.11)
+            
+            project (__synthetic0 CXX)
+            
+            include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+            
+            set(CAB_RELEASE_UNIT __synthetic0)
+            conan_basic_setup(TARGETS)
+            
+            include(${CONAN_CMAKEMACROS_ROOT}/cmake/cab_globals.cmake)
+            
+            option(BUILD_TESTS "Build test" ON)
+            
+            include_directories(${CMAKE_SOURCE_DIR})
+            set(CAB_INT_SOURCE_DIR ${CMAKE_SOURCE_DIR})
+            set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
+            
+            find_package(Protobuf REQUIRED)
+            find_package(BTC.CAB.ServiceComm REQUIRED)
+            
+            include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/Dispatcher/build/make.cmakeset)
+            include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/Protobuf/build/make.cmakeset)
+            include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/ServiceAPI/build/make.cmakeset)
+            
+            install(EXPORT ${CAB_RELEASE_UNIT} DESTINATION cmake NAMESPACE CAB::)
+        ''', directory + "build/CMakeLists.txt", '''
+            set(TARGET BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Dispatcher)
+            
+            cab_create_target(SHARED_LIB ${TARGET})
+            cab_default_grouped_sources(${TARGET})
+            target_compile_definitions( ${TARGET}
+                PRIVATE -DCAB_NO_LEGACY_EXPORT_MACROS
+            )
+            target_link_libraries(${TARGET}
+                PUBLIC
+                  CAB::BTC.CAB.Commons.Core
+                  CAB::BTC.CAB.Commons.CoreExtras
+                  CAB::BTC.CAB.Commons.CoreOS
+                  CAB::BTC.CAB.Commons.FutureUtil
+                  CAB::BTC.CAB.Logging.API
+                  CAB::BTC.CAB.ServiceComm.API
+                  CAB::BTC.CAB.ServiceComm.Base
+                  CAB::BTC.CAB.ServiceComm.Commons
+                  CAB::BTC.CAB.ServiceComm.ProtobufBase
+                  CAB::BTC.CAB.ServiceComm.ProtobufUtil
+                  CAB::BTC.CAB.ServiceComm.Util
+                  protobuf::libprotobuf
+                  BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf 
+                  BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI
+              )
+
+            set_target_properties("${TARGET}" PROPERTIES LINKER_LANGUAGE CXX)
+        ''', directory + "build/make.cmakeset", '''
+            cab_file_guard()            
+            cab_add_project(${CMAKE_CURRENT_LIST_DIR})            
+        ''')
+
+        checkGenerators(TestData.basic, projectTypes, Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE,
+            null, fileCount, contents)
+    }
+
+    @Test
+    def void testBasicDispatcherCmakeOld()
     {
         val fileCount = 22
         val projectTypes = new HashSet<ProjectType>(
@@ -258,10 +351,10 @@ class CppGeneratorTest extends AbstractGeneratorTest
                 # concrete version at some point (maybe not during generation, but during the build?)
                 # in a similar manner as mvn versions:resolve-ranges                
                 requires = ( 
-                            ("BTC.CAB.Commons/1.9.latest@cab/testing"),
-                            ("BTC.CAB.IoC/1.8.latest@cab/testing"),
-                            ("BTC.CAB.Logging/1.8.latest@cab/testing"),
-                            ("BTC.CAB.ServiceComm/0.12.latest@cab/testing")
+                            ("BTC.CAB.Commons/1.8.latest@cab/testing"),
+                            ("BTC.CAB.IoC/1.7.latest@cab/testing"),
+                            ("BTC.CAB.Logging/1.7.latest@cab/testing"),
+                            ("BTC.CAB.ServiceComm/0.11.latest@cab/testing")
                             )
                 generators = "cmake"
                 short_paths = True
@@ -271,11 +364,11 @@ class CppGeneratorTest extends AbstractGeneratorTest
                     outdir = self.source_folder
                     
                     self.run('bin\\protoc.exe --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
-
+            
                 def build(self):
                     self.generateProtoFiles()
                     ConanTemplate.build(self)
-
+            
                 def package(self):
                     ConanTemplate.package(self)
                     self.copy("**/*.proto", dst="proto", keep_path=True)
@@ -298,9 +391,6 @@ class CppGeneratorTest extends AbstractGeneratorTest
             set(CAB_INT_SOURCE_DIR ${CMAKE_SOURCE_DIR})
             set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
             
-            add_definitions(-DBTC_CAB_COMMONS_FUTUREUTIL_STATIC_DEFINE)
-            add_definitions(-DBTC_CAB_SERVICECOMM_BASE_STATIC_DEFINE)
-
             include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/Dispatcher/build/make.cmakeset)
             include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/Protobuf/build/make.cmakeset)
             include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/ServiceAPI/build/make.cmakeset)
@@ -360,13 +450,14 @@ class CppGeneratorTest extends AbstractGeneratorTest
             cab_add_project(${CMAKE_CURRENT_LIST_DIR})            
         ''')
 
-        checkGenerators(TestData.basic, projectTypes, Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE, fileCount, contents)
+        checkGenerators(TestData.basic, projectTypes, Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE,
+            #{"cpp.servicecomm" -> "0.11"}.entrySet, fileCount, contents)
     }
 
-    def void checkGenerators(CharSequence input, Set<ProjectType> projectTypes, String cppProjectSystem, int fileCount,
-        Map<String, String> contents)
+    def void checkGenerators(CharSequence input, Set<ProjectType> projectTypes, String cppProjectSystem,
+        Iterable<Entry<String, String>> versions, int fileCount, Map<String, String> contents)
     {
         checkGenerators(input, new HashSet<ArtifactNature>(Arrays.asList(ArtifactNature.CPP)), projectTypes,
-            cppProjectSystem, fileCount, contents)
+            cppProjectSystem, versions, fileCount, contents)
     }
 }
