@@ -131,6 +131,12 @@ class ProjectGeneratorBaseBase
     static def String generateHeader(BasicCppGenerator basicCppGenerator,
         IModuleStructureStrategy moduleStructureStrategy, String fileContent, Optional<String> exportHeader)
     {
+        // TODO workaround, this should generally resolve the encapsulationHeader
+        if (moduleStructureStrategy.encapsulationHeaders.key.contains("Commons/Core/include"))
+        {
+            basicCppGenerator.typeResolver.resolveSymbol("BTC::Commons::Core::String")            
+        }
+        
         '''
             #pragma once
             
