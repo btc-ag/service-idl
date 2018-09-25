@@ -403,7 +403,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             file( GLOB INCS ../include/*.h* ../include/**/*.h* )
             
             # Components source files
-            file( GLOB SRCS ../source/*.cpp ../gen/*.cc )
+            file( GLOB SRCS ../src/*.cpp ../gen/*.cc )
             
             if( MSVC )
                 # other resources

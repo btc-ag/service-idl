@@ -79,4 +79,11 @@ public interface IModuleStructureStrategy {
      */
     IPath getProjectDir(ParameterBundle bundle);
 
+    /**
+     * Returns the relative source file directory with a project base directory,
+     * e.g. "src".
+     * 
+     * @return IPath specifying the relative source file directory.
+     */
+    IPath getSourceFileDir();
 }

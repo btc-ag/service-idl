@@ -117,9 +117,10 @@ class ProjectGeneratorBaseBase
             cabLibs.add(new ExternalDependency("libprotobuf"))
         }
 
-        projectSetFactory.generateProjectFiles(fileSystemAccess, targetVersionProvider, paramBundle,
-            cabLibs.unmodifiableView, vsSolution, Sets.union(projectReferences, additionalProjectReferences.toSet),
-            projectFileSet.unmodifiableView, projectType, projectPath, projectName)
+        projectSetFactory.generateProjectFiles(fileSystemAccess, moduleStructureStrategy, targetVersionProvider,
+            paramBundle, cabLibs.unmodifiableView, vsSolution,
+            Sets.union(projectReferences, additionalProjectReferences.toSet), projectFileSet.unmodifiableView,
+            projectType, projectPath, projectName)
     }
 
     protected def generateExportHeader()

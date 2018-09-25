@@ -44,17 +44,17 @@ class ServerRunnerProjectGenerator extends ProjectGeneratorBaseBase
     {
         // paths
         val includePath = projectPath.append("include")
-        val sourcePath = projectPath.append("source")
+        val sourcePath = projectPath.append(moduleStructureStrategy.sourceFileDir)
         val etcPath = projectPath.append("etc")
 
-        // sub-folder "./include"
+        // include sub-folder
         val exportHeaderFileName = (GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP,
             TransformType.EXPORT_HEADER) + "_export".h).toLowerCase
         fileSystemAccess.generateFile(includePath.append(exportHeaderFileName).toString, ArtifactNature.CPP.label,
             generateExportHeader())
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, exportHeaderFileName)
 
-        // sub-folder "./source"
+        // source sub-folder
         val cppFile = GeneratorUtil.getClassName(ArtifactNature.CPP, paramBundle.projectType, "").cpp
         fileSystemAccess.generateFile(sourcePath.append(cppFile).toString, ArtifactNature.CPP.label,
             generateCppServerRunner(module.moduleComponents.filter(InterfaceDeclaration)))

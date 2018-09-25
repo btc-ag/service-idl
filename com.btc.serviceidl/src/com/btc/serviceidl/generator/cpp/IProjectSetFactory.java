@@ -10,8 +10,9 @@ import com.btc.serviceidl.generator.common.ProjectType;
 public interface IProjectSetFactory {
     IProjectSet create();
 
-    void generateProjectFiles(IFileSystemAccess fileSystemAccess, ITargetVersionProvider targetVersionProvider,
-            ParameterBundle parameterBundle, Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
+    void generateProjectFiles(IFileSystemAccess fileSystemAccess, IModuleStructureStrategy moduleStructureStrategy,
+            ITargetVersionProvider targetVersionProvider, ParameterBundle parameterBundle,
+            Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
             Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
             IPath projectPath, String projectName);
 }

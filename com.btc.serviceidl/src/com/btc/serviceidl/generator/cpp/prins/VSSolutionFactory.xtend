@@ -5,6 +5,7 @@ import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.ExternalDependency
+import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.IProjectSetFactory
@@ -23,20 +24,21 @@ class VSSolutionFactory implements IProjectSetFactory
         new VSSolution
     }
 
-    override generateProjectFiles(IFileSystemAccess fileSystemAccess, ITargetVersionProvider targetVersionProvider,
-        ParameterBundle parameterBundle, Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
+    override generateProjectFiles(IFileSystemAccess fileSystemAccess, IModuleStructureStrategy moduleStructureStrategy,
+        ITargetVersionProvider targetVersionProvider, ParameterBundle parameterBundle,
+        Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
         Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
         IPath projectPath, String projectName)
     {
         val dependencyFileName = Constants.FILE_NAME_DEPENDENCIES.cpp
-        val sourcePath = projectPath.append("source")
+        val sourcePath = projectPath.append(moduleStructureStrategy.sourceFileDir)
 
         fileSystemAccess.generateFile(sourcePath.append(dependencyFileName).toString, ArtifactNature.CPP.label,
             generateDependencies(externalDependencies))
         projectFileSet.addToGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP, dependencyFileName)
 
-        new VSProjectFileGenerator(fileSystemAccess, parameterBundle, projectSet, projectReferences, projectFileSet,
-            projectType, projectPath, projectName).generate()
+        new VSProjectFileGenerator(fileSystemAccess, moduleStructureStrategy, parameterBundle, projectSet,
+            projectReferences, projectFileSet, projectType, projectPath, projectName).generate()
     }
 
     private def generateDependencies(Iterable<ExternalDependency> externalDependencies)

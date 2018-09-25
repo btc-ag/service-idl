@@ -15,6 +15,7 @@ import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import com.btc.serviceidl.util.Constants
 import java.util.Set
@@ -28,10 +29,16 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 class VcxProjGenerator
 {
     val ParameterBundle paramBundle
+    val IModuleStructureStrategy moduleStructureStrategy
     val VSSolution vsSolution
     val Set<VSSolution.ProjectReference> projectReferences
 
     val ProjectFileSet projectFileSet
+    
+    private def getSourceDir()
+    {
+        moduleStructureStrategy.sourceFileDir.toWindowsString        
+    }
 
     def generate(String projectName, IPath projectPath)
     {
@@ -250,10 +257,10 @@ class VcxProjGenerator
           «IF !(projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP).empty && projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP).empty && projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP).empty && projectFileSet.getGroup(OdbConstants.ODB_FILE_GROUP).empty)»
               <ItemGroup>
                 «FOR cppFile : projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP)»
-                    <ClCompile Include="source\«cppFile»" />
+                    <ClCompile Include="«sourceDir»\«cppFile»" />
                 «ENDFOR»
                 «FOR dependencyFile : projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP)»
-                    <ClCompile Include="source\«dependencyFile»" />
+                    <ClCompile Include="«sourceDir»\«dependencyFile»" />
                 «ENDFOR»
                 «FOR pbCcFile : projectFileSet.getGroup(ProjectFileSet.PROTOBUF_FILE_GROUP)»
                     <ClCompile Include="gen\«pbCcFile».pb.cc" />
@@ -383,7 +390,7 @@ class VcxProjGenerator
                         </ClCompile>
                     «ENDFOR»
                     «FOR cppFile : projectFileSet.getGroup(ProjectFileSet.CPP_FILE_GROUP)»
-                        <ClCompile Include="source\«cppFile»">
+                        <ClCompile Include="«sourceDir»\«cppFile»">
                           <Filter>Source Files</Filter>
                         </ClCompile>
                     «ENDFOR»
@@ -392,7 +399,7 @@ class VcxProjGenerator
               «IF !projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP).empty»
                   <ItemGroup>
                     «FOR dependencyFile : projectFileSet.getGroup(ProjectFileSet.DEPENDENCY_FILE_GROUP)»
-                        <ClCompile Include="source\«dependencyFile»">
+                        <ClCompile Include="«sourceDir»\«dependencyFile»">
                           <Filter>Dependencies</Filter>
                         </ClCompile>
                     «ENDFOR»
