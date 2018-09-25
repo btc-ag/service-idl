@@ -82,85 +82,94 @@ class CMakeGenerator
                   «ENDFOR»              
             )
             
+            «IF projectType == ProjectType.PROTOBUF»
+                file(GLOB PROTOBUF_SRCS «protobufSourceFilesGlob»)
+                target_sources(${TARGET} PRIVATE ${PROTOBUF_SRCS}) 
+            «ENDIF»
+            
             «/* set linker_language explicitly to allow for modules without source files (headers only) */»
             set_target_properties("${TARGET}" PROPERTIES LINKER_LANGUAGE CXX)
         '''
     }
 
-            def getCmakeTargetName(String libName)
-            {
-                if (libName.startsWith("BTC.CAB."))
-                    "CAB::" + libName
-                else if (libName == "libprotobuf")
-                    "protobuf::libprotobuf"
-                else
-                    throw new IllegalArgumentException(
-                        "Don't know how to map library to a cmake target: " + libName
-                    )
-            }
-
-            def getSortedInternalDependencies(String projectName)
-            {
-                /* TODO this doesn't seem to be the right place to filter out self-references */
-                projectReferences.map[it.projectName].sort.filter[it != projectName]
-            }
-
-            private def CharSequence generateCMakeListsOldStyle(String projectName, IPath projectPath,
-                ProjectType projectType)
-            {
-                val cmakeTargetType = projectType.cmakeTargetType
-
-                // TODO instead of globbing, this could list files from the projectFileSet explicitly
-                '''
-                    # define target name
-                    set( TARGET «projectName» )
-                    
-                    # Components include dirs
-                    file( GLOB INCS ../include/*.h* ../include/**/*.h* )
-                    
-                    # Components source files
-                    file( GLOB SRCS «Path.fromPortableString("..").append(moduleStructureStrategy.sourceFileDir).append("*.cpp").toPortableString» ../gen/*.cc )
-                    
-                    if( MSVC )
-                        # other resources
-                        file( GLOB RESOURCE ../res/*.rc )
-                        file( GLOB RESOURCE_H ../res/*.h )
-                    endif()
-                    
-                    # summerize files
-                    set( FILES ${INCS} ${SRCS} ${RESOURCE} ${RESOURCE_H} )
-                    source_group( "Resources" FILES ${RESOURCE} ${RESOURCE_H} )
-                    
-                    # define list of targets which have to be linked
-                    set( LINK_TARGETS
-                      «FOR lib : externalDependencies.map[libraryName].sort»
-                          «lib»
-                      «ENDFOR»
-                      «FOR referencedProjectName : getSortedInternalDependencies(projectName)»
-                          «referencedProjectName»
-                      «ENDFOR»              
-                    )
-                    
-                    # define list of dependent targets
-                    set( DEP_TARGETS
-                      ${LINK_TARGETS}
-                    )
-                    
-                    add_definitions( -DCAB_NO_LEGACY_EXPORT_MACROS )
-                    
-                    # define complete target description
-                    MY_TARGET( «cmakeTargetType» TARGET FILES DEP_TARGETS LINK_TARGETS WARNING_LEVEL_DEFAULT COMPILE_OPTS_DEFAULT )
-                    #ENABLE_WARNINGSASERRORS( "${TARGET}" )
-                    
-                    «/* set linker_language explicitly to allow for modules without source files (headers only) */»
-                    set_target_properties("${TARGET}" PROPERTIES LINKER_LANGUAGE CXX)
-                '''
-                }
-
-                static def getCmakeTargetType(ProjectType projectType)
-                {
-                    if (projectType == ProjectType.PROTOBUF) "STATIC_LIB" else "SHARED_LIB"
-                }
-
-            }
+    def getCmakeTargetName(String libName)
+    {
+        if (libName.startsWith("BTC.CAB."))
+            "CAB::" + libName
+        else if (libName == "libprotobuf")
+            "protobuf::libprotobuf"
+        else
+            throw new IllegalArgumentException(
+                "Don't know how to map library to a cmake target: " + libName
+            )
+    }
+    
+    def getSortedInternalDependencies(String projectName)
+    {
+        /* TODO this doesn't seem to be the right place to filter out self-references */
+        projectReferences.map[it.projectName].sort.filter[it != projectName]
+    }
+    
+    private def CharSequence generateCMakeListsOldStyle(String projectName, IPath projectPath,
+        ProjectType projectType)
+    {
+        val cmakeTargetType = projectType.cmakeTargetType
+    
+        // TODO instead of globbing, this could list files from the projectFileSet explicitly
+        '''
+            # define target name
+            set( TARGET «projectName» )
             
+            # Components include dirs
+            file( GLOB INCS ../include/*.h* ../include/**/*.h* )
+            
+            # Components source files
+            file( GLOB SRCS «Path.fromPortableString("..").append(moduleStructureStrategy.sourceFileDir).append("*.cpp").toPortableString» «protobufSourceFilesGlob» )
+            
+            if( MSVC )
+                # other resources
+                file( GLOB RESOURCE ../res/*.rc )
+                file( GLOB RESOURCE_H ../res/*.h )
+            endif()
+            
+            # summerize files
+            set( FILES ${INCS} ${SRCS} ${RESOURCE} ${RESOURCE_H} )
+            source_group( "Resources" FILES ${RESOURCE} ${RESOURCE_H} )
+            
+            # define list of targets which have to be linked
+            set( LINK_TARGETS
+              «FOR lib : externalDependencies.map[libraryName].sort»
+                  «lib»
+              «ENDFOR»
+              «FOR referencedProjectName : getSortedInternalDependencies(projectName)»
+                  «referencedProjectName»
+              «ENDFOR»              
+            )
+            
+            # define list of dependent targets
+            set( DEP_TARGETS
+              ${LINK_TARGETS}
+            )
+            
+            add_definitions( -DCAB_NO_LEGACY_EXPORT_MACROS )
+            
+            # define complete target description
+            MY_TARGET( «cmakeTargetType» TARGET FILES DEP_TARGETS LINK_TARGETS WARNING_LEVEL_DEFAULT COMPILE_OPTS_DEFAULT )
+            #ENABLE_WARNINGSASERRORS( "${TARGET}" )
+            
+            «/* set linker_language explicitly to allow for modules without source files (headers only) */»
+            set_target_properties("${TARGET}" PROPERTIES LINKER_LANGUAGE CXX)
+        '''
+    }
+
+    def getProtobufSourceFilesGlob() 
+    {
+        Path.fromPortableString("..").append("gen").append("*.cc").toPortableString
+    }
+
+    static def getCmakeTargetType(ProjectType projectType)
+    {
+        if (projectType == ProjectType.PROTOBUF) "STATIC_LIB" else "SHARED_LIB"
+    }
+
+}
