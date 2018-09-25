@@ -35,7 +35,7 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
       val protobufRequest = getProtobufRequestClassName(interfaceDeclaration)
       val protobuf_response = getProtobufResponseClassName(interfaceDeclaration)
       val serviceFaultHandler = "serviceFaultHandler"
-      val scv_V0_6 = getTargetVersion() == ServiceCommVersion.V0_6
+      val serviceCommVersion_V0_6 = getTargetVersion() == ServiceCommVersion.V0_6
       
       // special case: the ServiceComm type InvalidRequestReceivedException has
       // the namespace BTC.CAB.ServiceComm.NET.API.Exceptions, but is included
@@ -84,13 +84,13 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
         «ENDFOR»
         
         /// <see cref="BTC.CAB.ServiceComm.NET.API.IServiceDispatcher.ProcessRequest"/>
-        «IF scv_V0_6»
+        «IF serviceCommVersion_V0_6»
             public override «resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")» ProcessRequest(IMessageBuffer requestBuffer, «resolve("BTC.CAB.ServiceComm.NET.Common.IPeerIdentity")» peerIdentity)
         «ELSE»
             public override «resolve("System.Byte[]")» ProcessRequest(byte[] requestBuffer, «resolve("BTC.CAB.ServiceComm.NET.Common.IPeerIdentity")» peerIdentity)
         «ENDIF»
         {
-           «IF scv_V0_6»
+           «IF serviceCommVersion_V0_6»
                var request = «protobufRequest».ParseFrom(requestBuffer.PopFront());
            «ELSE»
                var request = «protobufRequest».ParseFrom(requestBuffer);
@@ -147,7 +147,7 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
                  ;
               
               var response = «protobuf_response».CreateBuilder().Set«func.name.asDotNetProtobufName»Response(responseBuilder).Build();
-              «IF scv_V0_6»
+              «IF serviceCommVersion_V0_6»
                   return new «resolve("BTC.CAB.ServiceComm.NET.Common.MessageBuffer")»(response.ToByteArray());
               «ELSE»
                   return response.ToByteArray();

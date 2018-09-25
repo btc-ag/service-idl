@@ -34,7 +34,7 @@ class ProxyGenerator extends ProxyDispatcherGeneratorBase {
       if (featureProfile.usesEvents)
          resolve("BTC.CAB.ServiceComm.NET.Util.EventRegistryExtensions")
       val serviceFaultHandler = "serviceFaultHandler"
-      val scv_V0_6 = getTargetVersion() == ServiceCommVersion.V0_6
+      val serviceCommVersion_V0_6 = getTargetVersion() == ServiceCommVersion.V0_6
       
       '''
       public class «className» : «apiFullyQualifiedName.shortName»
@@ -88,13 +88,13 @@ class ProxyGenerator extends ProxyDispatcherGeneratorBase {
                   «ENDFOR»
                   
                «ENDIF»
-               «IF scv_V0_6»
+               «IF serviceCommVersion_V0_6»
                     var result =_serviceReference.RequestAsync(new «resolve("BTC.CAB.ServiceComm.NET.Common.MessageBuffer")»(protobufRequest.ToByteArray())).ContinueWith(task =>
                «ELSE»
                     var result =_serviceReference.RequestAsync(protobufRequest.ToByteArray()).ContinueWith(task =>
                «ENDIF»
                {
-                  «IF scv_V0_6»
+                  «IF serviceCommVersion_V0_6»
                      «apiResponseName» response = «apiResponseName».ParseFrom(task.Result.PopFront());
                   «ELSE»
                      «apiResponseName» response = «apiResponseName».ParseFrom(task.Result);

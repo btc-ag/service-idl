@@ -31,7 +31,7 @@ class TestGenerator extends GeneratorBase
         val serviceFaultHandlerManagerFactory = resolve("BTC.CAB.ServiceComm.NET.FaultHandling.ServiceFaultHandlerManagerFactory")
         val serverRegistration = getServerRegistrationName(interfaceDeclaration)
         val connectionFactory = resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.NetMQ.NetMqConnectionFactory")
-        val scv_V0_6 = getTargetVersion() == ServiceCommVersion.V0_6
+        val serviceCommVersion_V0_6 = getTargetVersion() == ServiceCommVersion.V0_6
 
         // explicit resolution of necessary assemblies
         resolve("BTC.CAB.Logging.API.NET.ILoggerFactory")
@@ -60,26 +60,26 @@ class TestGenerator extends GeneratorBase
                   const «resolve("System.string")» connectionString = "tcp://127.0.0.1:«Constants.DEFAULT_PORT»";
                   
                   var loggerFactory = new «loggerFactory»();
-                  «IF !scv_V0_6»
+                  «IF !serviceCommVersion_V0_6»
                       var serviceFaultHandlerManagerFactory = new «serviceFaultHandlerManagerFactory»();
                   «ENDIF»
                   
                   // server
-                  StartServer(loggerFactory«IF !scv_V0_6», serviceFaultHandlerManagerFactory«ENDIF», connectionString);
+                  StartServer(loggerFactory«IF !serviceCommVersion_V0_6», serviceFaultHandlerManagerFactory«ENDIF», connectionString);
                   
                   // client
                   var connectionOptions = «connectionFactory».«resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.API.ConnectionOptions").alias("DefaultClientConnectionOptions")»;
                   «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.API.IConnectionFactory")» connectionFactory = new «connectionFactory»(connectionOptions, loggerFactory);
-                  _client = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.Client")»(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcClientEndpoint")»(loggerFactory«IF !scv_V0_6», serviceFaultHandlerManagerFactory«ENDIF»), connectionFactory);
+                  _client = new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.Client")»(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcClientEndpoint")»(loggerFactory«IF !serviceCommVersion_V0_6», serviceFaultHandlerManagerFactory«ENDIF»), connectionFactory);
                   
                   _testSubject = «resolve(interfaceDeclaration, ProjectType.PROXY).alias(getProxyFactoryName(interfaceDeclaration))».CreateProtobufProxy(_client.ClientEndpoint);
                }
             
-               private void StartServer(«loggerFactory» loggerFactory«IF !scv_V0_6», «serviceFaultHandlerManagerFactory» serviceFaultHandlerManagerFactory«ENDIF», string connectionString)
+               private void StartServer(«loggerFactory» loggerFactory«IF !serviceCommVersion_V0_6», «serviceFaultHandlerManagerFactory» serviceFaultHandlerManagerFactory«ENDIF», string connectionString)
                {
                    var connectionOptions = «connectionFactory».«resolve("BTC.CAB.ServiceComm.NET.SingleQueue.ZeroMQ.API.ConnectionOptions").alias("DefaultServerConnectionOptions")»;
                   _serverConnectionFactory = new «connectionFactory»(connectionOptions, loggerFactory);
-                  _server = new Server(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcServerEndpoint")»(loggerFactory«IF !scv_V0_6», serviceFaultHandlerManagerFactory«ELSE»«ENDIF»), _serverConnectionFactory);
+                  _server = new Server(connectionString, new «resolve("BTC.CAB.ServiceComm.NET.SingleQueue.Core.AsyncRpcServerEndpoint")»(loggerFactory«IF !serviceCommVersion_V0_6», serviceFaultHandlerManagerFactory«ELSE»«ENDIF»), _serverConnectionFactory);
                   _serverRegistration = new «serverRegistration»(_server);
                   _serverRegistration.RegisterService();
                   // ensure that the server runs when the client is created.

@@ -16,24 +16,22 @@
 package com.btc.serviceidl.generator.dotnet
 
 import java.util.HashSet
-import java.util.List
+import org.eclipse.xtend.lib.annotations.Accessors
+import java.util.HashMap
 
+@Accessors(NONE)
 class NuGetPackageResolver
 {
-    ServiceCommVersion serviceCommTargetVersion
-    
-    new(ServiceCommVersion serviceCommTargetVersion){
-        this.serviceCommTargetVersion = serviceCommTargetVersion
-    }
+    val ServiceCommVersion serviceCommTargetVersion
+
     // TODO the versions should probably not be fixed to a specific micro version, but use something like "1.2.latest", in the
     // format used by nuget/paket
     
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
     // ServiceComm 0.6
-    static val versionMapper_0_6 = #{
+    static val versionMapperCommon = #{
         "BTC.CAB.Commons" -> "1.8.7",
         "BTC.CAB.Logging" -> "1.7.2",
-        "BTC.CAB.ServiceComm.NET" -> "0.6.0",
         "CommandLineParser" -> "1.9.71",
         "Google.ProtocolBuffers" -> "2.4.1.555",
         "log4net" -> "1.2.13",
@@ -42,17 +40,14 @@ class NuGetPackageResolver
         "Common.Logging" -> "1.2.0"
     }
 
+    // ServiceComm 0.6
+    static val versionMapperServiceComm_0_6 = #{
+        "BTC.CAB.ServiceComm.NET" -> "0.6.0"
+        }
+
     // ServiceComm 0.7
-    static val versionMapper_0_7 = #{
-        "BTC.CAB.Commons" -> "1.8.7",
-        "BTC.CAB.Logging" -> "1.7.2",
-        "BTC.CAB.ServiceComm.NET" -> "0.7.0",
-        "CommandLineParser" -> "1.9.71",
-        "Google.ProtocolBuffers" -> "2.4.1.555",
-        "log4net" -> "1.2.13",
-        "NUnit" -> "2.6.4", // TODO specifying 2.6.5 here generates a dependency conflict, but I don't understand why 
-        "Spring.Core" -> "1.3.2",
-        "Common.Logging" -> "1.2.0"
+    static val versionMapperServiceComm_0_7 = #{
+        "BTC.CAB.ServiceComm.NET" -> "0.7.0"
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
@@ -84,19 +79,9 @@ class NuGetPackageResolver
 
     private def NuGetPackage resolvePackageInternal(String assemblyName)
     {
-        var List<Pair<String, String>> versions = null
-        if (serviceCommTargetVersion == ServiceCommVersion.V0_6)
-        {
-            versions = validOrThrow(packageMapper.get(assemblyName), assemblyName, "package ID").map [
-                new Pair(it, validOrThrow(versionMapper_0_6.get(it), it, "package version"))
+        val versions = validOrThrow(packageMapper.get(assemblyName), assemblyName, "package ID").map [
+            new Pair(it, validOrThrow(getVersionMapper().get(it), it, "package version"))
             ].toList
-        }
-        if (serviceCommTargetVersion == ServiceCommVersion.V0_7)
-        {
-            versions = validOrThrow(packageMapper.get(assemblyName), assemblyName, "package ID").map [
-                new Pair(it, validOrThrow(versionMapper_0_7.get(it), it, "package version"))
-            ].toList
-        }
         // TODO probably, this must be generalized, depending on the .NET version. but is this necessary at all? 
         // isn't the hint path filled by nuget or paket?
         // TODO the assembly path with paket doesn't contain the version number, but it probably does when nu-get is used
@@ -104,6 +89,23 @@ class NuGetPackageResolver
             assemblyName + ".dll"
         new NuGetPackage(versions, assemblyName, assemblyPath)
 
+    }
+
+    private def getVersionMapper()
+    {
+        val versionMapper = new HashMap<String, String>()
+        versionMapper.putAll(versionMapperCommon)
+
+        if (serviceCommTargetVersion == ServiceCommVersion.V0_6)
+        {
+            versionMapper.putAll(versionMapperServiceComm_0_6)
+        }
+        else if (serviceCommTargetVersion == ServiceCommVersion.V0_7)
+        {
+            versionMapper.putAll(versionMapperServiceComm_0_7)
+        }
+
+        return versionMapper
     }
 
     private static def <T> T validOrThrow(T value, String name, String info)

@@ -90,8 +90,6 @@ class DotNetGenerator
         this.qualifiedNameProvider = qualifiedNameProvider
         this.generationSettings = generationSettings
         this.protobufProjectReferences = protobufProjectReferences
-        this.nugetPackages = new NuGetPackageResolver(ServiceCommVersion.get(generationSettings.getTargetVersion(
-            DotNetConstants.SERVICECOMM_VERSION_KIND)))
     }
 
     def void doGenerate()

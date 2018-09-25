@@ -91,7 +91,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
                 JavaConstants.SERVICECOMM_VERSION_KIND ->
                     com.btc.serviceidl.generator.java.ServiceCommVersion.V0_5.label,
                 DotNetConstants.SERVICECOMM_VERSION_KIND ->
-                    com.btc.serviceidl.generator.dotnet.ServiceCommVersion.V0_6.label}.entrySet
+                    com.btc.serviceidl.generator.dotnet.ServiceCommVersion.V0_7.label}.entrySet
 
             return result
         }

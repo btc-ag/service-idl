@@ -36,7 +36,7 @@ class AppConfigGenerator {
   // on Jenkins (but not on travis-ci)
   def CharSequence generateAppConfig(ModuleDeclaration module)
   {
-      val scv_V0_6 = getTargetVersion() == ServiceCommVersion.V0_6
+      val serviceCommVersion_V0_6 = getTargetVersion() == ServiceCommVersion.V0_6
       
       '''
       <?xml version="1.0"?>
@@ -57,7 +57,7 @@ class AppConfigGenerator {
           </context>
           <objects xmlns="http://www.springframework.net">
             <object id="BTC.CAB.Logging.API.NET.LoggerFactory" type="«typeResolver.resolve("BTC.CAB.Logging.Log4NET.Log4NETLoggerFactory").fullyQualifiedName», BTC.CAB.Logging.Log4NET"/>
-            «IF !scv_V0_6»
+            «IF !serviceCommVersion_V0_6»
                <object id="BTC.CAB.ServiceComm.NET.FaultHandling.ServiceFaultHandlerManagerFactory" type="«typeResolver.resolve("BTC.CAB.ServiceComm.NET.FaultHandling.ServiceFaultHandlerManagerFactory").fullyQualifiedName», BTC.CAB.ServiceComm.NET.FaultHandling"/>
             «ENDIF»
             
@@ -74,7 +74,7 @@ class AppConfigGenerator {
                  <constructor-arg index="0" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
                  <constructor-arg index="1" ref="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" />
                  <constructor-arg index="2" value="tcp://127.0.0.1:«Constants.DEFAULT_PORT»"/>
-                 «IF !scv_V0_6»
+                 «IF !serviceCommVersion_V0_6»
                     <constructor-arg index="3" ref="BTC.CAB.ServiceComm.NET.FaultHandling.ServiceFaultHandlerManagerFactory"/>
                  «ENDIF»
                </object>
@@ -121,7 +121,7 @@ class AppConfigGenerator {
                  <constructor-arg index="0" ref="BTC.CAB.Logging.API.NET.LoggerFactory" />
                  <constructor-arg index="1" ref="BTC.CAB.ServiceComm.NET.SingleQueue.API.ConnectionFactory" />
                  <constructor-arg index="2" value="tcp://127.0.0.1:«Constants.DEFAULT_PORT»"/>
-                 «IF !scv_V0_6»
+                 «IF !serviceCommVersion_V0_6»
                     <constructor-arg index="3" ref="BTC.CAB.ServiceComm.NET.FaultHandling.ServiceFaultHandlerManagerFactory"/>
                  «ENDIF»
                </object>
