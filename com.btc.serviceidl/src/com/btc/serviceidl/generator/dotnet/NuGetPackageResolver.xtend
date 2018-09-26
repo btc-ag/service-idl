@@ -16,23 +16,38 @@
 package com.btc.serviceidl.generator.dotnet
 
 import java.util.HashSet
+import org.eclipse.xtend.lib.annotations.Accessors
+import java.util.HashMap
 
+@Accessors(NONE)
 class NuGetPackageResolver
 {
+    val ServiceCommVersion serviceCommTargetVersion
+
     // TODO the versions should probably not be fixed to a specific micro version, but use something like "1.2.latest", in the
     // format used by nuget/paket
     
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
-    static val versionMapper = #{
+    // ServiceComm 0.6
+    static val versionMapperCommon = #{
         "BTC.CAB.Commons" -> "1.8.7",
         "BTC.CAB.Logging" -> "1.7.2",
-        "BTC.CAB.ServiceComm.NET" -> "0.6.0",
         "CommandLineParser" -> "1.9.71",
         "Google.ProtocolBuffers" -> "2.4.1.555",
         "log4net" -> "1.2.13",
         "NUnit" -> "2.6.4", // TODO specifying 2.6.5 here generates a dependency conflict, but I don't understand why 
         "Spring.Core" -> "1.3.2",
         "Common.Logging" -> "1.2.0"
+    }
+
+    // ServiceComm 0.6
+    static val versionMapperServiceComm_0_6 = #{
+        "BTC.CAB.ServiceComm.NET" -> "0.6.0"
+        }
+
+    // ServiceComm 0.7
+    static val versionMapperServiceComm_0_7 = #{
+        "BTC.CAB.ServiceComm.NET" -> "0.7.0"
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
@@ -62,11 +77,11 @@ class NuGetPackageResolver
 
     val nugetPackages = new HashSet<NuGetPackage>
 
-    private static def NuGetPackage resolvePackageInternal(String assemblyName)
+    private def NuGetPackage resolvePackageInternal(String assemblyName)
     {
         val versions = validOrThrow(packageMapper.get(assemblyName), assemblyName, "package ID").map [
-            new Pair(it, validOrThrow(versionMapper.get(it), it, "package version"))
-        ].toList
+            new Pair(it, validOrThrow(getVersionMapper().get(it), it, "package version"))
+            ].toList
         // TODO probably, this must be generalized, depending on the .NET version. but is this necessary at all? 
         // isn't the hint path filled by nuget or paket?
         // TODO the assembly path with paket doesn't contain the version number, but it probably does when nu-get is used
@@ -74,6 +89,23 @@ class NuGetPackageResolver
             assemblyName + ".dll"
         new NuGetPackage(versions, assemblyName, assemblyPath)
 
+    }
+
+    private def getVersionMapper()
+    {
+        val versionMapper = new HashMap<String, String>()
+        versionMapper.putAll(versionMapperCommon)
+
+        if (serviceCommTargetVersion == ServiceCommVersion.V0_6)
+        {
+            versionMapper.putAll(versionMapperServiceComm_0_6)
+        }
+        else if (serviceCommTargetVersion == ServiceCommVersion.V0_7)
+        {
+            versionMapper.putAll(versionMapperServiceComm_0_7)
+        }
+
+        return versionMapper
     }
 
     private static def <T> T validOrThrow(T value, String name, String info)

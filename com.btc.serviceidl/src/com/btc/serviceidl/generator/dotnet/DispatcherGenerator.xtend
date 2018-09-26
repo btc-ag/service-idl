@@ -35,6 +35,7 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
       val protobufRequest = getProtobufRequestClassName(interfaceDeclaration)
       val protobuf_response = getProtobufResponseClassName(interfaceDeclaration)
       val serviceFaultHandler = "serviceFaultHandler"
+      val serviceCommVersion_V0_6 = getTargetVersion() == ServiceCommVersion.V0_6
       
       // special case: the ServiceComm type InvalidRequestReceivedException has
       // the namespace BTC.CAB.ServiceComm.NET.API.Exceptions, but is included
@@ -83,9 +84,17 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
         «ENDFOR»
         
         /// <see cref="BTC.CAB.ServiceComm.NET.API.IServiceDispatcher.ProcessRequest"/>
-        public override «resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")» ProcessRequest(IMessageBuffer requestBuffer, «resolve("BTC.CAB.ServiceComm.NET.Common.IPeerIdentity")» peerIdentity)
+        «IF serviceCommVersion_V0_6»
+            public override «resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")» ProcessRequest(IMessageBuffer requestBuffer, «resolve("BTC.CAB.ServiceComm.NET.Common.IPeerIdentity")» peerIdentity)
+        «ELSE»
+            public override «resolve("System.Byte[]")» ProcessRequest(byte[] requestBuffer, «resolve("BTC.CAB.ServiceComm.NET.Common.IPeerIdentity")» peerIdentity)
+        «ENDIF»
         {
-           var request = «protobufRequest».ParseFrom(requestBuffer.PopFront());
+           «IF serviceCommVersion_V0_6»
+               var request = «protobufRequest».ParseFrom(requestBuffer.PopFront());
+           «ELSE»
+               var request = «protobufRequest».ParseFrom(requestBuffer);
+           «ENDIF»
            
            «FOR func : interfaceDeclaration.functions»
            «val requestName = func.name.asDotNetProtobufName + Constants.PROTOBUF_REQUEST»
@@ -138,7 +147,11 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
                  ;
               
               var response = «protobuf_response».CreateBuilder().Set«func.name.asDotNetProtobufName»Response(responseBuilder).Build();
-              return new «resolve("BTC.CAB.ServiceComm.NET.Common.MessageBuffer")»(response.ToByteArray());
+              «IF serviceCommVersion_V0_6»
+                  return new «resolve("BTC.CAB.ServiceComm.NET.Common.MessageBuffer")»(response.ToByteArray());
+              «ELSE»
+                  return response.ToByteArray();
+              «ENDIF»
            }
            «ENDFOR»
 
@@ -177,9 +190,15 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
         «val eventProtobufClassName = resolve(eventType, ProjectType.PROTOBUF)»
         class «eventType.name»Observer : IObserver<«eventApiClassName»>
         {
-            private readonly IObserver<IMessageBuffer> _messageBufferObserver;
+            «IF serviceCommVersion_V0_6»
+                private readonly IObserver<IMessageBuffer> _messageBufferObserver;
 
-            public «eventType.name»Observer(IObserver<IMessageBuffer> messageBufferObserver)
+                public «eventType.name»Observer(IObserver<IMessageBuffer> messageBufferObserver)
+            «ELSE»
+                private readonly IObserver<byte[]> _messageBufferObserver;
+
+                public «eventType.name»Observer(IObserver<byte[]> messageBufferObserver)
+            «ENDIF»
             {
                 _messageBufferObserver = messageBufferObserver;
             }
@@ -188,7 +207,11 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
             {
                 «eventProtobufClassName» protobufEvent = «resolveCodec(typeResolver, parameterBundle, event.data)».encode(value) as «eventProtobufClassName»;
                 byte[] serializedEvent = protobufEvent.ToByteArray();
-                _messageBufferObserver.OnNext(new MessageBuffer(serializedEvent));
+                «IF serviceCommVersion_V0_6»
+                    _messageBufferObserver.OnNext(new MessageBuffer(serializedEvent));
+                «ELSE»
+                    _messageBufferObserver.OnNext(serializedEvent);
+                «ENDIF»
             }
 
             public void OnError(Exception error)
