@@ -190,9 +190,15 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
         «val eventProtobufClassName = resolve(eventType, ProjectType.PROTOBUF)»
         class «eventType.name»Observer : IObserver<«eventApiClassName»>
         {
-            private readonly IObserver<IMessageBuffer> _messageBufferObserver;
+            «IF serviceCommVersion_V0_6»
+                private readonly IObserver<IMessageBuffer> _messageBufferObserver;
 
-            public «eventType.name»Observer(IObserver<IMessageBuffer> messageBufferObserver)
+                public «eventType.name»Observer(IObserver<IMessageBuffer> messageBufferObserver)
+            «ELSE»
+                private readonly IObserver<byte[]> _messageBufferObserver;
+
+                public «eventType.name»Observer(IObserver<byte[]> messageBufferObserver)
+            «ENDIF»
             {
                 _messageBufferObserver = messageBufferObserver;
             }
@@ -201,7 +207,11 @@ class DispatcherGenerator extends ProxyDispatcherGeneratorBase {
             {
                 «eventProtobufClassName» protobufEvent = «resolveCodec(typeResolver, parameterBundle, event.data)».encode(value) as «eventProtobufClassName»;
                 byte[] serializedEvent = protobufEvent.ToByteArray();
-                _messageBufferObserver.OnNext(new MessageBuffer(serializedEvent));
+                «IF serviceCommVersion_V0_6»
+                    _messageBufferObserver.OnNext(new MessageBuffer(serializedEvent));
+                «ELSE»
+                    _messageBufferObserver.OnNext(serializedEvent);
+                «ENDIF»
             }
 
             public void OnError(Exception error)

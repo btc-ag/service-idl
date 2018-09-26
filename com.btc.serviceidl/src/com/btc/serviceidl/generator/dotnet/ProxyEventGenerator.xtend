@@ -22,6 +22,7 @@ class ProxyEventGenerator extends ProxyDispatcherGeneratorBase
     def String generateProxyEvent(EventDeclaration event, InterfaceDeclaration interfaceDeclaration)
     {
         val deserialazingObserver = getDeserializingObserverName(event)
+        val serviceCommVersion_V0_6 = getTargetVersion() == ServiceCommVersion.V0_6
 
         // TODO: Handling for keys.
         '''
@@ -41,7 +42,11 @@ class ProxyEventGenerator extends ProxyDispatcherGeneratorBase
                       return _endpoint.EventRegistry.SubscriberManager.Subscribe(«toText(event.data, event)».«eventTypeGuidProperty», new «deserialazingObserver»(subscriber));
                   }
                   
-                  class «deserialazingObserver» : «resolve("System.IObserver")»<«resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")»>
+                  «IF serviceCommVersion_V0_6»
+                      class «deserialazingObserver» : «resolve("System.IObserver")»<«resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")»>
+                  «ELSE»
+                      class «deserialazingObserver» : «resolve("System.IObserver")»<«resolve("System.Byte[]")»>
+                  «ENDIF»
                   {
                       private readonly «resolve("System.IObserver")»<«toText(event.data, event)»> _subscriber;
             
@@ -50,9 +55,15 @@ class ProxyEventGenerator extends ProxyDispatcherGeneratorBase
                 _subscriber = subscriber;
                       }
             
-                      public void OnNext(«resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")» value)
-                      {
-                var protobufEvent = «resolveProtobuf(event.data)».ParseFrom(value.PopFront());
+                      «IF serviceCommVersion_V0_6»
+                          public void OnNext(«resolve("BTC.CAB.ServiceComm.NET.Common.IMessageBuffer")» value)
+                          {
+                              var protobufEvent = «resolveProtobuf(event.data)».ParseFrom(value.PopFront());
+                      «ELSE»
+                          public void OnNext(«resolve("System.Byte[]")» value)
+                          {
+                              var protobufEvent = «resolveProtobuf(event.data)».ParseFrom(value);
+                      «ENDIF»
                 _subscriber.OnNext((«toText(event.data, event)»)«resolveCodec(typeResolver, parameterBundle, interfaceDeclaration)».decode(protobufEvent));
                       }
             
