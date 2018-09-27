@@ -37,7 +37,7 @@ class NuGetPackageResolver
         "log4net" -> "1.2.13",
         "NUnit" -> "2.6.4", // TODO specifying 2.6.5 here generates a dependency conflict, but I don't understand why 
         "Spring.Core" -> "1.3.2",
-        "Common.Logging" -> "1.2.0"
+        "Common.Logging" -> "2.3.0"
     }
 
     // ServiceComm 0.6

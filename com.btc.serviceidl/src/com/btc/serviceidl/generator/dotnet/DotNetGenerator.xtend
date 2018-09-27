@@ -293,7 +293,7 @@ class DotNetGenerator
       «FOR packageEntry : paketDependencies»
           «/** TODO remove this workaround */»
           «IF packageEntry.key.equals("Common.Logging")»
-            «prefix»«packageEntry.key» == «packageEntry.value»
+            «prefix»«packageEntry.key» >= «packageEntry.value»
           «ELSEIF packageEntry.key.startsWith("BTC.")»
             «prefix»«packageEntry.key» ~> «packageEntry.value.replaceMicroVersionByZero» «IF generationSettings.maturity == Maturity.SNAPSHOT»testing«ENDIF»
           «ELSE»
