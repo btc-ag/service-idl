@@ -291,10 +291,7 @@ class DotNetGenerator
        val prefix = if (forTemplate) "" else "nuget "  
        '''
       «FOR packageEntry : paketDependencies»
-          «/** TODO remove this workaround */»
-          «IF packageEntry.key.equals("Common.Logging")»
-            «prefix»«packageEntry.key» >= «packageEntry.value»
-          «ELSEIF packageEntry.key.startsWith("BTC.")»
+          «IF packageEntry.key.startsWith("BTC.")»
             «prefix»«packageEntry.key» ~> «packageEntry.value.replaceMicroVersionByZero» «IF generationSettings.maturity == Maturity.SNAPSHOT»testing«ENDIF»
           «ELSE»
             «prefix»«packageEntry.key» ~> «packageEntry.value»
