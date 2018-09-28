@@ -36,8 +36,7 @@ class NuGetPackageResolver
         "Google.ProtocolBuffers" -> "2.4.1.555",
         "log4net" -> "1.2.13",
         "NUnit" -> "2.6.4", // TODO specifying 2.6.5 here generates a dependency conflict, but I don't understand why 
-        "Spring.Core" -> "1.3.2",
-        "Common.Logging" -> "1.2.0"
+        "Spring.Core" -> "1.3.2"
     }
 
     // ServiceComm 0.6
@@ -72,7 +71,7 @@ class NuGetPackageResolver
         "Google.ProtocolBuffers.Serialization" -> #["Google.ProtocolBuffers"],
         "log4net" -> #["log4net"],
         "NUnit.Framework" -> #["NUnit"],
-        "Spring.Core" -> #["Spring.Core", "Common.Logging"] // TODO we must specify the dependency to Common.Logging as well, otherwise this yields inconsistent dependencies
+        "Spring.Core" -> #["Spring.Core"]
     }
 
     val nugetPackages = new HashSet<NuGetPackage>
