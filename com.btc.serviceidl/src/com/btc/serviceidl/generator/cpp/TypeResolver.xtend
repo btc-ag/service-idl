@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
@@ -50,7 +51,7 @@ class TypeResolver
     val Collection<ExternalDependency> cabLibs
     val Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap
 
-    @Accessors(NONE) val Map<IncludeGroup, Set<IPath>> includes = new HashMap<IncludeGroup, Set<IPath>>
+    val Map<IncludeGroup, Set<IPath>> includes = new HashMap<IncludeGroup, Set<IPath>>
 
     def getIncludes()
     {
@@ -99,12 +100,14 @@ class TypeResolver
     public static val BOOST_INCLUDE_GROUP = new IncludeGroup("boost")
     public static val CAB_INCLUDE_GROUP = new IncludeGroup("BTC.CAB")
 
+    val LibResolver libResolver
     @Accessors(PACKAGE_GETTER) val HeaderResolver headerResolver
 
     new(
         IQualifiedNameProvider qualifiedNameProvider,
         IProjectSet projectSet,
         IModuleStructureStrategy moduleStructureStrategy,
+        ITargetVersionProvider targetVersionProvider,
         Collection<IProjectReference> projectReferences,
         Collection<ExternalDependency> cabLibs,
         Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap
@@ -116,7 +119,9 @@ class TypeResolver
         this.projectReferences = projectReferences
         this.cabLibs = cabLibs
         this.smartPointerMap = smartPointerMap
+
         this.headerResolver = moduleStructureStrategy.createHeaderResolver
+        this.libResolver = new LibResolver(targetVersionProvider)
     }
 
     def String resolveSymbol(String symbolName)
@@ -144,7 +149,7 @@ class TypeResolver
         switch (header.includeGroup)
         {
             case CAB_INCLUDE_GROUP:
-                cabLibs.addAll(LibResolver.getCABLibs(header.path))
+                cabLibs.addAll(libResolver.getCABLibs(header.path))
             case STL_INCLUDE_GROUP:
             // do nothing
             {
@@ -203,8 +208,7 @@ class TypeResolver
     def void resolveProjectFilePath(AbstractTypeReference referencedObject, ProjectType projectType)
     {
         projectReferences.add(projectSet.resolve(
-            new ParameterBundle.Builder().with(referencedObject.scopeDeterminant.moduleStack).with(projectType).
-                build))
+            new ParameterBundle.Builder().with(referencedObject.scopeDeterminant.moduleStack).with(projectType).build))
     }
 
     def getPrimitiveTypeName(PrimitiveType item)
@@ -245,8 +249,8 @@ class TypeResolver
      */
     def boolean useSmartPointer(AbstractStructuralDeclaration element, AbstractTypeReference otherType)
     {
-        // sequences use forward-declared types as template parameters
-        // and do not need the smart pointer wrapping
+// sequences use forward-declared types as template parameters
+// and do not need the smart pointer wrapping
         if (otherType.isSequenceType)
             return false
 

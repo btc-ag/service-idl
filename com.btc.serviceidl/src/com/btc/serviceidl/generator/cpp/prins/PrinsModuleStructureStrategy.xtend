@@ -50,4 +50,8 @@ class PrinsModuleStructureStrategy implements IModuleStructureStrategy
             GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP))
     }
 
+    override getSourceFileDir()
+    {
+        Path.fromPortableString("source")
+    }
 }

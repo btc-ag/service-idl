@@ -13,6 +13,7 @@ package com.btc.serviceidl.generator.cpp.prins
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
@@ -27,6 +28,7 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 class VSProjectFileGenerator
 {
     val IFileSystemAccess fileSystemAccess
+    val IModuleStructureStrategy moduleStructureStrategy
     val ParameterBundle paramBundle
     val IProjectSet projectSet
     val Iterable<IProjectReference> projectReferences
@@ -65,6 +67,7 @@ class VSProjectFileGenerator
     {
         new VcxProjGenerator(
             paramBundle,
+            moduleStructureStrategy,
             vsSolution,
             myProjectReferences,
             projectFileSet.unmodifiableView
@@ -91,6 +94,7 @@ class VSProjectFileGenerator
     {
         new VcxProjGenerator(
             paramBundle,
+            moduleStructureStrategy,
             vsSolution,
             myProjectReferences,
             projectFileSet.unmodifiableView
@@ -101,6 +105,7 @@ class VSProjectFileGenerator
     {
         new VcxProjGenerator(
             paramBundle,
+            moduleStructureStrategy,
             vsSolution,
             myProjectReferences,
             projectFileSet.unmodifiableView

@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.IGenerationSettings
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
@@ -29,11 +30,11 @@ class LegacyProjectGenerator extends ProjectGeneratorBase
     new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
         IScopeProvider scopeProvider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
         IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
-        ITargetVersionProvider targetVersionProvider, Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap,
+        IGenerationSettings generationSettings, Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap,
         ProjectType type, ModuleDeclaration module)
     {
         super(fileSystemAccess, qualifiedNameProvider, scopeProvider, idl, projectSetFactory, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, smartPointerMap, type, module,            
+            moduleStructureStrategy, generationSettings, smartPointerMap, type, module,            
             new SourceGenerationStrategy)
     }
 

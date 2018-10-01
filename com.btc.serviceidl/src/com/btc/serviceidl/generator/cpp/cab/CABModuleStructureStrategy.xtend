@@ -19,6 +19,7 @@ import com.btc.serviceidl.generator.cpp.HeaderType
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.TypeResolver
 import com.btc.serviceidl.idl.ModuleDeclaration
+import org.eclipse.core.runtime.Path
 
 import static extension com.btc.serviceidl.generator.cpp.HeaderResolver.Builder.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
@@ -48,5 +49,10 @@ class CABModuleStructureStrategy implements IModuleStructureStrategy
     override getProjectDir(ParameterBundle paramBundle)
     {
         GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP)
+    }
+    
+    override getSourceFileDir()
+    {
+        Path.fromPortableString("src")
     }
 }

@@ -53,11 +53,11 @@ class ProjectGeneratorBaseBase
     val projectReferences = new HashSet<IProjectReference>
     val projectFileSet = new ProjectFileSet(Arrays.asList(OdbConstants.ODB_FILE_GROUP)) // TODO inject the file groups
 
-    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
-        IScopeProvider scopeProvider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
-        IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
-        ITargetVersionProvider targetVersionProvider, Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap,
-        ProjectType type, ModuleDeclaration module)
+    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
+        IDLSpecification idl, IProjectSetFactory projectSetFactory, IProjectSet vsSolution,
+        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
+        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ProjectType type,
+        ModuleDeclaration module)
     {
         this.fileSystemAccess = fileSystemAccess
         this.qualifiedNameProvider = qualifiedNameProvider
@@ -80,8 +80,8 @@ class ProjectGeneratorBaseBase
 
     private def createTypeResolver(ParameterBundle paramBundle)
     {
-        new TypeResolver(qualifiedNameProvider, vsSolution, moduleStructureStrategy, projectReferences, cabLibs,
-            smartPointerMap)
+        new TypeResolver(qualifiedNameProvider, vsSolution, moduleStructureStrategy, targetVersionProvider,
+            projectReferences, cabLibs, smartPointerMap)
     }
 
     protected def createBasicCppGenerator()
@@ -117,7 +117,8 @@ class ProjectGeneratorBaseBase
             cabLibs.add(new ExternalDependency("libprotobuf"))
         }
 
-        projectSetFactory.generateProjectFiles(fileSystemAccess, paramBundle, cabLibs.unmodifiableView, vsSolution,
+        projectSetFactory.generateProjectFiles(fileSystemAccess, moduleStructureStrategy, targetVersionProvider,
+            paramBundle, cabLibs.unmodifiableView, vsSolution,
             Sets.union(projectReferences, additionalProjectReferences.toSet), projectFileSet.unmodifiableView,
             projectType, projectPath, projectName)
     }
@@ -130,6 +131,12 @@ class ProjectGeneratorBaseBase
     static def String generateHeader(BasicCppGenerator basicCppGenerator,
         IModuleStructureStrategy moduleStructureStrategy, String fileContent, Optional<String> exportHeader)
     {
+        // TODO workaround, this should generally resolve the encapsulationHeader
+        if (moduleStructureStrategy.encapsulationHeaders.key.contains("Commons/Core/include"))
+        {
+            basicCppGenerator.typeResolver.resolveSymbol("BTC::Commons::Core::String")            
+        }
+        
         '''
             #pragma once
             
@@ -144,8 +151,7 @@ class ProjectGeneratorBaseBase
         '''
     }
 
-    static def String generateSource(BasicCppGenerator basicCppGenerator, String fileContent,
-        Optional<String> fileTail)
+    static def String generateSource(BasicCppGenerator basicCppGenerator, String fileContent, Optional<String> fileTail)
     {
         '''
             «basicCppGenerator.generateIncludes(false)»

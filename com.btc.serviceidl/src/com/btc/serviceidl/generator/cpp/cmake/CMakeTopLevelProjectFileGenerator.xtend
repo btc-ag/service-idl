@@ -78,6 +78,8 @@ class CMakeTopLevelProjectFileGenerator
                 serviceCommTargetVersion == ServiceCommVersion.V0_11) "1.7" else "1.8"
         val loggingTargetVersion = if (serviceCommTargetVersion == ServiceCommVersion.V0_10 ||
                 serviceCommTargetVersion == ServiceCommVersion.V0_11) "1.7" else "1.8"
+        val cmakeMacrosVersion = if (serviceCommTargetVersion == ServiceCommVersion.V0_10 ||
+                serviceCommTargetVersion == ServiceCommVersion.V0_11) "0.3" else "0.4"
                 
         val versionSuffix = if (generationSettings.maturity == Maturity.SNAPSHOT) "-unreleased" else ""
         val dependencyChannel = if (generationSettings.maturity == Maturity.SNAPSHOT) "testing" else "stable"
@@ -94,7 +96,7 @@ class CMakeTopLevelProjectFileGenerator
                 TODO
                 """
             
-                build_requires = "CMakeMacros/0.3.latest@cab/«dependencyChannel»"
+                build_requires = "CMakeMacros/«cmakeMacrosVersion».latest@cab/«dependencyChannel»"
                 # TODO instead of "latest", for maturity RELEASE, this should be replaced by a 
                 # concrete version at some point (maybe not during generation, but during the build?)
                 # in a similar manner as mvn versions:resolve-ranges                
@@ -170,18 +172,29 @@ class CMakeTopLevelProjectFileGenerator
 
     def generateCMakeLists()
     {
-        // TODO defining *_STATIC_DEFINE is only a temporary addition
-        // which can be removed again when changing this to the new cmake-export style
+        // TODO why is find_package(Boost COMPONENTS thread REQUIRED) required? probably because 
+        // the BTC.CAB.ServiceComm package BTC.CAB.ServiceCommConfig.cmake file does not properly 
+        // specify its own dependency on it
+        
         val serviceCommTargetVersion = ServiceCommVersion.get(generationSettings.getTargetVersion(
             CppConstants.SERVICECOMM_VERSION_KIND))
 
         '''
-            cmake_minimum_required(VERSION 3.4)
+            «IF serviceCommTargetVersion == ServiceCommVersion.V0_12»
+                cmake_minimum_required(VERSION 3.11)
+            «ELSE»
+                cmake_minimum_required(VERSION 3.4)
+            «ENDIF»
             
             project («projectName» CXX)
             
             include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-            conan_basic_setup()
+            «IF serviceCommTargetVersion == ServiceCommVersion.V0_12»
+                set(CAB_RELEASE_UNIT «projectName»)
+                conan_basic_setup(TARGETS)
+            «ELSE»
+                conan_basic_setup()
+            «ENDIF»
             
             include(${CONAN_CMAKEMACROS_ROOT}/cmake/cab_globals.cmake)
             
@@ -192,13 +205,18 @@ class CMakeTopLevelProjectFileGenerator
             set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
             
             «IF serviceCommTargetVersion == ServiceCommVersion.V0_12»
-                add_definitions(-DBTC_CAB_COMMONS_FUTUREUTIL_STATIC_DEFINE)
-                add_definitions(-DBTC_CAB_SERVICECOMM_BASE_STATIC_DEFINE)
+                find_package(Protobuf REQUIRED)
+                find_package(Boost COMPONENTS thread REQUIRED)
+                find_package(BTC.CAB.ServiceComm REQUIRED)
             «ENDIF»
 
             «FOR projectPath : projectSet.projects.map[relativePath.toPortableString].sort»
                 include(${CMAKE_CURRENT_LIST_DIR}/«projectPath»/build/make.cmakeset)
             «ENDFOR»
+
+            «IF serviceCommTargetVersion == ServiceCommVersion.V0_12»
+                install(EXPORT ${CAB_RELEASE_UNIT} DESTINATION cmake NAMESPACE CAB::)
+            «ENDIF»
         '''
     }
 

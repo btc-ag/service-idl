@@ -10,12 +10,14 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator.cpp
 
+import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.cpp.ProtobufUtil
 import com.btc.serviceidl.generator.cpp.TypeResolver
 import com.btc.serviceidl.generator.cpp.cab.CABModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
 import com.btc.serviceidl.idl.IDLSpecification
+import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.tests.testdata.TestData
@@ -27,22 +29,33 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.Test
 import org.junit.runner.RunWith
 
+import static org.junit.Assert.assertEquals
+
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-
-import static org.junit.Assert.assertEquals
-import com.btc.serviceidl.idl.InterfaceDeclaration
+import com.btc.serviceidl.generator.cpp.CppConstants
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
 class ProtobufUtilTest
 {
     @Inject extension ParseHelper<IDLSpecification>
-    
+
+    static class TargetVersionProvider implements ITargetVersionProvider
+    {
+        override getTargetVersion(String versionKind)
+        {
+            if (versionKind == CppConstants.SERVICECOMM_VERSION_KIND)
+                return "0.12"
+                
+            throw new UnsupportedOperationException("TODO: auto-generated method stub")
+        }
+    }
+
     private def createTypeResolver()
     {
         new TypeResolver(new DefaultDeclarativeQualifiedNameProvider, new CMakeProjectSet,
-            new CABModuleStructureStrategy, newArrayList, newArrayList, newHashMap)
+            new CABModuleStructureStrategy, new TargetVersionProvider, newArrayList, newArrayList, newHashMap)
     }
 
     @Test
@@ -89,7 +102,8 @@ class ProtobufUtilTest
         val operation = containingInterface.functions.head
         val returnedType = operation.returnedType
 
-        assertEquals("foo::Protobuf::TestCodec::DecodeFailable<foo::Protobuf::Failable_foo_Test_Uuid,BTC::Commons::CoreExtras::UUID>",
+        assertEquals(
+            "foo::Protobuf::TestCodec::DecodeFailable<foo::Protobuf::Failable_foo_Test_Uuid,BTC::Commons::CoreExtras::UUID>",
             ProtobufUtil.resolveDecode(typeResolver, new ParameterBundle.Builder().with(module.moduleStack).build,
                 returnedType.actualType, containingInterface).replace(" ", ""))
     }

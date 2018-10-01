@@ -71,7 +71,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
 
         // paths
         val includePath = projectPath.append("include")
-        val sourcePath = projectPath.append("source")
+        val sourcePath = projectPath.append(moduleStructureStrategy.sourceFileDir)
 
         // file names
         val mainHeaderFileName = GeneratorUtil.getClassName(ArtifactNature.CPP, localParamBundle.projectType,
@@ -79,7 +79,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
         val mainCppFileName = GeneratorUtil.getClassName(ArtifactNature.CPP, localParamBundle.projectType,
             interfaceDeclaration.name).cpp
 
-        // sub-folder "./include"
+        // include sub-folder
         if (pt != ProjectType.TEST)
         {
             fileSystemAccess.generateFile(includePath.append(mainHeaderFileName).toString,
@@ -89,7 +89,7 @@ abstract class ProjectGeneratorBase extends ProjectGeneratorBaseBase
             projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, mainHeaderFileName)
         }
 
-        // sub-folder "./source"
+        // source sub-folder
         fileSystemAccess.generateFile(sourcePath.append(mainCppFileName).toString, ArtifactNature.CPP.label,
             sourceGenerationStrategy.generateProjectSource(createBasicCppGenerator(localParamBundle),
                 interfaceDeclaration))

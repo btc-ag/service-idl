@@ -49,7 +49,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
     {
         // paths
         val includePath = projectPath.append("include")
-        val sourcePath = projectPath.append("source")
+        val sourcePath = projectPath.append(moduleStructureStrategy.sourceFileDir)
 
         // file names
         val exportHeaderFileName = (GeneratorUtil.getTransformedModuleName(paramBundle, ArtifactNature.CPP,
@@ -57,7 +57,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
         val headerFile = Constants.FILE_NAME_TYPES.h
         val cppFile = Constants.FILE_NAME_TYPES.cpp
 
-        // sub-folder "./include"
+        // include sub-folder
         fileSystemAccess.generateFile(includePath.append(exportHeaderFileName).toString, ArtifactNature.CPP.label,
             generateExportHeader())
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, exportHeaderFileName)
@@ -66,7 +66,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
             generateHFileCommons(module, exportHeaderFileName))
         projectFileSet.addToGroup(ProjectFileSet.HEADER_FILE_GROUP, headerFile)
 
-        // sub-folder "./source"
+        // source sub-folder
         fileSystemAccess.generateFile(sourcePath.append(cppFile).toString, ArtifactNature.CPP.label,
             generateCppCommons(module, exportHeaderFileName))
         projectFileSet.addToGroup(ProjectFileSet.CPP_FILE_GROUP, cppFile)
