@@ -71,6 +71,9 @@ class ProjectGeneratorBaseBase
         this.module = module
 
         this.paramBundle = new ParameterBundle.Builder().with(type).with(module.moduleStack).build
+        
+        // TODO find a more explicit way to ensure that a project is added to the project set
+        this.vsSolution.resolve(this.paramBundle)
     }
 
     protected def createTypeResolver()
