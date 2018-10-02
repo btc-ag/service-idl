@@ -176,8 +176,6 @@ class ServiceAPIGenerator extends BasicCppGenerator {
          «FOR eventType : eventTypes BEFORE "," SEPARATOR ",\n"»
             public virtual «resolveSymbol("BTC::Commons::CoreExtras::IObservableRegistration")»<«eventType»>
          «ENDFOR»
-         
-         «IF anonymousEvent !== null», public «resolveSymbol("BTC::Commons::CoreExtras::IObservableRegistration")»<«resolve(anonymousEvent.data)»>«ENDIF»
       «ELSE»
          virtual public «resolve(interfaceDeclaration, ProjectType.SERVICE_API)»
          , private «resolveSymbol("BTC::Logging::API::LoggerAware")»
