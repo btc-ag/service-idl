@@ -68,7 +68,9 @@ class CMakeGenerator
             set(TARGET «projectName»)
             
             cab_create_target(«cmakeTargetType» ${TARGET})
-            cab_default_grouped_sources(${TARGET})
+            «IF projectType != ProjectType.PROTOBUF»
+                cab_default_grouped_sources(${TARGET})
+            «ENDIF»
             target_compile_definitions( ${TARGET}
                 PRIVATE -DCAB_NO_LEGACY_EXPORT_MACROS
             )
