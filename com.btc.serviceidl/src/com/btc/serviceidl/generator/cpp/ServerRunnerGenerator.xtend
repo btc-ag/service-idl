@@ -54,17 +54,24 @@ class ServerRunnerGenerator extends BasicCppGenerator
                   «resolveSymbol("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")»().GetLogger("")->SetLevel(«resolveSymbol("BTC::Logging::API::Logger")»::LWarning);
                   «resolveSymbol("BTC::ServiceComm::PerformanceBase::PerformanceTestServer")» server(context,
                      «resolveSymbol("BTC::Commons::Core::CreateAuto")»<«resolve(interfaceDeclaration, ProjectType.IMPL)»>(context, «resolveSymbol("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")»()),
+                    «IF targetVersion == ServiceCommVersion.V0_10»                     
                      &RegisterMessageTypes,
                      «resolveSymbol("std::bind")»(&«dispatcher»::CreateDispatcherAutoRegistrationFactory,
                      std::placeholders::_1, std::placeholders::_2,
                      «resolveSymbol("BTC::ServiceComm::PerformanceBase::PerformanceTestServerBase")»::PERFORMANCE_INSTANCE_GUID(),
-                     «resolveSymbol("BTC::Commons::Core::String")»()));
+                     «resolveSymbol("BTC::Commons::Core::String")»())
+                     «ELSE»
+                     «resolveSymbol("BTC::Commons::Core::CreateAuto")»<«resolveSymbol("BTC::ServiceComm::ProtobufUtil::CCompositeProtobufServerFactoriesStrategy")»>(
+                     «resolveSymbol("BTC::Commons::CoreStd::Collection")»<«resolveSymbol("BTC::Commons::Core::AutoPtr")»<«resolveSymbol("BTC::ServiceComm::ProtobufUtil::IProtobufServerFactories")»>>{}
+                     )
+                     «ENDIF»                     
+                   );
                   return server.Run(argc, argv);
                }
-               catch («resolveSymbol("BTC::Commons::Core::Exception")» const *e)
+               catch («resolveSymbol("BTC::Commons::Core::Exception")» const «exceptionCatch("e")»)
                {
-                  «resolveSymbol("BTC::Commons::Core::DelException")» _(e);
-                  context.GetStdOut() << e->ToString();
+                  «maybeDelException("e")»
+                  context.GetStdOut() << «exceptionAccess("e")».ToString();
                   return 1;
                }
             }

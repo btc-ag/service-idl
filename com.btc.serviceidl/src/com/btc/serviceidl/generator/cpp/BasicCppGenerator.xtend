@@ -463,4 +463,28 @@ class BasicCppGenerator
         ServiceCommVersion.get(targetVersionProvider.getTargetVersion(CppConstants.SERVICECOMM_VERSION_KIND))
     }
 
+    protected def maybeDelException(String name)
+    {
+        if (targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11)
+            '''«resolveSymbol("BTC::Commons::Core::DelException")» _(«name»);'''
+        else
+            ""
+    }
+    
+    protected def exceptionCatch(String name)
+    {
+        if (targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11)
+            "*" + name
+        else
+            "&" + name
+    }
+
+    protected def exceptionAccess(String name)
+    {
+        if (targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11)
+            "(*" + name + ")"
+        else
+            name
+    }
+
 }

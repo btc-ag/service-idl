@@ -131,14 +131,20 @@ class HeaderResolver
             "ServiceComm/ProtobufBase/include/AProtobufServiceDispatcherBase.h",
         "BTC::ServiceComm::ProtobufBase::AProtobufServiceProxyBaseTemplate" ->
             "ServiceComm/ProtobufBase/include/AProtobufServiceProxyBase.h",
+        "BTC::ServiceComm::ProtobufUtil::CCompositeProtobufServerFactoriesStrategy" ->
+            "ServiceComm/ProtobufUtil/include/CCompositeProtobufServerFactoriesStrategy.h",
         "BTC::ServiceComm::ProtobufUtil::Convert" -> "ServiceComm/ProtobufUtil/include/UUIDHelper.h",
         "BTC::ServiceComm::ProtobufUtil::ExportDescriptors" ->
             "ServiceComm/ProtobufUtil/include/ProtobufMessageDecoder.h",
+        "BTC::ServiceComm::ProtobufUtil::IProtobufServerFactories" ->
+            "ServiceComm/Util/include/IServerFactoriesStrategy.h",
         "BTC::ServiceComm::ProtobufUtil::ProtobufMessageDecoder" ->
             "ServiceComm/ProtobufUtil/include/ProtobufMessageDecoder.h",
         "BTC::ServiceComm::ProtobufUtil::ProtobufSupport" -> "ServiceComm/ProtobufUtil/include/ProtobufSupport.h",
         "BTC::ServiceComm::SQ::ZeroMQ::ConnectionOptionsBuilder" -> "ServiceComm.SQ/ZeroMQ/include/ConnectionOptions.h",
         "BTC::ServiceComm::SQ::ZeroMQTestSupport::ZeroMQTestConnection" ->
+            "ServiceComm.SQ/ZeroMQTestSupport/include/CZeroMQTestConnection.h",
+        "BTC::ServiceComm::SQ::ZeroMQTestSupport::ZeroMQTestConnectionBuilder" ->
             "ServiceComm.SQ/ZeroMQTestSupport/include/CZeroMQTestConnection.h",
         "BTC::ServiceComm::SQ::ZeroMQTestSupport::ConnectionDirection" ->
             "ServiceComm.SQ/ZeroMQTestSupport/include/CZeroMQTestConnection.h",
@@ -147,8 +153,7 @@ class HeaderResolver
             "ServiceComm/Util/include/CDefaultObservableRegistrationProxy.h",
         "BTC::ServiceComm::Util::CDispatcherAutoRegistrationFactory" ->
             "ServiceComm/Util/include/DispatcherAutoRegistrationFactory.h",
-        "BTC::ServiceComm::Util::CreateRemoteEventPublisher" ->
-            "ServiceComm/Util/include/RemoteEventPublisher.h",
+        "BTC::ServiceComm::Util::CreateRemoteEventPublisher" -> "ServiceComm/Util/include/RemoteEventPublisher.h",
         "BTC::ServiceComm::Util::DefaultCreateDispatcherWithContext" ->
             "ServiceComm/Util/include/DispatcherAutoRegistration.h",
         "BTC::ServiceComm::Util::DefaultCreateDispatcherWithContextAndEndpoint" ->
