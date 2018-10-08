@@ -163,12 +163,14 @@ class TestGenerator extends BasicCppGenerator
                «ENDFOR»
                «FOR param : func.parameters»
                    «val paramType = param.paramType.ultimateType»
-                   «IF paramType instanceof StructDeclaration»
-                       «FOR member : paramType.allMembers.filter[!optional].filter[type.isEnumType]»
-                           «val enumType = member.type.ultimateType»
-                           «param.paramName.asParameter».«member.name.asMember» = «toText(enumType, enumType)»::«(enumType as EnumDeclaration).containedIdentifiers.head»;
-                       «ENDFOR»
-                   «ENDIF»
+                   «IF !param.paramType.isSequenceType»
+                       «IF paramType instanceof StructDeclaration»
+                           «FOR member : paramType.allMembers.filter[!optional].filter[type.isEnumType]»
+                               «val enumType = member.type.ultimateType»
+                               «param.paramName.asParameter».«member.name.asMember» = «toText(enumType, enumType)»::«(enumType as EnumDeclaration).containedIdentifiers.head»;
+                           «ENDFOR»
+                       «ENDIF»
+                    «ENDIF»
                «ENDFOR»
                «resolveSymbol("UTTHROWS")»( «resolveSymbol("BTC::Commons::Core::UnsupportedOperationException")», «subjectName».«func.name»(«func.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT && paramType.isSequenceType) "*" else "") + paramName.asParameter + if (direction == ParameterDirection.PARAM_IN && paramType.isSequenceType) ".GetBeginForward()" else ""].join(", ")»)«IF !func.isSync».Get()«ENDIF» );
             }
