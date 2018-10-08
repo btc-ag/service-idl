@@ -21,6 +21,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.idl.FunctionDeclaration
 
 @Accessors
 class TestGenerator extends BasicCppGenerator
@@ -29,9 +30,8 @@ class TestGenerator extends BasicCppGenerator
     def generateCppTest(InterfaceDeclaration interfaceDeclaration)
     {
         val apiType = resolve(interfaceDeclaration, ProjectType.SERVICE_API)
-        val subjectName = interfaceDeclaration.name.toFirstLower
         val loggerFactory = resolveSymbol("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")
-        val containerName = interfaceDeclaration.name + "TestContainer"
+        val containerName = interfaceDeclaration.containerName
 
         // explicitly resolve some necessary includes, because they are needed
         // for the linker due to some classes we use, but not directly referenced
@@ -48,7 +48,7 @@ class TestGenerator extends BasicCppGenerator
             typedef «resolveSymbol("BTC::ServiceComm::Util::DispatcherAutoRegistration")»<
                 «apiType»
                ,«resolve(interfaceDeclaration, ProjectType.DISPATCHER)»
-               ,CreateDispatcherFunctor > DispatcherAutoRegistrationType;
+               ,CreateDispatcherFunctor> DispatcherAutoRegistrationType;
             
             // enable commented lines for ZeroMQ encryption!
             const auto serverConnectionOptionsBuilder =
@@ -71,28 +71,37 @@ class TestGenerator extends BasicCppGenerator
             struct «containerName»
             {
                «containerName»( «resolveSymbol("BTC::Commons::Core::Context")»& context ) :
-               m_connection( new «resolveSymbol("BTC::ServiceComm::SQ::ZeroMQTestSupport::ZeroMQTestConnection")»(
+               m_connection(
+               «IF targetVersion == ServiceCommVersion.V0_12»
+                  «resolveSymbol("BTC::ServiceComm::SQ::ZeroMQTestSupport::ZeroMQTestConnectionBuilder")»{context, «loggerFactory»()}
+                   .WithClientServerConnectionOptionsBuilders(clientConnectionOptionsBuilder, serverConnectionOptionsBuilder)
+                   .Create()
+                «ELSE»
+                  «resolveSymbol("BTC::Commons::Core::CreateUnique")»<«resolveSymbol("BTC::ServiceComm::SQ::ZeroMQTestSupport::ZeroMQTestConnection")»>(
                    context
                   ,«loggerFactory»(), 1, true
                   ,«resolveSymbol("BTC::ServiceComm::SQ::ZeroMQTestSupport::ConnectionDirection")»::Regular
                   ,clientConnectionOptionsBuilder
                   ,serverConnectionOptionsBuilder
-               ) )
+               )
+               «ENDIF»
+               )
                ,m_dispatcher( new DispatcherAutoRegistrationType(
                    «apiType»::TYPE_GUID()
                   ,"«apiType.shortName»"
                   ,"«apiType.shortName»"
                   ,«loggerFactory»()
                   ,m_connection->GetServerEndpoint()
-                  ,«resolveSymbol("BTC::Commons::Core::MakeAuto")»( new «resolve(interfaceDeclaration, ProjectType.IMPL)»(
+                  ,«resolveSymbol("BTC::Commons::Core::CreateAuto")»<«resolve(interfaceDeclaration, ProjectType.IMPL)»>(
                       context
                      ,«loggerFactory»()
-                     ) )
+                     )
                   ,CreateDispatcherFunctor( context ) ) )
-               ,m_proxy( new «resolve(interfaceDeclaration, ProjectType.PROXY)»(
+               ,m_proxy(«resolveSymbol("BTC::Commons::Core::CreateUnique")»<«resolve(interfaceDeclaration, ProjectType.PROXY)»>(
                    context
                   ,«loggerFactory»()
-                  ,m_connection->GetClientEndpoint() ) )
+                  ,m_connection->GetClientEndpoint()
+                  ))
                {}
             
                ~«containerName»()
@@ -105,50 +114,66 @@ class TestGenerator extends BasicCppGenerator
                {  return *m_proxy; }
             
             private:
-               «resolveSymbol("std::unique_ptr")»< «resolveSymbol("BTC::ServiceComm::TestBase::ITestConnection")» > m_connection;
-               «resolveSymbol("std::unique_ptr")»< DispatcherAutoRegistrationType > m_dispatcher;
-               «resolveSymbol("std::unique_ptr")»< «apiType» > m_proxy;
+               «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «resolveSymbol("BTC::ServiceComm::TestBase::ITestConnection")» > m_connection;
+               «resolveSymbol("BTC::Commons::Core::UniquePtr")»< DispatcherAutoRegistrationType > m_dispatcher;
+               «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «apiType» > m_proxy;
             };
             
             «FOR func : interfaceDeclaration.functions»
-                «resolveSymbol("TEST")»( «interfaceDeclaration.name»_«func.name» )
-                {
-                   «containerName» container( *GetContext() );
-                   «apiType»& «subjectName»( container.GetSubject() );
-                   
-                   «FOR param : func.parameters.filter[direction == ParameterDirection.PARAM_IN]»
-                       «IF param.paramType.isSequenceType»
-                           «val isFailable = param.paramType.isFailable»
-                           «resolveSymbol("BTC::Commons::CoreStd::Collection")»< «IF isFailable»«resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»<«ENDIF»«toText(param.paramType.ultimateType, param)»«IF isFailable»>«ENDIF» > «param.paramName.asParameter»;
-                       «ELSE»
-                           «val typeName = toText(param.paramType, param)»
-                           «typeName» «param.paramName.asParameter»«IF param.paramType.isEnumType» = «typeName»::«(param.paramType.ultimateType as EnumDeclaration).containedIdentifiers.head»«ELSEIF param.paramType.isStruct» = {}«ENDIF»;
-                       «ENDIF»
-                   «ENDFOR»
-                   «FOR param : func.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
-                       «IF param.paramType.isSequenceType»
-                           «val ulimateType = toText(param.paramType.ultimateType, param)»
-                           «val isFailable = param.paramType.isFailable»
-                           «val innerType = if (isFailable) '''«addCabInclude(new Path("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h")).alias(resolveSymbol("BTC::Commons::CoreExtras::FailableHandle"))»< «ulimateType» >''' else ulimateType»
-                           «resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «innerType» >::AutoPtrType «param.paramName.asParameter»( «resolveSymbol("BTC::Commons::FutureUtil::CreateDefaultAsyncInsertable")»< «innerType» >() );
-                       «ELSE»
-                           «val typeName = toText(param.paramType, param)»
-                           «typeName» «param.paramName.asParameter»«IF param.paramType.isEnumType» = «typeName»::«(param.paramType.ultimateType as EnumDeclaration).containedIdentifiers.head»«ENDIF»;
-                       «ENDIF»
-                   «ENDFOR»
-                   «FOR param : func.parameters»
-                       «val paramType = param.paramType.ultimateType»
+                «generateTestCase(interfaceDeclaration, func)»
+            «ENDFOR»
+            
+        '''
+    }
+    
+    private def getContainerName(InterfaceDeclaration interfaceDeclaration)
+    {
+        interfaceDeclaration.name + "TestContainer"
+    }
+    
+    private def generateTestCase(InterfaceDeclaration interfaceDeclaration, FunctionDeclaration func)
+    {
+        val subjectName = interfaceDeclaration.name.toFirstLower
+
+        '''
+            «resolveSymbol("TEST")»( «interfaceDeclaration.name»_«func.name» )
+            {
+               «interfaceDeclaration.containerName» container( *GetContext() );
+               auto& «subjectName» = container.GetSubject();
+               
+               «FOR param : func.parameters.filter[direction == ParameterDirection.PARAM_IN]»
+                   «IF param.paramType.isSequenceType»
+                       «val isFailable = param.paramType.isFailable»
+                       «resolveSymbol("BTC::Commons::CoreStd::Collection")»< «IF isFailable»«resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»<«ENDIF»«toText(param.paramType.ultimateType, param)»«IF isFailable»>«ENDIF» > «param.paramName.asParameter»;
+                   «ELSE»
+                       «val typeName = toText(param.paramType, param)»
+                       «typeName» «param.paramName.asParameter»«IF param.paramType.isEnumType» = «typeName»::«(param.paramType.ultimateType as EnumDeclaration).containedIdentifiers.head»«ELSEIF param.paramType.isStruct» = {}«ENDIF»;
+                   «ENDIF»
+               «ENDFOR»
+               «FOR param : func.parameters.filter[direction == ParameterDirection.PARAM_OUT]»
+                   «IF param.paramType.isSequenceType»
+                       «val ulimateType = toText(param.paramType.ultimateType, param)»
+                       «val isFailable = param.paramType.isFailable»
+                       «val innerType = if (isFailable) '''«addCabInclude(new Path("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h")).alias(resolveSymbol("BTC::Commons::CoreExtras::FailableHandle"))»< «ulimateType» >''' else ulimateType»
+                       «resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «innerType» >::AutoPtrType «param.paramName.asParameter»( «resolveSymbol("BTC::Commons::FutureUtil::CreateDefaultAsyncInsertable")»< «innerType» >() );
+                   «ELSE»
+                       «val typeName = toText(param.paramType, param)»
+                       «typeName» «param.paramName.asParameter»«IF param.paramType.isEnumType» = «typeName»::«(param.paramType.ultimateType as EnumDeclaration).containedIdentifiers.head»«ENDIF»;
+                   «ENDIF»
+               «ENDFOR»
+               «FOR param : func.parameters»
+                   «val paramType = param.paramType.ultimateType»
+                   «IF !param.paramType.isSequenceType»
                        «IF paramType instanceof StructDeclaration»
                            «FOR member : paramType.allMembers.filter[!optional].filter[type.isEnumType]»
                                «val enumType = member.type.ultimateType»
                                «param.paramName.asParameter».«member.name.asMember» = «toText(enumType, enumType)»::«(enumType as EnumDeclaration).containedIdentifiers.head»;
                            «ENDFOR»
                        «ENDIF»
-                   «ENDFOR»
-                   «resolveSymbol("UTTHROWS")»( «resolveSymbol("BTC::Commons::Core::UnsupportedOperationException")», «subjectName».«func.name»(«func.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT && paramType.isSequenceType) "*" else "") + paramName.asParameter + if (direction == ParameterDirection.PARAM_IN && paramType.isSequenceType) ".GetBeginForward()" else ""].join(", ")»)«IF !func.isSync».Get()«ENDIF» );
-                }
-            «ENDFOR»
-            
+                    «ENDIF»
+               «ENDFOR»
+               «resolveSymbol("UTTHROWS")»( «resolveSymbol("BTC::Commons::Core::UnsupportedOperationException")», «subjectName».«func.name»(«func.parameters.map[ (if (direction == ParameterDirection.PARAM_OUT && paramType.isSequenceType) "*" else "") + paramName.asParameter + if (direction == ParameterDirection.PARAM_IN && paramType.isSequenceType) ".GetBeginForward()" else ""].join(", ")»)«IF !func.isSync».Get()«ENDIF» );
+            }
         '''
     }
 

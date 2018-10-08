@@ -531,30 +531,6 @@ class CodecGenerator extends BasicCppGenerator
         '''
     }
     
-    def maybeDelException(String name)
-    {
-        if (targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11)
-            '''«resolveSymbol("BTC::Commons::Core::DelException")» _(«name»);'''
-        else
-            ""
-    }
-    
-    private def exceptionCatch(String name)
-    {
-        if (targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11)
-            "*" + name
-        else
-            "&" + name
-    }
-
-    private def exceptionAccess(String name)
-    {
-        if (targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11)
-            "*" + name
-        else
-            name
-    }
-
     private def dispatch String makeDecode(StructDeclaration element, AbstractContainerDeclaration container)
     {
         '''

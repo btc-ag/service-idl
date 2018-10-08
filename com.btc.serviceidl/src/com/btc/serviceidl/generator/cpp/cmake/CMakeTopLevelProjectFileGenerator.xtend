@@ -15,6 +15,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Util.*
 import com.btc.serviceidl.generator.Maturity
+import com.btc.serviceidl.generator.common.ProjectType
 
 @Accessors(NONE)
 class CMakeTopLevelProjectFileGenerator
@@ -104,7 +105,10 @@ class CMakeTopLevelProjectFileGenerator
                             ("BTC.CAB.Commons/«commonsTargetVersion».latest@cab/«dependencyChannel»"),
                             ("BTC.CAB.IoC/«iocTargetVersion».latest@cab/«dependencyChannel»"),
                             ("BTC.CAB.Logging/«loggingTargetVersion».latest@cab/«dependencyChannel»"),
-                            ("BTC.CAB.ServiceComm/«serviceCommTargetVersion.label».latest@cab/«dependencyChannel»")
+                            ("BTC.CAB.ServiceComm/«serviceCommTargetVersion.label».latest@cab/«dependencyChannel»"),
+                            «IF projectSet.projects.exists[it.projectType == ProjectType.TEST]»
+                            ("BTC.CAB.ServiceComm.SQ/«serviceCommTargetVersion.label».latest@cab/«dependencyChannel»"),
+                            «ENDIF»
                             )
                 generators = "cmake"
                 short_paths = True
@@ -176,6 +180,9 @@ class CMakeTopLevelProjectFileGenerator
         // the BTC.CAB.ServiceComm package BTC.CAB.ServiceCommConfig.cmake file does not properly 
         // specify its own dependency on it
         
+        // TODO only generate the find_package calls that are actually required, depending on the 
+        // actual dependencies
+        
         val serviceCommTargetVersion = ServiceCommVersion.get(generationSettings.getTargetVersion(
             CppConstants.SERVICECOMM_VERSION_KIND))
 
@@ -206,8 +213,11 @@ class CMakeTopLevelProjectFileGenerator
             
             «IF serviceCommTargetVersion == ServiceCommVersion.V0_12»
                 find_package(Protobuf REQUIRED)
-                find_package(Boost COMPONENTS thread REQUIRED)
+                find_package(Boost COMPONENTS thread program_options REQUIRED)
                 find_package(BTC.CAB.ServiceComm REQUIRED)
+                «IF projectSet.projects.exists[it.projectType == ProjectType.TEST]»
+                find_package(BTC.CAB.ServiceComm.SQ REQUIRED)
+                «ENDIF»
             «ENDIF»
 
             «FOR projectPath : projectSet.projects.map[relativePath.toPortableString].sort»
