@@ -178,6 +178,29 @@ class DefaultGenerationSettingsProviderTest
 
         assertEquals(defaults.projectTypes, generationSettings.projectTypes)
     }
+
+    @Test
+    def void testGetSettingsPartialVersionOverride()
+    {
+        val partialOverrides = new OptionalGenerationSettings
+        partialOverrides.versions = #{"cpp.servicecomm" -> "0.10"}.entrySet
+
+        val generationSettings = new DefaultGenerationSettingsProvider().getSettings(#[partialOverrides])
+        val defaults = OptionalGenerationSettings.defaults
+
+        assertEquals(defaults.languages, generationSettings.languages)
+        assertTrue(generationSettings.moduleStructureStrategy instanceof PrinsModuleStructureStrategy)
+        assertTrue(generationSettings.projectSetFactory instanceof VSSolutionFactory)
+        for (versionEntry : defaults.versions)
+        {
+            val override = partialOverrides.versions.filter[it.key == versionEntry.key].toList
+
+            assertEquals(if (override.empty) versionEntry.value else override.get(0).value,
+                generationSettings.getTargetVersion(versionEntry.key))
+        }
+
+        assertEquals(defaults.projectTypes, generationSettings.projectTypes)
+    }
 }
 
 @Accessors(NONE)
