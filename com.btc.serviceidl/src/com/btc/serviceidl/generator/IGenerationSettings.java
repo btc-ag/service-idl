@@ -13,6 +13,7 @@ package com.btc.serviceidl.generator;
 import java.util.Set;
 
 import com.btc.serviceidl.generator.common.ArtifactNature;
+import com.btc.serviceidl.generator.common.PackageInfo;
 import com.btc.serviceidl.generator.common.ProjectType;
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy;
 import com.btc.serviceidl.generator.cpp.IProjectSetFactory;
@@ -27,4 +28,6 @@ public interface IGenerationSettings extends ITargetVersionProvider {
     IModuleStructureStrategy getModuleStructureStrategy();
 
     Maturity getMaturity();
+
+    Set<PackageInfo> getDependencies();
 }

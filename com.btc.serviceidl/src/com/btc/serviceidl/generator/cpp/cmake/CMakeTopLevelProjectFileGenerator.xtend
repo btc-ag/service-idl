@@ -16,6 +16,7 @@ import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Util.*
 import com.btc.serviceidl.generator.Maturity
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.common.PackageInfoProvider
 
 @Accessors(NONE)
 class CMakeTopLevelProjectFileGenerator
@@ -112,6 +113,11 @@ class CMakeTopLevelProjectFileGenerator
                                     ("libzmq/4.2.3@cab/extern", "private"),
                                 «ENDIF»
                             «ENDIF»
+                            «IF generationSettings.dependencies !== null»
+                                «FOR dependency : generationSettings.dependencies.sortBy[name]»
+                                    ("«dependency.name»/«dependency.version»«versionSuffix»@cab/«dependencyChannel»"),
+                                «ENDFOR»
+                            «ENDIF»
                             )
                 generators = "cmake"
                 short_paths = True
@@ -120,7 +126,13 @@ class CMakeTopLevelProjectFileGenerator
                     protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)
                     outdir = self.source_folder
                     
-                    self.run('bin\\protoc.exe --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
+                    self.run('bin\\protoc.exe --proto_path=' + self.source_folder
+                        «IF generationSettings.dependencies !== null»
+                            «FOR dependency : generationSettings.dependencies.sortBy[name]»
+                                + ' --proto_path="' + os.path.normpath(os.path.join(self.deps_cpp_info["«dependency.name»"].rootpath, 'proto')) + '"'
+                            «ENDFOR»
+                        «ENDIF»
+                        + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
 
                 def build(self):
                     self.generateProtoFiles()
@@ -223,8 +235,16 @@ class CMakeTopLevelProjectFileGenerator
                 «ENDIF»
             «ENDIF»
 
+            «IF generationSettings.dependencies !== null»
+                «FOR dependency : generationSettings.dependencies.sortBy[name]»
+                    find_package(«dependency.name» REQUIRED)
+                «ENDFOR»
+            «ENDIF»
+
             «FOR projectPath : projectSet.projects.map[relativePath.toPortableString].sort»
-                include(${CMAKE_CURRENT_LIST_DIR}/«projectPath»/build/make.cmakeset)
+                «IF generationSettings.dependencies?.findFirst[it.name == PackageInfoProvider.getName(projectPath)] === null»
+                    include(${CMAKE_CURRENT_LIST_DIR}/«projectPath»/build/make.cmakeset)
+                «ENDIF»
             «ENDFOR»
 
             «IF serviceCommTargetVersion == ServiceCommVersion.V0_12»

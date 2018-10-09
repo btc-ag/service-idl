@@ -98,6 +98,21 @@ class TestData
 
     }
 
+    static def CharSequence getVersioned()
+    {
+        '''
+        version 0.7.0;
+        
+        virtual module BTC {
+        virtual module PRINS { 
+        module VersionedModule {
+
+        interface VersionedInterface[guid=D7BF2A3D-F3E0-4829-844C-59F610C7625B] { 
+        };
+        }}}
+        '''
+    }
+
     // Adapted from https://stackoverflow.com/a/48190582
     static def Iterable<URL> getFilenamesForDirnameFromClassPath(String directoryName)
     {

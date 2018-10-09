@@ -1,3 +1,5 @@
+version 0.3.0;
+
 virtual module BTC {
 virtual module PRINS {
 module Imported {
