@@ -15,6 +15,7 @@ import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
 import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider.OptionalGenerationSettings
 import com.btc.serviceidl.generator.Main
 import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
 import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
@@ -82,17 +83,30 @@ class DefaultGenerationSettingsProviderTest
     {
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
         defaultGenerationSettingsProvider.configureGenerationSettings(null,
-            #{CppConstants.SERVICECOMM_VERSION_KIND -> ServiceCommVersion.V0_10.label}.entrySet, null, null, null)
+            #{CppConstants.SERVICECOMM_VERSION_KIND -> ServiceCommVersion.V0_10.label}.entrySet, null, null, null, null)
         assertEquals(ServiceCommVersion.V0_10.label,
             defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource).getTargetVersion(
                 CppConstants.SERVICECOMM_VERSION_KIND))
+    }
+
+    @Test
+    def testImportDependencies()
+    {
+        val expected = #[new PackageInfo("foo", "0.0.1"), new PackageInfo("bar", "0.5.0")]
+        val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
+        defaultGenerationSettingsProvider.configureGenerationSettings(null, null as String, null, null, null, expected)
+        val result = defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource).dependencies
+        assertNotNull(result)
+        assertFalse(result.empty)
+        assertEquals(2, result.size)
+        assertEquals(expected.toList, result.toList)
     }
 
     @Test(expected=IllegalArgumentException)
     def void testConfigureUnknownProjectSystemFails()
     {
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.configureGenerationSettings("foo", null as String, null, null, null)
+        defaultGenerationSettingsProvider.configureGenerationSettings("foo", null as String, null, null, null, null)
         defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource)
     }
 

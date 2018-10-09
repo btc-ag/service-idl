@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IPath
 import org.eclipse.xtend.lib.annotations.Accessors
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import org.eclipse.core.runtime.Path
+import com.btc.serviceidl.generator.common.PackageInfoProvider
 
 @Accessors(NONE)
 class CMakeGenerator
@@ -80,7 +81,7 @@ class CMakeGenerator
                       «getCmakeTargetName(lib)»
                   «ENDFOR»
                   «FOR referencedProjectName : getSortedInternalDependencies(projectName)»
-                      «referencedProjectName»
+                      «getCmakeReferenceName(projectName, referencedProjectName)»
                   «ENDFOR»              
             )
             
@@ -97,13 +98,28 @@ class CMakeGenerator
     def getCmakeTargetName(String libName)
     {
         if (libName.startsWith("BTC.CAB."))
-            "CAB::" + libName
+            libName.CABLibPrefix
         else if (libName == "libprotobuf")
             "protobuf::libprotobuf"
         else
             throw new IllegalArgumentException(
                 "Don't know how to map library to a cmake target: " + libName
             )
+    }
+    
+    private def getCmakeReferenceName(String currentProject, String referencedProject)
+    {
+        val projectName = PackageInfoProvider.getName(currentProject)
+        val referenceName = PackageInfoProvider.getName(referencedProject)
+        if (projectName == referenceName)
+            referencedProject
+        else
+            referencedProject.CABLibPrefix
+    }
+    
+    private def static getCABLibPrefix(String libName)
+    {
+        '''CAB::«libName»'''
     }
     
     def getSortedInternalDependencies(String projectName)
@@ -144,7 +160,7 @@ class CMakeGenerator
                   «lib»
               «ENDFOR»
               «FOR referencedProjectName : getSortedInternalDependencies(projectName)»
-                  «referencedProjectName»
+                  «getCmakeReferenceName(projectName, referencedProjectName)»
               «ENDFOR»              
             )
             

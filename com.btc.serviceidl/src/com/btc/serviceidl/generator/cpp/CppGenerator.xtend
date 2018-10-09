@@ -35,6 +35,10 @@ import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.TransformType
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet.ProjectReference
 
 class CppGenerator
 {
@@ -152,6 +156,11 @@ class CppGenerator
             // TODO what does this mean?
             if (projectTypes.contains(ProjectType.PROTOBUF) && (module.containsTypes || module.containsInterfaces))
             {
+                val currentProjectReference = new ProjectReference(
+                    GeneratorUtil.getTransformedModuleName(
+                        new ParameterBundle.Builder().with(module.moduleStack).with(ProjectType.PROTOBUF).build,
+                        ArtifactNature.CPP, TransformType.PACKAGE))
+
                 new ProtobufProjectGenerator(
                     fileSystemAccess,
                     qualifiedNameProvider,
@@ -161,8 +170,7 @@ class CppGenerator
                     projectSet,
                     moduleStructureStrategy,
                     generationSettings,
-                    protobufProjectReferences.get(new ParameterBundle.Builder().with(module.moduleStack).
-                        with(ProjectType.PROTOBUF).build),
+                    protobufProjectReferences.get(currentProjectReference),
                     smartPointerMap,
                     module
                 ).generate()

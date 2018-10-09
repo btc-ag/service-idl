@@ -13,9 +13,13 @@
  */
 package com.btc.serviceidl.generator;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -39,6 +43,8 @@ import org.eclipse.xtext.validation.Issue;
 
 import com.btc.serviceidl.IdlStandaloneSetup;
 import com.btc.serviceidl.generator.common.ArtifactNature;
+import com.btc.serviceidl.generator.common.PackageInfo;
+import com.btc.serviceidl.generator.common.PackageInfoProvider;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
@@ -57,6 +63,7 @@ public class Main {
     public static final String OPTION_MATURITY                               = "maturity";
     public static final String OPTION_VALUE_MATURITY_SNAPSHOT                = "snapshot";
     public static final String OPTION_VALUE_MATURITY_RELEASE                 = "release";
+    public static final String OPTION_IMPORT                                 = "import";
 
     public static final int EXIT_CODE_GOOD              = 0;
     public static final int EXIT_CODE_GENERATION_FAILED = 1;
@@ -120,7 +127,8 @@ public class Main {
                         : null,
                 commandLine.hasOption(OPTION_VERSIONS) ? commandLine.getOptionValue(OPTION_VERSIONS) : null,
                 commandLine.hasOption(OPTION_PROJECT_SET) ? commandLine.getOptionValue(OPTION_PROJECT_SET) : null,
-                commandLine.hasOption(OPTION_MATURITY) ? commandLine.getOptionValue(OPTION_MATURITY) : null);
+                commandLine.hasOption(OPTION_MATURITY) ? commandLine.getOptionValue(OPTION_MATURITY) : null,
+                commandLine.hasOption(OPTION_IMPORT) ? commandLine.getOptionValues(OPTION_IMPORT) : new String[] {});
 
         return res ? EXIT_CODE_GOOD : EXIT_CODE_GENERATION_FAILED;
     }
@@ -138,6 +146,7 @@ public class Main {
                 + String.join(",", DefaultGenerationSettingsProvider.PROJECT_SET_MAPPING.keySet()) + "), default is "
                 + DefaultGenerationSettingsProvider.OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON);
         options.addOption(OPTION_MATURITY, true, "maturity (snapshot, release) (default is snapshot)");
+        options.addOption(OPTION_IMPORT, true, "full path to imported IDL file (optional; may be provided multiple times)");
         return options;
     }
 
@@ -167,12 +176,15 @@ public class Main {
     private IGenerationSettingsProvider generationSettingsProvider;
 
     private boolean tryRunGenerator(String[] inputFiles, Map<ArtifactNature, IPath> outputPaths,
-            String cppProjectSystem, String versions, String projectSet, String maturityString) {
+            String cppProjectSystem, String versions, String projectSet, String maturityString, String[] importFiles) {
+
+        Set<URI> inputURIs = Arrays.stream(inputFiles).map(URI::createFileURI).collect(Collectors.toSet());
+        Set<URI> importURIs = Arrays.stream(importFiles).map(URI::createFileURI).collect(Collectors.toSet());
+
         // Load the resource
         ResourceSet set = resourceSetProvider.get();
-        for (String inputFile : inputFiles) {
-            set.getResource(URI.createFileURI(inputFile), true);
-        }
+        inputURIs.stream().forEach(e -> set.getResource(e, true));
+        importURIs.stream().forEach(e -> set.getResource(e, true));
 
         System.out.println("Validating IDL input.");
         for (Resource resource : set.getResources()) {
@@ -212,8 +224,15 @@ public class Main {
             }
         }
 
+        // determine required package dependencies for imported IDLs
+        List<PackageInfo> dependencies = new ArrayList<PackageInfo>();
+        for (Resource resource : set.getResources()) {
+            if (importURIs.contains(resource.getURI())) // only for imported IDLs, not for input IDLs!
+                dependencies.add(PackageInfoProvider.getPackageInfo(resource));
+        }
+
         try {
-            configureGenerationSettings(cppProjectSystem, versions, outputPaths.keySet(), projectSet, maturity);
+            configureGenerationSettings(cppProjectSystem, versions, outputPaths.keySet(), projectSet, maturity, dependencies);
         } catch (Exception ex) {
             System.err.println("Error when configuring generation settings: " + ex);
             return false;
@@ -224,7 +243,8 @@ public class Main {
         context.setCancelIndicator(CancelIndicator.NullImpl);
 
         for (Resource resource : set.getResources()) {
-            generator.generate(resource, fileAccess, context);
+            if (inputURIs.contains(resource.getURI())) // only for input IDLs, not for imported IDLs!
+                generator.generate(resource, fileAccess, context);
         }
 
         System.out.println("Code generation finished.");
@@ -232,11 +252,11 @@ public class Main {
     }
 
     private void configureGenerationSettings(String cppProjectSystem, String versions,
-            Iterable<ArtifactNature> languages, String projectSet, Maturity maturity) {
+            Iterable<ArtifactNature> languages, String projectSet, Maturity maturity, Iterable<PackageInfo> dependencies) {
         DefaultGenerationSettingsProvider defaultGenerationSettingsProvider = (DefaultGenerationSettingsProvider) generationSettingsProvider;
 
         defaultGenerationSettingsProvider.configureGenerationSettings(cppProjectSystem, versions, languages, projectSet,
-                maturity);
+                maturity, dependencies);
     }
 
 }
