@@ -16,9 +16,13 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.IGenerationSettings
+import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet.ProjectReference
 import com.btc.serviceidl.generator.cpp.cmake.CMakeTopLevelProjectFileGenerator
 import com.btc.serviceidl.generator.cpp.prins.OdbProjectGenerator
 import com.btc.serviceidl.idl.AbstractTypeReference
@@ -100,7 +104,8 @@ class CppGenerator
                     moduleStructureStrategy,
                     generationSettings,
                     smartPointerMap,
-                    module
+                    module,
+                    generationSettings.dependencies
                 ).generate()
 
             }
@@ -143,7 +148,8 @@ class CppGenerator
                         moduleStructureStrategy,
                         generationSettings,
                         smartPointerMap,
-                        module
+                        module,
+                        generationSettings.dependencies
                     ).generate()
                 }
             }
@@ -152,6 +158,11 @@ class CppGenerator
             // TODO what does this mean?
             if (projectTypes.contains(ProjectType.PROTOBUF) && (module.containsTypes || module.containsInterfaces))
             {
+                val currentProjectReference = new ProjectReference(
+                    GeneratorUtil.getTransformedModuleName(
+                        new ParameterBundle.Builder().with(module.moduleStack).with(ProjectType.PROTOBUF).build,
+                        ArtifactNature.CPP, TransformType.PACKAGE), module.eResource.URI)
+
                 new ProtobufProjectGenerator(
                     fileSystemAccess,
                     qualifiedNameProvider,
@@ -161,10 +172,10 @@ class CppGenerator
                     projectSet,
                     moduleStructureStrategy,
                     generationSettings,
-                    protobufProjectReferences.get(new ParameterBundle.Builder().with(module.moduleStack).
-                        with(ProjectType.PROTOBUF).build),
+                    protobufProjectReferences.get(currentProjectReference),
                     smartPointerMap,
-                    module
+                    module,
+                    generationSettings.dependencies
                 ).generate()
             }
 
@@ -181,7 +192,8 @@ class CppGenerator
                     moduleStructureStrategy,
                     generationSettings,
                     smartPointerMap,
-                    module
+                    module,
+                    generationSettings.dependencies
                 ).generate()
             }
         }

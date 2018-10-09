@@ -2,6 +2,7 @@ package com.btc.serviceidl.generator.cpp.prins
 
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.ExternalDependency
@@ -26,9 +27,9 @@ class VSSolutionFactory implements IProjectSetFactory
 
     override generateProjectFiles(IFileSystemAccess fileSystemAccess, IModuleStructureStrategy moduleStructureStrategy,
         ITargetVersionProvider targetVersionProvider, ParameterBundle parameterBundle,
-        Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
-        Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
-        IPath projectPath, String projectName)
+        Iterable<ExternalDependency> externalDependencies, Iterable<PackageInfo> importedDependencies,
+        IProjectSet projectSet, Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet,
+        ProjectType projectType, IPath projectPath, String projectName)
     {
         val dependencyFileName = Constants.FILE_NAME_DEPENDENCIES.cpp
         val sourcePath = projectPath.append(moduleStructureStrategy.sourceFileDir)

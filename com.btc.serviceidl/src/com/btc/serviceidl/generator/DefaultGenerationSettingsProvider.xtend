@@ -11,6 +11,7 @@
 package com.btc.serviceidl.generator
 
 import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
@@ -20,6 +21,8 @@ import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory
 import com.btc.serviceidl.generator.dotnet.DotNetConstants
 import com.btc.serviceidl.generator.java.JavaConstants
+import com.google.common.base.MoreObjects
+import com.google.common.base.Objects
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Sets
@@ -34,9 +37,6 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.URIConverter
 import org.eclipse.emf.ecore.resource.impl.ExtensibleURIConverterImpl
 import org.eclipse.xtend.lib.annotations.Accessors
-import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider.OptionalGenerationSettings
-import com.google.common.base.Objects
-import com.google.common.base.MoreObjects
 
 class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 {
@@ -51,6 +51,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         var String cppProjectSystem = null // TODO change into a enum here
         var Iterable<Map.Entry<String, String>> versions = null
         var Maturity maturity = null
+        var Set<PackageInfo> dependencies = #{}
 
         override equals(Object other)
         {
@@ -63,7 +64,10 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
                             Objects.equal(projectTypes.toSet, other.projectTypes.toSet)) &&
                         Objects.equal(cppProjectSystem, other.cppProjectSystem) &&
                         ((versions === null && other.versions === null) ||
-                            Objects.equal(versions.toSet, other.versions.toSet))
+                            Objects.equal(versions.toSet, other.versions.toSet) &&
+                        ((dependencies === null && other.dependencies === null) ||
+                            Objects.equal(dependencies.toSet, other.dependencies.toSet)
+                        ))
                 }
 
             false
@@ -77,7 +81,8 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         override toString()
         {
             MoreObjects.toStringHelper(this).add("languages", languages).add("projectTypes", projectTypes).add(
-                "cppProjectSystem", cppProjectSystem).add("versions", versions).toString
+                "cppProjectSystem", cppProjectSystem).add("versions", versions)
+                .add("import", dependencies).toString
         }
 
         static def getDefaults()
@@ -97,7 +102,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         }
 
         static def create(String cppProjectSystem, Iterable<Entry<String, String>> versions,
-            Iterable<ArtifactNature> languages, Iterable<ProjectType> projectTypes, Maturity maturity)
+            Iterable<ArtifactNature> languages, Iterable<ProjectType> projectTypes, Maturity maturity, Iterable<PackageInfo> dependencies)
         {
             val settings = new OptionalGenerationSettings()
 
@@ -106,14 +111,15 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             if (cppProjectSystem !== null) settings.cppProjectSystem = cppProjectSystem
             if (versions !== null) settings.versions = versions
             settings.maturity = maturity
+            if (dependencies !== null) settings.dependencies = ImmutableSet.copyOf(dependencies)
 
             settings
         }
 
         static def create(String cppProjectSystem, String versions, Iterable<ArtifactNature> languages,
-            String projectSet, Maturity maturity)
+            String projectSet, Maturity maturity, Iterable<PackageInfo> dependencies)
         {
-            create(cppProjectSystem, versions.splitVersions, languages, PROJECT_SET_MAPPING.get(projectSet), maturity)
+            create(cppProjectSystem, versions.splitVersions, languages, PROJECT_SET_MAPPING.get(projectSet), maturity, dependencies)
         }
 
     }
@@ -145,7 +151,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         OptionalGenerationSettings.create(properties.get("cppProjectSystem") as String,
             properties.get("versions") as String, (languages?.split(",")?.map [ str |
                 ArtifactNature.values.filter[it.label == str].single
-            ]?.toSet), properties.get("projectSet") as String, null)
+            ]?.toSet), properties.get("projectSet") as String, null, null)
     }
 
     private static def <T> single(Iterable<T> iterable)
@@ -180,6 +186,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         result.languages = overrides.languages ?: base.languages
         result.projectTypes = overrides.projectTypes ?: base.projectTypes
         result.cppProjectSystem = overrides.cppProjectSystem ?: base.cppProjectSystem
+        result.dependencies = overrides.dependencies ?: base.dependencies
         result.versions = if (overrides.versions !== null)
         {
             val resultVersions = base.versions.toMap([key], [value])
@@ -197,7 +204,8 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         val result = new DefaultGenerationSettings()
         result.languages = settings.languages
         result.projectTypes = settings.projectTypes
-
+        result.dependencies = settings.dependencies
+        
         switch (settings.cppProjectSystem)
         {
             case Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
@@ -234,15 +242,15 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
     }
 
     def void configureGenerationSettings(String cppProjectSystem, String versions, Iterable<ArtifactNature> languages,
-        String projectSet, Maturity maturity)
+        String projectSet, Maturity maturity, Iterable<PackageInfo> dependencies)
     {
-        overrides = OptionalGenerationSettings.create(cppProjectSystem, versions, languages, projectSet, maturity)
+        overrides = OptionalGenerationSettings.create(cppProjectSystem, versions, languages, projectSet, maturity, dependencies)
     }
 
     def void configureGenerationSettings(String cppProjectSystem, Iterable<Map.Entry<String, String>> versions,
-        Iterable<ArtifactNature> languages, Iterable<ProjectType> projectTypes, Maturity maturity)
+        Iterable<ArtifactNature> languages, Iterable<ProjectType> projectTypes, Maturity maturity, Iterable<PackageInfo> dependencies)
     {
-        overrides = OptionalGenerationSettings.create(cppProjectSystem, versions, languages, projectTypes, maturity)
+        overrides = OptionalGenerationSettings.create(cppProjectSystem, versions, languages, projectTypes, maturity, dependencies)
     }
 
     private static def Iterable<Map.Entry<String, String>> splitVersions(String optionValue)

@@ -13,6 +13,7 @@ package com.btc.serviceidl.generator.cpp
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.idl.AbstractTypeReference
@@ -33,15 +34,15 @@ import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
 class CommonProjectGenerator extends ProjectGeneratorBaseBase
 {
 
-    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
-        IScopeProvider scopeProvider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
-        IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
-        ITargetVersionProvider targetVersionProvider,
-        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ModuleDeclaration module)
+    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
+        IDLSpecification idl, IProjectSetFactory projectSetFactory, IProjectSet vsSolution,
+        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
+        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ModuleDeclaration module,
+        Iterable<PackageInfo> importedDependencies)
     {
         super(fileSystemAccess, qualifiedNameProvider, scopeProvider, idl, projectSetFactory, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, smartPointerMap,
-            ProjectType.COMMON, module)
+            moduleStructureStrategy, targetVersionProvider, smartPointerMap, ProjectType.COMMON, module,
+            importedDependencies)
     }
 
     // TODO this is largely a clone of ProjectGeneratorBase.generateProjectStructure

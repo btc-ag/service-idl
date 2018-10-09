@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 
 import com.btc.serviceidl.generator.ITargetVersionProvider;
+import com.btc.serviceidl.generator.common.PackageInfo;
 import com.btc.serviceidl.generator.common.ParameterBundle;
 import com.btc.serviceidl.generator.common.ProjectType;
 
@@ -12,7 +13,7 @@ public interface IProjectSetFactory {
 
     void generateProjectFiles(IFileSystemAccess fileSystemAccess, IModuleStructureStrategy moduleStructureStrategy,
             ITargetVersionProvider targetVersionProvider, ParameterBundle parameterBundle,
-            Iterable<ExternalDependency> externalDependencies, IProjectSet projectSet,
-            Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet, ProjectType projectType,
-            IPath projectPath, String projectName);
+            Iterable<ExternalDependency> externalDependencies, Iterable<PackageInfo> importedDependencies,
+            IProjectSet projectSet, Iterable<IProjectReference> projectReferences, ProjectFileSet projectFileSet,
+            ProjectType projectType, IPath projectPath, String projectName);
 }
