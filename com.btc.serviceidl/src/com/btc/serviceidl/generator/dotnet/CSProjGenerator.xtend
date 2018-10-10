@@ -22,7 +22,7 @@ import static extension com.btc.serviceidl.generator.dotnet.Util.*
 
 class CSProjGenerator {
   static def String generateCSProj(String projectName, VSSolution vsSolution, ParameterBundle paramBundle,
-        Iterable<String> referencedAssemblies, Iterable<NuGetPackage> nugetPackages,
+        Iterable<String> referencedAssemblies,
         Iterable<ParameterBundle> projectReferences, Iterable<String> csFiles, Iterable<String> protobufFiles)
   {
       // Please do NOT edit line indents in the code below (even though they
@@ -75,22 +75,11 @@ class CSProjGenerator {
              <None Include="«paramBundle.log4NetConfigFile»">
                <CopyToOutputDirectory>Always</CopyToOutputDirectory>
              </None>
-             <None Include="packages.config">
-               <SubType>Designer</SubType>
-             </None>
            </ItemGroup>
         «ENDIF»
         <ItemGroup>
           «FOR assembly : referencedAssemblies»
-            <Reference Include="«assembly»">
-              <SpecificVersion>False</SpecificVersion>
-              <HintPath>$(SolutionDir)..\lib\AnyCPU\Release\«assembly».«getReferenceExtension(assembly)»</HintPath>
-            </Reference>
-          «ENDFOR»
-          «FOR nugetPackage : nugetPackages»
-            <Reference Include="«nugetPackage.assemblyName»">
-              <HintPath>$(SolutionDir)packages\«nugetPackage.assemblyPath»</HintPath>
-            </Reference>
+            <Reference Include="«assembly»" />
           «ENDFOR»
         </ItemGroup>
         <ItemGroup>

@@ -121,10 +121,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                 <PlatformTarget>AnyCPU</PlatformTarget>
               </PropertyGroup>
               <ItemGroup>
-                <Reference Include="System">
-                  <SpecificVersion>False</SpecificVersion>
-                  <HintPath>$(SolutionDir)..\lib\AnyCPU\Release\System.dll</HintPath>
-                </Reference>
+                <Reference Include="System" />
               </ItemGroup>
               <ItemGroup>
                 <Compile Include="IKeyValueStore.cs" />
@@ -173,7 +170,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
     @Test
     def void testBasicProtobufCSProjFile()
     {
-        val fileCount = 20
+        val fileCount = 19
         val baseDirectory = ArtifactNature.DOTNET.label + "Infrastructure/ServiceHost/Demo/API/Protobuf/"
         val contents = #{baseDirectory + "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf.csproj" -> '''
             <?xml version="1.0" encoding="utf-8"?>
@@ -208,28 +205,10 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                 <PlatformTarget>AnyCPU</PlatformTarget>
               </PropertyGroup>
               <ItemGroup>
-                <Reference Include="System.Reflection">
-                  <SpecificVersion>False</SpecificVersion>
-                  <HintPath>$(SolutionDir)..\lib\AnyCPU\Release\System.Reflection.dll</HintPath>
-                </Reference>
-                <Reference Include="System.Linq">
-                  <SpecificVersion>False</SpecificVersion>
-                  <HintPath>$(SolutionDir)..\lib\AnyCPU\Release\System.Linq.dll</HintPath>
-                </Reference>
-                <Reference Include="System">
-                  <SpecificVersion>False</SpecificVersion>
-                  <HintPath>$(SolutionDir)..\lib\AnyCPU\Release\System.dll</HintPath>
-                </Reference>
-                <Reference Include="System.Threading.Tasks">
-                  <SpecificVersion>False</SpecificVersion>
-                  <HintPath>$(SolutionDir)..\lib\AnyCPU\Release\System.Threading.Tasks.dll</HintPath>
-                </Reference>
-                <Reference Include="Google.ProtocolBuffers.Serialization">
-                  <HintPath>$(SolutionDir)packages\Google.ProtocolBuffers\lib\net40\Google.ProtocolBuffers.Serialization.dll</HintPath>
-                </Reference>                
-                <Reference Include="Google.ProtocolBuffers">
-                  <HintPath>$(SolutionDir)packages\Google.ProtocolBuffers\lib\net40\Google.ProtocolBuffers.dll</HintPath>
-                </Reference>                
+                <Reference Include="System.Reflection" />
+                <Reference Include="System.Linq" />
+                <Reference Include="System" />
+                <Reference Include="System.Threading.Tasks" />
               </ItemGroup>
               <ItemGroup>
                 <Compile Include="Types.cs" />
