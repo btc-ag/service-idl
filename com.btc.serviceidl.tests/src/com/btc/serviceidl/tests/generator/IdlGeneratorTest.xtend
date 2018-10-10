@@ -58,7 +58,7 @@ class IdlGeneratorTest
     def void testSmokeAndFileCountRegressionBasic()
     {
         val fsa = doGenerate(TestData.basic)
-        val regressionFileCount = 117
+        val regressionFileCount = 111
         assertEquals(regressionFileCount, fsa.textFiles.size)
     }
 
@@ -66,7 +66,7 @@ class IdlGeneratorTest
     def void testSmokeAndFileCountRegressionFull()
     {
         val fsa = doGenerate(TestData.full)
-        val regressionFileCount = 146
+        val regressionFileCount = 140
         assertEquals(regressionFileCount, fsa.textFiles.size)
     }
 
@@ -74,7 +74,7 @@ class IdlGeneratorTest
     def void testSmokeAndFileCountRegressionEvent()
     {
         val fsa = doGenerate(TestData.eventTestCase)
-        val regressionFileCount = 122
+        val regressionFileCount = 116
         assertEquals(regressionFileCount, fsa.textFiles.size)
     }
 

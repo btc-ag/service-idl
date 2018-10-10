@@ -104,7 +104,6 @@ class DotNetGenerator
         new VSSolutionGenerator(fileSystemAccess, vsSolution, idl.getReleaseUnitName(ArtifactNature.DOTNET)).
             generateSolutionFile
 
-        // TODO generate only either NuGet or Paket file
         val paketDependenciesContent = generatePaketDependencies
         if (paketDependenciesContent !== null)
             fileSystemAccess.generateFile("paket.dependencies", ArtifactNature.DOTNET.label, paketDependenciesContent)
@@ -227,9 +226,6 @@ class DotNetGenerator
       // NuGet (optional)
       if (!nugetPackages.resolvedPackages.empty)
       {
-        fileSystemAccess.generateFile(projectRootPath.append("packages.config").toPortableString, ArtifactNature.DOTNET.label, 
-                generatePackagesConfig)
-        // TODO generate only either NuGet or Paket file
         fileSystemAccess.generateFile(projectRootPath.append("paket.references").toPortableString, ArtifactNature.DOTNET.label, 
                 generatePaketReferences)
         paketDependencies.addAll(flatPackages)
@@ -240,18 +236,6 @@ class DotNetGenerator
    {
        nugetPackages.resolvedPackages.flatPackages
    } 
-   
-   private def String generatePackagesConfig()
-   {
-      '''
-      <?xml version="1.0" encoding="utf-8"?>
-      <packages>
-        «FOR packageEntry : flatPackages»
-          <package id="«packageEntry.key»" version="«packageEntry.value»" targetFramework="«DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»" />
-        «ENDFOR»
-      </packages>
-      '''
-   }
    
    private def generatePaketReferences()
    {
@@ -694,7 +678,6 @@ class DotNetGenerator
             vsSolution,
             paramBundle,
             typeResolver.referencedAssemblies,
-            nugetPackages.resolvedPackages,
             typeResolver.projectReferences,
             csFiles,
             protobufFiles
