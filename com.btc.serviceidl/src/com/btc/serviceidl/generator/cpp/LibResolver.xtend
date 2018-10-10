@@ -50,6 +50,7 @@ class LibResolver
     }
 
     // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
+    // TODO for ServiceComm 0.12, these additional dependencies should no longer be necessary
     static val cabAdditionalDependencies = #{
         "Performance/CommonsTestSupport/include/TestLoggerFactory.h" -> #["BTC.CAB.Logging.API"],
         "ServiceComm/API/include/IClientEndpoint.h" ->
@@ -71,7 +72,7 @@ class LibResolver
                 "BTC.CAB.ServiceComm.Commons", "BTC.CAB.Commons.CoreOS"],
         "ServiceComm.SQ/ZeroMQTestSupport/include/CZeroMQTestConnection.h" ->
             #["BTC.CAB.ServiceComm.SQ.API", "BTC.CAB.ServiceComm.SQ.ZeroMQ", "BTC.CAB.ServiceComm.SQ.Default",
-                "BTC.CAB.ServiceComm.SQ.ImportAPI"]
+                "BTC.CAB.ServiceComm.SQ.ImportAPI", "BTC.CAB.ServiceComm.SQ.TestBase"]
     }
 
     def Iterable<ExternalDependency> getCABLibs(IPath headerFile)

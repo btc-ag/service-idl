@@ -72,7 +72,7 @@ class TestGenerator extends BasicCppGenerator
             {
                «containerName»( «resolveSymbol("BTC::Commons::Core::Context")»& context ) :
                m_connection(
-               «IF targetVersion == ServiceCommVersion.V0_12»
+               «IF targetVersion != ServiceCommVersion.V0_10»
                   «resolveSymbol("BTC::ServiceComm::SQ::ZeroMQTestSupport::ZeroMQTestConnectionBuilder")»{context, «loggerFactory»()}
                    .WithClientServerConnectionOptionsBuilders(clientConnectionOptionsBuilder, serverConnectionOptionsBuilder)
                    .Create()
