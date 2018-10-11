@@ -43,6 +43,7 @@ import java.util.regex.Pattern
 import org.eclipse.xtext.validation.Check
 
 import static extension com.btc.serviceidl.util.Extensions.*
+import static extension org.eclipse.xtext.EcoreUtil2.*
 
 class IdlValidator extends AbstractIdlValidator
 {
@@ -63,6 +64,8 @@ class IdlValidator extends AbstractIdlValidator
     public static final String DEPRECATED_INTERFACE_VERSION = "com.btc.serviceidl.validation.deprecatedInterfaceVersion";
     public static final String UNIQUE_MAIN_MODULE = "com.btc.serviceidl.validation.uniqueMainModule";
     public static final String EMPTY_NON_MAIN_MODULE = "com.btc.serviceidl.validation.emptyNonMainModule";
+    public static final String INDETERMINATE_IMPLICIT_MAIN_MODULE = "com.btc.serviceidl.validation.indeterminateImplicitMainModule";
+    public static final String DEPRECATED_MULTIPLE_NON_EMPTY_MODULES_WITHOUT_EXPLICIT_MAIN = "com.btc.serviceidl.validation.ambiguousImplicitMainModule";
 
     /**
      * Verify, that at most 1 anonymous event exists per interface.
@@ -235,6 +238,51 @@ class IdlValidator extends AbstractIdlValidator
     }
 
     /**
+     * Verify that there is a module declared as main if there are multiple non-empty modules. 
+     */
+    @Check
+    def checkMainModuleDeclaredIfAmbiguous(IDLSpecification idlSpecification)
+    {
+        val mainModule = idlSpecification.eAllContents.filter(ModuleDeclaration).filter[main].head
+        if (mainModule === null)
+        {
+            val modulesWithComponents = idlSpecification.eAllContents.filter(ModuleDeclaration).filter [
+                !moduleComponents.empty
+            ].toList
+            val topLevelModules = modulesWithComponents.map[topLevelModule].toSet
+            if (topLevelModules.size > 1)
+            {
+                for (module : topLevelModules)
+                {
+                    error(Messages.INDETERMINATE_IMPLICIT_MAIN_MODULE, module, null, INDETERMINATE_IMPLICIT_MAIN_MODULE)
+                }
+            }
+            else if (modulesWithComponents.size > 1)
+            {
+                for (module : modulesWithComponents)
+                {
+                    warning(Messages.DEPRECATED_MULTIPLE_NON_EMPTY_MODULES_WITHOUT_EXPLICIT_MAIN, module, null,
+                        com.btc.serviceidl.validation.IdlValidator.
+                            DEPRECATED_MULTIPLE_NON_EMPTY_MODULES_WITHOUT_EXPLICIT_MAIN)
+                }
+            }
+
+        }
+    }
+
+    private def getTopLevelModule(ModuleDeclaration moduleDeclaration)
+    {
+        var previousModule = moduleDeclaration
+        var currentModule = previousModule.eContainer.getContainerOfType(ModuleDeclaration)
+        while (currentModule !== null)
+        {
+            previousModule = currentModule
+            currentModule = currentModule.eContainer.getContainerOfType(ModuleDeclaration)
+        }
+        return previousModule
+    }
+
+    /**
      * Verify, that all modules outside the main module are empty (i.e. they
      * may only contain an inner module that is a parent of the main module).
      */
@@ -245,10 +293,7 @@ class IdlValidator extends AbstractIdlValidator
         if (mainModule !== null)
         {
             var previousModule = mainModule
-            var currentModule = if (mainModule.eContainer instanceof ModuleDeclaration)
-                    mainModule.eContainer as ModuleDeclaration
-                else
-                    null
+            var currentModule = mainModule.eContainer.getContainerOfType(ModuleDeclaration)
             while (currentModule !== null)
             {
                 val innerModule = previousModule
@@ -259,18 +304,15 @@ class IdlValidator extends AbstractIdlValidator
                 }
 
                 previousModule = currentModule
-                currentModule = if (currentModule.eContainer instanceof ModuleDeclaration)
-                    currentModule.eContainer as ModuleDeclaration
-                else
-                    null
+                currentModule = currentModule.eContainer.getContainerOfType(ModuleDeclaration)
             }
-            
+
             val innerModule = previousModule
             val otherModules = idlSpecification.modules.filter[it !== innerModule]
             for (module : otherModules)
             {
-                error(Messages.EMPTY_NON_MAIN_MODULE, module,
-                    IdlPackage.Literals.MODULE_DECLARATION__NESTED_MODULES, EMPTY_NON_MAIN_MODULE)                
+                error(Messages.EMPTY_NON_MAIN_MODULE, module, IdlPackage.Literals.MODULE_DECLARATION__NESTED_MODULES,
+                    EMPTY_NON_MAIN_MODULE)
             }
         }
     }

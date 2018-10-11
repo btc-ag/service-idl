@@ -55,4 +55,7 @@ class Messages
 
     public static val EMPTY_NON_MAIN_MODULE = "Module outside main module must be empty!"
 
+    public static val INDETERMINATE_IMPLICIT_MAIN_MODULE = "No implicit main module could be determined, since there are two non-empty top-level modules!"
+    
+    public static val DEPRECATED_MULTIPLE_NON_EMPTY_MODULES_WITHOUT_EXPLICIT_MAIN = "Deprecated: There are multiple modules containing definitions but no module is explicitly declared \"main\", using common container module as implicit main module!"
 }

@@ -1,4 +1,4 @@
-module foo {
+main module foo {
 
 module bar 
 {

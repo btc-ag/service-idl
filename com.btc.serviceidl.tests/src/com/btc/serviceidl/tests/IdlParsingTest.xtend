@@ -113,6 +113,36 @@ class IdlParsingTest
     }
 
     @Test
+    def void testAmbiguousMainModule()
+    {
+        val result = parseHelper.parse('''
+            module Outer {
+              exception FooException {};
+              module Inner {
+                exception BarException {};
+              }
+            }
+        ''')
+        result.assertWarning(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.DEPRECATED_MULTIPLE_NON_EMPTY_MODULES_WITHOUT_EXPLICIT_MAIN,
+            Messages.DEPRECATED_MULTIPLE_NON_EMPTY_MODULES_WITHOUT_EXPLICIT_MAIN)
+    }
+
+    @Test
+    def void testIndeterminateMainModule()
+    {
+        val result = parseHelper.parse('''
+            module Foo {
+              exception FooException {};
+            }
+            module Bar {
+              exception BarException {};
+            }
+        ''')
+        result.assertError(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.INDETERMINATE_IMPLICIT_MAIN_MODULE,
+            Messages.INDETERMINATE_IMPLICIT_MAIN_MODULE)
+    }
+
+    @Test
     def void testExceptionDecl()
     {
 
