@@ -48,6 +48,11 @@ class Messages
     public static val DEPRECATED_NESTED_TYPE_DECLARATION = "This IDL feature is deprecated due to its unmanageable and unnecessary complexity! Do not use nested type declarations! Instead, declare them as separate types!"
 
     public static val DEPRECATED_ADHOC_DECLARATION = "This IDL feature is deprecated due to its uselessness along with high maintenance costs! Use a normal struct member instead!"
-    
+
     public static val DEPRECATED_VERSION_DECLARATION = "Declaring versions on an interface is now deprecated and has no effect, declare the version at the IDL level instead!"
+
+    public static val UNIQUE_MAIN_MODULE = "No more than one main module is allowed!"
+
+    public static val EMPTY_NON_MAIN_MODULE = "Module outside main module must be empty!"
+
 }

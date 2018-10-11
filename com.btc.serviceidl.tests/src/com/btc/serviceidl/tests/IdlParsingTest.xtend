@@ -46,6 +46,73 @@ class IdlParsingTest
     }
 
     @Test
+    def void testMultipleMainModulesNested()
+    {
+        val result = parseHelper.parse('''
+            main module OuterMain { main module InnerMain {} }
+        ''')
+        result.assertError(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.UNIQUE_MAIN_MODULE,
+            Messages.UNIQUE_MAIN_MODULE)
+    }
+
+    @Test
+    def void testMultipleMainModulesParallel()
+    {
+        val result = parseHelper.parse('''
+            main module FirstMain {}
+            main module SecondMain {}
+        ''')
+        result.assertError(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.UNIQUE_MAIN_MODULE,
+            Messages.UNIQUE_MAIN_MODULE)
+    }
+
+    @Test
+    def void testNonEmptyNonMainModuleOuter()
+    {
+        val result = parseHelper.parse('''
+            module Outer {
+              exception DuplicateKeyException {};
+              main module InnerMain {
+                  
+              }
+            }
+        ''')
+        result.assertError(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.EMPTY_NON_MAIN_MODULE,
+            Messages.EMPTY_NON_MAIN_MODULE)
+    }
+
+    @Test
+    def void testNonEmptyNonMainModuleParallelTopLevel()
+    {
+        val result = parseHelper.parse('''
+            main module Main {
+                  
+            }
+            module NonMain {
+              exception DuplicateKeyException {};
+            }
+        ''')
+        result.assertError(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.EMPTY_NON_MAIN_MODULE,
+            Messages.EMPTY_NON_MAIN_MODULE)
+    }
+    @Test
+    def void testNonEmptyNonMainModuleParallel()
+    {
+        val result = parseHelper.parse('''
+            module Outer {
+                main module Main {
+                      
+                }
+                module NonMain {
+                  exception DuplicateKeyException {};
+                }
+            }
+        ''')
+        result.assertError(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.EMPTY_NON_MAIN_MODULE,
+            Messages.EMPTY_NON_MAIN_MODULE)
+    }
+
+    @Test
     def void testExceptionDecl()
     {
 
