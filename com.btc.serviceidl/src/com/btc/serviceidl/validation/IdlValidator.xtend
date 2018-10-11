@@ -40,6 +40,8 @@ import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
 import java.util.regex.Pattern
+import javax.inject.Inject
+import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.validation.Check
 
 import static extension com.btc.serviceidl.util.Extensions.*
@@ -66,6 +68,9 @@ class IdlValidator extends AbstractIdlValidator
     public static final String EMPTY_NON_MAIN_MODULE = "com.btc.serviceidl.validation.emptyNonMainModule";
     public static final String INDETERMINATE_IMPLICIT_MAIN_MODULE = "com.btc.serviceidl.validation.indeterminateImplicitMainModule";
     public static final String DEPRECATED_MULTIPLE_NON_EMPTY_MODULES_WITHOUT_EXPLICIT_MAIN = "com.btc.serviceidl.validation.ambiguousImplicitMainModule";
+    public static final String INCONSISTENT_MAIN_MODULE_NAME = "com.btc.serviceidl.validation.inconsistentMainModuleName";
+
+    @Inject IQualifiedNameProvider qualifiedNameProvider
 
     /**
      * Verify, that at most 1 anonymous event exists per interface.
@@ -270,16 +275,29 @@ class IdlValidator extends AbstractIdlValidator
         }
     }
 
-    private def getTopLevelModule(ModuleDeclaration moduleDeclaration)
+    @Check
+    def checkMainModuleCorrespondsWithFileName(IDLSpecification idlSpecification)
     {
-        var previousModule = moduleDeclaration
-        var currentModule = previousModule.eContainer.getContainerOfType(ModuleDeclaration)
-        while (currentModule !== null)
+        val mainModule = idlSpecification.effectiveMainModule
+        if (mainModule !== null)
         {
-            previousModule = currentModule
-            currentModule = currentModule.eContainer.getContainerOfType(ModuleDeclaration)
+            val mainModuleQualifiedName = qualifiedNameProvider.getFullyQualifiedName(mainModule).toString(".")
+            val resourceBaseName = idlSpecification.eResource.URI.lastSegment.replace('.idl', '')
+
+            // this is the prefix given by org.eclipse.xtext.testing.util.ResourceHelper to in-memory test 
+            // resources. To allow the use of such in-memory test resources without a warning, the validation 
+            // skips them. Maybe it would be cleaner to filter this out in the tests only.
+            val testResourceBaseNamePrefix = "__synthetic"; 
+            
+            if (!resourceBaseName.startsWith(testResourceBaseNamePrefix))
+            {
+                if (resourceBaseName != mainModuleQualifiedName)
+                {
+                    warning(Messages.INCONSISTENT_MAIN_MODULE_NAME, idlSpecification, null,
+                        INCONSISTENT_MAIN_MODULE_NAME)
+                }
+            }
         }
-        return previousModule
     }
 
     /**
