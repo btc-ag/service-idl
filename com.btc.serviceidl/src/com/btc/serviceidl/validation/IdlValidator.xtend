@@ -61,6 +61,8 @@ class IdlValidator extends AbstractIdlValidator
     // unique identification codes for quickfixes
     public static final String INTERFACE_GUID = "com.btc.serviceidl.validation.ensureInterfaceGUID";
     public static final String DEPRECATED_INTERFACE_VERSION = "com.btc.serviceidl.validation.deprecatedInterfaceVersion";
+    public static final String UNIQUE_MAIN_MODULE = "com.btc.serviceidl.validation.uniqueMainModule";
+    public static final String EMPTY_NON_MAIN_MODULE = "com.btc.serviceidl.validation.emptyNonMainModule";
 
     /**
      * Verify, that at most 1 anonymous event exists per interface.
@@ -222,13 +224,54 @@ class IdlValidator extends AbstractIdlValidator
      * namespace decorations (e.g. in .NET this module will get the ".NET" extension)
      */
     @Check
-    def checkMainModule(IDLSpecification idlSpecification)
+    def checkUniqueMainModule(IDLSpecification idlSpecification)
     {
         if (idlSpecification.eAllContents.filter(ModuleDeclaration).filter[main].size > 1)
         {
-            error("No more than one main module is allowed!",
+            error(Messages.UNIQUE_MAIN_MODULE,
                 idlSpecification.eAllContents.filter(ModuleDeclaration).filter[main].tail.head,
-                IdlPackage.Literals.MODULE_DECLARATION__MAIN)
+                IdlPackage.Literals.MODULE_DECLARATION__MAIN, UNIQUE_MAIN_MODULE)
+        }
+    }
+
+    /**
+     * Verify, that all modules outside the main module are empty (i.e. they
+     * may only contain an inner module that is a parent of the main module).
+     */
+    @Check
+    def checkModulesOutsideMainAreEmpty(IDLSpecification idlSpecification)
+    {
+        val mainModule = idlSpecification.eAllContents.filter(ModuleDeclaration).filter[main].head
+        if (mainModule !== null)
+        {
+            var previousModule = mainModule
+            var currentModule = if (mainModule.eContainer instanceof ModuleDeclaration)
+                    mainModule.eContainer as ModuleDeclaration
+                else
+                    null
+            while (currentModule !== null)
+            {
+                val innerModule = previousModule
+                if (!currentModule.eContents.filter[it !== innerModule].empty)
+                {
+                    error(Messages.EMPTY_NON_MAIN_MODULE, currentModule,
+                        IdlPackage.Literals.MODULE_DECLARATION__NESTED_MODULES, EMPTY_NON_MAIN_MODULE)
+                }
+
+                previousModule = currentModule
+                currentModule = if (currentModule.eContainer instanceof ModuleDeclaration)
+                    currentModule.eContainer as ModuleDeclaration
+                else
+                    null
+            }
+            
+            val innerModule = previousModule
+            val otherModules = idlSpecification.modules.filter[it !== innerModule]
+            for (module : otherModules)
+            {
+                error(Messages.EMPTY_NON_MAIN_MODULE, module,
+                    IdlPackage.Literals.MODULE_DECLARATION__NESTED_MODULES, EMPTY_NON_MAIN_MODULE)                
+            }
         }
     }
 
