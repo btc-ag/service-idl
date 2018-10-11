@@ -388,7 +388,7 @@ public class TypesCodec {
             
                <modelVersion>4.0.0</modelVersion>
             
-               <groupId>__synthetic0</groupId>
+               <groupId>BTC.PRINS.Infrastructure.ServiceHost.Demo.API</groupId>
                <artifactId>com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.serviceapi</artifactId>
                <version>0.1.0</version>
             
@@ -467,7 +467,7 @@ public class TypesCodec {
             
                <modelVersion>4.0.0</modelVersion>
             
-               <groupId>__synthetic0</groupId>
+               <groupId>BTC.PRINS.Infrastructure.ServiceHost.Demo.API</groupId>
                <artifactId>com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.protobuf</artifactId>
                <version>0.1.0</version>
             
@@ -501,7 +501,7 @@ public class TypesCodec {
                
                <dependencies>
                   <dependency>
-                     <groupId>__synthetic0</groupId>
+                     <groupId>BTC.PRINS.Infrastructure.ServiceHost.Demo.API</groupId>
                      <artifactId>com.btc.prins.infrastructure.servicehost.demo.api.keyvaluestore.serviceapi</artifactId>
                      <version>0.1.0</version>
                   </dependency>

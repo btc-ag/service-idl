@@ -39,6 +39,7 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import static extension org.eclipse.xtext.EcoreUtil2.*
 
 class GeneratorUtil
 {
@@ -64,10 +65,11 @@ class GeneratorUtil
 
     private static def Iterable<String> getEffectiveModuleName(ModuleDeclaration module, ArtifactNature artifactNature)
     {
-        if (artifactNature == ArtifactNature.DOTNET && module.main)
+        val mainModule = module.getContainerOfType(IDLSpecification).effectiveMainModule
+        if (artifactNature == ArtifactNature.DOTNET && module === mainModule)
         {
-            // TODO shouldn't this return two parts instead of a single one containg "."?
-            #[if (module.main) module.name + ".NET" else module.name]
+            // TODO shouldn't this return two parts instead of a single one containing "."?
+            #[module.name + ".NET"]
         }
         else if (artifactNature == ArtifactNature.JAVA)
         {
@@ -251,8 +253,7 @@ class GeneratorUtil
     
     static def getReleaseUnitName(IDLSpecification idl, ArtifactNature artifactNature)
     {
-        // TODO instead of deriving this from the IDL file name, it might be specified explicitly for each target technology 
-        // (in the generator settings?)
-        idl.eResource.URI.lastSegment.replace(".idl", "") + if (artifactNature == ArtifactNature.DOTNET) ".NET" else ""
+        String.join(".", idl.effectiveMainModule.moduleStack.map[name]) +
+            if (artifactNature == ArtifactNature.DOTNET) ".NET" else ""
     }
 }
