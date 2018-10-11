@@ -23,6 +23,7 @@ import com.btc.serviceidl.idl.EnumDeclaration
 import com.btc.serviceidl.idl.EventDeclaration
 import com.btc.serviceidl.idl.ExceptionDeclaration
 import com.btc.serviceidl.idl.FunctionDeclaration
+import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
 import com.btc.serviceidl.idl.MemberElement
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -36,6 +37,9 @@ import com.btc.serviceidl.idl.VoidType
 import java.util.ArrayList
 import java.util.Collection
 import java.util.HashSet
+
+import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import static extension org.eclipse.xtext.EcoreUtil2.*
 
 class Extensions
 {
@@ -355,4 +359,55 @@ class Extensions
         else
             returnTypeElement as VoidType
     }
+
+    static def getEffectiveMainModule(IDLSpecification idlSpecification)
+    {
+        // we can assume here there is a unique main module if explicit, otherwise the IDL file is invalid via checkUniqueMainModule
+        val explicitMainModule = idlSpecification.eAllContents.filter(ModuleDeclaration).filter[main].head
+        if (explicitMainModule !== null) return explicitMainModule
+
+        // find the implicit main module, we can also assume there is a unique one       
+        for (topLevelModule : idlSpecification.eAllContents.filter(ModuleDeclaration).toIterable)
+        {
+            val nonEmptyOuterModule = topLevelModule.findNonEmptyOuterModule
+            if (nonEmptyOuterModule !== null)
+                return nonEmptyOuterModule
+        }
+
+        // all modules are empty
+        return null
+    }
+
+    private static def findNonEmptyOuterModule(ModuleDeclaration moduleDeclaration)
+    {
+        val allModules = #[#[moduleDeclaration], moduleDeclaration.eAllContents.filter(ModuleDeclaration).toList].
+            flatten
+        val allNonEmptyModules = allModules.filter[!moduleComponents.empty]
+        if (allNonEmptyModules.empty)
+            return null
+        val candidates = allModules.toSet
+        for (module : allNonEmptyModules)
+        {
+            candidates.retainAll(#[#[module], module.allContainers.filter(ModuleDeclaration)].flatten.toSet)
+        }
+        var res = candidates.head
+        for (candidate : candidates)
+        {
+            if (res.isAncestor(candidate)) res = candidate
+        }
+        return res
+    }
+
+    static def getTopLevelModule(ModuleDeclaration moduleDeclaration)
+    {
+        var previousModule = moduleDeclaration
+        var currentModule = previousModule.eContainer.getContainerOfType(ModuleDeclaration)
+        while (currentModule !== null)
+        {
+            previousModule = currentModule
+            currentModule = currentModule.eContainer.getContainerOfType(ModuleDeclaration)
+        }
+        return previousModule
+    }
+
 }

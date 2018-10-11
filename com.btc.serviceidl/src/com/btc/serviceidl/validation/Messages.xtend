@@ -58,4 +58,6 @@ class Messages
     public static val INDETERMINATE_IMPLICIT_MAIN_MODULE = "No implicit main module could be determined, since there are two non-empty top-level modules!"
     
     public static val AMBIGUOUS_IMPLICIT_MAIN_MODULE = "Implicit main module is ambiguous, since there are multiple modules containing definitions, using common container module!"
+    
+    public static val INCONSISTENT_MAIN_MODULE_NAME = "Main module name is inconsistent with IDL file name!";
 }
