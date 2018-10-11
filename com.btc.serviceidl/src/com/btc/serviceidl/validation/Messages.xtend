@@ -55,4 +55,7 @@ class Messages
 
     public static val EMPTY_NON_MAIN_MODULE = "Module outside main module must be empty!"
 
+    public static val INDETERMINATE_IMPLICIT_MAIN_MODULE = "No implicit main module could be determined, since there are two non-empty top-level modules!"
+    
+    public static val AMBIGUOUS_IMPLICIT_MAIN_MODULE = "Implicit main module is ambiguous, since there are multiple modules containing definitions, using common container module!"
 }
