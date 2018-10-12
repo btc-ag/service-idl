@@ -36,7 +36,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
         val fileCount = 6
         val baseDirectory = ArtifactNature.DOTNET.label + "Infrastructure/ServiceHost/Demo/API.NET/ServiceAPI/"
         val directory = baseDirectory
-        val contents = #{ArtifactNature.DOTNET.label + "__synthetic0.sln" -> '''
+        val contents = #{ArtifactNature.DOTNET.label + "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.sln" -> '''
             
             Microsoft Visual Studio Solution File, Format Version 12.00
             # Visual Studio 14
