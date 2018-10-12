@@ -16,8 +16,15 @@ if [[ "$TRAVIS_BRANCH" =~ ^release/ ]] ; then
         exit 1
     fi
 
-    POM_VERSION=`mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | sed -n -e '/^\[.*\]/ !{ /^[0-9]/ { p; q } }'`
+    mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version >project-version.log
+    POM_VERSION=`cat project-version.log | sed -n -e '/^\[.*\]/ !{ /^[0-9]/ { p; q } }'`
 
+    if [ "${POM_VERSION}" == "" ] ; then
+        echo "ERROR: POM_VERSION could not be determined"
+        echo "Output of maven-help-plugin was:"
+        cat project-version.log
+        exit 1
+    fi
     if [ "${RELEASE_VERSION}-SNAPSHOT" != "${POM_VERSION}" ] ; then
         echo "Branch version ${RELEASE_VERSION} is not a SNAPSHOT or does not match POM version ${POM_VERSION}, assuming release was already done"
         exit 0
