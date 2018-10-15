@@ -1,0 +1,34 @@
+/*********************************************************************
+ * \author see AUTHORS file
+ * \copyright 2015-2018 BTC Business Technology Consulting AG and others
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
+ **********************************************************************/
+package com.btc.serviceidl.tests.generator.dotnet
+
+import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.PackageInfo
+import com.btc.serviceidl.generator.dotnet.CSProjGenerator
+
+import org.junit.Test
+
+import static org.junit.Assert.*
+
+class CSProjGeneratorTest
+{
+    @Test
+    def void testProtoPathes()
+    {
+        val dependencies = #[
+            new PackageInfo(#{ArtifactNature.DOTNET -> "BTC.PRINS.BaseModule"}, "0.0.3"),
+            new PackageInfo(#{ArtifactNature.DOTNET -> "BTC.PRINS.Editing"}, "0.1.0")
+        ]
+        val result = CSProjGenerator.protoPathes("$(SolutionDir)", dependencies.toSet)
+        
+        assertEquals("--proto_path=$(SolutionDir) --proto_path=$(SolutionDir)packages\\BTC.PRINS.BaseModule\\proto --proto_path=$(SolutionDir)packages\\BTC.PRINS.Editing\\proto", result)
+    }
+}

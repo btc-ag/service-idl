@@ -21,6 +21,7 @@ import com.btc.serviceidl.generator.Maturity
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
+import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
@@ -171,24 +172,29 @@ class DotNetGenerator
       {
       case SERVICE_API:
       {
+         addImportedDependencies(generationSettings.dependencies)
          generateServiceAPI(projectRootPath, interfaceDeclaration)
       }
       case DISPATCHER:
       {
          addGoogleProtocolBuffersReferences()
+         addImportedDependencies(generationSettings.dependencies)
          generateDispatcher(projectRootPath, interfaceDeclaration)
       }
       case IMPL:
       {
+         addImportedDependencies(generationSettings.dependencies)
          generateImpl(projectRootPath, interfaceDeclaration)
       }
       case PROXY:
       {
          addGoogleProtocolBuffersReferences()
+         addImportedDependencies(generationSettings.dependencies)
          generateProxy(projectRootPath, interfaceDeclaration)
       }
       case TEST:
       {
+         addImportedDependencies(generationSettings.dependencies)
          generateTest(projectRootPath, interfaceDeclaration)
       }
       default:
@@ -209,6 +215,7 @@ class DotNetGenerator
       '''
 
       val projectRootPath = getProjectRootPath()
+      addImportedDependencies(generationSettings.dependencies)
       generateProjectSourceFile(projectRootPath, Constants.FILE_NAME_TYPES, fileContent)      
       generateVSProjectFiles(projectRootPath)
    }
@@ -275,7 +282,7 @@ class DotNetGenerator
        val prefix = if (forTemplate) "" else "nuget "  
        '''
       «FOR packageEntry : paketDependencies»
-          «IF packageEntry.key.startsWith("BTC.")»
+          «IF packageEntry.key.startsWith("BTC.CAB.")»
             «prefix»«packageEntry.key» ~> «packageEntry.value.replaceMicroVersionByZero» «IF generationSettings.maturity == Maturity.SNAPSHOT»testing«ENDIF»
           «ELSE»
             «prefix»«packageEntry.key» ~> «packageEntry.value»
@@ -372,6 +379,7 @@ class DotNetGenerator
       
       val projectRootPath = getProjectRootPath()
       addGoogleProtocolBuffersReferences()
+      addImportedDependencies(generationSettings.dependencies)
       
       if (module.containsTypes)
       {
@@ -474,6 +482,7 @@ class DotNetGenerator
       val log4netName = log4NetConfigFile
       fileSystemAccess.generateFile(projectRootPath.append(log4netName).toPortableString, ArtifactNature.DOTNET.label, generateLog4NetConfig(module))
       
+      addImportedDependencies(generationSettings.dependencies)
       generateVSProjectFiles(projectRootPath)
    }
 
@@ -498,6 +507,7 @@ class DotNetGenerator
       val log4netName = log4NetConfigFile
       fileSystemAccess.generateFile(projectRootPath.append(log4netName).toPortableString, ArtifactNature.DOTNET.label, generateLog4NetConfig(module))
       
+      addImportedDependencies(generationSettings.dependencies)
       generateVSProjectFiles(projectRootPath)
    }
    
@@ -687,7 +697,8 @@ class DotNetGenerator
             typeResolver.referencedAssemblies,
             typeResolver.projectReferences,
             csFiles,
-            protobufFiles
+            protobufFiles,
+            generationSettings.dependencies
         )      
    }
    
@@ -703,7 +714,15 @@ class DotNetGenerator
       nugetPackages.resolvePackage("Google.ProtocolBuffers")
       nugetPackages.resolvePackage("Google.ProtocolBuffers.Serialization")
    }
-      
+
+   private def void addImportedDependencies(Set<PackageInfo> dependencies)
+   {
+      for (dependency : dependencies)
+      {
+         nugetPackages.resolveImportedDependency(dependency)
+      }
+   }
+
    private def IPath getProjectRootPath()
    {
       paramBundle.asPath(ArtifactNature.DOTNET)
