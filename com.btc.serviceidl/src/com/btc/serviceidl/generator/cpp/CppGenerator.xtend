@@ -16,9 +16,13 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.IGenerationSettings
+import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet.ProjectReference
 import com.btc.serviceidl.generator.cpp.cmake.CMakeTopLevelProjectFileGenerator
 import com.btc.serviceidl.generator.cpp.prins.OdbProjectGenerator
 import com.btc.serviceidl.idl.AbstractTypeReference
@@ -35,10 +39,6 @@ import org.eclipse.xtext.scoping.IScopeProvider
 
 import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.generator.common.GeneratorUtil
-import com.btc.serviceidl.generator.common.ArtifactNature
-import com.btc.serviceidl.generator.common.TransformType
-import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet.ProjectReference
 
 class CppGenerator
 {

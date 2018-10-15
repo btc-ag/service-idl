@@ -13,6 +13,7 @@
  */
 package com.btc.serviceidl.generator;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -90,6 +91,10 @@ public class Main {
             System.err.println("No input files specified.");
             return 1;
         }
+        if (commandLine.getArgs().length > 1) {
+            System.err.println("Only 1 input file is supported.");
+            return 1;
+        }
 
         final boolean genericOutputPath = commandLine.hasOption(OPTION_OUTPUT_PATH);
         final boolean specificOutputPath = commandLine.hasOption(OPTION_CPP_OUTPUT_PATH)
@@ -146,7 +151,7 @@ public class Main {
                 + String.join(",", DefaultGenerationSettingsProvider.PROJECT_SET_MAPPING.keySet()) + "), default is "
                 + DefaultGenerationSettingsProvider.OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON);
         options.addOption(OPTION_MATURITY, true, "maturity (snapshot, release) (default is snapshot)");
-        options.addOption(OPTION_IMPORT, true, "full path to imported IDL file (optional; may be provided multiple times)");
+        options.addOption(OPTION_IMPORT, true, "absolute path to imported IDL file (optional; may be provided multiple times)");
         return options;
     }
 
@@ -177,6 +182,19 @@ public class Main {
 
     private boolean tryRunGenerator(String[] inputFiles, Map<ArtifactNature, IPath> outputPaths,
             String cppProjectSystem, String versions, String projectSet, String maturityString, String[] importFiles) {
+
+        // validate import file paths
+        for (String importFile : importFiles) {
+            File file = new File(importFile);
+            if (!file.isAbsolute()) {
+                System.err.println("Provide absolute path: " + importFile);
+                return false;
+            }
+            if (!file.exists()) {
+                System.err.println("Import file does not exist: " + importFile);
+                return false;
+            }
+        }
 
         Set<URI> inputURIs = Arrays.stream(inputFiles).map(URI::createFileURI).collect(Collectors.toSet());
         Set<URI> importURIs = Arrays.stream(importFiles).map(URI::createFileURI).collect(Collectors.toSet());

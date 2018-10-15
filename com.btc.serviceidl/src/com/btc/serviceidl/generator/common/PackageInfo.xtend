@@ -10,16 +10,26 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.common
 
-import org.eclipse.xtend.lib.annotations.Data
+import java.util.Map
+import org.eclipse.xtend.lib.annotations.Accessors
 
 /**
  * Simple class to contain information for external package dependencies
  * for conan, paket, maven, etc.
  */
-@Data
 class PackageInfo
 {
+    @Accessors(NONE) val Map<ArtifactNature, String> packageIDs;
+    @Accessors(PUBLIC_GETTER) val String version;
+    
+    new(Map<ArtifactNature, String> packageIDs, String version)
+    {
+        this.packageIDs = packageIDs
+        this.version = version
+    }
 
-    String name;
-    String version;
+    def getID(ArtifactNature artifactNature)
+    {
+        packageIDs.get(artifactNature)
+    }
 }
