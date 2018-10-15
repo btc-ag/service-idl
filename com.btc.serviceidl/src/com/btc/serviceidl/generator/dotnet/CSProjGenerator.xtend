@@ -12,8 +12,10 @@ package com.btc.serviceidl.generator.dotnet
 
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
+import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.TransformType
+import java.util.Set
 
 import static extension com.btc.serviceidl.generator.common.Extensions.*
 import static extension com.btc.serviceidl.generator.common.FileTypeExtensions.*
@@ -23,7 +25,8 @@ import static extension com.btc.serviceidl.generator.dotnet.Util.*
 class CSProjGenerator {
   static def String generateCSProj(String projectName, VSSolution vsSolution, ParameterBundle paramBundle,
         Iterable<String> referencedAssemblies,
-        Iterable<ParameterBundle> projectReferences, Iterable<String> csFiles, Iterable<String> protobufFiles)
+        Iterable<ParameterBundle> projectReferences, Iterable<String> csFiles, Iterable<String> protobufFiles,
+        Set<PackageInfo> importedDependencies)
   {
       // Please do NOT edit line indents in the code below (even though they
       // may look misplaced) unless you are fully aware of what you are doing!!!
@@ -92,10 +95,12 @@ class CSProjGenerator {
           <Compile Include="Properties\AssemblyInfo.cs" />
         </ItemGroup>
           «FOR projectReference : projectReferences.filter[it != paramBundle] BEFORE "  <ItemGroup>" AFTER "  </ItemGroup>"»
-             <ProjectReference Include="$(SolutionDir)«projectReference.asPath(ArtifactNature.DOTNET).append(projectReference.getTransformedModuleName(ArtifactNature.DOTNET, TransformType.PACKAGE).csproj).toWindowsString»">
-               <Project>{«vsSolution.getCsprojGUID(projectReference)»}</Project>
-               <Name>«projectReference.getTransformedModuleName(ArtifactNature.DOTNET, TransformType.PACKAGE)»</Name>
-             </ProjectReference>
+              «IF !isImportedDependency(projectReference, importedDependencies)»
+                <ProjectReference Include="$(SolutionDir)«projectReference.asPath(ArtifactNature.DOTNET).append(projectReference.getTransformedModuleName(ArtifactNature.DOTNET, TransformType.PACKAGE).csproj).toWindowsString»">
+                   <Project>{«vsSolution.getCsprojGUID(projectReference)»}</Project>
+                   <Name>«projectReference.getTransformedModuleName(ArtifactNature.DOTNET, TransformType.PACKAGE)»</Name>
+                </ProjectReference>
+             «ENDIF»
           «ENDFOR»
 
         <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -107,7 +112,7 @@ class CSProjGenerator {
             «FOR protobufFileBasename : protobufFiles»
                 «val protobufFile = makeProtobufFilePath(paramBundle, protobufFileBasename)»
                 «val protobinFile = '''$(ProjectDir)gen\«protobufFileBasename».protobin'''»
-                «protobufBaseDir»\\packages\\Google.ProtocolBuffers\\tools\\protoc.exe --include_imports --proto_path=«protobufBaseDir» --descriptor_set_out=«protobinFile» «protobufFile»
+                «protobufBaseDir»\\packages\\Google.ProtocolBuffers\\tools\\protoc.exe --include_imports «getProtoPathArguments(protobufBaseDir, importedDependencies)» --descriptor_set_out=«protobinFile» «protobufFile»
                 «protobufBaseDir»\\packages\\Google.ProtocolBuffers\\tools\\Protogen.exe -output_directory=$(ProjectDir) «protobinFile»
             «ENDFOR»
             </PreBuildEvent>
@@ -145,5 +150,36 @@ class CSProjGenerator {
             "dll"
       }
    }
+
+    static def String getProtoPathArguments(String protobufBaseDir, Iterable<PackageInfo> importedDependencies)
+    {
+        val protoPath = "--proto_path="
+        val builder = new StringBuilder()
+        builder.append(protoPath).append(protobufBaseDir)
+
+        for (dependency : importedDependencies)
+        {
+            val name = dependency.getID(ArtifactNature.DOTNET)
+            builder.append(" ").append(protoPath).append(protobufBaseDir).append("packages\\").append(name).append("\\proto")
+        }
+        return builder.toString()
+    }
+
+    static def isImportedDependency(ParameterBundle parameterBundle, Iterable<PackageInfo> importedDependencies)
+    {
+        val projectName = GeneratorUtil.getTransformedModuleName(parameterBundle, ArtifactNature.DOTNET, TransformType.PACKAGE)
+
+        // Remove last segment (e.g. .Protobuf)
+        val idxLastDot = projectName.lastIndexOf(TransformType.PACKAGE.separator)
+        val str = if (idxLastDot != -1)
+        {
+            projectName.substring(0, idxLastDot)
+        } 
+        else
+        {
+            projectName
+        }
+        importedDependencies.exists[it.getID(ArtifactNature.CPP) == str]    // ArtifactNature CPP is used to omit appending of '.NET'
+    }
    
 }

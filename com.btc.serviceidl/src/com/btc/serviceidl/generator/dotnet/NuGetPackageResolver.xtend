@@ -15,6 +15,8 @@
  */
 package com.btc.serviceidl.generator.dotnet
 
+import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.PackageInfo
 import java.util.HashSet
 import org.eclipse.xtend.lib.annotations.Accessors
 import java.util.HashMap
@@ -118,6 +120,14 @@ class NuGetPackageResolver
     def void resolvePackage(String assemblyName)
     {
         val nugetPackage = resolvePackageInternal(assemblyName)
+        nugetPackages.add(nugetPackage)
+    }
+
+    def void resolveImportedDependency(PackageInfo dependency)
+    {
+        val name = dependency.getID(ArtifactNature.DOTNET)
+        val Pair<String, String>[] versions = #[new Pair(name, dependency.version)]
+        val nugetPackage = new NuGetPackage(versions, name, "")
         nugetPackages.add(nugetPackage)
     }
 
