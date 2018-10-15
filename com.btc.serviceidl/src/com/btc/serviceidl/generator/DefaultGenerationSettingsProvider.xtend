@@ -188,6 +188,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         }
         else
             base.versions
+        result.maturity = overrides.maturity ?: base.maturity
         result
     }
 
