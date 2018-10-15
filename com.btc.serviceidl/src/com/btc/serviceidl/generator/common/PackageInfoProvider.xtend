@@ -10,20 +10,13 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.common
 
-import org.eclipse.emf.ecore.resource.Resource
-import com.google.common.io.Files
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.util.Constants
+import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.naming.QualifiedName
 
 class PackageInfoProvider
 {
-
-    def static getName(Resource resource)
-    {
-        Files.getNameWithoutExtension(resource.URI.path)
-    }
-
     def static getVersion(Resource resource)
     {
         resource.allContents.filter(IDLSpecification).map[version ?: Constants.DEFAULT_VERSION].head
@@ -31,14 +24,25 @@ class PackageInfoProvider
 
     def static getPackageInfo(Resource resource)
     {
-        new PackageInfo(resource.name, resource.version)
+        val idl = resource.allContents.filter(IDLSpecification).head
+        val packageIDs = #{
+            makeID(ArtifactNature.CPP, idl),
+            makeID(ArtifactNature.DOTNET, idl),
+            makeID(ArtifactNature.JAVA, idl)
+        }
+        new PackageInfo(packageIDs, resource.version)
+    }
+    
+    def private static makeID(ArtifactNature artifactNature, IDLSpecification idl)
+    {
+        artifactNature -> GeneratorUtil.getReleaseUnitName(idl, artifactNature)
     }
     
     /**
-     * Get package name out of a project identifier, which may be a fully
+     * Get package ID out of a project identifier, which may be a fully
      * qualified project name or a path
      */
-    def static getName(String projectIdentifier)
+    def static getID(String projectIdentifier)
     {
         QualifiedName.create(projectIdentifier.split("\\W")).skipLast(1).toString
     }

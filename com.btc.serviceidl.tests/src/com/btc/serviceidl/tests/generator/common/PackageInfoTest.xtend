@@ -10,22 +10,23 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator.common
 
-import org.eclipse.xtext.testing.XtextRunner
-import com.btc.serviceidl.tests.IdlInjectorProvider
-import org.junit.runner.RunWith
-import org.eclipse.xtext.testing.InjectWith
-import com.google.inject.Inject
-import com.btc.serviceidl.idl.IDLSpecification
-import org.eclipse.xtext.testing.util.ParseHelper
-import org.junit.Test
-import com.btc.serviceidl.tests.testdata.TestData
 import com.btc.serviceidl.generator.common.PackageInfoProvider
-
-import static org.junit.Assert.*
+import com.btc.serviceidl.idl.IDLSpecification
+import com.btc.serviceidl.tests.IdlInjectorProvider
+import com.btc.serviceidl.tests.testdata.TestData
 import com.btc.serviceidl.util.Constants
-import org.eclipse.emf.ecore.resource.ResourceSet
+import com.google.inject.Inject
 import com.google.inject.Provider
 import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.resource.ResourceSet
+import org.eclipse.xtext.testing.InjectWith
+import org.eclipse.xtext.testing.XtextRunner
+import org.eclipse.xtext.testing.util.ParseHelper
+import org.junit.Test
+import org.junit.runner.RunWith
+
+import static org.junit.Assert.*
+import com.btc.serviceidl.generator.common.ArtifactNature
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -54,19 +55,19 @@ class PackageInfoTest
         val rs = rsp.get()
         val resource = rs.getResource(URI.createURI("src/com/btc/serviceidl/tests/testdata/import-imported.idl"), true)
         val result = PackageInfoProvider.getPackageInfo(resource)
-        assertEquals("import-imported", result.name)
+        assertEquals("import-imported", result.getID(ArtifactNature.CPP))
         assertEquals("0.3.0", result.version)
     }
     
     @Test
     def testNameFullyQualifiedBased()
     {
-        assertEquals("BTC.PRINS.DemoPackage", PackageInfoProvider.getName("BTC.PRINS.DemoPackage.ServiceIDL"))
+        assertEquals("BTC.PRINS.DemoPackage", PackageInfoProvider.getID("BTC.PRINS.DemoPackage.ServiceIDL"))
     }
 
     @Test
     def testNamePathBased()
     {
-        assertEquals("BTC.PRINS.DemoPackage", PackageInfoProvider.getName("BTC/PRINS/DemoPackage/Dispatcher"))
+        assertEquals("BTC.PRINS.DemoPackage", PackageInfoProvider.getID("BTC/PRINS/DemoPackage/Dispatcher"))
     }
 }

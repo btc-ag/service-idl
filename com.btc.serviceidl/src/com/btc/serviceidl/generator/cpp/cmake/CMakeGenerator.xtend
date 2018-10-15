@@ -26,6 +26,8 @@ import com.btc.serviceidl.generator.common.PackageInfoProvider
 @Accessors(NONE)
 class CMakeGenerator
 {
+    val static CMAKE_CAB_NAMESPACE = "CAB::"
+    
     val IModuleStructureStrategy moduleStructureStrategy
     val ITargetVersionProvider targetVersionProvider
     val Iterable<ExternalDependency> externalDependencies
@@ -81,7 +83,7 @@ class CMakeGenerator
                       «getCmakeTargetName(lib)»
                   «ENDFOR»
                   «FOR referencedProjectName : getSortedInternalDependencies(projectName)»
-                      «getCmakeReferenceName(projectName, referencedProjectName)»
+                      «getCmakeTargetNameForInternalDependency(projectName, referencedProjectName)»
                   «ENDFOR»              
             )
             
@@ -98,7 +100,7 @@ class CMakeGenerator
     def getCmakeTargetName(String libName)
     {
         if (libName.startsWith("BTC.CAB."))
-            libName.CABLibPrefix
+            CMAKE_CAB_NAMESPACE + libName
         else if (libName == "libprotobuf")
             "protobuf::libprotobuf"
         else
@@ -107,19 +109,14 @@ class CMakeGenerator
             )
     }
     
-    private def getCmakeReferenceName(String currentProject, String referencedProject)
+    private def getCmakeTargetNameForInternalDependency(String projectName, String referencedProjectName)
     {
-        val projectName = PackageInfoProvider.getName(currentProject)
-        val referenceName = PackageInfoProvider.getName(referencedProject)
-        if (projectName == referenceName)
-            referencedProject
+        val projectDependencyID = PackageInfoProvider.getID(projectName)
+        val referencedProjectDependencyID = PackageInfoProvider.getID(referencedProjectName)
+        if (projectDependencyID == referencedProjectDependencyID)
+            referencedProjectName
         else
-            referencedProject.CABLibPrefix
-    }
-    
-    private def static getCABLibPrefix(String libName)
-    {
-        '''CAB::«libName»'''
+            CMAKE_CAB_NAMESPACE + referencedProjectName
     }
     
     def getSortedInternalDependencies(String projectName)
@@ -160,7 +157,7 @@ class CMakeGenerator
                   «lib»
               «ENDFOR»
               «FOR referencedProjectName : getSortedInternalDependencies(projectName)»
-                  «getCmakeReferenceName(projectName, referencedProjectName)»
+                  «getCmakeTargetNameForInternalDependency(projectName, referencedProjectName)»
               «ENDFOR»              
             )
             

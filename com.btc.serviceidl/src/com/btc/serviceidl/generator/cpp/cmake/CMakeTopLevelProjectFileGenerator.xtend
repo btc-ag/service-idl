@@ -113,11 +113,9 @@ class CMakeTopLevelProjectFileGenerator
                                     ("libzmq/4.2.3@cab/extern", "private"),
                                 «ENDIF»
                             «ENDIF»
-                            «IF generationSettings.dependencies !== null»
-                                «FOR dependency : generationSettings.dependencies.sortBy[name]»
-                                    ("«dependency.name»/«dependency.version»«versionSuffix»@cab/«dependencyChannel»"),
-                                «ENDFOR»
-                            «ENDIF»
+                            «FOR dependency : generationSettings.dependencies.sortBy[getID(ArtifactNature.CPP)]»
+                                ("«dependency.getID(ArtifactNature.CPP)»/«dependency.version»«versionSuffix»@cab/«dependencyChannel»"),
+                            «ENDFOR»
                             )
                 generators = "cmake"
                 short_paths = True
@@ -127,11 +125,9 @@ class CMakeTopLevelProjectFileGenerator
                     outdir = self.source_folder
                     
                     self.run('bin\\protoc.exe --proto_path=' + self.source_folder
-                        «IF generationSettings.dependencies !== null»
-                            «FOR dependency : generationSettings.dependencies.sortBy[name]»
-                                + ' --proto_path="' + os.path.normpath(os.path.join(self.deps_cpp_info["«dependency.name»"].rootpath, 'proto')) + '"'
-                            «ENDFOR»
-                        «ENDIF»
+                        «FOR dependency : generationSettings.dependencies.sortBy[getID(ArtifactNature.CPP)]»
+                            + ' --proto_path="' + os.path.normpath(os.path.join(self.deps_cpp_info["«dependency.getID(ArtifactNature.CPP)»"].rootpath, 'proto')) + '"'
+                        «ENDFOR»
                         + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
 
                 def build(self):
@@ -234,15 +230,12 @@ class CMakeTopLevelProjectFileGenerator
                 find_package(BTC.CAB.ServiceComm.SQ REQUIRED)
                 «ENDIF»
             «ENDIF»
-
-            «IF generationSettings.dependencies !== null»
-                «FOR dependency : generationSettings.dependencies.sortBy[name]»
-                    find_package(«dependency.name» REQUIRED)
-                «ENDFOR»
-            «ENDIF»
+            «FOR dependency : generationSettings.dependencies.sortBy[getID(ArtifactNature.CPP)]»
+                find_package(«dependency.getID(ArtifactNature.CPP)» REQUIRED)
+            «ENDFOR»
 
             «FOR projectPath : projectSet.projects.map[relativePath.toPortableString].sort»
-                «IF generationSettings.dependencies?.findFirst[it.name == PackageInfoProvider.getName(projectPath)] === null»
+                «IF generationSettings.dependencies?.findFirst[it.getID(ArtifactNature.CPP) == PackageInfoProvider.getID(projectPath)] === null»
                     include(${CMAKE_CURRENT_LIST_DIR}/«projectPath»/build/make.cmakeset)
                 «ENDIF»
             «ENDFOR»

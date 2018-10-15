@@ -31,7 +31,7 @@ class DefaultGenerationSettings implements IGenerationSettings
     static val Map<String, Set<String>> supportedVersionMap = createSupportedVersionMap
     val Map<String, String> versionMap
     public var Maturity maturity = Maturity.SNAPSHOT
-    public Set<PackageInfo> dependencies
+    public Set<PackageInfo> dependencies = #{}
 
     new()
     {

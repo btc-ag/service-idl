@@ -11,6 +11,7 @@
 package com.btc.serviceidl.generator
 
 import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
@@ -20,6 +21,8 @@ import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory
 import com.btc.serviceidl.generator.dotnet.DotNetConstants
 import com.btc.serviceidl.generator.java.JavaConstants
+import com.google.common.base.MoreObjects
+import com.google.common.base.Objects
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Sets
@@ -34,10 +37,6 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.URIConverter
 import org.eclipse.emf.ecore.resource.impl.ExtensibleURIConverterImpl
 import org.eclipse.xtend.lib.annotations.Accessors
-import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider.OptionalGenerationSettings
-import com.google.common.base.Objects
-import com.google.common.base.MoreObjects
-import com.btc.serviceidl.generator.common.PackageInfo
 
 class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 {
@@ -52,7 +51,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         var String cppProjectSystem = null // TODO change into a enum here
         var Iterable<Map.Entry<String, String>> versions = null
         var Maturity maturity = null
-        var Set<PackageInfo> dependencies = null
+        var Set<PackageInfo> dependencies = #{}
 
         override equals(Object other)
         {

@@ -322,62 +322,15 @@ class CommandLineRunnerTest
     }
 
     @Test
-    def void testWithImport()
+    def void testTryMultipleInputFiles()
     {
         val derivedFile = new File(TEST_DATA_DIR + "import-derived.idl")
         val importedFile = new File(TEST_DATA_DIR + "import-imported.idl")
         val path = Files.createTempDirectory("test-gen")
-        assertEquals(0, Main.mainBackend(
+        assertEquals(1, Main.mainBackend(
             Arrays.asList(derivedFile.absolutePath, importedFile.absolutePath, "-outputPath", path.toString)))
 
-        // TODO currently a solution file is generated for each file specified on the command line. Is this sensible?
-        // TODO ... but only one paket.dependencies file, probably it is overwritten by the second solution generation
-        assertExpectedFiles(
-            #["cpp/modules/Derived/Common/BTC.PRINS.Derived.Common.vcxproj",
-                "cpp/modules/Derived/Common/BTC.PRINS.Derived.Common.vcxproj.filters",
-                "cpp/modules/Derived/Common/include/Types.h",
-                "cpp/modules/Derived/Common/include/btc_prins_derived_common_export.h",
-                "cpp/modules/Derived/Common/source/Dependencies.cpp", "cpp/modules/Derived/Common/source/Types.cpp",
-                "cpp/modules/Derived/Protobuf/BTC.PRINS.Derived.Protobuf.vcxproj",
-                "cpp/modules/Derived/Protobuf/BTC.PRINS.Derived.Protobuf.vcxproj.filters",
-                "cpp/modules/Derived/Protobuf/gen/Types.proto", "cpp/modules/Derived/Protobuf/include/TypesCodec.h",
-                "cpp/modules/Derived/Protobuf/include/btc_prins_derived_protobuf_export.h",
-                "cpp/modules/Derived/Protobuf/source/Dependencies.cpp",
-                "cpp/modules/Imported/Common/BTC.PRINS.Imported.Common.vcxproj",
-                "cpp/modules/Imported/Common/BTC.PRINS.Imported.Common.vcxproj.filters",
-                "cpp/modules/Imported/Common/include/Types.h",
-                "cpp/modules/Imported/Common/include/btc_prins_imported_common_export.h",
-                "cpp/modules/Imported/Common/source/Dependencies.cpp", "cpp/modules/Imported/Common/source/Types.cpp",
-                "cpp/modules/Imported/Protobuf/BTC.PRINS.Imported.Protobuf.vcxproj",
-                "cpp/modules/Imported/Protobuf/BTC.PRINS.Imported.Protobuf.vcxproj.filters",
-                "cpp/modules/Imported/Protobuf/gen/Types.proto", "cpp/modules/Imported/Protobuf/include/TypesCodec.h",
-                "cpp/modules/Imported/Protobuf/include/btc_prins_imported_protobuf_export.h",
-                "cpp/modules/Imported/Protobuf/source/Dependencies.cpp",
-                "dotnet/Derived.NET/Common/BTC.PRINS.Derived.NET.Common.csproj",
-                "dotnet/Derived.NET/Common/Properties/AssemblyInfo.cs", "dotnet/Derived.NET/Common/Types.cs",
-                "dotnet/Derived.NET/Protobuf/BTC.PRINS.Derived.NET.Protobuf.csproj",
-                "dotnet/Derived.NET/Protobuf/Properties/AssemblyInfo.cs", "dotnet/Derived.NET/Protobuf/TypesCodec.cs",
-                "dotnet/Derived.NET/Protobuf/gen/Types.proto", "dotnet/Derived.NET/Protobuf/packages.config",
-                "dotnet/Derived.NET/Protobuf/paket.references", "dotnet/Derived.NET/Protobuf/ServiceFaultHandling.cs",
-                "dotnet/Imported.NET/Common/BTC.PRINS.Imported.NET.Common.csproj",
-                "dotnet/Imported.NET/Common/Properties/AssemblyInfo.cs", "dotnet/Imported.NET/Common/Types.cs",
-                "dotnet/Imported.NET/Protobuf/BTC.PRINS.Imported.NET.Protobuf.csproj",
-                "dotnet/Imported.NET/Protobuf/Properties/AssemblyInfo.cs",
-                "dotnet/Imported.NET/Protobuf/ServiceFaultHandling.cs", "dotnet/Imported.NET/Protobuf/TypesCodec.cs",
-                "dotnet/Imported.NET/Protobuf/gen/Types.proto", "dotnet/Imported.NET/Protobuf/packages.config",
-                "dotnet/Imported.NET/Protobuf/paket.references", "dotnet/BTC.PRINS.Derived.NET.sln",
-                "dotnet/BTC.PRINS.Imported.NET.sln", "dotnet/paket.dependencies", "dotnet/paket.template",
-                "java/pom.xml", "java/com.btc.prins.derived.common/pom.xml",
-                "java/com.btc.prins.derived.common/src/main/java/com/btc/prins/derived/common/ServiceFaultHandlerFactory.java",
-                "java/com.btc.prins.derived.common/src/main/java/com/btc/prins/derived/common/StructureReferencingImport.java",
-                "java/com.btc.prins.derived.protobuf/pom.xml",
-                "java/com.btc.prins.derived.protobuf/src/main/java/com/btc/prins/derived/protobuf/TypesCodec.java",
-                "java/com.btc.prins.derived.protobuf/src/main/proto/Types.proto",
-                "java/com.btc.prins.imported.common/pom.xml",
-                "java/com.btc.prins.imported.common/src/main/java/com/btc/prins/imported/common/ServiceFaultHandlerFactory.java",
-                "java/com.btc.prins.imported.protobuf/pom.xml",
-                "java/com.btc.prins.imported.protobuf/src/main/java/com/btc/prins/imported/protobuf/TypesCodec.java",
-                "java/com.btc.prins.imported.protobuf/src/main/proto/Types.proto"], path)
+        assertExpectedFiles(#[], path)
     }
 
 }

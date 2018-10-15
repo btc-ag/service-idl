@@ -103,7 +103,7 @@ class DefaultGenerationSettingsProviderTest
     @Test
     def testImportDependencies()
     {
-        val expected = #[new PackageInfo("foo", "0.0.1"), new PackageInfo("bar", "0.5.0")]
+        val expected = #[new PackageInfo(#{ArtifactNature.CPP -> "foo"}, "0.0.1"), new PackageInfo(#{ArtifactNature.CPP -> "bar"}, "0.5.0")]
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
         defaultGenerationSettingsProvider.configureGenerationSettings(null, null as String, null, null, null, expected)
         val result = defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource).dependencies
