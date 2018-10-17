@@ -21,13 +21,13 @@ import static org.junit.Assert.*
 class CSProjGeneratorTest
 {
     @Test
-    def void testProtoPathes()
+    def void testGetProtoPathArguments()
     {
         val dependencies = #[
             new PackageInfo(#{ArtifactNature.DOTNET -> "BTC.PRINS.BaseModule"}, "0.0.3"),
             new PackageInfo(#{ArtifactNature.DOTNET -> "BTC.PRINS.Editing"}, "0.1.0")
         ]
-        val result = CSProjGenerator.protoPathes("$(SolutionDir)", dependencies.toSet)
+        val result = CSProjGenerator.getProtoPathArguments("$(SolutionDir)", dependencies.toSet)
         
         assertEquals("--proto_path=$(SolutionDir) --proto_path=$(SolutionDir)packages\\BTC.PRINS.BaseModule\\proto --proto_path=$(SolutionDir)packages\\BTC.PRINS.Editing\\proto", result)
     }

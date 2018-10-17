@@ -112,7 +112,7 @@ class CSProjGenerator {
             «FOR protobufFileBasename : protobufFiles»
                 «val protobufFile = makeProtobufFilePath(paramBundle, protobufFileBasename)»
                 «val protobinFile = '''$(ProjectDir)gen\«protobufFileBasename».protobin'''»
-                «protobufBaseDir»\\packages\\Google.ProtocolBuffers\\tools\\protoc.exe --include_imports «protoPathes(protobufBaseDir, importedDependencies)» --descriptor_set_out=«protobinFile» «protobufFile»
+                «protobufBaseDir»\\packages\\Google.ProtocolBuffers\\tools\\protoc.exe --include_imports «getProtoPathArguments(protobufBaseDir, importedDependencies)» --descriptor_set_out=«protobinFile» «protobufFile»
                 «protobufBaseDir»\\packages\\Google.ProtocolBuffers\\tools\\Protogen.exe -output_directory=$(ProjectDir) «protobinFile»
             «ENDFOR»
             </PreBuildEvent>
@@ -151,7 +151,7 @@ class CSProjGenerator {
       }
    }
 
-    static def String protoPathes(String protobufBaseDir, Set<PackageInfo> importedDependencies)
+    static def String getProtoPathArguments(String protobufBaseDir, Iterable<PackageInfo> importedDependencies)
     {
         val protoPath = "--proto_path="
         val builder = new StringBuilder()
@@ -165,12 +165,12 @@ class CSProjGenerator {
         return builder.toString()
     }
 
-    static def isImportedDependency(ParameterBundle parameterBundle, Set<PackageInfo> importedDependencies)
+    static def isImportedDependency(ParameterBundle parameterBundle, Iterable<PackageInfo> importedDependencies)
     {
         val projectName = GeneratorUtil.getTransformedModuleName(parameterBundle, ArtifactNature.DOTNET, TransformType.PACKAGE)
 
         // Remove last segment (e.g. .Protobuf)
-        val idxLastDot = projectName.lastIndexOf(".")
+        val idxLastDot = projectName.lastIndexOf(TransformType.PACKAGE.separator)
         val str = if (idxLastDot != -1)
         {
             projectName.substring(0, idxLastDot)

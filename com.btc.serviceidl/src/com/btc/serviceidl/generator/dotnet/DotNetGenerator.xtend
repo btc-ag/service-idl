@@ -715,7 +715,7 @@ class DotNetGenerator
       nugetPackages.resolvePackage("Google.ProtocolBuffers.Serialization")
    }
 
-   private def void addImportedDependencies(Set<PackageInfo> dependencies)
+   private def void addImportedDependencies(Iterable<PackageInfo> dependencies)
    {
       for (dependency : dependencies)
       {
