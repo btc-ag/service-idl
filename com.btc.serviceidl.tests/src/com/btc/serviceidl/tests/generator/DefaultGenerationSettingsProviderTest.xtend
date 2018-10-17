@@ -83,7 +83,7 @@ class DefaultGenerationSettingsProviderTest
     def void testConfigureMaturityRelease()
     {
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.configureGenerationSettings(null, #{}, null, null, Maturity.RELEASE)
+        defaultGenerationSettingsProvider.configureGenerationSettings(null, #{}, null, null, Maturity.RELEASE, null)
 
         assertEquals(Maturity.RELEASE,
             defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource).maturity)

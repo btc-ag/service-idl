@@ -56,7 +56,7 @@ class PackageInfoTest
         val rs = rsp.get()
         val resource = rs.getResource(URI.createURI("src/com/btc/serviceidl/tests/testdata/import-imported.idl"), true)
         val result = PackageInfoProvider.getPackageInfo(resource)
-        assertEquals("import-imported", result.getID(ArtifactNature.CPP))
+        assertEquals("BTC.PRINS.Imported", result.getID(ArtifactNature.CPP))
         assertEquals("0.3.0", result.version)
     }
     
