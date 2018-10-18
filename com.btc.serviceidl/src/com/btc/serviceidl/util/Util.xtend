@@ -565,4 +565,11 @@ class Util
         return element.version ?: Constants.DEFAULT_VERSION
     }
 
+    static def replaceMicroVersionByZero(String versionString)
+    {
+        val parts = versionString.split("[.]")
+        parts.set(2, "0")
+        return parts.join(".")
+    }
+
 }
