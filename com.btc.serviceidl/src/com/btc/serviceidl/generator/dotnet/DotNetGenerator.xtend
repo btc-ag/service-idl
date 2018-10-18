@@ -102,7 +102,7 @@ class DotNetGenerator
             processModule(module, generationSettings.projectTypes)
         }
 
-        new VSSolutionGenerator(fileSystemAccess, vsSolution, idl.eResource.URI.lastSegment.replace(".idl", "")).
+        new VSSolutionGenerator(fileSystemAccess, vsSolution, idl.getReleaseUnitName(ArtifactNature.DOTNET)).
             generateSolutionFile
 
         val paketDependenciesContent = generatePaketDependencies

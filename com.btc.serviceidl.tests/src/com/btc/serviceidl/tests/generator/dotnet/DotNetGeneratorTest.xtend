@@ -34,15 +34,15 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
     def void testBasicServiceApi()
     {
         val fileCount = 6
-        val baseDirectory = ArtifactNature.DOTNET.label + "Infrastructure/ServiceHost/Demo/API/ServiceAPI/"
+        val baseDirectory = ArtifactNature.DOTNET.label + "Infrastructure/ServiceHost/Demo/API.NET/ServiceAPI/"
         val directory = baseDirectory
-        val contents = #{ArtifactNature.DOTNET.label + "__synthetic0.sln" -> '''
+        val contents = #{ArtifactNature.DOTNET.label + "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.sln" -> '''
             
             Microsoft Visual Studio Solution File, Format Version 12.00
             # Visual Studio 14
             VisualStudioVersion = 14.0.25420.1
             MinimumVisualStudioVersion = 10.0.40219.1
-            Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI", "Infrastructure\ServiceHost\Demo\API\ServiceAPI\BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.csproj", "{9492E992-0B76-3834-A485-8F5D7175DAE7}"
+            Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.ServiceAPI", "Infrastructure\ServiceHost\Demo\API.NET\ServiceAPI\BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.ServiceAPI.csproj", "{F8F8BF45-6976-3874-B53D-CF609D37ECCD}"
             EndProject
             Global
                 GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,10 +50,10 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                     Release|Any CPU = Release|Any CPU
                 EndGlobalSection
                 GlobalSection(ProjectConfigurationPlatforms) = postSolution
-                {9492E992-0B76-3834-A485-8F5D7175DAE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                {9492E992-0B76-3834-A485-8F5D7175DAE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                {9492E992-0B76-3834-A485-8F5D7175DAE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-                {9492E992-0B76-3834-A485-8F5D7175DAE7}.Release|Any CPU.Build.0 = Release|Any CPU
+                {F8F8BF45-6976-3874-B53D-CF609D37ECCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                {F8F8BF45-6976-3874-B53D-CF609D37ECCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                {F8F8BF45-6976-3874-B53D-CF609D37ECCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+                {F8F8BF45-6976-3874-B53D-CF609D37ECCD}.Release|Any CPU.Build.0 = Release|Any CPU
                 EndGlobalSection
                 GlobalSection(SolutionProperties) = preSolution
                     HideSolutionNode = FALSE
@@ -61,17 +61,17 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
             EndGlobal
         ''', ArtifactNature.DOTNET.label + "paket.template" -> '''
             type file
-            id __synthetic0.NET
+            id BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET
             version 0.1.0
             authors TODO
             description
               TODO
             
             files
-              bin/Release/BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI* ==> lib
+              bin/Release/BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.ServiceAPI* ==> lib
             
         ''', directory + "IKeyValueStore.cs" -> '''
-            namespace BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI
+            namespace BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.ServiceAPI
             {
                public interface IKeyValueStore
                {
@@ -80,22 +80,22 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
         ''', directory + "KeyValueStoreConst.cs" -> '''
             using System;
             
-            namespace BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI
+            namespace BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.ServiceAPI
             {
                public static class KeyValueStoreConst
                {
                   public static readonly Guid typeGuid = new Guid("384E277A-C343-4F37-B910-C2CE6B37FC8E");
-                  public static readonly string typeName = typeof(BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.IKeyValueStore).FullName;
+                  public static readonly string typeName = typeof(BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.ServiceAPI.IKeyValueStore).FullName;
                }
             }
-        ''', baseDirectory + "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI.csproj" -> '''
+        ''', baseDirectory + "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.ServiceAPI.csproj" -> '''
             <?xml version="1.0" encoding="utf-8"?>
             <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
               <PropertyGroup>
-                <ProjectGuid>{9492E992-0B76-3834-A485-8F5D7175DAE7}</ProjectGuid>
+                <ProjectGuid>{F8F8BF45-6976-3874-B53D-CF609D37ECCD}</ProjectGuid>
                 <OutputType>Library</OutputType>
-                <RootNamespace>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI</RootNamespace>
-                <AssemblyName>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI</AssemblyName>
+                <RootNamespace>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.ServiceAPI</RootNamespace>
+                <AssemblyName>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.ServiceAPI</AssemblyName>
                 <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
                 <TargetFrameworkProfile />
               </PropertyGroup>
@@ -146,10 +146,10 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
             // General Information about an assembly is controlled through the following 
             // set of attributes. Change these attribute values to modify the information
             // associated with an assembly.
-            [assembly: AssemblyTitle("BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI")]
+            [assembly: AssemblyTitle("BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.ServiceAPI")]
             [assembly: AssemblyDescription("")]
             [assembly: AssemblyConfiguration("")]
-            [assembly: AssemblyProduct("BTC.PRINS.Infrastructure.ServiceHost.Demo.API.ServiceAPI")]
+            [assembly: AssemblyProduct("BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.ServiceAPI")]
             [assembly: AssemblyCompany("BTC Business Technology Consulting AG")]
             [assembly: AssemblyCopyright("Copyright (C) BTC Business Technology Consulting AG 2018")]
             [assembly: AssemblyTrademark("")]
@@ -161,7 +161,7 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
             [assembly: ComVisible(false)]
             
             // The following GUID is for the ID of the typelib if this project is exposed to COM
-            [assembly: Guid("801100a3-a556-3742-93ca-fe54049a7b3e")]        
+            [assembly: Guid("837e3f42-1082-3da4-b1f8-d19cbceb14ce")]        
         '''}
 
         checkGenerators(TestData.basic, setOf(ProjectType.SERVICE_API), fileCount, contents)
@@ -171,15 +171,15 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
     def void testBasicProtobufCSProjFile()
     {
         val fileCount = 19
-        val baseDirectory = ArtifactNature.DOTNET.label + "Infrastructure/ServiceHost/Demo/API/Protobuf/"
-        val contents = #{baseDirectory + "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf.csproj" -> '''
+        val baseDirectory = ArtifactNature.DOTNET.label + "Infrastructure/ServiceHost/Demo/API.NET/Protobuf/"
+        val contents = #{baseDirectory + "BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.Protobuf.csproj" -> '''
             <?xml version="1.0" encoding="utf-8"?>
             <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
               <PropertyGroup>
-                <ProjectGuid>{ABD62783-C17A-3EAA-8C93-FE69A650E4DD}</ProjectGuid>
+                <ProjectGuid>{1CA16699-F969-3BB6-B231-5DF640735F60}</ProjectGuid>
                 <OutputType>Library</OutputType>
-                <RootNamespace>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf</RootNamespace>
-                <AssemblyName>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Protobuf</AssemblyName>
+                <RootNamespace>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.Protobuf</RootNamespace>
+                <AssemblyName>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.Protobuf</AssemblyName>
                 <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
                 <TargetFrameworkProfile />
               </PropertyGroup>
@@ -220,17 +220,17 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
                   <Compile Include="Properties\AssemblyInfo.cs" />
               </ItemGroup>
               <ItemGroup>
-                <ProjectReference Include="$(SolutionDir)Infrastructure\ServiceHost\Demo\API\Common\BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Common.csproj">
-                  <Project>{AD599B77-55B0-3DE4-8CF0-2D96A3B65830}</Project>
-                  <Name>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.Common</Name>
+                <ProjectReference Include="$(SolutionDir)Infrastructure\ServiceHost\Demo\API.NET\Common\BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.Common.csproj">
+                  <Project>{3A51BBCB-A958-316E-AB44-5CDF87E7206B}</Project>
+                  <Name>BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.Common</Name>
                 </ProjectReference>
               </ItemGroup>
               <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
               <PropertyGroup>
                 <PreBuildEvent>
-                $(SolutionDir)\\packages\\Google.ProtocolBuffers\\tools\\protoc.exe --include_imports --proto_path=$(SolutionDir) --descriptor_set_out=$(ProjectDir)gen\Types.protobin $(SolutionDir)/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/Types.proto
+                $(SolutionDir)\\packages\\Google.ProtocolBuffers\\tools\\protoc.exe --include_imports --proto_path=$(SolutionDir) --descriptor_set_out=$(ProjectDir)gen\Types.protobin $(SolutionDir)/Infrastructure/ServiceHost/Demo/API.NET/Protobuf/gen/Types.proto
                 $(SolutionDir)\\packages\\Google.ProtocolBuffers\\tools\\Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\Types.protobin
-                $(SolutionDir)\\packages\\Google.ProtocolBuffers\\tools\\protoc.exe --include_imports --proto_path=$(SolutionDir) --descriptor_set_out=$(ProjectDir)gen\DemoX.protobin $(SolutionDir)/Infrastructure/ServiceHost/Demo/API/Protobuf/gen/DemoX.proto
+                $(SolutionDir)\\packages\\Google.ProtocolBuffers\\tools\\protoc.exe --include_imports --proto_path=$(SolutionDir) --descriptor_set_out=$(ProjectDir)gen\DemoX.protobin $(SolutionDir)/Infrastructure/ServiceHost/Demo/API.NET/Protobuf/gen/DemoX.proto
                 $(SolutionDir)\\packages\\Google.ProtocolBuffers\\tools\\Protogen.exe -output_directory=$(ProjectDir) $(ProjectDir)gen\DemoX.protobin
                 </PreBuildEvent>
               </PropertyGroup>

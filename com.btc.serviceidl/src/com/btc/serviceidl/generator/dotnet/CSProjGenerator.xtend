@@ -179,7 +179,7 @@ class CSProjGenerator {
         {
             projectName
         }
-        importedDependencies.exists[it.getID(ArtifactNature.CPP) == str]    // ArtifactNature CPP is used to omit appending of '.NET'
+        importedDependencies.exists[it.getID(ArtifactNature.DOTNET) == str]
     }
    
 }

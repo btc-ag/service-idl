@@ -129,7 +129,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             from conan_template import *
             
             class Conan(ConanTemplate):
-                name = "__synthetic0"
+                name = "BTC.PRINS.Infrastructure.ServiceHost.Demo.API"
                 version = version_name("0.1.0-unreleased")
                 url = "TODO"
                 description = """
@@ -168,11 +168,11 @@ class CppGeneratorTest extends AbstractGeneratorTest
         ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.11)
             
-            project (__synthetic0 CXX)
+            project (BTC.PRINS.Infrastructure.ServiceHost.Demo.API CXX)
             
             include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
             
-            set(CAB_RELEASE_UNIT __synthetic0)
+            set(CAB_RELEASE_UNIT BTC.PRINS.Infrastructure.ServiceHost.Demo.API)
             conan_basic_setup(TARGETS)
             
             include(${CONAN_CMAKEMACROS_ROOT}/cmake/cab_globals.cmake)
@@ -228,7 +228,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             from conan_template import *
             
             class Conan(ConanTemplate):
-                name = "__synthetic0"
+                name = "BTC.PRINS.Infrastructure.ServiceHost.Demo.API"
                 version = version_name("0.1.0-unreleased")
                 url = "TODO"
                 description = """
@@ -268,11 +268,11 @@ class CppGeneratorTest extends AbstractGeneratorTest
         ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.11)
             
-            project (__synthetic0 CXX)
+            project (BTC.PRINS.Infrastructure.ServiceHost.Demo.API CXX)
             
             include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
             
-            set(CAB_RELEASE_UNIT __synthetic0)
+            set(CAB_RELEASE_UNIT BTC.PRINS.Infrastructure.ServiceHost.Demo.API)
             conan_basic_setup(TARGETS)
             
             include(${CONAN_CMAKEMACROS_ROOT}/cmake/cab_globals.cmake)
@@ -315,7 +315,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             from conan_template import *
             
             class Conan(ConanTemplate):
-                name = "__synthetic0"
+                name = "BTC.PRINS.Infrastructure.ServiceHost.Demo.API"
                 version = version_name("0.1.0-unreleased")
                 url = "TODO"
                 description = """
@@ -354,11 +354,11 @@ class CppGeneratorTest extends AbstractGeneratorTest
         ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.11)
             
-            project (__synthetic0 CXX)
+            project (BTC.PRINS.Infrastructure.ServiceHost.Demo.API CXX)
             
             include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
             
-            set(CAB_RELEASE_UNIT __synthetic0)
+            set(CAB_RELEASE_UNIT BTC.PRINS.Infrastructure.ServiceHost.Demo.API)
             conan_basic_setup(TARGETS)
             
             include(${CONAN_CMAKEMACROS_ROOT}/cmake/cab_globals.cmake)
@@ -424,7 +424,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             from conan_template import *
             
             class Conan(ConanTemplate):
-                name = "__synthetic0"
+                name = "BTC.PRINS.Infrastructure.ServiceHost.Demo.API"
                 version = version_name("0.1.0-unreleased")
                 url = "TODO"
                 description = """
@@ -463,7 +463,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
         ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.4)
             
-            project (__synthetic0 CXX)
+            project (BTC.PRINS.Infrastructure.ServiceHost.Demo.API CXX)
             
             include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
             conan_basic_setup()

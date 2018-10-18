@@ -41,9 +41,22 @@ class PackageInfoProvider
     /**
      * Get package ID out of a project identifier, which may be a fully
      * qualified project name or a path
+     * 
+     * TODO we should enhance the project dependency resolution mechanism in the
+     * generator to solve this topic in a clean way; now it's more like a heuristic
      */
-    def static getID(String projectIdentifier)
+    def static String getID(String projectIdentifier)
     {
-        QualifiedName.create(projectIdentifier.split("\\W")).skipLast(1).toString
+        val components = QualifiedName.create(projectIdentifier.split("\\W"))
+        if (components == QualifiedName.EMPTY)
+            throw new IllegalArgumentException("Cannot create ID for given project identifier")
+
+        if (ProjectType.values.map[getName].contains(components.lastSegment))
+        {
+            return components.skipLast(1).toString
+        }
+        
+        // try to handle special cases e.g. for types nested inside interfaces etc.
+        getID(components.skipLast(1).toString)
     }
 }

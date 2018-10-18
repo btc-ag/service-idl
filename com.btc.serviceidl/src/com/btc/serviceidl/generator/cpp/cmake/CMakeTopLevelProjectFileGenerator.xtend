@@ -108,7 +108,10 @@ class CMakeTopLevelProjectFileGenerator
                             ("BTC.CAB.Logging/«loggingTargetVersion».latest@cab/«dependencyChannel»"),
                             ("BTC.CAB.ServiceComm/«serviceCommTargetVersion.label».latest@cab/«dependencyChannel»"),
                             «IF projectSet.projects.exists[it.projectType == ProjectType.TEST]»
-                            ("BTC.CAB.ServiceComm.SQ/«serviceCommTargetVersion.label».latest@cab/«dependencyChannel»"),
+                                ("BTC.CAB.ServiceComm.SQ/«serviceCommTargetVersion.label».latest@cab/«dependencyChannel»"),
+                                «IF serviceCommTargetVersion == ServiceCommVersion.V0_11»
+                                    ("libzmq/4.2.3@cab/extern", "private"),
+                                «ENDIF»
                             «ENDIF»
                             «FOR dependency : generationSettings.dependencies.sortBy[getID(ArtifactNature.CPP)]»
                                 ("«dependency.getID(ArtifactNature.CPP)»/«dependency.version»«versionSuffix»@cab/«dependencyChannel»"),

@@ -10,7 +10,9 @@
  **********************************************************************/
 package com.btc.serviceidl.tests.generator.common
 
+import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.PackageInfoProvider
+import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.tests.testdata.TestData
@@ -26,7 +28,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import static org.junit.Assert.*
-import com.btc.serviceidl.generator.common.ArtifactNature
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -55,19 +56,22 @@ class PackageInfoTest
         val rs = rsp.get()
         val resource = rs.getResource(URI.createURI("src/com/btc/serviceidl/tests/testdata/import-imported.idl"), true)
         val result = PackageInfoProvider.getPackageInfo(resource)
-        assertEquals("import-imported", result.getID(ArtifactNature.CPP))
+        assertEquals("BTC.PRINS.Imported", result.getID(ArtifactNature.CPP))
         assertEquals("0.3.0", result.version)
     }
     
     @Test
     def testNameFullyQualifiedBased()
     {
-        assertEquals("BTC.PRINS.DemoPackage", PackageInfoProvider.getID("BTC.PRINS.DemoPackage.ServiceIDL"))
+        val expected = "BTC.PRINS.DemoPackage"
+        ProjectType.values.forEach[assertEquals(expected, PackageInfoProvider.getID('''BTC.PRINS.DemoPackage.«it.getName»'''))]
+        assertEquals(expected, PackageInfoProvider.getID('''BTC.PRINS.DemoPackage.«ProjectType.COMMON.getName».ContainingInterface.NestedClass'''))
     }
 
     @Test
     def testNamePathBased()
     {
-        assertEquals("BTC.PRINS.DemoPackage", PackageInfoProvider.getID("BTC/PRINS/DemoPackage/Dispatcher"))
+        val expected = "BTC.PRINS.DemoPackage"
+        ProjectType.values.forEach[assertEquals(expected, PackageInfoProvider.getID('''BTC/PRINS/DemoPackage/«it.getName»'''))]
     }
 }

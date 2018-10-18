@@ -41,6 +41,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import static org.junit.Assert.*
+import com.btc.serviceidl.generator.Maturity
 
 @RunWith(XtextRunner)
 @InjectWith(IdlInjectorProvider)
@@ -76,6 +77,16 @@ class DefaultGenerationSettingsProviderTest
         val defaultGenerationSettings = new DefaultGenerationSettings
         for (version : CppConstants.SERVICECOMM_VERSIONS)
             defaultGenerationSettings.setVersion(CppConstants.SERVICECOMM_VERSION_KIND, version)
+    }
+
+    @Test
+    def void testConfigureMaturityRelease()
+    {
+        val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
+        defaultGenerationSettingsProvider.configureGenerationSettings(null, #{}, null, null, Maturity.RELEASE, null)
+
+        assertEquals(Maturity.RELEASE,
+            defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource).maturity)
     }
 
     @Test
