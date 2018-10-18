@@ -7,6 +7,8 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 import static com.btc.serviceidl.generator.dotnet.Util.*
 
+import static extension com.btc.serviceidl.util.Util.*
+
 @Accessors
 class AssemblyInfoGenerator
 {
@@ -15,6 +17,7 @@ class AssemblyInfoGenerator
     def generate(String projectName)
     {
         val isExe = isExecutable(paramBundle.projectType)
+        val versionString = paramBundle.moduleStack.last.resolveVersion
 
         '''
             using System.Reflection;
@@ -34,6 +37,10 @@ class AssemblyInfoGenerator
                 [assembly: AssemblyTrademark("")]
                 [assembly: AssemblyCulture("")]
             «ENDIF»
+            
+            [assembly: AssemblyVersion("«versionString.replaceMicroVersionByZero».0")]
+            [assembly: AssemblyFileVersion("«versionString».0")]
+            [assembly: AssemblyInformationalVersion("«versionString».0+xx")]
             
             // Setting ComVisible to false makes the types in this assembly not visible 
             // to COM components.  If you need to access a type in this assembly from 
