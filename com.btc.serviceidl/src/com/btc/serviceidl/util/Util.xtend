@@ -565,4 +565,12 @@ class Util
         return element.version ?: Constants.DEFAULT_VERSION
     }
 
+    static def replaceMicroVersionByZero(String versionString)
+    {
+        val parts = versionString.split("[.]")
+        if (parts.length != 3) throw new IllegalArgumentException("Not a valid major.minor.micro version string: " + versionString)
+        parts.set(2, "0")
+        return parts.join(".")
+    }
+
 }

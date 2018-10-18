@@ -279,13 +279,6 @@ class DotNetGenerator
       }     
    }
    
-   private def replaceMicroVersionByZero(String versionString)
-   {
-       val parts = versionString.split("[.]")
-       parts.set(2, "0")
-       return parts.join(".")
-   }
-   
    private def generatePaketDependenciesSection(boolean forTemplate)
    {
        val prefix = if (forTemplate) "" else "nuget "  

@@ -43,4 +43,34 @@ class UtilTest
         val idl = '''module foo { interface Bar {}; }'''.parse
         assertEquals(Constants.DEFAULT_VERSION, idl.resolveVersion)
     }
+    
+    @Test
+    def void testReplaceMicroVersionByZero_AlreadyZero()
+    {
+        assertEquals("0.1.0", "0.1.0".replaceMicroVersionByZero)
+    }
+
+    @Test
+    def void testReplaceMicroVersionByZero_NotAlreadyZero()
+    {
+        assertEquals("0.1.0", "0.1.1".replaceMicroVersionByZero)
+    }
+
+    @Test(expected=IllegalArgumentException)
+    def void testReplaceMicroVersionByZero_OnlyMajorMinorFails()
+    {
+        "0.1".replaceMicroVersionByZero
+    }
+
+    @Test(expected=IllegalArgumentException)
+    def void testReplaceMicroVersionByZero_MorePartsFails()
+    {
+        "0.1.2.3".replaceMicroVersionByZero
+    }
+
+    @Test(expected=IllegalArgumentException)
+    def void testReplaceMicroVersionByZero_EmptyFails()
+    {
+        "".replaceMicroVersionByZero
+    }
 }
