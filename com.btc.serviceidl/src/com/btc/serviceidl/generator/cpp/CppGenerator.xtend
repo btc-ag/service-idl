@@ -104,7 +104,8 @@ class CppGenerator
                     moduleStructureStrategy,
                     generationSettings,
                     smartPointerMap,
-                    module
+                    module,
+                    generationSettings.dependencies
                 ).generate()
 
             }
@@ -147,7 +148,8 @@ class CppGenerator
                         moduleStructureStrategy,
                         generationSettings,
                         smartPointerMap,
-                        module
+                        module,
+                        generationSettings.dependencies
                     ).generate()
                 }
             }
@@ -159,7 +161,7 @@ class CppGenerator
                 val currentProjectReference = new ProjectReference(
                     GeneratorUtil.getTransformedModuleName(
                         new ParameterBundle.Builder().with(module.moduleStack).with(ProjectType.PROTOBUF).build,
-                        ArtifactNature.CPP, TransformType.PACKAGE))
+                        ArtifactNature.CPP, TransformType.PACKAGE), module.eResource.URI)
 
                 new ProtobufProjectGenerator(
                     fileSystemAccess,
@@ -172,7 +174,8 @@ class CppGenerator
                     generationSettings,
                     protobufProjectReferences.get(currentProjectReference),
                     smartPointerMap,
-                    module
+                    module,
+                    generationSettings.dependencies
                 ).generate()
             }
 
@@ -189,7 +192,8 @@ class CppGenerator
                     moduleStructureStrategy,
                     generationSettings,
                     smartPointerMap,
-                    module
+                    module,
+                    generationSettings.dependencies
                 ).generate()
             }
         }

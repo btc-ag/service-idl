@@ -59,19 +59,4 @@ class PackageInfoTest
         assertEquals("BTC.PRINS.Imported", result.getID(ArtifactNature.CPP))
         assertEquals("0.3.0", result.version)
     }
-    
-    @Test
-    def testNameFullyQualifiedBased()
-    {
-        val expected = "BTC.PRINS.DemoPackage"
-        ProjectType.values.forEach[assertEquals(expected, PackageInfoProvider.getID('''BTC.PRINS.DemoPackage.«it.getName»'''))]
-        assertEquals(expected, PackageInfoProvider.getID('''BTC.PRINS.DemoPackage.«ProjectType.COMMON.getName».ContainingInterface.NestedClass'''))
-    }
-
-    @Test
-    def testNamePathBased()
-    {
-        val expected = "BTC.PRINS.DemoPackage"
-        ProjectType.values.forEach[assertEquals(expected, PackageInfoProvider.getID('''BTC/PRINS/DemoPackage/«it.getName»'''))]
-    }
 }

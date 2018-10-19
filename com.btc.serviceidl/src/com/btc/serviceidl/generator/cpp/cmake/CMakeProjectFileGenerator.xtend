@@ -12,6 +12,7 @@ package com.btc.serviceidl.generator.cpp.cmake
 
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.ExternalDependency
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
@@ -30,6 +31,7 @@ class CMakeProjectFileGenerator
     val ITargetVersionProvider targetVersionProvider
     val Iterable<ExternalDependency> externalDependencies
     val Iterable<IProjectReference> projectReferences
+    val Iterable<PackageInfo> importedDependencies
 
     val ProjectFileSet projectFileSet
 
@@ -81,6 +83,7 @@ class CMakeProjectFileGenerator
             targetVersionProvider,
             externalDependencies,
             myProjectReferences,
+            importedDependencies,
             projectFileSet.unmodifiableView
         ).generateCMakeLists(projectName, projectPath, projectType)
     }
@@ -92,6 +95,7 @@ class CMakeProjectFileGenerator
             targetVersionProvider,
             externalDependencies,
             myProjectReferences,
+            importedDependencies,
             projectFileSet.unmodifiableView
         ).generateCMakeSet(projectName, projectPath)
     }

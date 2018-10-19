@@ -13,7 +13,6 @@ package com.btc.serviceidl.generator.common
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.util.Constants
 import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.xtext.naming.QualifiedName
 
 class PackageInfoProvider
 {
@@ -30,33 +29,11 @@ class PackageInfoProvider
             makeID(ArtifactNature.DOTNET, idl),
             makeID(ArtifactNature.JAVA, idl)
         }
-        new PackageInfo(packageIDs, resource.version)
+        new PackageInfo(packageIDs, resource.version, resource.URI)
     }
     
     def private static makeID(ArtifactNature artifactNature, IDLSpecification idl)
     {
         artifactNature -> GeneratorUtil.getReleaseUnitName(idl, artifactNature)
-    }
-    
-    /**
-     * Get package ID out of a project identifier, which may be a fully
-     * qualified project name or a path
-     * 
-     * TODO we should enhance the project dependency resolution mechanism in the
-     * generator to solve this topic in a clean way; now it's more like a heuristic
-     */
-    def static String getID(String projectIdentifier)
-    {
-        val components = QualifiedName.create(projectIdentifier.split("\\W"))
-        if (components == QualifiedName.EMPTY)
-            throw new IllegalArgumentException("Cannot create ID for given project identifier")
-
-        if (ProjectType.values.map[getName].contains(components.lastSegment))
-        {
-            return components.skipLast(1).toString
-        }
-        
-        // try to handle special cases e.g. for types nested inside interfaces etc.
-        getID(components.skipLast(1).toString)
     }
 }

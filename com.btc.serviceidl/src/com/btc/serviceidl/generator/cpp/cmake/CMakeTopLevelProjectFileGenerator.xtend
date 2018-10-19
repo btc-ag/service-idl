@@ -1,8 +1,10 @@
 package com.btc.serviceidl.generator.cpp.cmake
 
 import com.btc.serviceidl.generator.IGenerationSettings
+import com.btc.serviceidl.generator.Maturity
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
@@ -14,9 +16,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.generator.Maturity
-import com.btc.serviceidl.generator.common.ProjectType
-import com.btc.serviceidl.generator.common.PackageInfoProvider
 
 @Accessors(NONE)
 class CMakeTopLevelProjectFileGenerator
@@ -234,9 +233,9 @@ class CMakeTopLevelProjectFileGenerator
                 find_package(«dependency.getID(ArtifactNature.CPP)» REQUIRED)
             «ENDFOR»
 
-            «FOR projectPath : projectSet.projects.map[relativePath.toPortableString].sort»
-                «IF generationSettings.dependencies?.findFirst[it.getID(ArtifactNature.CPP) == PackageInfoProvider.getID(projectPath)] === null»
-                    include(${CMAKE_CURRENT_LIST_DIR}/«projectPath»/build/make.cmakeset)
+            «FOR project : projectSet.projects.sortBy[relativePath.toPortableString]»
+                «IF !generationSettings.dependencies.map[resourceURI].toList.contains(project.resourceURI)»
+                    include(${CMAKE_CURRENT_LIST_DIR}/«project.relativePath.toPortableString»/build/make.cmakeset)
                 «ENDIF»
             «ENDFOR»
 

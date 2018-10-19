@@ -103,7 +103,9 @@ class DefaultGenerationSettingsProviderTest
     @Test
     def testImportDependencies()
     {
-        val expected = #[new PackageInfo(#{ArtifactNature.CPP -> "foo"}, "0.0.1"), new PackageInfo(#{ArtifactNature.CPP -> "bar"}, "0.5.0")]
+        val fooURI = URI.createFileURI("x:/dummy/foo.idl")
+        val barURI = URI.createFileURI("y:/dummy/bar.idl")
+        val expected = #[new PackageInfo(#{ArtifactNature.CPP -> "foo"}, "0.0.1", fooURI), new PackageInfo(#{ArtifactNature.CPP -> "bar"}, "0.5.0", barURI)]
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
         defaultGenerationSettingsProvider.configureGenerationSettings(null, null as String, null, null, null, expected)
         val result = defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource).dependencies
@@ -111,6 +113,8 @@ class DefaultGenerationSettingsProviderTest
         assertFalse(result.empty)
         assertEquals(2, result.size)
         assertEquals(expected.toList, result.toList)
+        assertEquals(fooURI, result.findFirst[getID(ArtifactNature.CPP) == "foo"].resourceURI)
+        assertEquals(barURI, result.findFirst[getID(ArtifactNature.CPP) == "bar"].resourceURI)
     }
 
     @Test(expected=IllegalArgumentException)

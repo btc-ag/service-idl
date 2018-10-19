@@ -11,6 +11,7 @@
 package com.btc.serviceidl.generator.common
 
 import java.util.Map
+import org.eclipse.emf.common.util.URI
 import org.eclipse.xtend.lib.annotations.Accessors
 
 /**
@@ -19,13 +20,15 @@ import org.eclipse.xtend.lib.annotations.Accessors
  */
 class PackageInfo
 {
-    @Accessors(NONE) val Map<ArtifactNature, String> packageIDs;
-    @Accessors(PUBLIC_GETTER) val String version;
+    @Accessors(NONE) val Map<ArtifactNature, String> packageIDs
+    @Accessors(PUBLIC_GETTER) val String version
+    @Accessors(PUBLIC_GETTER) val URI resourceURI
     
-    new(Map<ArtifactNature, String> packageIDs, String version)
+    new(Map<ArtifactNature, String> packageIDs, String version, URI resourceURI)
     {
         this.packageIDs = packageIDs
         this.version = version
+        this.resourceURI = resourceURI
     }
 
     def getID(ArtifactNature artifactNature)
