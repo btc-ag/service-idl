@@ -11,6 +11,7 @@
 package com.btc.serviceidl.util.tests
 
 import com.btc.serviceidl.idl.IDLSpecification
+import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.util.Constants
 import com.google.inject.Inject
@@ -22,6 +23,7 @@ import org.junit.runner.RunWith
 
 import static org.junit.Assert.*
 
+import static extension com.btc.serviceidl.util.Extensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
 @RunWith(XtextRunner)
@@ -43,7 +45,7 @@ class UtilTest
         val idl = '''module foo { interface Bar {}; }'''.parse
         assertEquals(Constants.DEFAULT_VERSION, idl.resolveVersion)
     }
-    
+
     @Test
     def void testReplaceMicroVersionByZero_AlreadyZero()
     {
@@ -72,5 +74,62 @@ class UtilTest
     def void testReplaceMicroVersionByZero_EmptyFails()
     {
         "".replaceMicroVersionByZero
+    }
+
+    @Test
+    def void testEffectiveMainModuleNoModule()
+    {
+        val idl = '''version 0.2.0;'''.parse
+        assertNull(idl.effectiveMainModule)
+    }
+
+    @Test
+    def void testEffectiveMainModuleEmptyModule()
+    {
+        val idl = '''module foo { }'''.parse
+        assertNull(idl.effectiveMainModule)
+    }
+
+    @Test
+    def void testEffectiveMainModuleSingleTopLevel()
+    {
+        val idl = '''module foo { interface Bar {}; }'''.parse
+        assertEquals(idl.eAllContents.filter(ModuleDeclaration).head, idl.effectiveMainModule)
+    }
+
+    @Test
+    def void testEffectiveMainModuleSingleInnerLevel()
+    {
+        val idl = '''module foo { module bar { interface Bar {}; } }'''.parse
+        assertEquals(idl.eAllContents.filter(ModuleDeclaration).filter[it.name == "bar"].head, idl.effectiveMainModule)
+    }
+
+    @Test
+    def void testEffectiveMainModuleAmbiguousSameLevel()
+    {
+        val idl = '''module foo { module bar1 { interface Bar {}; } module bar2 { interface Bar {}; }  }'''.parse
+        assertEquals(idl.eAllContents.filter(ModuleDeclaration).filter[it.name == "foo"].head, idl.effectiveMainModule)
+    }
+
+    @Test
+    def void testEffectiveMainModuleAmbiguousDifferentLevels()
+    {
+        val idl = '''module outer { module foo { module bar1 { module bar1inner { interface Bar {}; } } module bar2 { interface Bar {}; }  } }'''.
+            parse
+        assertEquals(idl.eAllContents.filter(ModuleDeclaration).filter[it.name == "foo"].head, idl.effectiveMainModule)
+    }
+
+    @Test
+    def void testEffectiveMainModuleSingleInnerLevelExplicitOuter()
+    {
+        val idl = '''main module foo { module bar { interface Bar {}; } }'''.parse
+        assertEquals(idl.eAllContents.filter(ModuleDeclaration).filter[it.name == "foo"].head, idl.effectiveMainModule)
+    }
+
+    @Test
+    def void testEffectiveMainModuleSingleInnerLevelExplicitInner()
+    {
+        val idl = '''module foo { main module bar { interface Bar {}; } }'''.parse
+        assertEquals(idl.eAllContents.filter(ModuleDeclaration).filter[it.name == "bar"].head, idl.effectiveMainModule)
     }
 }

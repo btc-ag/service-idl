@@ -101,7 +101,7 @@ class DotNetGenerator
             processModule(module, generationSettings.projectTypes)
         }
 
-        new VSSolutionGenerator(fileSystemAccess, vsSolution, idl.eResource.URI.lastSegment.replace(".idl", "")).
+        new VSSolutionGenerator(fileSystemAccess, vsSolution, idl.getReleaseUnitName(ArtifactNature.DOTNET)).
             generateSolutionFile
 
         // TODO generate only either NuGet or Paket file

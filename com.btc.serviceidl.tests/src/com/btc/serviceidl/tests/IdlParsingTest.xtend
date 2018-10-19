@@ -46,6 +46,103 @@ class IdlParsingTest
     }
 
     @Test
+    def void testMultipleMainModulesNested()
+    {
+        val result = parseHelper.parse('''
+            main module OuterMain { main module InnerMain {} }
+        ''')
+        result.assertError(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.UNIQUE_MAIN_MODULE,
+            Messages.UNIQUE_MAIN_MODULE)
+    }
+
+    @Test
+    def void testMultipleMainModulesParallel()
+    {
+        val result = parseHelper.parse('''
+            main module FirstMain {}
+            main module SecondMain {}
+        ''')
+        result.assertError(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.UNIQUE_MAIN_MODULE,
+            Messages.UNIQUE_MAIN_MODULE)
+    }
+
+    @Test
+    def void testNonEmptyNonMainModuleOuter()
+    {
+        val result = parseHelper.parse('''
+            module Outer {
+              exception DuplicateKeyException {};
+              main module InnerMain {
+                  
+              }
+            }
+        ''')
+        result.assertError(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.EMPTY_NON_MAIN_MODULE,
+            Messages.EMPTY_NON_MAIN_MODULE)
+    }
+
+    @Test
+    def void testNonEmptyNonMainModuleParallelTopLevel()
+    {
+        val result = parseHelper.parse('''
+            main module Main {
+                  
+            }
+            module NonMain {
+              exception DuplicateKeyException {};
+            }
+        ''')
+        result.assertError(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.EMPTY_NON_MAIN_MODULE,
+            Messages.EMPTY_NON_MAIN_MODULE)
+    }
+    @Test
+    def void testNonEmptyNonMainModuleParallel()
+    {
+        val result = parseHelper.parse('''
+            module Outer {
+                main module Main {
+                      
+                }
+                module NonMain {
+                  exception DuplicateKeyException {};
+                }
+            }
+        ''')
+        result.assertError(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.EMPTY_NON_MAIN_MODULE,
+            Messages.EMPTY_NON_MAIN_MODULE)
+    }
+
+    @Test
+    def void testAmbiguousMainModule()
+    {
+        val result = parseHelper.parse('''
+            module Outer {
+              exception FooException {};
+              module Inner {
+                exception BarException {};
+              }
+            }
+        ''')
+        result.assertWarning(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.DEPRECATED_MULTIPLE_NON_EMPTY_MODULES_WITHOUT_EXPLICIT_MAIN,
+            Messages.DEPRECATED_MULTIPLE_NON_EMPTY_MODULES_WITHOUT_EXPLICIT_MAIN)
+    }
+
+    @Test
+    def void testIndeterminateMainModule()
+    {
+        val result = parseHelper.parse('''
+            module Foo {
+              exception FooException {};
+            }
+            module Bar {
+              exception BarException {};
+            }
+        ''')
+        result.assertError(IdlPackage.Literals.MODULE_DECLARATION, IdlValidator.INDETERMINATE_IMPLICIT_MAIN_MODULE,
+            Messages.INDETERMINATE_IMPLICIT_MAIN_MODULE)
+    }
+
+    @Test
     def void testExceptionDecl()
     {
 
