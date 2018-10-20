@@ -1,8 +1,10 @@
 package com.btc.serviceidl.generator.cpp.cmake
 
 import com.btc.serviceidl.generator.IGenerationSettings
+import com.btc.serviceidl.generator.Maturity
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.ParameterBundle
+import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
@@ -14,8 +16,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.generator.Maturity
-import com.btc.serviceidl.generator.common.ProjectType
 
 @Accessors(NONE)
 class CMakeTopLevelProjectFileGenerator
@@ -112,6 +112,9 @@ class CMakeTopLevelProjectFileGenerator
                                     ("libzmq/4.2.3@cab/extern", "private"),
                                 «ENDIF»
                             «ENDIF»
+                            «FOR dependency : generationSettings.dependencies.sortBy[getID(ArtifactNature.CPP)]»
+                                ("«dependency.getID(ArtifactNature.CPP)»/«dependency.version»«versionSuffix»@cab/«dependencyChannel»"),
+                            «ENDFOR»
                             )
                 generators = "cmake"
                 short_paths = True
@@ -120,7 +123,11 @@ class CMakeTopLevelProjectFileGenerator
                     protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)
                     outdir = self.source_folder
                     
-                    self.run('bin\\protoc.exe --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
+                    self.run('bin\\protoc.exe --proto_path=' + self.source_folder
+                        «FOR dependency : generationSettings.dependencies.sortBy[getID(ArtifactNature.CPP)]»
+                            + ' --proto_path="' + os.path.normpath(os.path.join(self.deps_cpp_info["«dependency.getID(ArtifactNature.CPP)»"].rootpath, 'proto')) + '"'
+                        «ENDFOR»
+                        + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
 
                 def build(self):
                     self.generateProtoFiles()
@@ -222,9 +229,14 @@ class CMakeTopLevelProjectFileGenerator
                 find_package(BTC.CAB.ServiceComm.SQ REQUIRED)
                 «ENDIF»
             «ENDIF»
+            «FOR dependency : generationSettings.dependencies.sortBy[getID(ArtifactNature.CPP)]»
+                find_package(«dependency.getID(ArtifactNature.CPP)» REQUIRED)
+            «ENDFOR»
 
-            «FOR projectPath : projectSet.projects.map[relativePath.toPortableString].sort»
-                include(${CMAKE_CURRENT_LIST_DIR}/«projectPath»/build/make.cmakeset)
+            «FOR project : projectSet.projects.sortBy[relativePath.toPortableString]»
+                «IF module.eResource.URI == project.resourceURI»
+                    include(${CMAKE_CURRENT_LIST_DIR}/«project.relativePath.toPortableString»/build/make.cmakeset)
+                «ENDIF»
             «ENDFOR»
 
             «IF serviceCommTargetVersion == ServiceCommVersion.V0_12»

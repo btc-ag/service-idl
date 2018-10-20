@@ -15,6 +15,7 @@ import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider
 import com.btc.serviceidl.generator.DefaultGenerationSettingsProvider.OptionalGenerationSettings
 import com.btc.serviceidl.generator.Main
 import com.btc.serviceidl.generator.common.ArtifactNature
+import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
 import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
@@ -82,7 +83,7 @@ class DefaultGenerationSettingsProviderTest
     def void testConfigureMaturityRelease()
     {
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.configureGenerationSettings(null, #{}, null, null, Maturity.RELEASE)
+        defaultGenerationSettingsProvider.configureGenerationSettings(null, #{}, null, null, Maturity.RELEASE, null)
 
         assertEquals(Maturity.RELEASE,
             defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource).maturity)
@@ -93,17 +94,34 @@ class DefaultGenerationSettingsProviderTest
     {
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
         defaultGenerationSettingsProvider.configureGenerationSettings(null,
-            #{CppConstants.SERVICECOMM_VERSION_KIND -> ServiceCommVersion.V0_10.label}.entrySet, null, null, null)
+            #{CppConstants.SERVICECOMM_VERSION_KIND -> ServiceCommVersion.V0_10.label}.entrySet, null, null, null, null)
         assertEquals(ServiceCommVersion.V0_10.label,
             defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource).getTargetVersion(
                 CppConstants.SERVICECOMM_VERSION_KIND))
+    }
+
+    @Test
+    def testImportDependencies()
+    {
+        val fooURI = URI.createFileURI("x:/dummy/foo.idl")
+        val barURI = URI.createFileURI("y:/dummy/bar.idl")
+        val expected = #[new PackageInfo(#{ArtifactNature.CPP -> "foo"}, "0.0.1", fooURI), new PackageInfo(#{ArtifactNature.CPP -> "bar"}, "0.5.0", barURI)]
+        val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
+        defaultGenerationSettingsProvider.configureGenerationSettings(null, null as String, null, null, null, expected)
+        val result = defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource).dependencies
+        assertNotNull(result)
+        assertFalse(result.empty)
+        assertEquals(2, result.size)
+        assertEquals(expected.toList, result.toList)
+        assertEquals(fooURI, result.findFirst[getID(ArtifactNature.CPP) == "foo"].resourceURI)
+        assertEquals(barURI, result.findFirst[getID(ArtifactNature.CPP) == "bar"].resourceURI)
     }
 
     @Test(expected=IllegalArgumentException)
     def void testConfigureUnknownProjectSystemFails()
     {
         val defaultGenerationSettingsProvider = new DefaultGenerationSettingsProvider
-        defaultGenerationSettingsProvider.configureGenerationSettings("foo", null as String, null, null, null)
+        defaultGenerationSettingsProvider.configureGenerationSettings("foo", null as String, null, null, null, null)
         defaultGenerationSettingsProvider.getSettings(TestData.basic.parse.eResource)
     }
 

@@ -27,14 +27,14 @@ import org.eclipse.xtext.scoping.IScopeProvider
 
 class LegacyProjectGenerator extends ProjectGeneratorBase
 {
-    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider,
-        IScopeProvider scopeProvider, IDLSpecification idl, IProjectSetFactory projectSetFactory,
-        IProjectSet vsSolution, IModuleStructureStrategy moduleStructureStrategy,
-        IGenerationSettings generationSettings, Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap,
-        ProjectType type, ModuleDeclaration module)
+    new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
+        IDLSpecification idl, IProjectSetFactory projectSetFactory, IProjectSet vsSolution,
+        IModuleStructureStrategy moduleStructureStrategy, IGenerationSettings generationSettings,
+        Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ProjectType type,
+        ModuleDeclaration module)
     {
         super(fileSystemAccess, qualifiedNameProvider, scopeProvider, idl, projectSetFactory, vsSolution,
-            moduleStructureStrategy, generationSettings, smartPointerMap, type, module,            
+            moduleStructureStrategy, generationSettings, smartPointerMap, type, module, generationSettings.dependencies,
             new SourceGenerationStrategy)
     }
 

@@ -20,6 +20,7 @@ import com.btc.serviceidl.generator.java.JavaConstants
 import java.util.HashMap
 import java.util.Map
 import java.util.Set
+import com.btc.serviceidl.generator.common.PackageInfo
 
 class DefaultGenerationSettings implements IGenerationSettings
 {
@@ -30,6 +31,7 @@ class DefaultGenerationSettings implements IGenerationSettings
     static val Map<String, Set<String>> supportedVersionMap = createSupportedVersionMap
     val Map<String, String> versionMap
     public var Maturity maturity = Maturity.SNAPSHOT
+    public Set<PackageInfo> dependencies = #{}
 
     new()
     {
@@ -101,6 +103,10 @@ class DefaultGenerationSettings implements IGenerationSettings
     
     override getMaturity() {
         maturity
+    }
+    
+    override getDependencies() {
+        dependencies
     }
 
 }

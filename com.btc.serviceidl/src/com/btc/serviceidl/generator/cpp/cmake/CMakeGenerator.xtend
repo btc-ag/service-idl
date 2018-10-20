@@ -11,24 +11,29 @@
 package com.btc.serviceidl.generator.cpp.cmake
 
 import com.btc.serviceidl.generator.ITargetVersionProvider
+import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.ExternalDependency
+import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
+import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet.ProjectReference
 import java.util.Set
 import org.eclipse.core.runtime.IPath
-import org.eclipse.xtend.lib.annotations.Accessors
-import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
 import org.eclipse.core.runtime.Path
+import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors(NONE)
 class CMakeGenerator
 {
+    val static CMAKE_CAB_NAMESPACE = "CAB::"
+    
     val IModuleStructureStrategy moduleStructureStrategy
     val ITargetVersionProvider targetVersionProvider
     val Iterable<ExternalDependency> externalDependencies
     val Set<CMakeProjectSet.ProjectReference> projectReferences
+    val Iterable<PackageInfo> importedDependencies
 
     val ProjectFileSet projectFileSet
 
@@ -79,8 +84,8 @@ class CMakeGenerator
                   «FOR lib : externalDependencies.map[libraryName].sort»
                       «getCmakeTargetName(lib)»
                   «ENDFOR»
-                  «FOR referencedProjectName : getSortedInternalDependencies(projectName)»
-                      «referencedProjectName»
+                  «FOR projectReference : getSortedInternalDependencies(projectName)»
+                      «getCmakeTargetNameForInternalDependency(projectReference)»
                   «ENDFOR»              
             )
             
@@ -97,7 +102,7 @@ class CMakeGenerator
     def getCmakeTargetName(String libName)
     {
         if (libName.startsWith("BTC.CAB."))
-            "CAB::" + libName
+            CMAKE_CAB_NAMESPACE + libName
         else if (libName == "libprotobuf")
             "protobuf::libprotobuf"
         else
@@ -106,10 +111,18 @@ class CMakeGenerator
             )
     }
     
-    def getSortedInternalDependencies(String projectName)
+    private def getCmakeTargetNameForInternalDependency(ProjectReference projectReference)
+    {
+        if (!importedDependencies.map[resourceURI].toList.contains(projectReference.resourceURI))
+            projectReference.projectName
+        else
+            CMAKE_CAB_NAMESPACE + projectReference.projectName
+    }
+    
+    def getSortedInternalDependencies(String currentProjectName)
     {
         /* TODO this doesn't seem to be the right place to filter out self-references */
-        projectReferences.map[it.projectName].sort.filter[it != projectName]
+        projectReferences.filter[projectName != currentProjectName].sortBy[projectName]
     }
     
     private def CharSequence generateCMakeListsOldStyle(String projectName, IPath projectPath,
@@ -143,8 +156,8 @@ class CMakeGenerator
               «FOR lib : externalDependencies.map[libraryName].sort»
                   «lib»
               «ENDFOR»
-              «FOR referencedProjectName : getSortedInternalDependencies(projectName)»
-                  «referencedProjectName»
+              «FOR projectReference : getSortedInternalDependencies(projectName)»
+                  «getCmakeTargetNameForInternalDependency(projectReference)»
               «ENDFOR»              
             )
             

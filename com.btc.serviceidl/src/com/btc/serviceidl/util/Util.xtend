@@ -15,6 +15,7 @@
  */
 package com.btc.serviceidl.util
 
+import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.idl.AbstractContainerDeclaration
 import com.btc.serviceidl.idl.AbstractCrossReference
 import com.btc.serviceidl.idl.AbstractException
@@ -573,4 +574,8 @@ class Util
         return parts.join(".")
     }
 
+    static def getResourceURI(ParameterBundle paramBundle)
+    {
+        paramBundle.moduleStack.head.eResource.URI
+    }
 }

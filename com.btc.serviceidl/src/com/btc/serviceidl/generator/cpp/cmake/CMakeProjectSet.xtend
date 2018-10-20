@@ -17,8 +17,11 @@ import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.IProjectReference
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import java.util.HashSet
+import org.eclipse.emf.common.util.URI
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.Data
+
+import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(PACKAGE_GETTER)
 class CMakeProjectSet implements IProjectSet
@@ -29,6 +32,7 @@ class CMakeProjectSet implements IProjectSet
     static class ProjectReference implements IProjectReference
     {
         val String projectName
+        val URI resourceURI
     }
 
     override getVcxprojName(ParameterBundle paramBundle)
@@ -39,7 +43,6 @@ class CMakeProjectSet implements IProjectSet
     override resolve(ParameterBundle paramBundle)
     {
         projects.add(paramBundle)
-        new ProjectReference(getVcxprojName(paramBundle))        
+        new ProjectReference(getVcxprojName(paramBundle), paramBundle.resourceURI)
     }
-
 }

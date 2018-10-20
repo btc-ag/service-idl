@@ -21,6 +21,7 @@ import com.btc.serviceidl.generator.Maturity
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.Names
+import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.common.TransformType
@@ -104,7 +105,6 @@ class DotNetGenerator
         new VSSolutionGenerator(fileSystemAccess, vsSolution, idl.getReleaseUnitName(ArtifactNature.DOTNET)).
             generateSolutionFile
 
-        // TODO generate only either NuGet or Paket file
         val paketDependenciesContent = generatePaketDependencies
         if (paketDependenciesContent !== null)
             fileSystemAccess.generateFile("paket.dependencies", ArtifactNature.DOTNET.label, paketDependenciesContent)
@@ -216,6 +216,8 @@ class DotNetGenerator
    
    private def void generateVSProjectFiles(IPath projectRootPath)
    {
+      addImportedDependencies(generationSettings.dependencies)
+
       val projectName = vsSolution.getCsprojName(paramBundle)
       
       // generate project file
@@ -227,9 +229,6 @@ class DotNetGenerator
       // NuGet (optional)
       if (!nugetPackages.resolvedPackages.empty)
       {
-        fileSystemAccess.generateFile(projectRootPath.append("packages.config").toPortableString, ArtifactNature.DOTNET.label, 
-                generatePackagesConfig)
-        // TODO generate only either NuGet or Paket file
         fileSystemAccess.generateFile(projectRootPath.append("paket.references").toPortableString, ArtifactNature.DOTNET.label, 
                 generatePaketReferences)
         paketDependencies.addAll(flatPackages)
@@ -240,18 +239,6 @@ class DotNetGenerator
    {
        nugetPackages.resolvedPackages.flatPackages
    } 
-   
-   private def String generatePackagesConfig()
-   {
-      '''
-      <?xml version="1.0" encoding="utf-8"?>
-      <packages>
-        «FOR packageEntry : flatPackages»
-          <package id="«packageEntry.key»" version="«packageEntry.value»" targetFramework="«DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»" />
-        «ENDFOR»
-      </packages>
-      '''
-   }
    
    private def generatePaketReferences()
    {
@@ -284,7 +271,7 @@ class DotNetGenerator
        val prefix = if (forTemplate) "" else "nuget "  
        '''
       «FOR packageEntry : paketDependencies»
-          «IF packageEntry.key.startsWith("BTC.")»
+          «IF packageEntry.key.startsWith("BTC")»
             «prefix»«packageEntry.key» ~> «packageEntry.value.replaceMicroVersionByZero» «IF generationSettings.maturity == Maturity.SNAPSHOT»testing«ENDIF»
           «ELSE»
             «prefix»«packageEntry.key» ~> «packageEntry.value»
@@ -694,10 +681,10 @@ class DotNetGenerator
             vsSolution,
             paramBundle,
             typeResolver.referencedAssemblies,
-            nugetPackages.resolvedPackages,
             typeResolver.projectReferences,
             csFiles,
-            protobufFiles
+            protobufFiles,
+            generationSettings.dependencies
         )      
    }
    
@@ -713,7 +700,15 @@ class DotNetGenerator
       nugetPackages.resolvePackage("Google.ProtocolBuffers")
       nugetPackages.resolvePackage("Google.ProtocolBuffers.Serialization")
    }
-      
+
+   private def void addImportedDependencies(Iterable<PackageInfo> dependencies)
+   {
+      for (dependency : dependencies)
+      {
+         nugetPackages.resolveImportedDependency(dependency)
+      }
+   }
+
    private def IPath getProjectRootPath()
    {
       paramBundle.asPath(ArtifactNature.DOTNET)

@@ -11,6 +11,7 @@
 package com.btc.serviceidl.generator.cpp
 
 import com.btc.serviceidl.generator.ITargetVersionProvider
+import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.prins.OdbConstants
@@ -44,6 +45,7 @@ class ProjectGeneratorBaseBase
     val IModuleStructureStrategy moduleStructureStrategy
     val ITargetVersionProvider targetVersionProvider
     val Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap
+    val Iterable<PackageInfo> importedDependencies
 
     val ParameterBundle paramBundle
     val ModuleDeclaration module
@@ -57,7 +59,7 @@ class ProjectGeneratorBaseBase
         IDLSpecification idl, IProjectSetFactory projectSetFactory, IProjectSet vsSolution,
         IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
         Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ProjectType type,
-        ModuleDeclaration module)
+        ModuleDeclaration module, Iterable<PackageInfo> importedDependencies)
     {
         this.fileSystemAccess = fileSystemAccess
         this.qualifiedNameProvider = qualifiedNameProvider
@@ -69,6 +71,7 @@ class ProjectGeneratorBaseBase
         this.targetVersionProvider = targetVersionProvider
         this.smartPointerMap = smartPointerMap
         this.module = module
+        this.importedDependencies = importedDependencies
 
         this.paramBundle = new ParameterBundle.Builder().with(type).with(module.moduleStack).build
         
@@ -121,7 +124,7 @@ class ProjectGeneratorBaseBase
         }
 
         projectSetFactory.generateProjectFiles(fileSystemAccess, moduleStructureStrategy, targetVersionProvider,
-            paramBundle, cabLibs.unmodifiableView, vsSolution,
+            paramBundle, cabLibs.unmodifiableView, importedDependencies, vsSolution,
             Sets.union(projectReferences, additionalProjectReferences.toSet), projectFileSet.unmodifiableView,
             projectType, projectPath, projectName)
     }
