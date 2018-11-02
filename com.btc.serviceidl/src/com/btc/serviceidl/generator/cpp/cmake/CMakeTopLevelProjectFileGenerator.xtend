@@ -8,13 +8,18 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
+import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.util.Util
+import java.util.HashSet
 import org.eclipse.core.runtime.Path
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
+import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors(NONE)
@@ -85,6 +90,11 @@ class CMakeTopLevelProjectFileGenerator
         val versionSuffix = if (generationSettings.maturity == Maturity.SNAPSHOT) "-unreleased" else ""
         val dependencyChannel = if (generationSettings.maturity == Maturity.SNAPSHOT) "testing" else "stable"
 
+        // TODO the ODB data could be parameterized in the future
+        val odbTargetVersion = "2.5.0-b.9"
+        val libodbTargetVersion = "2.5.0-b.9"
+        val odbdependencyChannel = "extern"
+
         // TODO the transitive dependencies do not need to be specified here
         '''
             from conan_template import *
@@ -115,9 +125,33 @@ class CMakeTopLevelProjectFileGenerator
                             «FOR dependency : generationSettings.dependencies.sortBy[getID(ArtifactNature.CPP)]»
                                 ("«dependency.getID(ArtifactNature.CPP)»/«dependency.version»«versionSuffix»@cab/«dependencyChannel»"),
                             «ENDFOR»
+                            «IF projectSet.projects.exists[it.projectType == ProjectType.EXTERNAL_DB_IMPL]»
+                                ("odb/«odbTargetVersion»@cab/«odbdependencyChannel»"),
+                                ("libodb/«libodbTargetVersion»@cab/«odbdependencyChannel»")
+                            «ENDIF»                            
                             )
                 generators = "cmake"
                 short_paths = True
+
+                def generateODBFiles(self):
+                    includedirs = ""
+                    for includedir in self.deps_cpp_info["BTC.CAB.Commons"].includedirs:
+                        includedirs += " -I " + os.path.normpath(os.path.join(includedir))
+                    for includedir in self.deps_cpp_info["odb"].includedirs:
+                        includedirs += " -I " + os.path.normpath(os.path.join(includedir))
+                    for includedir in self.deps_cpp_info["libodb"].includedirs:
+                        includedirs += " -I " + os.path.normpath(os.path.join(includedir))
+                    odbdir = ""
+                    «FOR project : projectSet.projects»
+                       «IF project.projectType == ProjectType.EXTERNAL_DB_IMPL»
+                       odbdir = os.path.normpath(self.source_folder + "\\«project.relativePath»\\odb")
+                       «ENDIF»
+                    «ENDFOR»
+                    odbbindir = os.path.normpath(os.path.join(self.deps_cpp_info["odb"].bindirs[0]))
+                    «FOR struct : ODBStructsList»
+                    self.run(odbbindir + '\\odb.exe --std c++11' + includedirs +
+                        ' --multi-database dynamic --database common --database mssql --database oracle --generate-query --generate-prepared --generate-schema --schema-format embedded -x -Wno-unknown-pragmas -x -Wno-pragmas -x -Wno-literal-suffix -x -Wno-attributes --hxx-prologue "#include \"traits.hxx\"" --output-dir ' + odbdir + ' ' + odbdir + '\\«struct».hxx')
+                    «ENDFOR»
 
                 def generateProtoFiles(self):
                     protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)
@@ -131,12 +165,15 @@ class CMakeTopLevelProjectFileGenerator
 
                 def build(self):
                     self.generateProtoFiles()
+                    «IF projectSet.projects.exists[it.projectType == ProjectType.EXTERNAL_DB_IMPL]»
+                        self.generateODBFiles()
+                    «ENDIF»
                     ConanTemplate.build(self)
 
                 def package(self):
                     ConanTemplate.package(self)
                     self.copy("**/*.proto", dst="proto", keep_path=True)
-            
+
                 def imports(self):
                     self.copy("protoc.exe", "bin", "bin")
         '''
@@ -250,4 +287,30 @@ class CMakeTopLevelProjectFileGenerator
         generationSettings.moduleStructureStrategy.getProjectDir(paramBundle).makeRelativeTo(modulePath)
     }
 
+    /** 
+        get the list of the names for all ODB structures
+    */
+	private def HashSet<String> getODBStructsList()
+    {
+        val odbStructNames = new HashSet<String>
+
+        projectSet.projects.filter[it.projectType == ProjectType.EXTERNAL_DB_IMPL].forEach
+        [
+        	it.moduleStack.forEach
+        	[
+       				it.moduleComponents
+                   	          .filter[e | e.isStruct]
+                       	      .map(e | e.structType.ultimateType as StructDeclaration)
+                           	  .filter[!members.empty]
+                              .filter[!members.filter[m | m.name.toUpperCase == "ID" && Util.isUUIDType(m.type)].empty]
+   	                          .map[val AbstractTypeReference res = it ; res]
+       	                      .resolveAllDependencies
+           	                  .map[type]
+               	              .filter(StructDeclaration)
+                   	          .filter[!members.filter[m | m.name.toUpperCase == "ID" && Util.isUUIDType(m.type)].empty].forEach[odbStructNames.add (it.name.toLowerCase)]
+        	]
+        ]
+
+        return odbStructNames
+    }
 }

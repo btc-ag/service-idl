@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp.prins
 
+import com.btc.serviceidl.generator.DefaultGenerationSettings
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
@@ -21,6 +22,7 @@ import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.IProjectSetFactory
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import com.btc.serviceidl.generator.cpp.ProjectGeneratorBase
+import com.btc.serviceidl.generator.cpp.cmake.CMakeModuleStructureStrategy
 import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
@@ -137,14 +139,17 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
    {
       '''
       #pragma once
-      
+      «IF ! ((basicCppGenerator.targetVersionProvider as DefaultGenerationSettings).getModuleStructureStrategy() instanceof CMakeModuleStructureStrategy)»
       #include "modules/Commons/include/BeginPrinsModulesInclude.h"
+      «ENDIF»
       
       «IF useCommonTypes»#include "«Constants.FILE_NAME_ODB_COMMON.hxx»"«ENDIF»
       «basicCppGenerator.generateIncludes(true)»
       «fileContent»
       
+      «IF ! ((basicCppGenerator.targetVersionProvider as DefaultGenerationSettings).getModuleStructureStrategy() instanceof CMakeModuleStructureStrategy)»
       #include "modules/Commons/include/EndPrinsModulesInclude.h"
+      «ENDIF»
       '''
    }
    

@@ -15,7 +15,7 @@ import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
-import com.btc.serviceidl.generator.cpp.cab.CABModuleStructureStrategy
+import com.btc.serviceidl.generator.cpp.cmake.CMakeModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSetFactory
 import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.prins.VSSolutionFactory
@@ -211,13 +211,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             case Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
             {
                 result.projectSetFactory = new CMakeProjectSetFactory();
-
-                // TODO instead of printing on System.out, use some event mechanism here
-                System.out.println("Disabling ODB generation, this is unsupported with CMake project system");
-                result.projectTypes = Sets.difference(result.projectTypes,
-                    ImmutableSet.of(ProjectType.EXTERNAL_DB_IMPL));
-                result.moduleStructureStrategy = new CABModuleStructureStrategy();
-
+                result.moduleStructureStrategy = new CMakeModuleStructureStrategy();
             }
             case Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ:
             {

@@ -8,24 +8,25 @@
  * 
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
-package com.btc.serviceidl.generator.cpp.prins
+package com.btc.serviceidl.generator.cpp.cmake
 
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
 import com.btc.serviceidl.generator.common.ProjectType
+import com.btc.serviceidl.generator.cpp.HeaderResolver
 import com.btc.serviceidl.generator.cpp.HeaderType
 import com.btc.serviceidl.generator.cpp.IModuleStructureStrategy
+import com.btc.serviceidl.generator.cpp.TypeResolver
 import com.btc.serviceidl.idl.ModuleDeclaration
 import org.eclipse.core.runtime.Path
 
+import static extension com.btc.serviceidl.generator.cpp.HeaderResolver.Builder.*
 import static extension com.btc.serviceidl.generator.cpp.Util.*
 
-class PrinsModuleStructureStrategy implements IModuleStructureStrategy
+class CMakeModuleStructureStrategy implements IModuleStructureStrategy
 {
-    public static val MODULES_HEADER_PATH_PREFIX = "modules"
 
-    // TODO it is not correct here to distinguish based on the ProjectType, the Codec is also in the PROTOBUF project!
     override getIncludeFilePath(Iterable<ModuleDeclaration> moduleStack, ProjectType projectType, String baseName,
         HeaderType headerType)
     {
@@ -35,21 +36,22 @@ class PrinsModuleStructureStrategy implements IModuleStructureStrategy
 
     override getEncapsulationHeaders()
     {
-        new Pair('#include "modules/Commons/include/BeginPrinsModulesInclude.h"',
-            '#include "modules/Commons/include/EndPrinsModulesInclude.h"')
+    	new Pair("// ODB", "")
     }
 
     override createHeaderResolver()
     {
-        PrinsHeaderResolver.create
+        new HeaderResolver.Builder().withBasicGroups.configureGroup(TypeResolver.TARGET_INCLUDE_GROUP, 10, "", "",
+            false).configureGroup(TypeResolver.ODB_INCLUDE_GROUP, 20, "", "", true).configureGroup(
+            TypeResolver.STL_INCLUDE_GROUP, 30, "", "", true).configureGroup(
+            TypeResolver.CAB_INCLUDE_GROUP, 40, "", "", true).build
     }
 
     override getProjectDir(ParameterBundle paramBundle)
     {
-        new Path(MODULES_HEADER_PATH_PREFIX).append(
-            GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP))
+        GeneratorUtil.asPath(paramBundle, ArtifactNature.CPP)
     }
-
+    
     override getSourceFileDir()
     {
         Path.fromPortableString("src")

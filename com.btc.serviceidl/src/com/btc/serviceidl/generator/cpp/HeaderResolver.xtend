@@ -15,8 +15,6 @@
  */
 package com.btc.serviceidl.generator.cpp
 
-import com.btc.serviceidl.generator.common.GeneratorUtil
-import com.btc.serviceidl.generator.common.TransformType
 import com.btc.serviceidl.generator.cpp.TypeResolver.IncludeGroup
 import java.util.ArrayList
 import java.util.Arrays
@@ -196,6 +194,14 @@ class HeaderResolver
         "boost::bimap" -> "boost/bimap.hpp"
     }
 
+    // ******************************* PLEASE ALWAYS KEEP THIS LIST ALPHABETICALLY SORTED !!! ******************************* //
+	static val odbHeaderMapper = #{
+        "id_binary" -> "odb/mssql/traits.hxx",
+        "id_raw" -> "odb/oracle/traits.hxx",
+        "id_uniqueidentifier" -> "odb/mssql/traits.hxx",
+        "odb::nullable" -> "odb/nullable.hxx"
+    }
+    
     val Map<String, GroupedHeader> headerMap
     val Map<String, GroupedHeader> implementationHeaderMap
 
@@ -253,7 +259,7 @@ class HeaderResolver
         {
             builder.withGroup(stlHeaderMapper, TypeResolver.STL_INCLUDE_GROUP).withGroup(boostHeaderMapper,
                 TypeResolver.BOOST_INCLUDE_GROUP).withGroup(cabHeaderMapper, TypeResolver.CAB_INCLUDE_GROUP).
-                withImplementationGroup(cabImplHeaderMapper, TypeResolver.CAB_INCLUDE_GROUP)
+                withImplementationGroup(cabImplHeaderMapper, TypeResolver.CAB_INCLUDE_GROUP).withGroup(odbHeaderMapper, TypeResolver.ODB_INCLUDE_GROUP)
         }
 
         def configureGroup(Iterable<TypeResolver.IncludeGroup> includeGroups, int precedence, String prefix,
