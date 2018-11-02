@@ -211,13 +211,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             case Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
             {
                 result.projectSetFactory = new CMakeProjectSetFactory();
-
-                // TODO instead of printing on System.out, use some event mechanism here
-                System.out.println("Disabling ODB generation, this is unsupported with CMake project system");
-                result.projectTypes = Sets.difference(result.projectTypes,
-                    ImmutableSet.of(ProjectType.EXTERNAL_DB_IMPL));
                 result.moduleStructureStrategy = new CABModuleStructureStrategy();
-
             }
             case Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ:
             {

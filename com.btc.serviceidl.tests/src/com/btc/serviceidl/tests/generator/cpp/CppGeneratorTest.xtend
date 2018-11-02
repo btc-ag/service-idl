@@ -136,7 +136,9 @@ class CppGeneratorTest extends AbstractGeneratorTest
                 TODO
                 """
                 
-                build_requires = "CMakeMacros/0.4.latest@cab/testing"
+                build_requires = (
+                                  ("CMakeMacros/0.4.latest@cab/testing"),
+                                 )
                 # TODO instead of "latest", for maturity RELEASE, this should be replaced by a 
                 # concrete version at some point (maybe not during generation, but during the build?)
                 # in a similar manner as mvn versions:resolve-ranges                
@@ -235,7 +237,9 @@ class CppGeneratorTest extends AbstractGeneratorTest
                 TODO
                 """
                 
-                build_requires = "CMakeMacros/0.4.latest@cab/testing"
+                build_requires = (
+                                  ("CMakeMacros/0.4.latest@cab/testing"),
+                                 )
                 # TODO instead of "latest", for maturity RELEASE, this should be replaced by a 
                 # concrete version at some point (maybe not during generation, but during the build?)
                 # in a similar manner as mvn versions:resolve-ranges                
@@ -322,7 +326,9 @@ class CppGeneratorTest extends AbstractGeneratorTest
                 TODO
                 """
                 
-                build_requires = "CMakeMacros/0.4.latest@cab/testing"
+                build_requires = (
+                                  ("CMakeMacros/0.4.latest@cab/testing"),
+                                 )
                 # TODO instead of "latest", for maturity RELEASE, this should be replaced by a 
                 # concrete version at some point (maybe not during generation, but during the build?)
                 # in a similar manner as mvn versions:resolve-ranges                
@@ -431,7 +437,9 @@ class CppGeneratorTest extends AbstractGeneratorTest
                 TODO
                 """
                 
-                build_requires = "CMakeMacros/0.3.latest@cab/testing"
+                build_requires = (
+                                  ("CMakeMacros/0.3.latest@cab/testing"),
+                                 )
                 # TODO instead of "latest", for maturity RELEASE, this should be replaced by a 
                 # concrete version at some point (maybe not during generation, but during the build?)
                 # in a similar manner as mvn versions:resolve-ranges                
