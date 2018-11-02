@@ -133,6 +133,7 @@ class CMakeTopLevelProjectFileGenerator
                 generators = "cmake"
                 short_paths = True
 
+                «IF projectSet.projects.exists[it.projectType == ProjectType.EXTERNAL_DB_IMPL]»
                 def generateODBFiles(self):
                     includedirs = ""
                     for includedir in self.deps_cpp_info["BTC.CAB.Commons"].includedirs:
@@ -152,6 +153,7 @@ class CMakeTopLevelProjectFileGenerator
                     self.run(odbbindir + '\\odb.exe --std c++11' + includedirs +
                         ' --multi-database dynamic --database common --database mssql --database oracle --generate-query --generate-prepared --generate-schema --schema-format embedded -x -Wno-unknown-pragmas -x -Wno-pragmas -x -Wno-literal-suffix -x -Wno-attributes --hxx-prologue "#include \"traits.hxx\"" --output-dir ' + odbdir + ' ' + odbdir + '\\«struct».hxx')
                     «ENDFOR»
+                «ENDIF»
 
                 def generateProtoFiles(self):
                     protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)

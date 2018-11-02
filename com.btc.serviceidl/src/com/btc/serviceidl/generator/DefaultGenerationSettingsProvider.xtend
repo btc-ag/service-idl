@@ -15,6 +15,7 @@ import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
+import com.btc.serviceidl.generator.cpp.cab.CABModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.cmake.CMakeModuleStructureStrategy
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSetFactory
 import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
@@ -211,7 +212,12 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             case Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
             {
                 result.projectSetFactory = new CMakeProjectSetFactory();
-                result.moduleStructureStrategy = new CMakeModuleStructureStrategy();
+                if(settings.projectTypes.exists[it == ProjectType.EXTERNAL_DB_IMPL])
+                {
+                    result.moduleStructureStrategy = new CMakeModuleStructureStrategy();
+                }
+                else
+                    result.moduleStructureStrategy = new CABModuleStructureStrategy();
             }
             case Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ:
             {

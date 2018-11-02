@@ -52,6 +52,6 @@ class PrinsModuleStructureStrategy implements IModuleStructureStrategy
 
     override getSourceFileDir()
     {
-        Path.fromPortableString("src")
+        Path.fromPortableString("source")
     }
 }
