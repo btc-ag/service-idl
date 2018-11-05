@@ -150,7 +150,7 @@ class CMakeTopLevelProjectFileGenerator
                     «ENDFOR»
                     odbbindir = os.path.normpath(os.path.join(self.deps_cpp_info["odb"].bindirs[0]))
                     «FOR struct : ODBStructsList»
-                    self.run(odbbindir + '\\odb.exe --std c++11' + includedirs +
+                    self.run(odbbindir + '\\odb.exe --std c++14' + includedirs +
                         ' --multi-database dynamic --database common --database mssql --database oracle --generate-query --generate-prepared --generate-schema --schema-format embedded -x -Wno-unknown-pragmas -x -Wno-pragmas -x -Wno-literal-suffix -x -Wno-attributes --hxx-prologue "#include \"traits.hxx\"" --output-dir ' + odbdir + ' ' + odbdir + '\\«struct».hxx')
                     «ENDFOR»
                 «ENDIF»
