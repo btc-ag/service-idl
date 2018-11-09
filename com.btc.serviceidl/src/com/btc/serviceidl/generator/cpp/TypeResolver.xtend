@@ -99,8 +99,8 @@ class TypeResolver
     public static val STL_INCLUDE_GROUP = new IncludeGroup("STL")
     public static val BOOST_INCLUDE_GROUP = new IncludeGroup("boost")
     public static val CAB_INCLUDE_GROUP = new IncludeGroup("BTC.CAB")
-	public static val ODB_INCLUDE_GROUP = new IncludeGroup("odb")
-	
+    public static val ODB_INCLUDE_GROUP = new IncludeGroup("odb")
+
     val LibResolver libResolver
     @Accessors(PACKAGE_GETTER) val HeaderResolver headerResolver
 

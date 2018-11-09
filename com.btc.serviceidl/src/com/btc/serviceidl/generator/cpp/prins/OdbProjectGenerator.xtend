@@ -22,7 +22,7 @@ import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.IProjectSetFactory
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import com.btc.serviceidl.generator.cpp.ProjectGeneratorBase
-import com.btc.serviceidl.generator.cpp.cmake.CMakeModuleStructureStrategy
+import com.btc.serviceidl.generator.cpp.cab.CABModuleStructureStrategy
 import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
@@ -139,7 +139,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
    {
       '''
       #pragma once
-      «IF ! ((basicCppGenerator.targetVersionProvider as DefaultGenerationSettings).getModuleStructureStrategy() instanceof CMakeModuleStructureStrategy)»
+      «IF ! ((basicCppGenerator.targetVersionProvider as DefaultGenerationSettings).getModuleStructureStrategy() instanceof CABModuleStructureStrategy)»
       #include "modules/Commons/include/BeginPrinsModulesInclude.h"
       «ENDIF»
       
@@ -147,7 +147,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       «basicCppGenerator.generateIncludes(true)»
       «fileContent»
       
-      «IF ! ((basicCppGenerator.targetVersionProvider as DefaultGenerationSettings).getModuleStructureStrategy() instanceof CMakeModuleStructureStrategy)»
+      «IF ! ((basicCppGenerator.targetVersionProvider as DefaultGenerationSettings).getModuleStructureStrategy() instanceof CABModuleStructureStrategy)»
       #include "modules/Commons/include/EndPrinsModulesInclude.h"
       «ENDIF»
       '''

@@ -13,7 +13,7 @@ import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Util
-import java.util.HashSet
+import java.util.Set
 import org.eclipse.core.runtime.Path
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -21,6 +21,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.idl.NamedDeclaration
 
 @Accessors(NONE)
 class CMakeTopLevelProjectFileGenerator
@@ -107,7 +108,12 @@ class CMakeTopLevelProjectFileGenerator
                 TODO
                 """
             
-                build_requires = "CMakeMacros/«cmakeMacrosVersion».latest@cab/«dependencyChannel»"
+                build_requires = (
+                                  ("CMakeMacros/«cmakeMacrosVersion».latest@cab/«dependencyChannel»"),
+                                  «IF projectSet.projects.exists[it.projectType == ProjectType.EXTERNAL_DB_IMPL]»
+                                      ("odb/«odbTargetVersion»@cab/«odbdependencyChannel»")
+                                  «ENDIF»                            
+                                 )
                 # TODO instead of "latest", for maturity RELEASE, this should be replaced by a 
                 # concrete version at some point (maybe not during generation, but during the build?)
                 # in a similar manner as mvn versions:resolve-ranges                
@@ -126,7 +132,6 @@ class CMakeTopLevelProjectFileGenerator
                                 ("«dependency.getID(ArtifactNature.CPP)»/«dependency.version»«versionSuffix»@cab/«dependencyChannel»"),
                             «ENDFOR»
                             «IF projectSet.projects.exists[it.projectType == ProjectType.EXTERNAL_DB_IMPL]»
-                                ("odb/«odbTargetVersion»@cab/«odbdependencyChannel»"),
                                 ("libodb/«libodbTargetVersion»@cab/«odbdependencyChannel»")
                             «ENDIF»                            
                             )
@@ -292,27 +297,30 @@ class CMakeTopLevelProjectFileGenerator
     /** 
         get the list of the names for all ODB structures
     */
-	private def HashSet<String> getODBStructsList()
+    private def Set<String> getODBStructsList()
     {
-        val odbStructNames = new HashSet<String>
+        getFilterODBStructs(
+            projectSet.projects.filter[it.projectType == ProjectType.EXTERNAL_DB_IMPL]
+                .map[e | e.moduleStack]
+                .flatten
+                .map[e | e.moduleComponents]
+                .flatten
+                .filter[e | e.isStruct]
+                .map(e | e.structType.ultimateType as StructDeclaration)
+                .filter[!members.empty]
+                .map[val AbstractTypeReference res = it ; res]
+                .resolveAllDependencies
+                .map[type]
+                .filter(StructDeclaration)
+        ).map[e | e as NamedDeclaration]
+         .map[e | e.name.toLowerCase].toSet
+    }
 
-        projectSet.projects.filter[it.projectType == ProjectType.EXTERNAL_DB_IMPL].forEach
-        [
-        	it.moduleStack.forEach
-        	[
-       				it.moduleComponents
-                   	          .filter[e | e.isStruct]
-                       	      .map(e | e.structType.ultimateType as StructDeclaration)
-                           	  .filter[!members.empty]
-                              .filter[!members.filter[m | m.name.toUpperCase == "ID" && Util.isUUIDType(m.type)].empty]
-   	                          .map[val AbstractTypeReference res = it ; res]
-       	                      .resolveAllDependencies
-           	                  .map[type]
-               	              .filter(StructDeclaration)
-                   	          .filter[!members.filter[m | m.name.toUpperCase == "ID" && Util.isUUIDType(m.type)].empty].forEach[odbStructNames.add (it.name.toLowerCase)]
-        	]
-        ]
-
-        return odbStructNames
+    /** 
+        filter ODB entities from the list of all structures
+    */
+    private def Iterable<StructDeclaration> getFilterODBStructs(Iterable<StructDeclaration> structs)
+    {
+    	structs.filter[!members.filter[m | m.name.toUpperCase == "ID" && Util.isUUIDType(m.type)].empty]
     }
 }
