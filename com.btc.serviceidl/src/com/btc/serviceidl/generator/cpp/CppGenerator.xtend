@@ -25,6 +25,7 @@ import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet
 import com.btc.serviceidl.generator.cpp.cmake.CMakeProjectSet.ProjectReference
 import com.btc.serviceidl.generator.cpp.cmake.CMakeTopLevelProjectFileGenerator
 import com.btc.serviceidl.generator.cpp.prins.OdbProjectGenerator
+import com.btc.serviceidl.generator.cpp.prins.PrinsModuleStructureStrategy
 import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
@@ -193,7 +194,8 @@ class CppGenerator
                     generationSettings,
                     smartPointerMap,
                     module,
-                    generationSettings.dependencies
+                    generationSettings.dependencies,
+                    generationSettings.moduleStructureStrategy instanceof PrinsModuleStructureStrategy
                 ).generate()
             }
         }

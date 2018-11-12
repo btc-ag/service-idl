@@ -10,7 +10,6 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp.prins
 
-import com.btc.serviceidl.generator.DefaultGenerationSettings
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
@@ -22,7 +21,6 @@ import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.IProjectSetFactory
 import com.btc.serviceidl.generator.cpp.ProjectFileSet
 import com.btc.serviceidl.generator.cpp.ProjectGeneratorBase
-import com.btc.serviceidl.generator.cpp.cab.CABModuleStructureStrategy
 import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.InterfaceDeclaration
@@ -46,17 +44,22 @@ import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors
 class OdbProjectGenerator extends ProjectGeneratorBase {
+
+    boolean m_isPrins = true
+
     new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
         IDLSpecification idl, IProjectSetFactory projectSetFactory, IProjectSet vsSolution,
         IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
         Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ModuleDeclaration module,
-        Iterable<PackageInfo> importedDependencies)
+        Iterable<PackageInfo> importedDependencies, boolean isPrins)
     {
         super(fileSystemAccess, qualifiedNameProvider, scopeProvider, idl, projectSetFactory, vsSolution,
             moduleStructureStrategy, targetVersionProvider, smartPointerMap, ProjectType.EXTERNAL_DB_IMPL, module,
             importedDependencies, new OdbSourceGenerationStrategy)
+
+        m_isPrins = isPrins
     }
-    
+
    override void generate()
    {
       val allElements = module.moduleComponents
@@ -139,20 +142,21 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
    {
       '''
       #pragma once
-      «IF ! ((basicCppGenerator.targetVersionProvider as DefaultGenerationSettings).getModuleStructureStrategy() instanceof CABModuleStructureStrategy)»
+
+      �IF m_isPrins�
       #include "modules/Commons/include/BeginPrinsModulesInclude.h"
-      «ENDIF»
-      
-      «IF useCommonTypes»#include "«Constants.FILE_NAME_ODB_COMMON.hxx»"«ENDIF»
-      «basicCppGenerator.generateIncludes(true)»
-      «fileContent»
-      
-      «IF ! ((basicCppGenerator.targetVersionProvider as DefaultGenerationSettings).getModuleStructureStrategy() instanceof CABModuleStructureStrategy)»
+      �ENDIF�
+
+      �IF useCommonTypes�#include "�Constants.FILE_NAME_ODB_COMMON.hxx�"�ENDIF�
+      �basicCppGenerator.generateIncludes(true)�
+      �fileContent�
+
+      �IF m_isPrins�
       #include "modules/Commons/include/EndPrinsModulesInclude.h"
-      «ENDIF»
+      �ENDIF�
       '''
    }
-   
+
    private static class OdbSourceGenerationStrategy implements ISourceGenerationStrategy
     {
         override String generateProjectSource(BasicCppGenerator basicCppGenerator, InterfaceDeclaration interfaceDeclaration)
