@@ -8,22 +8,18 @@ This repository contains a Service IDL defined in Xtext, and several code genera
 
 It is currently experimental, and not yet suitable for general use.
 
-Using the standalone command line generator
-===========================================
+Obtaining the standalone command line generator
+===============================================
 
-There is no release yet, but you can download the current snapshot from https://oss.jfrog.org/artifactory/oss-snapshot-local/com/btc/serviceidl/com.btc.serviceidl.plainjava/1.0.0-SNAPSHOT/com.btc.serviceidl.plainjava-1.0.0-SNAPSHOT.jar
+Releases of the standalone command line generator are available via [GitHub](https://github.com/btc-ag/service-idl/releases) or via 
+[Artifactory](https://oss.jfrog.org/artifactory/oss-release-local/com/btc/serviceidl/com.btc.serviceidl.plainjava/).
 
-When you downloaded it, you need to specify an IDL input file and output directories, which must already exist. You can either specify a common output directory for all target technologies:
-```
-java -jar com.btc.serviceidl.plainjava-1.0.0-SNAPSHOT.jar input.idl -outputPath out -cppProjectSystem cmake
-```
-Alternatively, you can specify specific output directories for each target technology, in which case only the generators for target technologies with a specified output directory will be used. 
-For example, the following command will only generate .NET artifacts:
-```
-java -jar com.btc.serviceidl.plainjava-1.0.0-SNAPSHOT.jar input.idl -dotnetOutputPath outDotNet
-```
+Release of the Eclipse plug-ins are currently not made available as an Eclipse update site. This may change in the future.
 
-Currently, the generator generates all artifacts (API, Proxy, Dispatcher, ...) for all target technologies (C++, C#/.NET, Java). This will be made configurable in the future.
+Usage
+=====
+
+See [Introduction](Introduction.md)
 
 Dependencies of generated code
 ==============================
