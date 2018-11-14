@@ -45,19 +45,19 @@ import static extension com.btc.serviceidl.util.Util.*
 @Accessors
 class OdbProjectGenerator extends ProjectGeneratorBase {
 
-    boolean m_isPrins = true
+    val boolean usePrinsEncapsulationHeaders
 
     new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
         IDLSpecification idl, IProjectSetFactory projectSetFactory, IProjectSet vsSolution,
         IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
         Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ModuleDeclaration module,
-        Iterable<PackageInfo> importedDependencies, boolean isPrins)
+        Iterable<PackageInfo> importedDependencies, boolean usePrinsEncapsulationHeaders)
     {
         super(fileSystemAccess, qualifiedNameProvider, scopeProvider, idl, projectSetFactory, vsSolution,
             moduleStructureStrategy, targetVersionProvider, smartPointerMap, ProjectType.EXTERNAL_DB_IMPL, module,
             importedDependencies, new OdbSourceGenerationStrategy)
 
-        m_isPrins = isPrins
+        this.usePrinsEncapsulationHeaders = usePrinsEncapsulationHeaders
     }
 
    override void generate()
@@ -143,7 +143,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       '''
       #pragma once
 
-      «IF m_isPrins»
+      «IF usePrinsEncapsulationHeaders»
       #include "modules/Commons/include/BeginPrinsModulesInclude.h"
       «ENDIF»
 
@@ -151,7 +151,7 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       «basicCppGenerator.generateIncludes(true)»
       «fileContent»
 
-      «IF m_isPrins»
+      «IF usePrinsEncapsulationHeaders»
       #include "modules/Commons/include/EndPrinsModulesInclude.h"
       «ENDIF»
       '''
