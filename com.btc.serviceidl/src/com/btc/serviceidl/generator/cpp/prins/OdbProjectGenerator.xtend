@@ -143,17 +143,17 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
       '''
       #pragma once
 
-      �IF m_isPrins�
+      «IF m_isPrins»
       #include "modules/Commons/include/BeginPrinsModulesInclude.h"
-      �ENDIF�
+      «ENDIF»
 
-      �IF useCommonTypes�#include "�Constants.FILE_NAME_ODB_COMMON.hxx�"�ENDIF�
-      �basicCppGenerator.generateIncludes(true)�
-      �fileContent�
+      «IF useCommonTypes»#include "«Constants.FILE_NAME_ODB_COMMON.hxx»"«ENDIF»
+      «basicCppGenerator.generateIncludes(true)»
+      «fileContent»
 
-      �IF m_isPrins�
+      «IF m_isPrins»
       #include "modules/Commons/include/EndPrinsModulesInclude.h"
-      �ENDIF�
+      «ENDIF»
       '''
    }
 
