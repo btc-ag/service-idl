@@ -110,7 +110,7 @@ class CMakeTopLevelProjectFileGenerator
             
                 build_requires = (
                                   ("CMakeMacros/«cmakeMacrosVersion».latest@cab/«dependencyChannel»"),
-                                  «IF projectSet.projects.exists[it.projectType == ProjectType.EXTERNAL_DB_IMPL]»
+                                  «IF ! ODBStructsList.empty»
                                       ("odb/«odbTargetVersion»@cab/«odbdependencyChannel»")
                                   «ENDIF»                            
                                  )
@@ -131,14 +131,14 @@ class CMakeTopLevelProjectFileGenerator
                             «FOR dependency : generationSettings.dependencies.sortBy[getID(ArtifactNature.CPP)]»
                                 ("«dependency.getID(ArtifactNature.CPP)»/«dependency.version»«versionSuffix»@cab/«dependencyChannel»"),
                             «ENDFOR»
-                            «IF projectSet.projects.exists[it.projectType == ProjectType.EXTERNAL_DB_IMPL]»
+                            «IF ! ODBStructsList.empty»
                                 ("libodb/«libodbTargetVersion»@cab/«odbdependencyChannel»")
                             «ENDIF»                            
                             )
                 generators = "cmake"
                 short_paths = True
 
-                «IF projectSet.projects.exists[it.projectType == ProjectType.EXTERNAL_DB_IMPL]»
+                «IF ! ODBStructsList.empty»
                 def generateODBFiles(self):
                     includedirs = ""
                     for includedir in self.deps_cpp_info["BTC.CAB.Commons"].includedirs:
@@ -172,7 +172,7 @@ class CMakeTopLevelProjectFileGenerator
 
                 def build(self):
                     self.generateProtoFiles()
-                    «IF projectSet.projects.exists[it.projectType == ProjectType.EXTERNAL_DB_IMPL]»
+                    «IF ! ODBStructsList.empty»
                         self.generateODBFiles()
                     «ENDIF»
                     ConanTemplate.build(self)
