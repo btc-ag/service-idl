@@ -279,7 +279,9 @@ class CMakeTopLevelProjectFileGenerator
 
             «FOR project : projectSet.projects.sortBy[relativePath.toPortableString]»
                 «IF module.eResource.URI == project.resourceURI»
-                    include(${CMAKE_CURRENT_LIST_DIR}/«project.relativePath.toPortableString»/build/make.cmakeset)
+                    «IF project.projectType != ProjectType.EXTERNAL_DB_IMPL || (project.projectType == ProjectType.EXTERNAL_DB_IMPL && !ODBStructsList.empty)»
+                        include(${CMAKE_CURRENT_LIST_DIR}/«project.relativePath.toPortableString»/build/make.cmakeset)
+                    «ENDIF»
                 «ENDIF»
             «ENDFOR»
 
