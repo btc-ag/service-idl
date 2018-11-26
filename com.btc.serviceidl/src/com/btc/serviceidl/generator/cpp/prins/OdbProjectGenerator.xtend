@@ -44,17 +44,22 @@ import static extension com.btc.serviceidl.util.Util.*
 
 @Accessors
 class OdbProjectGenerator extends ProjectGeneratorBase {
+
+    val boolean usePrinsEncapsulationHeaders
+
     new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
         IDLSpecification idl, IProjectSetFactory projectSetFactory, IProjectSet vsSolution,
         IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
         Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ModuleDeclaration module,
-        Iterable<PackageInfo> importedDependencies)
+        Iterable<PackageInfo> importedDependencies, boolean usePrinsEncapsulationHeaders)
     {
         super(fileSystemAccess, qualifiedNameProvider, scopeProvider, idl, projectSetFactory, vsSolution,
             moduleStructureStrategy, targetVersionProvider, smartPointerMap, ProjectType.EXTERNAL_DB_IMPL, module,
             importedDependencies, new OdbSourceGenerationStrategy)
+
+        this.usePrinsEncapsulationHeaders = usePrinsEncapsulationHeaders
     }
-    
+
    override void generate()
    {
       val allElements = module.moduleComponents
@@ -137,17 +142,21 @@ class OdbProjectGenerator extends ProjectGeneratorBase {
    {
       '''
       #pragma once
-      
+
+      «IF usePrinsEncapsulationHeaders»
       #include "modules/Commons/include/BeginPrinsModulesInclude.h"
-      
+      «ENDIF»
+
       «IF useCommonTypes»#include "«Constants.FILE_NAME_ODB_COMMON.hxx»"«ENDIF»
       «basicCppGenerator.generateIncludes(true)»
       «fileContent»
-      
+
+      «IF usePrinsEncapsulationHeaders»
       #include "modules/Commons/include/EndPrinsModulesInclude.h"
+      «ENDIF»
       '''
    }
-   
+
    private static class OdbSourceGenerationStrategy implements ISourceGenerationStrategy
     {
         override String generateProjectSource(BasicCppGenerator basicCppGenerator, InterfaceDeclaration interfaceDeclaration)

@@ -23,7 +23,6 @@ import com.btc.serviceidl.generator.dotnet.DotNetConstants
 import com.btc.serviceidl.generator.java.JavaConstants
 import com.google.common.base.MoreObjects
 import com.google.common.base.Objects
-import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Sets
 import java.io.InputStream
@@ -211,13 +210,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             case Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
             {
                 result.projectSetFactory = new CMakeProjectSetFactory();
-
-                // TODO instead of printing on System.out, use some event mechanism here
-                System.out.println("Disabling ODB generation, this is unsupported with CMake project system");
-                result.projectTypes = Sets.difference(result.projectTypes,
-                    ImmutableSet.of(ProjectType.EXTERNAL_DB_IMPL));
                 result.moduleStructureStrategy = new CABModuleStructureStrategy();
-
             }
             case Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ:
             {
@@ -272,6 +265,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
     public static val OPTION_VALUE_PROJECT_SET_SERVER = "server"
     public static val OPTION_VALUE_PROJECT_SET_FULL = "full"
     public static val OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON = "full-with-skeleton"
+    public static val OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON_PERSISTENT = "full-with-skeleton-persistent"
 
     public static val Set<ProjectType> API_PROJECT_SET = ImmutableSet.of(ProjectType.SERVICE_API, ProjectType.COMMON)
     public static val Set<ProjectType> CLIENT_PROJECT_SET = Sets.union(API_PROJECT_SET,
@@ -282,11 +276,17 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
     public static val Set<ProjectType> SERVER_PROJECT_SET = Sets.union(API_PROJECT_SET,
         ImmutableSet.of(ProjectType.PROTOBUF, ProjectType.DISPATCHER /*, ProjectType.SERVER_RUNNER*/ ))
     public static val Set<ProjectType> FULL_PROJECT_SET = Sets.union(CLIENT_PROJECT_SET, SERVER_PROJECT_SET)
+    public static val Set<ProjectType> FULL_WITH_SKELETON_PROJECT_SET = Sets.difference(ImmutableSet.copyOf(ProjectType.values()),
+        ImmutableSet.of(ProjectType.EXTERNAL_DB_IMPL))
 
-    public static val Map<String, Set<ProjectType>> PROJECT_SET_MAPPING = ImmutableMap.of(OPTION_VALUE_PROJECT_SET_API,
-        API_PROJECT_SET, OPTION_VALUE_PROJECT_SET_CLIENT, CLIENT_PROJECT_SET, OPTION_VALUE_PROJECT_SET_SERVER,
-        SERVER_PROJECT_SET, OPTION_VALUE_PROJECT_SET_FULL, FULL_PROJECT_SET,
-        OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON, ImmutableSet.copyOf(ProjectType.values()))
+    public static val Map<String, Set<ProjectType>> PROJECT_SET_MAPPING = #{
+        OPTION_VALUE_PROJECT_SET_API -> API_PROJECT_SET
+        ,OPTION_VALUE_PROJECT_SET_CLIENT -> CLIENT_PROJECT_SET
+        ,OPTION_VALUE_PROJECT_SET_SERVER -> SERVER_PROJECT_SET
+        ,OPTION_VALUE_PROJECT_SET_FULL -> FULL_PROJECT_SET
+        ,OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON -> FULL_WITH_SKELETON_PROJECT_SET
+        ,OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON_PERSISTENT -> ImmutableSet.copyOf(ProjectType.values())
+    }
 
     def reset()
     {

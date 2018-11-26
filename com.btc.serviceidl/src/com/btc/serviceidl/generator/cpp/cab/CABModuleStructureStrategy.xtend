@@ -41,9 +41,11 @@ class CABModuleStructureStrategy implements IModuleStructureStrategy
 
     override createHeaderResolver()
     {
-        new HeaderResolver.Builder().withBasicGroups.configureGroup(TypeResolver.TARGET_INCLUDE_GROUP, 10, "", "",
-            false).configureGroup(TypeResolver.CAB_INCLUDE_GROUP, 20, "", "", true).configureGroup(
-            TypeResolver.STL_INCLUDE_GROUP, 30, "", "", true).build
+        new HeaderResolver.Builder().withBasicGroups
+            .configureGroup(TypeResolver.TARGET_INCLUDE_GROUP, 10, "", "", false)
+            .configureGroup(TypeResolver.CAB_INCLUDE_GROUP, 20, "", "", true)
+            .configureGroup(TypeResolver.ODB_INCLUDE_GROUP, 30, "", "", true)
+            .configureGroup(TypeResolver.STL_INCLUDE_GROUP, 40, "", "", true).build
     }
 
     override getProjectDir(ParameterBundle paramBundle)

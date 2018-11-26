@@ -8,14 +8,20 @@ import com.btc.serviceidl.generator.common.ProjectType
 import com.btc.serviceidl.generator.cpp.CppConstants
 import com.btc.serviceidl.generator.cpp.IProjectSet
 import com.btc.serviceidl.generator.cpp.ServiceCommVersion
+import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
+import com.btc.serviceidl.idl.StructDeclaration
+import com.btc.serviceidl.util.Util
+import java.util.Set
 import org.eclipse.core.runtime.Path
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.generator.IFileSystemAccess
 
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
+import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
+import com.btc.serviceidl.idl.NamedDeclaration
 
 @Accessors(NONE)
 class CMakeTopLevelProjectFileGenerator
@@ -85,6 +91,11 @@ class CMakeTopLevelProjectFileGenerator
         val versionSuffix = if (generationSettings.maturity == Maturity.SNAPSHOT) "-unreleased" else ""
         val dependencyChannel = if (generationSettings.maturity == Maturity.SNAPSHOT) "testing" else "stable"
 
+        // TODO the ODB data could be parameterized in the future
+        val odbTargetVersion = "2.5.0-b.9"
+        val libodbTargetVersion = "2.5.0-b.9"
+        val odbdependencyChannel = "extern"
+
         // TODO the transitive dependencies do not need to be specified here
         '''
             from conan_template import *
@@ -97,7 +108,12 @@ class CMakeTopLevelProjectFileGenerator
                 TODO
                 """
             
-                build_requires = "CMakeMacros/«cmakeMacrosVersion».latest@cab/«dependencyChannel»"
+                build_requires = (
+                                  ("CMakeMacros/«cmakeMacrosVersion».latest@cab/«dependencyChannel»"),
+                                  «IF ! ODBStructsList.empty»
+                                      ("odb/«odbTargetVersion»@cab/«odbdependencyChannel»")
+                                  «ENDIF»                            
+                                 )
                 # TODO instead of "latest", for maturity RELEASE, this should be replaced by a 
                 # concrete version at some point (maybe not during generation, but during the build?)
                 # in a similar manner as mvn versions:resolve-ranges                
@@ -115,9 +131,34 @@ class CMakeTopLevelProjectFileGenerator
                             «FOR dependency : generationSettings.dependencies.sortBy[getID(ArtifactNature.CPP)]»
                                 ("«dependency.getID(ArtifactNature.CPP)»/«dependency.version»«versionSuffix»@cab/«dependencyChannel»"),
                             «ENDFOR»
+                            «IF ! ODBStructsList.empty»
+                                ("libodb/«libodbTargetVersion»@cab/«odbdependencyChannel»")
+                            «ENDIF»                            
                             )
                 generators = "cmake"
                 short_paths = True
+
+                «IF ! ODBStructsList.empty»
+                def generateODBFiles(self):
+                    includedirs = ""
+                    for includedir in self.deps_cpp_info["BTC.CAB.Commons"].includedirs:
+                        includedirs += " -I " + os.path.normpath(os.path.join(includedir))
+                    for includedir in self.deps_cpp_info["odb"].includedirs:
+                        includedirs += " -I " + os.path.normpath(os.path.join(includedir))
+                    for includedir in self.deps_cpp_info["libodb"].includedirs:
+                        includedirs += " -I " + os.path.normpath(os.path.join(includedir))
+                    odbdir = ""
+                    «FOR project : projectSet.projects»
+                       «IF project.projectType == ProjectType.EXTERNAL_DB_IMPL»
+                       odbdir = os.path.normpath(self.source_folder + "\\«project.relativePath»\\odb")
+                       «ENDIF»
+                    «ENDFOR»
+                    odbbindir = os.path.normpath(os.path.join(self.deps_cpp_info["odb"].bindirs[0]))
+                    «FOR struct : ODBStructsList»
+                    self.run(odbbindir + '\\odb.exe --std c++14' + includedirs +
+                        ' --multi-database dynamic --database common --database mssql --database oracle --generate-query --generate-prepared --generate-schema --schema-format embedded -x -Wno-unknown-pragmas -x -Wno-pragmas -x -Wno-literal-suffix -x -Wno-attributes --hxx-prologue "#include \"traits.hxx\"" --output-dir ' + odbdir + ' ' + odbdir + '\\«struct».hxx')
+                    «ENDFOR»
+                «ENDIF»
 
                 def generateProtoFiles(self):
                     protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)
@@ -131,12 +172,15 @@ class CMakeTopLevelProjectFileGenerator
 
                 def build(self):
                     self.generateProtoFiles()
+                    «IF ! ODBStructsList.empty»
+                        self.generateODBFiles()
+                    «ENDIF»
                     ConanTemplate.build(self)
 
                 def package(self):
                     ConanTemplate.package(self)
                     self.copy("**/*.proto", dst="proto", keep_path=True)
-            
+
                 def imports(self):
                     self.copy("protoc.exe", "bin", "bin")
         '''
@@ -235,7 +279,9 @@ class CMakeTopLevelProjectFileGenerator
 
             «FOR project : projectSet.projects.sortBy[relativePath.toPortableString]»
                 «IF module.eResource.URI == project.resourceURI»
-                    include(${CMAKE_CURRENT_LIST_DIR}/«project.relativePath.toPortableString»/build/make.cmakeset)
+                    «IF project.projectType != ProjectType.EXTERNAL_DB_IMPL || (project.projectType == ProjectType.EXTERNAL_DB_IMPL && !ODBStructsList.empty)»
+                        include(${CMAKE_CURRENT_LIST_DIR}/«project.relativePath.toPortableString»/build/make.cmakeset)
+                    «ENDIF»
                 «ENDIF»
             «ENDFOR»
 
@@ -250,4 +296,33 @@ class CMakeTopLevelProjectFileGenerator
         generationSettings.moduleStructureStrategy.getProjectDir(paramBundle).makeRelativeTo(modulePath)
     }
 
+    /** 
+        get the list of the names for all ODB structures
+    */
+    private def Set<String> getODBStructsList()
+    {
+        getFilterODBStructs(
+            projectSet.projects.filter[it.projectType == ProjectType.EXTERNAL_DB_IMPL]
+                .map[e | e.moduleStack]
+                .flatten
+                .map[e | e.moduleComponents]
+                .flatten
+                .filter[e | e.isStruct]
+                .map(e | e.structType.ultimateType as StructDeclaration)
+                .filter[!members.empty]
+                .map[val AbstractTypeReference res = it ; res]
+                .resolveAllDependencies
+                .map[type]
+                .filter(StructDeclaration)
+        ).map[e | e as NamedDeclaration]
+         .map[e | e.name.toLowerCase].toSet
+    }
+
+    /** 
+        filter ODB entities from the list of all structures
+    */
+    private def Iterable<StructDeclaration> getFilterODBStructs(Iterable<StructDeclaration> structs)
+    {
+    	structs.filter[!members.filter[m | m.name.toUpperCase == "ID" && Util.isUUIDType(m.type)].empty]
+    }
 }
