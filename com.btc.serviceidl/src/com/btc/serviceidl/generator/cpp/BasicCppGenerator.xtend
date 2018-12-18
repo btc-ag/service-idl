@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.IGenerationSettings
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
@@ -57,8 +58,13 @@ class BasicCppGenerator
 {
     // must be protected to allow subclasses to benefit from extension declaration
     @Accessors(PUBLIC_GETTER) protected val extension TypeResolver typeResolver
-    @Accessors(PUBLIC_GETTER) val ITargetVersionProvider targetVersionProvider
+    @Accessors(PUBLIC_GETTER) val IGenerationSettings generationSettings
     @Accessors(PUBLIC_GETTER) val ParameterBundle paramBundle
+    
+    def ITargetVersionProvider getTargetVersionProvider()
+    {
+        return generationSettings
+    }
 
     def String generateCppDestructor(InterfaceDeclaration interfaceDeclaration)
     {

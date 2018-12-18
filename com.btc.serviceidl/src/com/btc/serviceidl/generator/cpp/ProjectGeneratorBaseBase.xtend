@@ -10,6 +10,7 @@
  */
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.IGenerationSettings
 import com.btc.serviceidl.generator.ITargetVersionProvider
 import com.btc.serviceidl.generator.common.PackageInfo
 import com.btc.serviceidl.generator.common.ParameterBundle
@@ -43,7 +44,7 @@ class ProjectGeneratorBaseBase
     val IProjectSetFactory projectSetFactory
     val extension IProjectSet vsSolution
     val IModuleStructureStrategy moduleStructureStrategy
-    val ITargetVersionProvider targetVersionProvider
+    val IGenerationSettings generationSettings
     val Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap
     val Iterable<PackageInfo> importedDependencies
 
@@ -57,7 +58,7 @@ class ProjectGeneratorBaseBase
 
     new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
         IDLSpecification idl, IProjectSetFactory projectSetFactory, IProjectSet vsSolution,
-        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
+        IModuleStructureStrategy moduleStructureStrategy, IGenerationSettings generationSettings,
         Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ProjectType type,
         ModuleDeclaration module, Iterable<PackageInfo> importedDependencies)
     {
@@ -68,7 +69,7 @@ class ProjectGeneratorBaseBase
         this.projectSetFactory = projectSetFactory
         this.vsSolution = vsSolution
         this.moduleStructureStrategy = moduleStructureStrategy
-        this.targetVersionProvider = targetVersionProvider
+        this.generationSettings = generationSettings
         this.smartPointerMap = smartPointerMap
         this.module = module
         this.importedDependencies = importedDependencies
@@ -77,6 +78,11 @@ class ProjectGeneratorBaseBase
         
         // TODO find a more explicit way to ensure that a project is added to the project set
         this.vsSolution.resolve(this.paramBundle)
+    }
+    
+    protected def ITargetVersionProvider getTargetVersionProvider()
+    {
+        return generationSettings
     }
 
     protected def createTypeResolver()
@@ -97,7 +103,7 @@ class ProjectGeneratorBaseBase
 
     protected def createBasicCppGenerator(ParameterBundle paramBundle)
     {
-        new BasicCppGenerator(createTypeResolver(paramBundle), targetVersionProvider, paramBundle)
+        new BasicCppGenerator(createTypeResolver(paramBundle), generationSettings, paramBundle)
     }
 
     def Iterable<IProjectReference> getAdditionalProjectReferences()

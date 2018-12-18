@@ -10,7 +10,7 @@
  */
 package com.btc.serviceidl.generator.cpp
 
-import com.btc.serviceidl.generator.ITargetVersionProvider
+import com.btc.serviceidl.generator.IGenerationSettings
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.PackageInfo
@@ -40,13 +40,13 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
 
     new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
         IDLSpecification idl, IProjectSetFactory projectSetFactory, IProjectSet vsSolution,
-        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
+        IModuleStructureStrategy moduleStructureStrategy, IGenerationSettings generationSettings,
         Iterable<IProjectReference> protobufProjectReferences,
         Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ModuleDeclaration module,
         Iterable<PackageInfo> importedDependencies)
     {
         super(fileSystemAccess, qualifiedNameProvider, scopeProvider, idl, projectSetFactory, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, smartPointerMap, ProjectType.PROTOBUF, module,
+            moduleStructureStrategy, generationSettings, smartPointerMap, ProjectType.PROTOBUF, module,
             importedDependencies)
 
         this.protobufProjectReferences = protobufProjectReferences
@@ -99,7 +99,7 @@ class ProtobufProjectGenerator extends ProjectGeneratorBaseBase
     private def String generateHCodec(AbstractContainerDeclaration owner)
     {
         val basicCppGenerator = createBasicCppGenerator
-        val fileContent = new CodecGenerator(basicCppGenerator.typeResolver, targetVersionProvider, paramBundle).
+        val fileContent = new CodecGenerator(basicCppGenerator.typeResolver, generationSettings, paramBundle).
             generateHeaderFileBody(owner)
         generateHeader(basicCppGenerator, moduleStructureStrategy, fileContent.toString, Optional.empty)
     }
