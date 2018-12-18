@@ -10,6 +10,7 @@
  **********************************************************************/
 package com.btc.serviceidl.generator.cpp
 
+import com.btc.serviceidl.generator.Main
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.ParameterBundle
@@ -51,7 +52,17 @@ class ProxyGenerator extends BasicCppGenerator {
       ) :
       m_context(context)
       , «resolveSymbol("BTC_CAB_LOGGING_API_INIT_LOGGERAWARE")»(loggerFactory)
-      , «interfaceDeclaration.asBaseName»(context, localEndpoint, «apiClassName»::TYPE_GUID(), serverServiceInstanceGuid)
+      , «interfaceDeclaration.asBaseName»(context, localEndpoint, «apiClassName»::TYPE_GUID(), serverServiceInstanceGuid
+      «IF generationSettings.hasGeneratorOption(Main.OPTION_GENERATOR_OPTION_CPP_PROXY_TIMEOUT_SECONDS)»
+        «val proxyTimeoutSeconds = Integer.parseInt(generationSettings.getGeneratorOption(Main.OPTION_GENERATOR_OPTION_CPP_PROXY_TIMEOUT_SECONDS))»
+        ,
+        «IF targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11»
+          «resolveSymbol("BTC::Commons::Core::TimeSpan")»::Seconds(«proxyTimeoutSeconds»)
+        «ELSE»
+          «resolveSymbol("std::chrono::seconds")»(«proxyTimeoutSeconds»)
+        «ENDIF»
+      «ENDIF»
+      )
       «FOR event : interfaceDeclaration.events»
       , «event.observableRegistrationName»(context, localEndpoint.GetEventRegistry(), «event.eventParamsName»())
       «ENDFOR»

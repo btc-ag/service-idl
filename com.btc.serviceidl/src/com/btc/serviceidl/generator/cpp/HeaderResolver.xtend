@@ -72,6 +72,7 @@ class HeaderResolver
         "BTC::Commons::Core::NotImplementedException" -> "Commons/Core/include/NotImplementedException.h",
         "BTC::Commons::Core::Object" -> "Commons/Core/include/Object.h",
         "BTC::Commons::Core::String" -> "Commons/Core/include/String.h",
+        "BTC::Commons::Core::TimeSpan" -> "Commons/Core/include/TimeSpan.h",
         "BTC::Commons::Core::UInt8" -> "Commons/Core/include/StdTypes.h",
         "BTC::Commons::Core::UInt16" -> "Commons/Core/include/StdTypes.h",
         "BTC::Commons::Core::UInt32" -> "Commons/Core/include/StdTypes.h",

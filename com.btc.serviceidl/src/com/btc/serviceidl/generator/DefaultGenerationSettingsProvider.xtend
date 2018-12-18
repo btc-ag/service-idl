@@ -49,6 +49,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         var Set<ProjectType> projectTypes = null
         var String cppProjectSystem = null // TODO change into a enum here
         var Iterable<Map.Entry<String, String>> versions = null
+        var Iterable<Map.Entry<String, String>> generatorOptions = null
         var Maturity maturity = null
         var Set<PackageInfo> dependencies = #{}
 
@@ -64,8 +65,10 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
                         Objects.equal(cppProjectSystem, other.cppProjectSystem) &&
                         ((versions === null && other.versions === null) ||
                             Objects.equal(versions.toSet, other.versions.toSet) &&
-                        ((dependencies === null && other.dependencies === null) ||
-                            Objects.equal(dependencies.toSet, other.dependencies.toSet)
+                                ((generatorOptions === null && other.generatorOptions === null) ||
+                                    Objects.equal(generatorOptions.toSet, other.generatorOptions.toSet) &&
+                                        ((dependencies === null && other.dependencies === null) ||
+                                            Objects.equal(dependencies.toSet, other.dependencies.toSet))
                         ))
                 }
 
@@ -80,8 +83,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         override toString()
         {
             MoreObjects.toStringHelper(this).add("languages", languages).add("projectTypes", projectTypes).add(
-                "cppProjectSystem", cppProjectSystem).add("versions", versions)
-                .add("import", dependencies).toString
+                "cppProjectSystem", cppProjectSystem).add("versions", versions).add("import", dependencies).toString
         }
 
         static def getDefaults()
@@ -96,12 +98,14 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
                     com.btc.serviceidl.generator.java.ServiceCommVersion.V0_5.label,
                 DotNetConstants.SERVICECOMM_VERSION_KIND ->
                     com.btc.serviceidl.generator.dotnet.ServiceCommVersion.V0_7.label}.entrySet
+            result.generatorOptions = #{}
 
             return result
         }
 
         static def create(String cppProjectSystem, Iterable<Entry<String, String>> versions,
-            Iterable<ArtifactNature> languages, Iterable<ProjectType> projectTypes, Maturity maturity, Iterable<PackageInfo> dependencies)
+            Iterable<Entry<String, String>> generatorOptions, Iterable<ArtifactNature> languages,
+            Iterable<ProjectType> projectTypes, Maturity maturity, Iterable<PackageInfo> dependencies)
         {
             val settings = new OptionalGenerationSettings()
 
@@ -109,16 +113,19 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             if (projectTypes !== null) settings.setProjectTypes(ImmutableSet.copyOf(projectTypes))
             if (cppProjectSystem !== null) settings.cppProjectSystem = cppProjectSystem
             if (versions !== null) settings.versions = versions
+            if (generatorOptions !== null) settings.generatorOptions = generatorOptions
             settings.maturity = maturity
             if (dependencies !== null) settings.dependencies = ImmutableSet.copyOf(dependencies)
 
             settings
         }
 
-        static def create(String cppProjectSystem, String versions, Iterable<ArtifactNature> languages,
-            String projectSet, Maturity maturity, Iterable<PackageInfo> dependencies)
+        static def create(String cppProjectSystem, String versions, String generatorOptions,
+            Iterable<ArtifactNature> languages, String projectSet, Maturity maturity,
+            Iterable<PackageInfo> dependencies)
         {
-            create(cppProjectSystem, versions.splitVersions, languages, PROJECT_SET_MAPPING.get(projectSet), maturity, dependencies)
+            create(cppProjectSystem, versions.splitKeyValuePairs, generatorOptions.splitKeyValuePairs, languages,
+                PROJECT_SET_MAPPING.get(projectSet), maturity, dependencies)
         }
 
     }
@@ -148,7 +155,8 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
 
         val languages = (properties.get("languages") as String)
         OptionalGenerationSettings.create(properties.get("cppProjectSystem") as String,
-            properties.get("versions") as String, (languages?.split(",")?.map [ str |
+            properties.get("versions") as String, properties.get("generatorOptions") as String,
+            (languages?.split(",")?.map [ str |
                 ArtifactNature.values.filter[it.label == str].single
             ]?.toSet), properties.get("projectSet") as String, null, null)
     }
@@ -186,16 +194,23 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         result.projectTypes = overrides.projectTypes ?: base.projectTypes
         result.cppProjectSystem = overrides.cppProjectSystem ?: base.cppProjectSystem
         result.dependencies = overrides.dependencies ?: base.dependencies
-        result.versions = if (overrides.versions !== null)
+        result.versions = mergeMaps(overrides.versions, base.versions)
+        result.maturity = overrides.maturity ?: base.maturity
+        result.generatorOptions = mergeMaps(overrides.generatorOptions, base.generatorOptions)
+
+        result
+    }
+
+    static private def mergeMaps(Iterable<Entry<String, String>> overrides, Iterable<Entry<String, String>> base)
+    {
+        if (overrides !== null)
         {
-            val resultVersions = base.versions.toMap([key], [value])
-            resultVersions.putAll(overrides.versions.toMap([key], [value]))
+            val resultVersions = base.toMap([key], [value])
+            resultVersions.putAll(overrides.toMap([key], [value]))
             resultVersions.entrySet
         }
         else
-            base.versions
-        result.maturity = overrides.maturity ?: base.maturity
-        result
+            base
     }
 
     static def IGenerationSettings buildGenerationSettings(OptionalGenerationSettings settings)
@@ -204,7 +219,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         result.languages = settings.languages
         result.projectTypes = settings.projectTypes
         result.dependencies = settings.dependencies
-        
+
         switch (settings.cppProjectSystem)
         {
             case Main.OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE:
@@ -228,25 +243,33 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
             result.setVersion(version.getKey(), version.getValue());
         }
 
+        for (Entry<String, String> generatorOption : settings.generatorOptions)
+        {
+            result.setGeneratorOption(generatorOption.getKey(), generatorOption.getValue());
+        }
+
         if (settings.maturity !== null)
             result.maturity = settings.maturity
 
         return result
     }
 
-    def void configureGenerationSettings(String cppProjectSystem, String versions, Iterable<ArtifactNature> languages,
-        String projectSet, Maturity maturity, Iterable<PackageInfo> dependencies)
+    def void configureGenerationSettings(String cppProjectSystem, String versions, String generatorOptions,
+        Iterable<ArtifactNature> languages, String projectSet, Maturity maturity, Iterable<PackageInfo> dependencies)
     {
-        overrides = OptionalGenerationSettings.create(cppProjectSystem, versions, languages, projectSet, maturity, dependencies)
+        overrides = OptionalGenerationSettings.create(cppProjectSystem, versions, generatorOptions, languages,
+            projectSet, maturity, dependencies)
     }
 
     def void configureGenerationSettings(String cppProjectSystem, Iterable<Map.Entry<String, String>> versions,
-        Iterable<ArtifactNature> languages, Iterable<ProjectType> projectTypes, Maturity maturity, Iterable<PackageInfo> dependencies)
+        Iterable<Map.Entry<String, String>> generatorOptions, Iterable<ArtifactNature> languages,
+        Iterable<ProjectType> projectTypes, Maturity maturity, Iterable<PackageInfo> dependencies)
     {
-        overrides = OptionalGenerationSettings.create(cppProjectSystem, versions, languages, projectTypes, maturity, dependencies)
+        overrides = OptionalGenerationSettings.create(cppProjectSystem, versions, generatorOptions, languages,
+            projectTypes, maturity, dependencies)
     }
 
-    private static def Iterable<Map.Entry<String, String>> splitVersions(String optionValue)
+    private static def Iterable<Map.Entry<String, String>> splitKeyValuePairs(String optionValue)
     {
         optionValue?.split(",")?.map [ versionEntry |
             val versionEntryParts = versionEntry.split("=")
@@ -276,16 +299,16 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
     public static val Set<ProjectType> SERVER_PROJECT_SET = Sets.union(API_PROJECT_SET,
         ImmutableSet.of(ProjectType.PROTOBUF, ProjectType.DISPATCHER /*, ProjectType.SERVER_RUNNER*/ ))
     public static val Set<ProjectType> FULL_PROJECT_SET = Sets.union(CLIENT_PROJECT_SET, SERVER_PROJECT_SET)
-    public static val Set<ProjectType> FULL_WITH_SKELETON_PROJECT_SET = Sets.difference(ImmutableSet.copyOf(ProjectType.values()),
-        ImmutableSet.of(ProjectType.EXTERNAL_DB_IMPL))
+    public static val Set<ProjectType> FULL_WITH_SKELETON_PROJECT_SET = Sets.difference(
+        ImmutableSet.copyOf(ProjectType.values()), ImmutableSet.of(ProjectType.EXTERNAL_DB_IMPL))
 
     public static val Map<String, Set<ProjectType>> PROJECT_SET_MAPPING = #{
-        OPTION_VALUE_PROJECT_SET_API -> API_PROJECT_SET
-        ,OPTION_VALUE_PROJECT_SET_CLIENT -> CLIENT_PROJECT_SET
-        ,OPTION_VALUE_PROJECT_SET_SERVER -> SERVER_PROJECT_SET
-        ,OPTION_VALUE_PROJECT_SET_FULL -> FULL_PROJECT_SET
-        ,OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON -> FULL_WITH_SKELETON_PROJECT_SET
-        ,OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON_PERSISTENT -> ImmutableSet.copyOf(ProjectType.values())
+        OPTION_VALUE_PROJECT_SET_API -> API_PROJECT_SET,
+        OPTION_VALUE_PROJECT_SET_CLIENT -> CLIENT_PROJECT_SET,
+        OPTION_VALUE_PROJECT_SET_SERVER -> SERVER_PROJECT_SET,
+        OPTION_VALUE_PROJECT_SET_FULL -> FULL_PROJECT_SET,
+        OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON -> FULL_WITH_SKELETON_PROJECT_SET,
+        OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON_PERSISTENT -> ImmutableSet.copyOf(ProjectType.values())
     }
 
     def reset()
