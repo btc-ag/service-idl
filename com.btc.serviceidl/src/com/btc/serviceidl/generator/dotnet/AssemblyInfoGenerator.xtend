@@ -32,8 +32,8 @@ class AssemblyInfoGenerator
             [assembly: AssemblyConfiguration("")]
             [assembly: AssemblyProduct("«projectName»")]
             «IF !isExe»
-                [assembly: AssemblyCompany("BTC Business Technology Consulting AG")]
-                [assembly: AssemblyCopyright("Copyright (C) BTC Business Technology Consulting AG «Calendar.getInstance().get(Calendar.YEAR)»")]
+                [assembly: AssemblyCompany("PSI Software AG")]
+                [assembly: AssemblyCopyright("Copyright (C) PSI Software AG «Calendar.getInstance().get(Calendar.YEAR)»")]
                 [assembly: AssemblyTrademark("")]
                 [assembly: AssemblyCulture("")]
             «ENDIF»
