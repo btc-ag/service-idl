@@ -16,6 +16,7 @@ import com.btc.serviceidl.tests.IdlInjectorProvider
 import com.btc.serviceidl.tests.generator.AbstractGeneratorTest
 import com.btc.serviceidl.tests.testdata.TestData
 import java.util.Arrays
+import java.util.Calendar
 import java.util.HashSet
 import java.util.Map
 import java.util.Set
@@ -150,8 +151,8 @@ class DotNetGeneratorTest extends AbstractGeneratorTest
             [assembly: AssemblyDescription("")]
             [assembly: AssemblyConfiguration("")]
             [assembly: AssemblyProduct("BTC.PRINS.Infrastructure.ServiceHost.Demo.API.NET.ServiceAPI")]
-            [assembly: AssemblyCompany("BTC Business Technology Consulting AG")]
-            [assembly: AssemblyCopyright("Copyright (C) BTC Business Technology Consulting AG 2018")]
+            [assembly: AssemblyCompany("PSI Software AG")]
+            [assembly: AssemblyCopyright("Copyright (C) PSI Software AG «Calendar.getInstance().get(Calendar.YEAR)»")]
             [assembly: AssemblyTrademark("")]
             [assembly: AssemblyCulture("")]
             

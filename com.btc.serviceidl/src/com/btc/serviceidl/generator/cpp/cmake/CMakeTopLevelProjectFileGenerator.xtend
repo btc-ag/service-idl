@@ -11,8 +11,10 @@ import com.btc.serviceidl.generator.cpp.ServiceCommVersion
 import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
+import com.btc.serviceidl.idl.NamedDeclaration
 import com.btc.serviceidl.idl.StructDeclaration
 import com.btc.serviceidl.util.Util
+import java.util.Calendar
 import java.util.Set
 import org.eclipse.core.runtime.Path
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -21,7 +23,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import static extension com.btc.serviceidl.generator.common.GeneratorUtil.*
 import static extension com.btc.serviceidl.generator.cpp.CppExtensions.*
 import static extension com.btc.serviceidl.util.Util.*
-import com.btc.serviceidl.idl.NamedDeclaration
 
 @Accessors(NONE)
 class CMakeTopLevelProjectFileGenerator
@@ -224,7 +225,7 @@ class CMakeTopLevelProjectFileGenerator
             // ==================================
             // copyright information
             // ==================================
-            #define STR_COPYRIGHT_INFO      "Copyright (C) BTC Business Technology Consulting AG 2018"        
+            #define STR_COPYRIGHT_INFO      "Copyright (C) PSI Software AG «Calendar.getInstance().get(Calendar.YEAR)»"        
         '''
     }
 
