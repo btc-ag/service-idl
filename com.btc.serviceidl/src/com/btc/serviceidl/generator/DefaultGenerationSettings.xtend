@@ -30,6 +30,7 @@ class DefaultGenerationSettings implements IGenerationSettings
     public IModuleStructureStrategy moduleStructureStrategy
     static val Map<String, Set<String>> supportedVersionMap = createSupportedVersionMap
     val Map<String, String> versionMap
+    val Map<String, String> generatorOptionMap = newHashMap
     public var Maturity maturity = Maturity.SNAPSHOT
     public Set<PackageInfo> dependencies = #{}
 
@@ -108,5 +109,16 @@ class DefaultGenerationSettings implements IGenerationSettings
     override getDependencies() {
         dependencies
     }
+    
+    override getGeneratorOption(String key) {
+        generatorOptionMap.get(key)
+    }
+    
+    override hasGeneratorOption(String key) {
+        generatorOptionMap.containsKey(key)
+    }
 
+    def setGeneratorOption(String key, String value) {
+        generatorOptionMap.put(key, value)
+    }
 }

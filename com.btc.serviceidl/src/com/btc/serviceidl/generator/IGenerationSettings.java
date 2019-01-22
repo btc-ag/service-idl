@@ -30,4 +30,8 @@ public interface IGenerationSettings extends ITargetVersionProvider {
     Maturity getMaturity();
 
     Set<PackageInfo> getDependencies();
+
+    boolean hasGeneratorOption(String key);
+
+    String getGeneratorOption(String key);
 }

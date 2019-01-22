@@ -52,19 +52,21 @@ import com.google.inject.Provider;
 
 public class Main {
 
-    public static final String OPTION_OUTPUT_PATH                            = "outputPath";
-    public static final String OPTION_CPP_OUTPUT_PATH                        = "cppOutputPath";
-    public static final String OPTION_JAVA_OUTPUT_PATH                       = "javaOutputPath";
-    public static final String OPTION_DOTNET_OUTPUT_PATH                     = "dotnetOutputPath";
-    public static final String OPTION_CPP_PROJECT_SYSTEM                     = "cppProjectSystem";
-    public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE         = "cmake";
-    public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ = "prins-vcxproj";
-    public static final String OPTION_VERSIONS                               = "versions";
-    public static final String OPTION_PROJECT_SET                            = "projectSet";
-    public static final String OPTION_MATURITY                               = "maturity";
-    public static final String OPTION_VALUE_MATURITY_SNAPSHOT                = "snapshot";
-    public static final String OPTION_VALUE_MATURITY_RELEASE                 = "release";
-    public static final String OPTION_IMPORT                                 = "import";
+    public static final String OPTION_OUTPUT_PATH                                = "outputPath";
+    public static final String OPTION_CPP_OUTPUT_PATH                            = "cppOutputPath";
+    public static final String OPTION_JAVA_OUTPUT_PATH                           = "javaOutputPath";
+    public static final String OPTION_DOTNET_OUTPUT_PATH                         = "dotnetOutputPath";
+    public static final String OPTION_CPP_PROJECT_SYSTEM                         = "cppProjectSystem";
+    public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_CMAKE             = "cmake";
+    public static final String OPTION_VALUE_CPP_PROJECT_SYSTEM_PRINS_VCXPROJ     = "prins-vcxproj";
+    public static final String OPTION_VERSIONS                                   = "versions";
+    public static final String OPTION_PROJECT_SET                                = "projectSet";
+    public static final String OPTION_MATURITY                                   = "maturity";
+    public static final String OPTION_VALUE_MATURITY_SNAPSHOT                    = "snapshot";
+    public static final String OPTION_VALUE_MATURITY_RELEASE                     = "release";
+    public static final String OPTION_IMPORT                                     = "import";
+    public static final String OPTION_GENERATOR_OPTIONS                          = "generatorOptions";
+    public static final String OPTION_GENERATOR_OPTION_CPP_PROXY_TIMEOUT_SECONDS = "cppProxyTimeoutSeconds";
 
     public static final int EXIT_CODE_GOOD              = 0;
     public static final int EXIT_CODE_GENERATION_FAILED = 1;
@@ -131,6 +133,8 @@ public class Main {
                 commandLine.hasOption(OPTION_CPP_PROJECT_SYSTEM) ? commandLine.getOptionValue(OPTION_CPP_PROJECT_SYSTEM)
                         : null,
                 commandLine.hasOption(OPTION_VERSIONS) ? commandLine.getOptionValue(OPTION_VERSIONS) : null,
+                commandLine.hasOption(OPTION_GENERATOR_OPTIONS) ? commandLine.getOptionValue(OPTION_GENERATOR_OPTIONS)
+                        : null,
                 commandLine.hasOption(OPTION_PROJECT_SET) ? commandLine.getOptionValue(OPTION_PROJECT_SET) : null,
                 commandLine.hasOption(OPTION_MATURITY) ? commandLine.getOptionValue(OPTION_MATURITY) : null,
                 commandLine.hasOption(OPTION_IMPORT) ? commandLine.getOptionValues(OPTION_IMPORT) : new String[] {});
@@ -151,7 +155,11 @@ public class Main {
                 + String.join(",", DefaultGenerationSettingsProvider.PROJECT_SET_MAPPING.keySet()) + "), default is "
                 + DefaultGenerationSettingsProvider.OPTION_VALUE_PROJECT_SET_FULL_WITH_SKELETON);
         options.addOption(OPTION_MATURITY, true, "maturity (snapshot, release) (default is snapshot)");
-        options.addOption(OPTION_IMPORT, true, "absolute path to imported IDL file (optional; may be provided multiple times)");
+        options.addOption(OPTION_IMPORT, true,
+                "absolute path to imported IDL file (optional; may be provided multiple times)");
+        options.addOption(OPTION_GENERATOR_OPTIONS, true,
+                "known values: " + OPTION_GENERATOR_OPTION_CPP_PROXY_TIMEOUT_SECONDS
+                        + "for C++ proxies, specifies the timeout for requests in seconds (optional)");
         return options;
     }
 
@@ -181,7 +189,8 @@ public class Main {
     private IGenerationSettingsProvider generationSettingsProvider;
 
     private boolean tryRunGenerator(String[] inputFiles, Map<ArtifactNature, IPath> outputPaths,
-            String cppProjectSystem, String versions, String projectSet, String maturityString, String[] importFiles) {
+            String cppProjectSystem, String versions, String generatorOptions, String projectSet, String maturityString,
+            String[] importFiles) {
 
         // validate import file paths
         for (String importFile : importFiles) {
@@ -250,7 +259,8 @@ public class Main {
         }
 
         try {
-            configureGenerationSettings(cppProjectSystem, versions, outputPaths.keySet(), projectSet, maturity, dependencies);
+            configureGenerationSettings(cppProjectSystem, versions, generatorOptions, outputPaths.keySet(), projectSet,
+                    maturity, dependencies);
         } catch (Exception ex) {
             System.err.println("Error when configuring generation settings: " + ex);
             return false;
@@ -269,12 +279,13 @@ public class Main {
         return true;
     }
 
-    private void configureGenerationSettings(String cppProjectSystem, String versions,
-            Iterable<ArtifactNature> languages, String projectSet, Maturity maturity, Iterable<PackageInfo> dependencies) {
+    private void configureGenerationSettings(String cppProjectSystem, String versions, String generatorOptions,
+            Iterable<ArtifactNature> languages, String projectSet, Maturity maturity,
+            Iterable<PackageInfo> dependencies) {
         DefaultGenerationSettingsProvider defaultGenerationSettingsProvider = (DefaultGenerationSettingsProvider) generationSettingsProvider;
 
-        defaultGenerationSettingsProvider.configureGenerationSettings(cppProjectSystem, versions, languages, projectSet,
-                maturity, dependencies);
+        defaultGenerationSettingsProvider.configureGenerationSettings(cppProjectSystem, versions, generatorOptions,
+                languages, projectSet, maturity, dependencies);
     }
 
 }

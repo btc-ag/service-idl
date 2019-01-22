@@ -10,7 +10,7 @@
  */
 package com.btc.serviceidl.generator.cpp
 
-import com.btc.serviceidl.generator.ITargetVersionProvider
+import com.btc.serviceidl.generator.IGenerationSettings
 import com.btc.serviceidl.generator.common.ArtifactNature
 import com.btc.serviceidl.generator.common.GeneratorUtil
 import com.btc.serviceidl.generator.common.PackageInfo
@@ -36,12 +36,12 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
 
     new(IFileSystemAccess fileSystemAccess, IQualifiedNameProvider qualifiedNameProvider, IScopeProvider scopeProvider,
         IDLSpecification idl, IProjectSetFactory projectSetFactory, IProjectSet vsSolution,
-        IModuleStructureStrategy moduleStructureStrategy, ITargetVersionProvider targetVersionProvider,
+        IModuleStructureStrategy moduleStructureStrategy, IGenerationSettings generationSettings,
         Map<AbstractTypeReference, Collection<AbstractTypeReference>> smartPointerMap, ModuleDeclaration module,
         Iterable<PackageInfo> importedDependencies)
     {
         super(fileSystemAccess, qualifiedNameProvider, scopeProvider, idl, projectSetFactory, vsSolution,
-            moduleStructureStrategy, targetVersionProvider, smartPointerMap, ProjectType.COMMON, module,
+            moduleStructureStrategy, generationSettings, smartPointerMap, ProjectType.COMMON, module,
             importedDependencies)
     }
 
@@ -78,7 +78,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
     private def String generateHFileCommons(ModuleDeclaration module, String exportHeader)
     {
         val basicCppGenerator = createBasicCppGenerator
-        val fileContent = new CommonsGenerator(basicCppGenerator.typeResolver, targetVersionProvider, paramBundle).
+        val fileContent = new CommonsGenerator(basicCppGenerator.typeResolver, generationSettings, paramBundle).
             generateHeaderFileBody(module, exportHeader)
         generateHeader(basicCppGenerator, moduleStructureStrategy, fileContent.toString, Optional.of(exportHeader))
     }
@@ -86,7 +86,7 @@ class CommonProjectGenerator extends ProjectGeneratorBaseBase
     private def String generateCppCommons(ModuleDeclaration module, String exportHeader)
     {
         val basicCppGenerator = createBasicCppGenerator
-        val fileContent = new CommonsGenerator(basicCppGenerator.typeResolver, targetVersionProvider, paramBundle).
+        val fileContent = new CommonsGenerator(basicCppGenerator.typeResolver, generationSettings, paramBundle).
             generateImplFileBody(module, exportHeader)
         generateSource(basicCppGenerator, fileContent.toString, Optional.empty)
     }
