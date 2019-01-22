@@ -38,6 +38,7 @@ class HeaderResolver
         "std::begin" -> "iterator",
         "std::bind" -> "functional",
         "std::call_once" -> "mutex",
+        "std::chrono::seconds" -> "chrono",
         "std::copy" -> "algorithm",
         "std::end" -> "iterator",
         "std::find_if" -> "algorithm",
