@@ -41,7 +41,7 @@ class ServerRunnerGenerator extends BasicCppGenerator
                ExitProcess(0);
             }
             
-            int main(int argc, char *argv[])
+            int main(int argc, «IF targetVersion == ServiceCommVersion.V0_12»const «ENDIF»char *argv[])
             {
             
                SetConsoleCtrlHandler(&MyCtrlHandler, true);
