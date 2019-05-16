@@ -91,6 +91,7 @@ class CMakeTopLevelProjectFileGenerator
                 
         val versionSuffix = if (generationSettings.maturity == Maturity.SNAPSHOT) "-unreleased" else ""
         val dependencyChannel = if (generationSettings.maturity == Maturity.SNAPSHOT) "testing" else "stable"
+        val serviceCommDependencyChannel = if (serviceCommTargetVersion == ServiceCommVersion.V0_13) "unstable" else dependencyChannel
 
         // TODO the ODB data could be parameterized in the future
         val odbTargetVersion = "2.5.0-b.9"
@@ -122,11 +123,17 @@ class CMakeTopLevelProjectFileGenerator
                             ("BTC.CAB.Commons/«commonsTargetVersion».latest@cab/«dependencyChannel»"),
                             ("BTC.CAB.IoC/«iocTargetVersion».latest@cab/«dependencyChannel»"),
                             ("BTC.CAB.Logging/«loggingTargetVersion».latest@cab/«dependencyChannel»"),
-                            ("BTC.CAB.ServiceComm/«serviceCommTargetVersion.label».latest@cab/«dependencyChannel»"),
+                            ("BTC.CAB.ServiceComm/«serviceCommTargetVersion.label».latest@cab/«serviceCommDependencyChannel»"),
                             «IF projectSet.projects.exists[it.projectType == ProjectType.TEST]»
-                                ("BTC.CAB.ServiceComm.SQ/«serviceCommTargetVersion.label».latest@cab/«dependencyChannel»"),
+                                ("BTC.CAB.ServiceComm.SQ/«serviceCommTargetVersion.label».latest@cab/«serviceCommDependencyChannel»"),
                                 «IF serviceCommTargetVersion == ServiceCommVersion.V0_11»
                                     ("libzmq/4.2.3@cab/extern", "private"),
+                                «ENDIF»
+                                «/* TODO this dependency should be inherited, if really necessary */»
+                                «IF serviceCommTargetVersion != ServiceCommVersion.V0_10 
+                                 && serviceCommTargetVersion != ServiceCommVersion.V0_11 
+                                 && serviceCommTargetVersion != ServiceCommVersion.V0_12»
+                                    ("hippomocks/6.0.0-pre2@cab/extern", "private"),
                                 «ENDIF»
                             «ENDIF»
                             «FOR dependency : generationSettings.dependencies.sortBy[getID(ArtifactNature.CPP)]»
@@ -231,7 +238,7 @@ class CMakeTopLevelProjectFileGenerator
 
     def generateCMakeLists()
     {
-        // TODO why is find_package(Boost COMPONENTS thread REQUIRED) required? probably because 
+        // TODO why is find_package(Boost COMPONENTS ... REQUIRED) required? probably because 
         // the BTC.CAB.ServiceComm package BTC.CAB.ServiceCommConfig.cmake file does not properly 
         // specify its own dependency on it
         
@@ -268,7 +275,7 @@ class CMakeTopLevelProjectFileGenerator
             
             «IF serviceCommTargetVersion != ServiceCommVersion.V0_10 && serviceCommTargetVersion != ServiceCommVersion.V0_11»
                 find_package(Protobuf REQUIRED)
-                find_package(Boost COMPONENTS thread program_options REQUIRED)
+                find_package(Boost COMPONENTS thread program_options regex REQUIRED)
                 find_package(BTC.CAB.ServiceComm REQUIRED)
                 «IF projectSet.projects.exists[it.projectType == ProjectType.TEST]»
                 find_package(BTC.CAB.ServiceComm.SQ REQUIRED)

@@ -149,6 +149,7 @@ class HeaderResolver
         "BTC::ServiceComm::SQ::ZeroMQTestSupport::ConnectionDirection" ->
             "ServiceComm.SQ/ZeroMQTestSupport/include/CZeroMQTestConnection.h",
         "BTC::ServiceComm::TestBase::ITestConnection" -> "ServiceComm/TestBase/include/TestConnection.h",
+        "BTC::ServiceComm::TestSupport::ITestConnection" -> "ServiceComm/TestSupport/include/TestConnection.h",
         "BTC::ServiceComm::Util::CDefaultObservableRegistrationProxy" ->
             "ServiceComm/Util/include/CDefaultObservableRegistrationProxy.h",
         "BTC::ServiceComm::Util::CDispatcherAutoRegistrationFactory" ->

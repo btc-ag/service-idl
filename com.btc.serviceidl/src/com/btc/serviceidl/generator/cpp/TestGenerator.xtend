@@ -114,7 +114,11 @@ class TestGenerator extends BasicCppGenerator
                {  return *m_proxy; }
             
             private:
-               «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «resolveSymbol("BTC::ServiceComm::TestBase::ITestConnection")» > m_connection;
+               «IF targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11 || targetVersion == ServiceCommVersion.V0_12»
+                 «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «resolveSymbol("BTC::ServiceComm::TestBase::ITestConnection")» >
+               «ELSE»
+                 «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «resolveSymbol("BTC::ServiceComm::TestSupport::ITestConnection")» >
+               «ENDIF» m_connection;
                «resolveSymbol("BTC::Commons::Core::UniquePtr")»< DispatcherAutoRegistrationType > m_dispatcher;
                «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «apiType» > m_proxy;
             };
