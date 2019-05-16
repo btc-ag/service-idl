@@ -51,10 +51,10 @@ class CMakeGenerator
         val serviceCommTargetVersion = ServiceCommVersion.get(targetVersionProvider.getTargetVersion(
             CppConstants.SERVICECOMM_VERSION_KIND))
 
-        if (serviceCommTargetVersion == ServiceCommVersion.V0_12)
-            generateCMakeListsNewStyle(projectName, projectPath, projectType)
-        else
+        if (serviceCommTargetVersion == ServiceCommVersion.V0_10 || serviceCommTargetVersion == ServiceCommVersion.V0_11)
             generateCMakeListsOldStyle(projectName, projectPath, projectType)
+        else
+            generateCMakeListsNewStyle(projectName, projectPath, projectType)
     }
 
     private def CharSequence generateCMakeListsNewStyle(String projectName, IPath projectPath, ProjectType projectType)
