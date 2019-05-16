@@ -2,7 +2,7 @@
 
 nodeWs("azure-linux")
 {
-	withMaven(maven: 'maven-default', publisherStrategy: 'EXPLICIT', options: [artifactsPublisher()])
+	withMaven(jdk: 'Java11', maven: 'maven-default', publisherStrategy: 'EXPLICIT', options: [artifactsPublisher()])
 	{
 	    checkout scm
 		sh "mvn -X -e package -U"
