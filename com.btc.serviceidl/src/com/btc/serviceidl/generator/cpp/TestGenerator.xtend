@@ -114,7 +114,7 @@ class TestGenerator extends BasicCppGenerator
                {  return *m_proxy; }
             
             private:
-               «IF targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11 || targetVersion == ServiceCommVersion.V0_12»
+               «IF targetVersion == ServiceCommVersion.V0_10 || targetVersion == ServiceCommVersion.V0_11»
                  «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «resolveSymbol("BTC::ServiceComm::TestBase::ITestConnection")» >
                «ELSE»
                  «resolveSymbol("BTC::Commons::Core::UniquePtr")»< «resolveSymbol("BTC::ServiceComm::TestSupport::ITestConnection")» >

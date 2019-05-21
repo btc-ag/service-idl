@@ -129,12 +129,6 @@ class CMakeTopLevelProjectFileGenerator
                                 «IF serviceCommTargetVersion == ServiceCommVersion.V0_11»
                                     ("libzmq/4.2.3@cab/extern", "private"),
                                 «ENDIF»
-                                «/* TODO this dependency should be inherited, if really necessary */»
-                                «IF serviceCommTargetVersion != ServiceCommVersion.V0_10 
-                                 && serviceCommTargetVersion != ServiceCommVersion.V0_11 
-                                 && serviceCommTargetVersion != ServiceCommVersion.V0_12»
-                                    ("hippomocks/6.0.0-pre2@cab/extern", "private"),
-                                «ENDIF»
                             «ENDIF»
                             «FOR dependency : generationSettings.dependencies.sortBy[getID(ArtifactNature.CPP)]»
                                 ("«dependency.getID(ArtifactNature.CPP)»/«dependency.version»«versionSuffix»@cab/«dependencyChannel»"),
