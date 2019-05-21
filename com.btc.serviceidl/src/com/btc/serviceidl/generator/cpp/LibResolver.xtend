@@ -46,6 +46,7 @@ class LibResolver
         "ServiceComm.SQ/ZeroMQ" -> "BTC.CAB.ServiceComm.SQ.ZeroMQ",
         "ServiceComm.SQ/ZeroMQTestSupport" -> "BTC.CAB.ServiceComm.SQ.ZeroMQTestSupport",
         "ServiceComm/TestBase" -> "BTC.CAB.ServiceComm.TestBase",
+        "ServiceComm/TestSupport" -> "BTC.CAB.ServiceComm.TestSupport",
         "ServiceComm/Util" -> "BTC.CAB.ServiceComm.Util"
     }
 

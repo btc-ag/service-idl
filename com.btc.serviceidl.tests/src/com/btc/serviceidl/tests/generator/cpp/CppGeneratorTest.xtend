@@ -186,7 +186,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
             
             find_package(Protobuf REQUIRED)
-            find_package(Boost COMPONENTS thread program_options REQUIRED)
+            find_package(Boost COMPONENTS thread program_options regex REQUIRED)
             find_package(BTC.CAB.ServiceComm REQUIRED)
                         
             include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/ServiceAPI/build/make.cmakeset)
@@ -288,7 +288,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
             
             find_package(Protobuf REQUIRED)
-            find_package(Boost COMPONENTS thread program_options REQUIRED)
+            find_package(Boost COMPONENTS thread program_options regex REQUIRED)
             find_package(BTC.CAB.ServiceComm REQUIRED)
             find_package(BTC.CAB.ServiceComm.SQ REQUIRED)
             
@@ -376,7 +376,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
             set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
             
             find_package(Protobuf REQUIRED)
-            find_package(Boost COMPONENTS thread program_options REQUIRED)
+            find_package(Boost COMPONENTS thread program_options regex REQUIRED)
             find_package(BTC.CAB.ServiceComm REQUIRED)
             
             include(${CMAKE_CURRENT_LIST_DIR}/Infrastructure/ServiceHost/Demo/API/Dispatcher/build/make.cmakeset)

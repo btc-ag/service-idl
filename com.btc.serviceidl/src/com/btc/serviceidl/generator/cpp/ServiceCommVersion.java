@@ -13,7 +13,8 @@ package com.btc.serviceidl.generator.cpp;
 public enum ServiceCommVersion {
     V0_10("0.10"),
     V0_11("0.11"),
-    V0_12("0.12");
+    V0_12("0.12"),
+    V0_13("0.13");
 
     private final String label;
 

@@ -91,6 +91,7 @@ class CMakeTopLevelProjectFileGenerator
                 
         val versionSuffix = if (generationSettings.maturity == Maturity.SNAPSHOT) "-unreleased" else ""
         val dependencyChannel = if (generationSettings.maturity == Maturity.SNAPSHOT) "testing" else "stable"
+        val serviceCommDependencyChannel = if (serviceCommTargetVersion == ServiceCommVersion.V0_13) "unstable" else dependencyChannel
 
         // TODO the ODB data could be parameterized in the future
         val odbTargetVersion = "2.5.0-b.9"
@@ -122,9 +123,9 @@ class CMakeTopLevelProjectFileGenerator
                             ("BTC.CAB.Commons/«commonsTargetVersion».latest@cab/«dependencyChannel»"),
                             ("BTC.CAB.IoC/«iocTargetVersion».latest@cab/«dependencyChannel»"),
                             ("BTC.CAB.Logging/«loggingTargetVersion».latest@cab/«dependencyChannel»"),
-                            ("BTC.CAB.ServiceComm/«serviceCommTargetVersion.label».latest@cab/«dependencyChannel»"),
+                            ("BTC.CAB.ServiceComm/«serviceCommTargetVersion.label».latest@cab/«serviceCommDependencyChannel»"),
                             «IF projectSet.projects.exists[it.projectType == ProjectType.TEST]»
-                                ("BTC.CAB.ServiceComm.SQ/«serviceCommTargetVersion.label».latest@cab/«dependencyChannel»"),
+                                ("BTC.CAB.ServiceComm.SQ/«serviceCommTargetVersion.label».latest@cab/«serviceCommDependencyChannel»"),
                                 «IF serviceCommTargetVersion == ServiceCommVersion.V0_11»
                                     ("libzmq/4.2.3@cab/extern", "private"),
                                 «ENDIF»
@@ -231,7 +232,7 @@ class CMakeTopLevelProjectFileGenerator
 
     def generateCMakeLists()
     {
-        // TODO why is find_package(Boost COMPONENTS thread REQUIRED) required? probably because 
+        // TODO why is find_package(Boost COMPONENTS ... REQUIRED) required? probably because 
         // the BTC.CAB.ServiceComm package BTC.CAB.ServiceCommConfig.cmake file does not properly 
         // specify its own dependency on it
         
@@ -242,20 +243,20 @@ class CMakeTopLevelProjectFileGenerator
             CppConstants.SERVICECOMM_VERSION_KIND))
 
         '''
-            «IF serviceCommTargetVersion == ServiceCommVersion.V0_12»
-                cmake_minimum_required(VERSION 3.11)
-            «ELSE»
+            «IF serviceCommTargetVersion == ServiceCommVersion.V0_10 || serviceCommTargetVersion == ServiceCommVersion.V0_11»
                 cmake_minimum_required(VERSION 3.4)
+            «ELSE»
+                cmake_minimum_required(VERSION 3.11)
             «ENDIF»
             
             project («projectName» CXX)
             
             include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-            «IF serviceCommTargetVersion == ServiceCommVersion.V0_12»
+            «IF serviceCommTargetVersion == ServiceCommVersion.V0_10 || serviceCommTargetVersion == ServiceCommVersion.V0_11»
+                conan_basic_setup()
+            «ELSE»
                 set(CAB_RELEASE_UNIT «projectName»)
                 conan_basic_setup(TARGETS)
-            «ELSE»
-                conan_basic_setup()
             «ENDIF»
             
             include(${CONAN_CMAKEMACROS_ROOT}/cmake/cab_globals.cmake)
@@ -266,9 +267,9 @@ class CMakeTopLevelProjectFileGenerator
             set(CAB_INT_SOURCE_DIR ${CMAKE_SOURCE_DIR})
             set(CAB_EXT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../)
             
-            «IF serviceCommTargetVersion == ServiceCommVersion.V0_12»
+            «IF serviceCommTargetVersion != ServiceCommVersion.V0_10 && serviceCommTargetVersion != ServiceCommVersion.V0_11»
                 find_package(Protobuf REQUIRED)
-                find_package(Boost COMPONENTS thread program_options REQUIRED)
+                find_package(Boost COMPONENTS thread program_options regex REQUIRED)
                 find_package(BTC.CAB.ServiceComm REQUIRED)
                 «IF projectSet.projects.exists[it.projectType == ProjectType.TEST]»
                 find_package(BTC.CAB.ServiceComm.SQ REQUIRED)
@@ -286,7 +287,7 @@ class CMakeTopLevelProjectFileGenerator
                 «ENDIF»
             «ENDFOR»
 
-            «IF serviceCommTargetVersion == ServiceCommVersion.V0_12»
+            «IF serviceCommTargetVersion != ServiceCommVersion.V0_10 && serviceCommTargetVersion != ServiceCommVersion.V0_11»
                 install(EXPORT ${CAB_RELEASE_UNIT} DESTINATION cmake NAMESPACE CAB::)
             «ENDIF»
         '''
