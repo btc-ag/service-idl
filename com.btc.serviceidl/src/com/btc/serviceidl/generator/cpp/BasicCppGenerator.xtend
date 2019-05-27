@@ -369,11 +369,12 @@ class BasicCppGenerator
         result.append(    
         '''            
             «IF !isHeader && paramBundle.projectType == ProjectType.SERVER_RUNNER»
-                
+                #ifdef _WIN32
                 #ifndef NOMINMAX
                 #define NOMINMAX
                 #endif
                 #include <windows.h>
+                #endif
             «ENDIF»
         ''')
 

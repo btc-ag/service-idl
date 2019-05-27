@@ -36,15 +36,18 @@ class ServerRunnerGenerator extends BasicCppGenerator
                return «resolveSymbol("std::move")»(decoder);
             }
             
+            #ifdef _WIN32
             BOOL WINAPI MyCtrlHandler(_In_  DWORD dwCtrlType)
             {
                ExitProcess(0);
             }
+            #endif
             
             int main(int argc, «IF targetVersion != ServiceCommVersion.V0_10 && targetVersion != ServiceCommVersion.V0_11»const «ENDIF»char *argv[])
             {
-            
+               #ifdef _WIN32
                SetConsoleCtrlHandler(&MyCtrlHandler, true);
+               #endif
             
                «resolveSymbol("BTC::Commons::CoreYacl::Context")» context;
                «resolveSymbol("BTC::Commons::Core::BlockStackTraceSettings")» settings(BTC::Commons::Core::BlockStackTraceSettings::BlockStackTraceSettings_OnDefault, BTC::Commons::Core::ConcurrencyScope_Process);
