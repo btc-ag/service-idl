@@ -102,8 +102,8 @@ class CodecGenerator extends BasicCppGenerator
             inline «forwardConstIterator»< API_TYPE > Decode(google::protobuf::RepeatedPtrField< PROTOBUF_TYPE > const& protobufInput)
             {
                typedef «insertableTraits»< API_TYPE > APITypeTraits;
-               APITypeTraits::AutoPtrType entries( «createDefaultAsyncInsertable»< API_TYPE >() );
-               APITypeTraits::FutureType future( entries->GetFuture() );
+               auto entries = «createDefaultAsyncInsertable»< API_TYPE >();
+               auto future = entries->GetFuture();
                
                «stdForEach»( protobufInput.begin(), protobufInput.end(), [ &entries ]( PROTOBUF_TYPE const& protobufEntry )
                {  entries->OnNext( Decode(protobufEntry) ); } );
@@ -116,8 +116,8 @@ class CodecGenerator extends BasicCppGenerator
             inline «forwardConstIterator»< API_TYPE > Decode(google::protobuf::RepeatedField< PROTOBUF_TYPE > const& protobufInput)
             {
                typedef «insertableTraits»< API_TYPE > APITypeTraits;
-               APITypeTraits::AutoPtrType entries( «createDefaultAsyncInsertable»< API_TYPE >() );
-               APITypeTraits::FutureType future( entries->GetFuture() );
+               auto entries = «createDefaultAsyncInsertable»< API_TYPE >();
+               auto future = entries->GetFuture();
                
                «stdForEach»( protobufInput.begin(), protobufInput.end(), [ &entries ]( PROTOBUF_TYPE const& protobufEntry )
                {  entries->OnNext( Decode(protobufEntry) ); } );
@@ -379,8 +379,8 @@ class CodecGenerator extends BasicCppGenerator
             inline «forwardConstIterator»< API_ENUM_TYPE > Decode(google::protobuf::RepeatedField< google::protobuf::int32 > const& protobufInput)
             {
                typedef «insertableTraits»< API_ENUM_TYPE > APITypeTraits;
-               APITypeTraits::AutoPtrType entries( «createDefaultAsyncInsertable»< API_ENUM_TYPE >() );
-               APITypeTraits::FutureType future( entries->GetFuture() );
+               auto entries = «createDefaultAsyncInsertable»< API_ENUM_TYPE >();
+               auto future = entries->GetFuture();
                
                «stdForEach»( protobufInput.begin(), protobufInput.end(), [ &entries ]( google::protobuf::int32 const& protobufEntry )
                {  entries->OnNext( Decode(static_cast<PROTOBUF_ENUM_TYPE>(protobufEntry)) ); } );

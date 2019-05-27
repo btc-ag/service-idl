@@ -159,7 +159,7 @@ class TestGenerator extends BasicCppGenerator
                        «val ulimateType = toText(param.paramType.ultimateType, param)»
                        «val isFailable = param.paramType.isFailable»
                        «val innerType = if (isFailable) '''«addCabInclude(new Path("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h")).alias(resolveSymbol("BTC::Commons::CoreExtras::FailableHandle"))»< «ulimateType» >''' else ulimateType»
-                       «resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «innerType» >::AutoPtrType «param.paramName.asParameter»( «resolveSymbol("BTC::Commons::FutureUtil::CreateDefaultAsyncInsertable")»< «innerType» >() );
+                       typename «resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «innerType» >::AutoPtrType «param.paramName.asParameter»( «resolveSymbol("BTC::Commons::FutureUtil::CreateDefaultAsyncInsertable")»< «innerType» >() );
                    «ELSE»
                        «val typeName = toText(param.paramType, param)»
                        «typeName» «param.paramName.asParameter»«IF param.paramType.isEnumType» = «typeName»::«(param.paramType.ultimateType as EnumDeclaration).containedIdentifiers.head»«ENDIF»;
