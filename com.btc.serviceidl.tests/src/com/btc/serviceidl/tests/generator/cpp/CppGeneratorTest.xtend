@@ -155,7 +155,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
                     protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)
                     outdir = self.source_folder
                     
-                    self.run('bin\\protoc.exe --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
+                    self.run(os.path.join('bin', 'protoc') + ' --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
             
                 def build(self):
                     self.generateProtoFiles()
@@ -166,7 +166,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
                     self.copy("**/*.proto", dst="proto", keep_path=True)
             
                 def imports(self):
-                    self.copy("protoc.exe", "bin", "bin")
+                    self.copy("protoc*", "bin", "bin")
         ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.11)
             
@@ -257,7 +257,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
                     protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)
                     outdir = self.source_folder
                     
-                    self.run('bin\\protoc.exe --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
+                    self.run(os.path.join('bin', 'protoc') + ' --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
             
                 def build(self):
                     self.generateProtoFiles()
@@ -268,7 +268,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
                     self.copy("**/*.proto", dst="proto", keep_path=True)
             
                 def imports(self):
-                    self.copy("protoc.exe", "bin", "bin")
+                    self.copy("protoc*", "bin", "bin")
         ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.11)
             
@@ -345,7 +345,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
                     protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)
                     outdir = self.source_folder
                     
-                    self.run('bin\\protoc.exe --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
+                    self.run(os.path.join('bin', 'protoc') + ' --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
             
                 def build(self):
                     self.generateProtoFiles()
@@ -356,7 +356,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
                     self.copy("**/*.proto", dst="proto", keep_path=True)
             
                 def imports(self):
-                    self.copy("protoc.exe", "bin", "bin")
+                    self.copy("protoc*", "bin", "bin")
         ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.11)
             
@@ -456,7 +456,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
                     protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)
                     outdir = self.source_folder
                     
-                    self.run('bin\\protoc.exe --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
+                    self.run(os.path.join('bin', 'protoc') + ' --proto_path=' + self.source_folder + ' --cpp_out="%s" %s' % (outdir, ' '.join(protofiles)))
             
                 def build(self):
                     self.generateProtoFiles()
@@ -467,7 +467,7 @@ class CppGeneratorTest extends AbstractGeneratorTest
                     self.copy("**/*.proto", dst="proto", keep_path=True)
             
                 def imports(self):
-                    self.copy("protoc.exe", "bin", "bin")
+                    self.copy("protoc*", "bin", "bin")
         ''', ArtifactNature.CPP.label + "CMakeLists.txt", '''
             cmake_minimum_required(VERSION 3.4)
             

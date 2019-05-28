@@ -222,8 +222,8 @@ class DispatcherGenerator extends BasicCppGenerator
                        «val isFailable = param.paramType.isFailable»
                        «if (isFailable) addCabInclude(new Path("Commons/FutureUtil/include/FailableHandleAsyncInsertable.h")).alias("") /* necessary to use InsertableTraits with FailableHandle */»
                        «val effectiveTypename = if (isFailable) '''«resolveSymbol("BTC::Commons::CoreExtras::FailableHandle")»< «typeName» >''' else typeName»
-                       «resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «effectiveTypename» >::AutoPtrType «param.paramName»(
-                          «resolveSymbol("BTC::Commons::FutureUtil::GetOrCreateDefaultInsertable")»(«resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «effectiveTypename» >::MakeEmptyInsertablePtr()) );
+                       auto «param.paramName» =
+                          «resolveSymbol("BTC::Commons::FutureUtil::GetOrCreateDefaultInsertable")»(«resolveSymbol("BTC::Commons::CoreExtras::InsertableTraits")»< «effectiveTypename» >::MakeEmptyInsertablePtr());
                        auto «param.paramName»Future = «param.paramName»->GetFuture();
                    «ELSE»
                        «toText(param.paramType, param)» «param.paramName»;

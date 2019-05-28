@@ -36,15 +36,18 @@ class ServerRunnerGenerator extends BasicCppGenerator
                return «resolveSymbol("std::move")»(decoder);
             }
             
+            #ifdef _WIN32
             BOOL WINAPI MyCtrlHandler(_In_  DWORD dwCtrlType)
             {
                ExitProcess(0);
             }
+            #endif
             
             int main(int argc, «IF targetVersion != ServiceCommVersion.V0_10 && targetVersion != ServiceCommVersion.V0_11»const «ENDIF»char *argv[])
             {
-            
+               #ifdef _WIN32
                SetConsoleCtrlHandler(&MyCtrlHandler, true);
+               #endif
             
                «resolveSymbol("BTC::Commons::CoreYacl::Context")» context;
                «resolveSymbol("BTC::Commons::Core::BlockStackTraceSettings")» settings(BTC::Commons::Core::BlockStackTraceSettings::BlockStackTraceSettings_OnDefault, BTC::Commons::Core::ConcurrencyScope_Process);
@@ -52,6 +55,9 @@ class ServerRunnerGenerator extends BasicCppGenerator
                try
                {
                   «resolveSymbol("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")»().GetLogger("")->SetLevel(«resolveSymbol("BTC::Logging::API::Logger")»::LWarning);
+                  «IF targetVersion != ServiceCommVersion.V0_10»                     
+                    auto serverFactories = «resolveSymbol("BTC::Commons::CoreStd::Collection")»<«resolveSymbol("BTC::Commons::Core::AutoPtr")»<«resolveSymbol("BTC::ServiceComm::ProtobufUtil::IProtobufServerFactories")»>>{};
+                  «ENDIF»
                   «resolveSymbol("BTC::ServiceComm::PerformanceBase::PerformanceTestServer")» server(context,
                      «resolveSymbol("BTC::Commons::Core::CreateAuto")»<«resolve(interfaceDeclaration, ProjectType.IMPL)»>(context, «resolveSymbol("BTC::Performance::CommonsTestSupport::GetTestLoggerFactory")»()),
                     «IF targetVersion == ServiceCommVersion.V0_10»                     
@@ -62,7 +68,7 @@ class ServerRunnerGenerator extends BasicCppGenerator
                      «resolveSymbol("BTC::Commons::Core::String")»())
                      «ELSE»
                      «resolveSymbol("BTC::Commons::Core::CreateAuto")»<«resolveSymbol("BTC::ServiceComm::ProtobufUtil::CCompositeProtobufServerFactoriesStrategy")»>(
-                     «resolveSymbol("BTC::Commons::CoreStd::Collection")»<«resolveSymbol("BTC::Commons::Core::AutoPtr")»<«resolveSymbol("BTC::ServiceComm::ProtobufUtil::IProtobufServerFactories")»>>{}
+                     serverFactories
                      )
                      «ENDIF»                     
                    );

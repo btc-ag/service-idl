@@ -166,7 +166,7 @@ class CMakeTopLevelProjectFileGenerator
                     protofiles = glob.glob(self.source_folder + "/**/gen/*.proto", recursive=True)
                     outdir = self.source_folder
                     
-                    self.run('bin\\protoc.exe --proto_path=' + self.source_folder
+                    self.run(os.path.join('bin', 'protoc') + ' --proto_path=' + self.source_folder
                         «FOR dependency : generationSettings.dependencies.sortBy[getID(ArtifactNature.CPP)]»
                             + ' --proto_path="' + os.path.normpath(os.path.join(self.deps_cpp_info["«dependency.getID(ArtifactNature.CPP)»"].rootpath, 'proto')) + '"'
                         «ENDFOR»
@@ -184,7 +184,7 @@ class CMakeTopLevelProjectFileGenerator
                     self.copy("**/*.proto", dst="proto", keep_path=True)
 
                 def imports(self):
-                    self.copy("protoc.exe", "bin", "bin")
+                    self.copy("protoc*", "bin", "bin")
         '''
     }
 
