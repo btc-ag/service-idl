@@ -5,12 +5,12 @@
   <servers>
     <server>
       <id>jcenter</id>
-      <username>sigiesec</username>
+      <username>kamiddel</username>
       <password>${env.JCENTER_TOKEN}</password>
     </server>
     <server>
       <id>jcenter-release</id>
-      <username>sigiesec</username>
+      <username>kamiddel</username>
       <password>${env.JCENTER_TOKEN}</password>
     </server>
      <server>
