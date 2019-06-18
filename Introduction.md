@@ -303,7 +303,7 @@ ci.bop-dev.de for general information on using the Jenkins, and on how
 the release process works.
 
 An example can be found under
-https://bitbucket.e-konzern.de/projects/BTCCABCOM/repos/serviceidl-demo/browse
+https://bitbucket.btc.psi.de/projects/BTCCABCOM/repos/serviceidl-demo/browse
 
 To set this up for your IDL file, first create a Bitbucket repository,
 and add the IDL file. In addition, you need to add a Jenkinsfile that
