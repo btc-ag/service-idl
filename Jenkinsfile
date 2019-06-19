@@ -1,6 +1,6 @@
 @Library("cab") _
 
-nodeWs("azure-linux")
+nodeWs("linux")
 {
 	withMaven(jdk: 'Java11', maven: 'maven-default', publisherStrategy: 'EXPLICIT', options: [artifactsPublisher()])
 	{
