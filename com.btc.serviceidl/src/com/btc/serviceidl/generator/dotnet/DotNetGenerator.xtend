@@ -258,8 +258,8 @@ class DotNetGenerator
           '''
           frameworks: «DOTNET_FRAMEWORK_VERSION.toString.toLowerCase»
           
-          source https://artifactory.btc.psi.de/artifactory/api/nuget/cab-nuget-extern
-          source https://artifactory.btc.psi.de/artifactory/api/nuget/cab-nuget-«dependencyChannel»
+          source https://artifactory.psi.de/artifactory/api/nuget/cab-nuget-extern
+          source https://artifactory.psi.de/artifactory/api/nuget/cab-nuget-«dependencyChannel»
           
           «generatePaketDependenciesSection(false)»
           '''

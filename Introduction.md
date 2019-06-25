@@ -295,11 +295,11 @@ default.
 Continous delivery workflow
 ---------------------------
 
-On the [BTC internal CAB Jenkins](https://ci.btc.psi.de) that provides
+On the [BTC internal CAB Jenkins](https://ci.psi.de) that provides
 continuous integration & delivery services, a dedicated support has been
 implemented to simplify building and publishing artifacts from an IDL
 file as much as possible. Please refer to the documentation of
-ci.btc.psi.de for general information on using the Jenkins, and on how
+ci.psi.de for general information on using the Jenkins, and on how
 the release process works.
 
 An example can be found under
