@@ -4,4 +4,4 @@ As noted in the general contribution guidelines, there are some obstacles to all
 - There are integration tests that should be run before merging a branch. Since the dependencies of these integration tests are non-public for now, the artifacts must be deployed from the branch build so that the integration tests can access them. This works easily only from the upstream repository.
 
 There is one repository-specific rerequisite for merging a PR:
-- the external [integration tests](https://ci.bop-dev.de/job/cab/job/BF/job/serviceidl-integrationtests/job/master/) must run successfully.
+- the external [integration tests](https://ci.btc.psi.de/job/cab/job/BF/job/serviceidl-integrationtests/job/master/) must run successfully.
