@@ -295,15 +295,15 @@ default.
 Continous delivery workflow
 ---------------------------
 
-On the [BTC internal CAB Jenkins](https://ci.bop-dev.de) that provides
+On the [BTC internal CAB Jenkins](https://ci.psi.de) that provides
 continuous integration & delivery services, a dedicated support has been
 implemented to simplify building and publishing artifacts from an IDL
 file as much as possible. Please refer to the documentation of
-ci.bop-dev.de for general information on using the Jenkins, and on how
+ci.psi.de for general information on using the Jenkins, and on how
 the release process works.
 
 An example can be found under
-https://bitbucket.e-konzern.de/projects/BTCCABCOM/repos/serviceidl-demo/browse
+https://bitbucket.btc.psi.de/projects/BTCCABCOM/repos/serviceidl-demo/browse
 
 To set this up for your IDL file, first create a Bitbucket repository,
 and add the IDL file. In addition, you need to add a Jenkinsfile that

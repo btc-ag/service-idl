@@ -82,7 +82,7 @@ class POMGenerator
                <repository>
                   <id>cab-maven</id>
                   <name>CAB Main Maven Repository</name>
-                  <url>https://artifactory.bop-dev.de/artifactory/cab-maven/</url>
+                  <url>https://artifactory.psi.de/artifactory/cab-maven/</url>
                </repository>
                </distributionManagement>
                
