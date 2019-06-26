@@ -15,7 +15,7 @@
     </server>
      <server>
          <id>github.com</id>  
-         <username>sigiesec</username>  
+         <username>kamiddel</username>  
          <password>${env.GITHUB_TOKEN}</password>  
       </server>       
   </servers>
