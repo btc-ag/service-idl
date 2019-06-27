@@ -33,6 +33,7 @@ class DefaultGenerationSettings implements IGenerationSettings
     val Map<String, String> generatorOptionMap = newHashMap
     public var Maturity maturity = Maturity.SNAPSHOT
     public Set<PackageInfo> dependencies = #{}
+    public String cppAdditionalSources
 
     new()
     {
@@ -120,5 +121,9 @@ class DefaultGenerationSettings implements IGenerationSettings
 
     def setGeneratorOption(String key, String value) {
         generatorOptionMap.put(key, value)
+    }
+    
+    override getCppAdditionalSources() {
+    	cppAdditionalSources
     }
 }

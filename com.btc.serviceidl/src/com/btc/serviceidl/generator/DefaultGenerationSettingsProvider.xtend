@@ -192,6 +192,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         val result = new OptionalGenerationSettings
         result.languages = overrides.languages ?: base.languages
         result.projectTypes = overrides.projectTypes ?: base.projectTypes
+        result.cppAdditionalSources = overrides.cppAdditionalSources ?: base.cppAdditionalSources
         result.cppProjectSystem = overrides.cppProjectSystem ?: base.cppProjectSystem
         result.dependencies = overrides.dependencies ?: base.dependencies
         result.versions = mergeMaps(overrides.versions, base.versions)
@@ -219,6 +220,7 @@ class DefaultGenerationSettingsProvider implements IGenerationSettingsProvider
         result.languages = settings.languages
         result.projectTypes = settings.projectTypes
         result.dependencies = settings.dependencies
+        result.cppAdditionalSources = settings.cppAdditionalSources
 
         switch (settings.cppProjectSystem)
         {

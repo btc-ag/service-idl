@@ -30,10 +30,18 @@ import com.btc.serviceidl.idl.AbstractTypeReference
 import com.btc.serviceidl.idl.IDLSpecification
 import com.btc.serviceidl.idl.ModuleDeclaration
 import com.google.common.collect.Sets
+import java.io.IOException
+import java.nio.file.FileSystems
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.Collection
 import java.util.HashMap
 import java.util.Map
 import java.util.Set
+import org.eclipse.emf.common.CommonPlugin
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.scoping.IScopeProvider
@@ -84,8 +92,34 @@ class CppGenerator
             {
                 new CMakeTopLevelProjectFileGenerator(fileSystemAccess, generationSettings,
                     projectSet, module).generate()
+				copyAdditionalSources
             }
         }
+    }
+    
+    private def copyAdditionalSources()
+    {
+        if (generationSettings.cppAdditionalSources !== null) 
+        {
+        	val localFileURI = CommonPlugin.resolve(idl.eResource.URI)
+        	
+        	if (localFileURI === null)
+        		throw new IOException("Not a local file URI " + idl.eResource.URI + ".")
+
+        	val localFileString = localFileURI.toFileString
+        	val localFilePath = FileSystems.^default.getPath(localFileString)
+
+        	Files.walkFileTree(localFilePath.resolveSibling(generationSettings.cppAdditionalSources),
+        		new SimpleFileVisitor<Path> {
+        			override visitFile(Path path, BasicFileAttributes attributes)
+        			{
+        				val relativePath = localFilePath.parent.relativize(path).toString()
+        				fileSystemAccess.generateFile(relativePath, ArtifactNature.CPP.label, 
+        					new String(Files.readAllBytes(path)))
+        			    return FileVisitResult.CONTINUE
+        			}
+        		}) 
+        }    	
     }
 
     private def void processModule(ModuleDeclaration module, Set<ProjectType> projectTypes)

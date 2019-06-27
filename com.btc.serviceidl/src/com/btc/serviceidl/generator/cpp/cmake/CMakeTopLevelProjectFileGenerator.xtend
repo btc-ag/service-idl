@@ -286,6 +286,10 @@ class CMakeTopLevelProjectFileGenerator
                     «ENDIF»
                 «ENDIF»
             «ENDFOR»
+            
+            «IF generationSettings.cppAdditionalSources !== null»
+             	add_subdirectory(«generationSettings.cppAdditionalSources»)
+            «ENDIF»
 
             «IF serviceCommTargetVersion != ServiceCommVersion.V0_10 && serviceCommTargetVersion != ServiceCommVersion.V0_11»
                 install(EXPORT ${CAB_RELEASE_UNIT} DESTINATION cmake NAMESPACE CAB::)

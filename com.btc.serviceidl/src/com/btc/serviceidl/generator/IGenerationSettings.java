@@ -34,4 +34,6 @@ public interface IGenerationSettings extends ITargetVersionProvider {
     boolean hasGeneratorOption(String key);
 
     String getGeneratorOption(String key);
+    
+    String getCppAdditionalSources();
 }
